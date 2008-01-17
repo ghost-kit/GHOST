@@ -3,7 +3,7 @@
 #
 
 # Include compiler information
-include ../../env/Make.${machine}
+include ../../env/Make.${MACHINE}
 # Specify compiler flags
 include Make.machine
 
