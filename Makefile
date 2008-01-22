@@ -20,13 +20,13 @@ include Make.machine
 	$(CXX) -c  $(CCFLAGS) $<
 
 .F.o:
-	$(F77) -c  $(FFLAGS) $<
+	$(F77) -c $(FORTOPT) $(FFLAGS) $<
 
 #
 # Make targets:
 #
 
-OBJS = DateTime.o
+OBJS = geopack.o DateTime.o MHDInnerBoundaryInterface.o
 
 common: $(OBJS)
 	$(AR) rcs libcommon.a $(OBJS)
