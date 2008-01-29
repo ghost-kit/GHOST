@@ -26,11 +26,16 @@ include Make.machine
 # Make targets:
 #
 
-OBJS = geopack.o DateTime.o MHDInnerBoundaryInterface.o
+OBJS = geopack.o DateTime.o MHDInnerBoundaryInterface.o parse_xjd.o TinyXML/*.o
 
 common: $(OBJS)
 	$(AR) rcs libcommon.a $(OBJS)
 
+parse_xjd.o: 
+	cd TinyXML && $(MAKE) tinyxml_obj
+	$(CXX) -ITinyXML -c $(CCFLAGS) -o parse_xjd.o -LTinyXML parse_xjd.C
+
 clean:
+	cd TinyXML && $(MAKE) clean
 	rm -f *.o
 	rm -f libcommon.a
