@@ -1,6 +1,6 @@
 #
 # Makefile to compile TinyXML objects:
-#
+#5A
 # NOTE:  Unless you know what you're doing, you shouldn't be here!
 #        See the Make targets in "LTR-para/Makefile"
 #
@@ -16,7 +16,7 @@ include ../Make.machine
 .SUFFIXES: .o .cpp 
 
 .cpp.o:
-	$(CXX) -c  $(CCFLAGS) -I. $<
+	$(MPICXX) -c  $(CCFLAGS) -I. $<
 
 #
 # Object files to compile:

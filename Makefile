@@ -14,13 +14,13 @@ include Make.machine
 .SUFFIXES: .F .c .o .f .C 
 
 .c.o:
-	$(Ccompiler) -c $(CFLAGS) $<
+	$(CC) -c $(CFLAGS) $<
 
 .C.o:
-	$(CXX) -c  $(CCFLAGS) $<
+	$(MPICXX) -c  $(CCFLAGS) $<
 
 .F.o:
-	$(F77) -c $(FORTOPT) $(FFLAGS) $<
+	$(MPIF77) -c $(FORTOPT) $(FFLAGS) $<
 
 #
 # Make targets:
@@ -34,7 +34,7 @@ common: $(OBJS)
 
 parse_xjd.o: 
 	cd TinyXML && $(MAKE) tinyxml_obj
-	$(CXX) -ITinyXML -c $(CCFLAGS) -o parse_xjd.o -LTinyXML parse_xjd.C
+	$(MPICXX) -ITinyXML -c $(CCFLAGS) -o parse_xjd.o -LTinyXML parse_xjd.C
 
 clean:
 	cd TinyXML && $(MAKE) clean
