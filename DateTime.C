@@ -217,11 +217,17 @@ void DateTime::updateYMDHMS(void)
   //C = long(B - (122.1) / 365.25);
   D = long(365.25*C);
   E = long((B-D)/30.6001);
+
   day = B-D-long(30.6001*E);
+
   // We are thinking of January & February as the 13th & 14th month of
   // the previous year
   month = E-1;
-  //month = (E > 12 ) ? E-13: E-1;
+
+  // Make sure month is set right:
+  if (month > 12)
+    month -= 12;
+
   year = (month > 2) ? (C - 4716) : (C - 4715);
   if (year <=0)
     year--;
