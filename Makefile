@@ -40,3 +40,5 @@ clean:
 	cd TinyXML && $(MAKE) clean
 	rm -f *.o
 	rm -f libcommon.a
+
+distclean: clean
