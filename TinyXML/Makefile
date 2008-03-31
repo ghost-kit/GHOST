@@ -38,3 +38,5 @@ tinyxmlerror.o: tinyxml.h tinystr.h
 
 clean:
 	-rm -f *.o
+
+distclean: clean

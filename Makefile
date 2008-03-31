@@ -31,14 +31,18 @@ OBJS = geopack.o DateTime.o MHDInnerBoundaryInterface.o parse_xjd.o \
 
 common: $(OBJS)
 	$(AR) rcs libcommon.a $(OBJS)
+	cd RMSerror && $(MAKE)
 
 parse_xjd.o: 
 	cd TinyXML && $(MAKE) tinyxml_obj
 	$(MPICXX) -ITinyXML -c $(CCFLAGS) -o parse_xjd.o -LTinyXML parse_xjd.C
 
 clean:
+	cd RMSerror && $(MAKE) clean
 	cd TinyXML && $(MAKE) clean
 	rm -f *.o
 	rm -f libcommon.a
 
 distclean: clean
+	cd RMSerror && $(MAKE) distclean
+	cd TinyXML && $(MAKE) distclean
