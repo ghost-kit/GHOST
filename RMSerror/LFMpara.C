@@ -1,6 +1,7 @@
 #include "LFMpara.h"
 #include <cassert>
-#include <iostream>
+#include <iostream.h>
+using namespace std; 
 
 /**************************************************************************/
 
@@ -14,7 +15,7 @@ LFMpara::LFMpara(char *file)
 {
   fid = -999;
   if (! open(file) ){
-    std::cerr << "*** Error opening " << filename << "\n";
+    cerr << "*** Error opening " << filename << "\n";
   }
 }
 
@@ -44,7 +45,7 @@ bool LFMpara::open(char *file)
   fid = SDstart(filename, DFACC_RDONLY);
 
   if (fid < 0){
-    std::cerr << "*** LFMpara::open failed\n";
+    cerr << "*** LFMpara::open failed\n";
     strcpy(filename, "\0");
     return false;
   }
@@ -77,7 +78,7 @@ int LFMpara::getDimensions(char *variable, int *dimensions)
   variableId = SDnametoindex(fid, variable);
   if (-1 == variableId)
   {
-    std::cerr << "*** LFMpara::getDimensions unable to open variable " << variable << "\n";
+    cerr << "*** LFMpara::getDimensions unable to open variable " << variable << "\n";
     return 0;
   }
 
@@ -87,12 +88,12 @@ int LFMpara::getDimensions(char *variable, int *dimensions)
   // Read data name, rank of the variable, XYZ_dims, datatype and number of stored battributes
   errorId = SDgetinfo(SDselectId, dataName, &rank, dimensions_i32, &dataType, &nAttributes);
   if (errorId < 0){
-    std::cerr << "*** LFMpara::getDimensions unable to read info for variable " << variable << "\n";
+    cerr << "*** LFMpara::getDimensions unable to read info for variable " << variable << "\n";
     return 0;
   }
   errorId = SDendaccess(SDselectId);
   if (errorId < 0){
-    std::cerr << "*** LFMpara::getDimensions unable to end information access for variable " << variable << "\n";
+    cerr << "*** LFMpara::getDimensions unable to end information access for variable " << variable << "\n";
     return 0;
   }
 
@@ -106,7 +107,7 @@ int LFMpara::getDimensions(char *variable, int *dimensions)
 
   // FIXME: I dont really understand nAttributes...
   //assert(nAttributes == 1);
-  //std::cout << "nAttributes = " << nAttributes << "\n";
+  //cout << "nAttributes = " << nAttributes << "\n";
 
   // set dimensions as integers
   for (int i = 0; i < MAX_VAR_DIMS; i++){
@@ -149,14 +150,14 @@ bool LFMpara::getData(char *variable, float *data)
   /*Get the info about thie dataset */
   varId = SDnametoindex(fid,variable);
   if (varId < 0) {
-    std::cerr << "*** LFMpara::getData Unable to open " << variable << "\n";
+    cerr << "*** LFMpara::getData Unable to open " << variable << "\n";
     return false;
   }
   else {
     SDselectId = SDselect(fid,varId);
     errorId = SDgetinfo(SDselectId,dataName,&rank,dimensions_i32,&dataType,&nAttributes);
     if (errorId < 0){
-      std::cerr << "*** LFMpara::getData unable to read info for variable " << variable << "\n";
+      cerr << "*** LFMpara::getData unable to read info for variable " << variable << "\n";
       return false;
     }
     /* Create reterival information arrays and allocate space */
@@ -170,13 +171,13 @@ bool LFMpara::getData(char *variable, float *data)
     /* Get dataset */
     errorId = SDreaddata(SDselectId,indexStart,NULL,indexEnd,data);
     if (errorId < 0){
-      std::cerr << "*** LFMpara::getData unable to read data for variable " << variable << "\n";
+      cerr << "*** LFMpara::getData unable to read data for variable " << variable << "\n";
       return false;
     }
 
     errorId = SDendaccess(SDselectId);
     if (errorId < 0){
-      std::cerr << "*** LFMpara::getData unable to end access for variable " << variable << "\n";
+      cerr << "*** LFMpara::getData unable to end access for variable " << variable << "\n";
       return false;
     }
   }
@@ -191,7 +192,7 @@ bool LFMpara::getData(char *variable, float *data)
 bool LFMpara::close(void)
 {
   if ( SDend(fid) < 0 ){
-    std::cerr << "*** LFMpara::close() failed\n";
+    cerr << "*** LFMpara::close() failed\n";
     return false;
   }
   else{
