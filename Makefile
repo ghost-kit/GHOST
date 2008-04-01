@@ -31,7 +31,6 @@ OBJS = geopack.o DateTime.o MHDInnerBoundaryInterface.o parse_xjd.o \
 
 common: $(OBJS)
 	$(AR) rcs libcommon.a $(OBJS)
-	cd RMSerror && $(MAKE)
 
 parse_xjd.o: 
 	cd TinyXML && $(MAKE) tinyxml_obj
