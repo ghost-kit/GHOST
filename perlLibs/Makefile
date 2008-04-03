@@ -3,18 +3,18 @@
 all: Carp-Clan Bit-Vector Date-Calc LTR-Inputs
 
 Carp-Clan:
-	tar -zxf Carp-Clan-5.3.tar.gz
+	gunzip < Carp-Clan-5.3.tar.gz | tar -x
 	cd Carp-Clan-5.3 && perl Makefile.PL PREFIX=../../..
 
 	cd Carp-Clan-5.3 && ${MAKE}; ${MAKE} install
 
 Bit-Vector:
-	tar -zxf Bit-Vector-6.4.tar.gz
+	gunzip < Bit-Vector-6.4.tar.gz | tar -x
 	cd Bit-Vector-6.4 && perl Makefile.PL PREFIX=../../..
 	cd Bit-Vector-6.4 && ${MAKE}; ${MAKE} install
 
 Date-Calc:
-	tar -zxf Date-Calc-5.4.tar.gz
+	gunzip < Date-Calc-5.4.tar.gz | tar -x
 	cd Date-Calc-5.4 && perl Makefile.PL PREFIX=../../..
 	cd Date-Calc-5.4 && ${MAKE}; ${MAKE} install
 
