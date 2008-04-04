@@ -31,7 +31,7 @@ include Make.machine
 OBJS = geopack.o DateTime.o MHDInnerBoundaryInterface.o parse_xjd.o \
        TinyXML/tinystr.o TinyXML/tinyxml.o TinyXML/tinyxmlerror.o TinyXML/tinyxmlparser.o
 
-all: common perlLibs
+all: common
 
 common: $(OBJS)
 	$(AR) rcs libcommon.a $(OBJS)
