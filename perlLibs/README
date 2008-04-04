@@ -1,0 +1,5 @@
+Thse perl libs are required for the in "LTR-para/common/bin/mklfmparascripts.pl".
+
+"gmake all" will build these perl libs and install them to LTR-para/common/lib.
+
+The  Bit-Vector, Carp-Clan, and Date-Calc packages are obtained from http://search.cpan.org/~stbey/
