@@ -1,7 +1,7 @@
 # Build and install local copy of dependencies for mklfmparascripts perl scripts.
 
 all: Carp-Clan Bit-Vector Date-Calc LTR-Inputs
-	- cp -r lib ../..
+	- cp -r lib* ../..
 
 Carp-Clan:
 	gunzip < Carp-Clan-5.3.tar.gz > Carp-Clan-5.3.tar
@@ -33,6 +33,6 @@ clean:
 	rm -rf Bit-Vector-6.4 Bit-Vector-6.4.tar
 	rm -rf Date-Calc-5.4 Date-Calc-5.4.tar
 	-test -e LTR/Makefile && cd LTR && ${MAKE} realclean
-	rm -rf lib man
+	rm -rf lib lib64 man
 
 distclean: clean
