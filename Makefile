@@ -54,3 +54,4 @@ distclean: clean
 	cd perlLibs && $(MAKE) distclean
 	cd RMSerror && $(MAKE) distclean
 	cd TinyXML && $(MAKE) distclean
+	rm -rf ../lib ../lib64
