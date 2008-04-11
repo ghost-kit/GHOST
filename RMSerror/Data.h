@@ -18,16 +18,16 @@ class Data
 {
 public:
   /// Open a datafile
-  virtual bool open(char *file) = 0;
+  virtual bool open(const char *file) = 0;
   /// Get dimensions of the dataset
-  virtual int getDimensions(char *variable, int *dimensions) = 0;
+  virtual int getDimensions(const char *variable, int *dimensions) = 0;
   /// Read the data from file.  Assumes that data is already allocated.
-  virtual bool getData(char *variable, float *data) = 0;
+  virtual bool getData(const char *variable, float *data) = 0;
   /// Close access to file
   virtual bool close(void) = 0;
 
   /// Get the data filename
-  char * getFilename(void) { return filename; };
+  const char * getFilename(void) { return (const char*) filename; };
 protected:
   char filename[2048];
 };

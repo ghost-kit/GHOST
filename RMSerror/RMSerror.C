@@ -7,17 +7,17 @@
 #include "LFMpara.h"
 
 /// Print usage information.
-void printHelp(char *);
+void printHelp(const char *);
 /// Compute RMS error, check for infs and NaNs for variable between base_file and test_file.
-bool check_variable(char *variable, float rms_tolerance, Data *base_file, Data *test_file);
+bool check_variable(const char *variable, const float rms_tolerance, Data *base_file, Data *test_file);
 /// Make sure that the two arrays (dim1 and dim2) have the same values for the dimensions.
 bool check_dimensions(int rank_1, int *dim1, int rank_2, int *dim2);
 /// Check base_data and test_data for infs and NaNs.
 template<typename d_type>
-bool check_valid_data(int nElements, d_type *base_data, d_type *test_data);
+bool check_valid_data(const int nElements, const d_type *base_data, const d_type *test_data);
 /// Compute the RMS error for base_data - test_data
 template<typename d_type>
-float compute_rms_error(int nElements, d_type *base_data, d_type *test_data);
+float compute_rms_error(const int nElements, const d_type *base_data, const d_type *test_data);
 
 /// RMSerror Application
 /**
@@ -74,8 +74,8 @@ int main(int argc, char **argv)
   // Create "data" object and open the file:
   switch(dataset_type) {
   case 1:    
-    base_file = new LFMpara(base_filename);
-    test_file = new LFMpara(test_filename);
+    base_file = new LFMpara((const char *) base_filename);
+    test_file = new LFMpara((const char *) test_filename);
     break;
   case 2:
     //base_file = new LFMparaION;
@@ -111,7 +111,7 @@ int main(int argc, char **argv)
 
 /**************************************************************************/
 
-void printHelp(char * exe_name)
+void printHelp(const char * exe_name)
 {
   std::cout << exe_name << "\n"
 	    << "Usage: \n"
@@ -130,7 +130,7 @@ void printHelp(char * exe_name)
 
 /**************************************************************************/
 
-bool check_variable(char *variable, float rms_tolerance, Data *base_file, Data *test_file)
+bool check_variable(const char *variable, const float rms_tolerance, Data *base_file, Data *test_file)
 {
   int base_rank, test_rank;                           // rank (# of dimensions) of dataset variables
   int base_ijk[MAX_VAR_DIMS], test_ijk[MAX_VAR_DIMS]; // dimension of dataset
@@ -149,16 +149,16 @@ bool check_variable(char *variable, float rms_tolerance, Data *base_file, Data *
   test_rank = test_file->getDimensions(variable, test_ijk);
 
   if ( base_rank == 0 ){
-    std::cerr << "*** Error reading dimension for base_rank\n";
+    std::cerr << "*** Error reading dimension for base_rank for variable \"" << variable << "\"\n";
     return false;
   }
   if ( test_rank == 0 ){
-    std::cerr << "*** Error reading dimension for base_rank\n";
+    std::cerr << "*** Error reading dimension for base_rank for variable \"" << variable << "\"\n";
     return false;
   }
 
   if ( !check_dimensions(base_rank, base_ijk, test_rank, test_ijk) ){
-    std::cerr << "*** Dimensions differ!\n";
+    std::cerr << "*** Dimensions differ for variable \"" << variable << "\"!\n";
     return false;
   }
 
@@ -174,24 +174,24 @@ bool check_variable(char *variable, float rms_tolerance, Data *base_file, Data *
     base_data = new float[nElements];
   }
   else{
-    std::cerr << "*** base_data already defined!\n";
+    std::cerr << "*** base_data already defined for variable \"" << variable << "\"!\n";
   }
   if(test_data == NULL){
     test_data = new float[nElements];
   }
   else{
-    std::cerr << "*** test_data already defined!\n";
+    std::cerr << "*** test_data already defined for variable \"" << variable << "\"!\n";
   }
 
   ////////////////////
   //   2. read data / 
   //////////////////
   if ( !base_file->getData(variable, base_data) ){
-    std::cerr << "*** Error reading data from \"" << base_file->getFilename() << "\"!\n";
+    std::cerr << "*** Error reading data from \"" << base_file->getFilename() << "\" for variable \"" << variable << "\"!\n";
     return false;
   }
   if ( !test_file->getData(variable, test_data) ){
-    std::cerr << "*** Error reading data from \"" << test_file->getFilename()  << "\"!\n";
+    std::cerr << "*** Error reading data from \"" << test_file->getFilename()  << "\" for variable \"" << variable << "\"!\n";
     return false;
   }
   
@@ -199,7 +199,7 @@ bool check_variable(char *variable, float rms_tolerance, Data *base_file, Data *
   //   3. Check for infs and NaNs /
   ////////////////////////////////
   if ( !check_valid_data(nElements, base_data, test_data) ){
-    std::cerr << "*** Found an inf or NaN in the data!\n";
+    std::cerr << "*** Found an inf or NaN in the data for variable \"" << variable << "\"!\n";
     return false;
   }
 
@@ -208,13 +208,20 @@ bool check_variable(char *variable, float rms_tolerance, Data *base_file, Data *
   //////////////////////////
   rms_error = compute_rms_error(nElements, base_data, test_data);
 
+#ifndef VERBOSE
+    std::cout << rms_error << "\n";
+#endif
+
+
   //////////////////////////////
   //   5. Check within bounds /
   ////////////////////////////
   if ( rms_error > rms_tolerance ){
+#ifdef VERBOSE
     std::cerr << "*** FAIL: rms_error = " << rms_error
 	      << ", which exceeds our threshold of " << rms_tolerance
-	      << ".\n";
+	      << " for variable \"" << variable << "\".\n";
+#endif
     assert(rms_error < rms_tolerance);
     return false;
   }    
@@ -228,13 +235,14 @@ bool check_variable(char *variable, float rms_tolerance, Data *base_file, Data *
   ///////////////////////
   //  7. Output status /
   /////////////////////
+#ifdef VERBOSE
   std::cout << "RMS error for variable "<< variable << "\" in "
 	    << "\"" << base_file->getFilename() << "\" to "
 	    << "\"" << test_file->getFilename() << "\":  "
 	    << rms_error << " < tolerance "
 	    << rms_tolerance << ".  "
 	    << "OK!\n";
-
+#endif
   return true;
 }
 
@@ -252,7 +260,7 @@ bool check_dimensions(int rank_1, int *dim1, int rank_2, int *dim2)
 /**************************************************************************/
 
 template<typename d_type>
-bool check_valid_data(int nElements, d_type *base_data, d_type *test_data)
+bool check_valid_data(const int nElements, const d_type *base_data, const d_type *test_data)
 {
   bool return_value = true;
 
@@ -282,12 +290,12 @@ bool check_valid_data(int nElements, d_type *base_data, d_type *test_data)
 /**************************************************************************/
 
 template<typename d_type>
-float compute_rms_error(int nElements, d_type *base_data, d_type *test_data)
+float compute_rms_error(const int nElements, const d_type *base_data, const d_type *test_data)
 {
-  float rms_error = 0;
+  float rms_error = 0.0;
 
   for (int i = 0; i < nElements; i++){
-    rms_error += (base_data[i] - test_data[i]) * (base_data[i] - test_data[i]); 
+    rms_error += (base_data[i] - test_data[i]) * (base_data[i] - test_data[i]);
   }
   rms_error /= nElements;
   rms_error = sqrt(rms_error);

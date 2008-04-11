@@ -11,7 +11,7 @@ LFMpara::LFMpara(void)
   fid = -999;
 }
 
-LFMpara::LFMpara(char *file)
+LFMpara::LFMpara(const char *file)
 {
   fid = -999;
   if (! open(file) ){
@@ -36,7 +36,7 @@ LFMpara::~LFMpara(void)
  *
  *  @return true if success, false otherwise.
  */
-bool LFMpara::open(char *file)
+bool LFMpara::open(const char *file)
 {
   // copy filename
   strcpy(filename, file);
@@ -64,7 +64,7 @@ bool LFMpara::open(char *file)
  *
  *  @return rank - the number of dimensions for variable (and the length of the dimensions array).  Returns 0 if there's a problem reading the dimension information.
  */
-int LFMpara::getDimensions(char *variable, int *dimensions)
+int LFMpara::getDimensions(const char *variable, int *dimensions)
 {
   int32 variableId;                   // HDF variable ID
   int32 SDselectId;                   // HDF selection ID
@@ -127,7 +127,7 @@ int LFMpara::getDimensions(char *variable, int *dimensions)
  *
  *  @return true if success, false otherwise.
  */
-bool LFMpara::getData(char *variable, float *data)
+bool LFMpara::getData(const char *variable, float *data)
 {
   int32 errorId;                       // HDF error ID
   int32 SDselectId;                    // HDF selection ID
@@ -167,7 +167,6 @@ bool LFMpara::getData(char *variable, float *data)
       indexEnd[i]=dimensions_i32[i];
     }
     
-    data[0] = 10;
     /* Get dataset */
     errorId = SDreaddata(SDselectId,indexStart,NULL,indexEnd,data);
     if (errorId < 0){
