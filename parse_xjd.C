@@ -1,6 +1,7 @@
 #include "tinyxml.h"
+#include <iostream>
 
-void parse_xjd(char *xjdName, char *compTypeInput, char **localName, int & localTasks)
+void parse_xjd(char *xjdName, char *compTypeInput, char *localName, int & localTasks)
 {
   TiXmlDocument doc( xjdName );
   bool loadOkay = doc.LoadFile();
@@ -28,7 +29,7 @@ void parse_xjd(char *xjdName, char *compTypeInput, char **localName, int & local
       if ( strcmp(compType,compTypeInput) == 0 ) { 
 	compName = comps->FirstChild( "name" );
 	COMP_NAME = compName->ToElement();
-	*localName = const_cast<char *>(COMP_NAME->GetText());
+	strcpy(localName, COMP_NAME->GetText());
 	
 	nnode = comps->FirstChild( "nNode" );
 	NNODE = nnode->ToElement();
