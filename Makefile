@@ -36,7 +36,7 @@ all: common
 common: $(OBJS)
 	$(AR) rcs libcommon.a $(OBJS)
 
-perlLibs: 
+perlLibs: FORCE
 	cd perlLibs && $(MAKE)
 
 parse_xjd.o: 
@@ -55,3 +55,5 @@ distclean: clean
 	cd RMSerror && $(MAKE) distclean
 	cd TinyXML && $(MAKE) distclean
 	rm -rf ../lib ../lib64
+
+FORCE:
