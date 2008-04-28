@@ -26,6 +26,7 @@ require DynaLoader;
     writedinput
     writeinputrcm
     writeinputmf
+    writeinput1xml
 );
 
 %EXPORT_TAGS = (all => [@EXPORT_OK]);
@@ -532,5 +533,147 @@ sub writeinputmf {
   print OUT " &END\n";
   close(OUT);
   }
+
+
+sub writeinput1xml {
+#This subroutine creates the INPUT1-???? files for the parallel LFM
+#with the following arguments
+  my ($nstart,$nstop,$ndump,
+      $startdatetime,$stopdatetime,$timedumpinterval,
+      $hdfbasein,$hdfbaseout,$runname,
+      $ca,$swfromfile,$bxc,$byc,$bzc,
+      $ionmodel,$s107,$ped0,$count) = @_;
+
+  my($filename);
+ 
+  my $gen = XML::Generator->new(':pretty');
+  $filename = sprintf ">INPUT1-%4.4d.xml",$count;
+  open(OUT,"$filename") || die "Cannot open $filename";
+  select OUT; 
+  print "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n";
+  print "<modules>\n";
+  if ($ndump > 0) {
+  print $gen->module(
+           $gen->name("STEPS"),
+           $gen->meta("Run parameters"),
+           $gen->variable(
+              $gen->name("NSTART"),
+              $gen->meta("Initial Step"),
+              $gen->data("$nstart")
+           ),
+           $gen->variable(
+              $gen->name("NSTOP"),
+              $gen->meta("Final Step"),
+              $gen->data("$nstop")
+           ),
+           $gen->variable(
+              $gen->name("NDUMP"),
+              $gen->meta("Dump Interval"),
+              $gen->data("$ndump")
+           )
+        );
+  print "\n";
+  } else {
+  print $gen->module(
+           $gen->name("UTIO"),
+           $gen->meta("UT Information"),
+           $gen->variable(
+              $gen->name("START_DATETIME"),
+              $gen->meta("UT Time of start"),
+              $gen->data("$startdatetime"),
+              $gen->format("YYYY MM DD HH MM SS"),
+           ),
+           $gen->variable(
+              $gen->name("STOP_DATETIME"),
+              $gen->meta("UT Time of stop"),
+              $gen->data("$stopdatetime"),
+              $gen->format("YYYY MM DD HH MM SS"),
+           ),
+           $gen->variable(
+               $gen->name("TIME_DUMP_INTERVAL"),
+               $gen->meta("Time in seconds between dumps"),
+               $gen->data("$timedumpinterval"),
+          )
+        );
+  print "\n";
+  }
+  print $gen->module(
+           $gen->name("GO"),
+           $gen->meta("Run parameters"),
+           $gen->variable(
+              $gen->name("HDFBASE_IN"),
+              $gen->meta("Base name for input HDF files "),
+              $gen->data("$hdfbasein")
+           ),
+           $gen->variable(
+              $gen->name("HDFBASE_OUT"),
+              $gen->meta("Base name for output HDF files "),
+              $gen->data("$hdfbaseout")
+           ),
+           $gen->variable(
+              $gen->name("RUN_NAME"),
+              $gen->meta("Run string placed in HDF files"),
+              $gen->data("$runname")
+           )
+         );
+  print "\n";
+  print $gen->module(
+           $gen->name("CONST"),
+           $gen->meta("Physical Constants"),
+           $gen->variable(
+              $gen->name("CA"),
+              $gen->meta("c for Borris correction [cm/s]"),
+              $gen->data("$ca")
+           )
+          );
+  print "\n";
+  print $gen->module(
+           $gen->name("SWIND"),
+           $gen->meta("Solar wind parameters"),
+           $gen->variable(
+              $gen->name("SWFROMFILE"),
+              $gen->meta("Get solar wind info from HDF file"),
+              $gen->data("$swfromfile")
+           ),
+           $gen->variable(
+              $gen->name("BX_ZERO"),
+              $gen->meta("Bx = Bx_zero + BY_COEF*BY + BZ_COEF*BZ"),
+              $gen->data("$bxc")
+           ),
+           $gen->variable(
+              $gen->name("BY_COEF"),
+              $gen->meta("Bx = Bx_zero + BY_COEF*BY + BZ_COEF*BZ"),
+              $gen->data("$byc")
+           ),
+           $gen->variable(
+              $gen->name("BZ_COEF"),
+              $gen->meta("Bx = Bx_zero + BY_COEF*BY + BZ_COEF*BZ"),
+              $gen->data("$bzc")
+           )
+         );
+  print "\n";
+  print $gen->module(
+           $gen->name("ION"),
+           $gen->meta("Ionospheric parameters"),
+           $gen->variable(
+              $gen->name("IONMODEL"),
+              $gen->meta("Use ionospheric Precip Model"),
+              $gen->data("$ionmodel")
+           ),
+           $gen->variable(
+              $gen->name("S107"),
+              $gen->meta("F 10.7 Flux"),
+              $gen->data("$s107")
+           ),
+           $gen->variable(
+              $gen->name("PED0"),
+              $gen->meta("Pedersen Conductance"),
+              $gen->data("$ped0")
+           )
+         );
+  print "\n";
+  print "</modules>\n";
+  close(OUT);
+}
 1;
 __END__
