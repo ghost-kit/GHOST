@@ -1,4 +1,4 @@
-# Build and install local copy of dependencies for mklfmparascripts perl scripts.
+# Build and install local copy of dependencies for mklfmparascripts perl scripts
 
 all: Carp-Clan Bit-Vector Date-Calc XML-Generator LTR-Inputs
 	- cp -r lib* ../..
@@ -39,6 +39,7 @@ clean:
 	rm -rf Carp-Clan-5.3 Carp-Clan-5.3.tar
 	rm -rf Bit-Vector-6.4 Bit-Vector-6.4.tar
 	rm -rf Date-Calc-5.4 Date-Calc-5.4.tar
+	rm -rf XML-Generator-1.01 XML-Generator-1.01.tar
 	-test -e LTR/Makefile && cd LTR && ${MAKE} realclean
 	rm -rf lib lib64 man
 
