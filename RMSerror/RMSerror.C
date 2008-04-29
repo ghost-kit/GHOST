@@ -2,8 +2,10 @@
 #include <cassert>
 #include <cstring>
 #include <iostream>
+#include <limits>
 #include <mfhdf.h> // defines NC_VAR_DIMS
 #include "Data.h"
+#include "ASCII.h"
 #include "LFMpara.h"
 
 /// Print usage information.
@@ -17,13 +19,17 @@ template<typename d_type>
 bool check_valid_data(const int nElements, const d_type *base_data, const d_type *test_data);
 /// Compute the RMS error for base_data - test_data
 template<typename d_type>
-float compute_rms_error(const int nElements, const d_type *base_data, const d_type *test_data);
+float compute_rms_error(const char *variable, const int nElements, const d_type *base_data, const d_type *test_data);
 
 /// RMSerror Application
 /**
- *  Computes the RMS error of <VARIABLE> for the data files <BASE_FILE> - <TEST_FILE>. 
+ *  Computes a normalized RMS error of <VARIABLE> for the data files <BASE_FILE> - <TEST_FILE>. 
  *
  *  http://en.wikipedia.org/wiki/Root_mean_square
+ *
+ *  The RMS error is "normalized" in the sense that we compute
+ *       ( (x_i - y_i)/( |x_i| + |y_i| ) )^2
+ *  pointwise rather than (x_i - y_i)^2 for the RMS error.
  *
  *  Psuedo-code for this application:
  *
@@ -73,16 +79,16 @@ int main(int argc, char **argv)
 
   // Create "data" object and open the file:
   switch(dataset_type) {
-  case 1:    
+  case 0: 
+    base_file = new ASCII((const char *) base_filename);
+    test_file = new ASCII((const char *) test_filename);
+    break;
+  case 1:
     base_file = new LFMpara((const char *) base_filename);
     test_file = new LFMpara((const char *) test_filename);
     break;
-  case 2:
-    //base_file = new LFMparaION;
-    //test_file = new LFMparaION;
-    break;
   default:
-    std::cerr << "Unknown dataset type " << dataset_type << "\n";
+    std::cerr << "*** Unknown dataset type " << dataset_type << "\n";
     return -1;
     break;    
   }
@@ -118,7 +124,8 @@ void printHelp(const char * exe_name)
 	    << "\t RMSerror <FILE_TYPE_INTEGER> <BASE_FILE> <TEST_FILE> <VARIABLE> <TOLERANCE>\n"
 	    << "\n"
 	    << "\t FILE_TYPE_INTEGER - Integer number corresponding to file type\n"
-	    << "\t\t 1  -  LFMpara (both mhd and ion)\n"
+	    << "\t\t 0  -  whitespace-separated ASCII text file with n columns; Specify column number in \"VARIABLE\".\n"
+	    << "\t\t 1  -  HDF (i.e. LFM-para and MIX files)\n"
 	    << "\t BASE_FILE - path to base \"gold standard\" data file\n"
 	    << "\t TEST_FILE - path to test data file\n"
 	    << "\t VARIABLE - variable to check\n"
@@ -206,22 +213,15 @@ bool check_variable(const char *variable, const float rms_tolerance, Data *base_
   ////////////////////////////
   //   4. compute RMS error /
   //////////////////////////
-  rms_error = compute_rms_error(nElements, base_data, test_data);
-
-#ifndef VERBOSE
-    std::cout << rms_error << "\n";
-#endif
-
+  rms_error = compute_rms_error(variable, nElements, base_data, test_data);
 
   //////////////////////////////
   //   5. Check within bounds /
   ////////////////////////////
   if ( rms_error > rms_tolerance ){
-#ifdef VERBOSE
     std::cerr << "*** FAIL: rms_error = " << rms_error
-	      << ", which exceeds our threshold of " << rms_tolerance
+	      << " exceeds threshold of " << rms_tolerance
 	      << " for variable \"" << variable << "\".\n";
-#endif
     assert(rms_error < rms_tolerance);
     return false;
   }    
@@ -242,6 +242,8 @@ bool check_variable(const char *variable, const float rms_tolerance, Data *base_
 	    << rms_error << " < tolerance "
 	    << rms_tolerance << ".  "
 	    << "OK!\n";
+#else
+    std::cout << rms_error << "\n";
 #endif
   return true;
 }
@@ -289,14 +291,38 @@ bool check_valid_data(const int nElements, const d_type *base_data, const d_type
 
 /**************************************************************************/
 
+/**
+ *  This computes the RMS error (L2 norm) over all points, normalized by \f$ |x_i| + |\bar{x_i}| \f$
+ *
+ *  @returns \f$ rtol = sqrt{\frac{1}{n}\sum_{i=1}^n \left( \frac{x_i - \bar{x_i}}{|x_i|+|\bar{x_i}|}{}\right)^2} \f$ 
+ *  summed over all non-zero data points
+ *
+ */
 template<typename d_type>
-float compute_rms_error(const int nElements, const d_type *base_data, const d_type *test_data)
+float compute_rms_error(const char *variable, const int nElements, const d_type *base_data, const d_type *test_data)
 {
+  // machine roundoff error
+  float epsilon = std::numeric_limits<d_type>::epsilon();
+  // We need to report a warning if the field is below roundoff error everywhere.
+  bool isFieldZeroEverywhere = true;
+
   float rms_error = 0.0;
+  float dx;
 
   for (int i = 0; i < nElements; i++){
-    rms_error += (base_data[i] - test_data[i]) * (base_data[i] - test_data[i]);
+    dx = base_data[i]-test_data[i];
+    // if |dx| - epsilon <= 0, then it is below machine roundoff error and we throw out the data point.
+    if ( (fabs(dx) - epsilon) > 0 ){      
+      // data is non-zero
+      isFieldZeroEverywhere = false;
+      rms_error += dx*dx/( (fabs(base_data[i]) + fabs(test_data[i])) * (fabs(base_data[i]) + fabs(test_data[i])) );
+    }
+    //else if ( (fabs(dx) - epsilon) <= 0 )
+      // data appears to be zero or within machine roundoff error 
   }
+  if (isFieldZeroEverywhere)
+    std::cerr << "WARNING:  { (base_data - test_data) < machine roundoff } at every point for variable \""
+	      << variable << "\"!\n";
   rms_error /= nElements;
   rms_error = sqrt(rms_error);
 

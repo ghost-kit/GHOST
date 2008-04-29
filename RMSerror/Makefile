@@ -4,8 +4,8 @@ include ../../../env/Make.${MACHINE}
 HDFINC = -I$(HDF)/include
 HDFLIB = -L$(HDF)/lib -lmfhdf -ldf -ljpeg -lz 
 
-CFLAGS = $(HDFINC) -DNDEBUG
-CXXFLAGS = $(HDFINC) -DNDEBUG
+CFLAGS = $(TRAP) $(HDFINC) -DNDEBUG
+CXXFLAGS = $(TRAP) $(HDFINC) -DNDEBUG
 LIBS = $(HDFLIB)
 
 #
@@ -26,7 +26,7 @@ LIBS = $(HDFLIB)
 
 all: RMSerror install
 
-OBJS = LFMpara.o RMSerror.o
+OBJS = ASCII.o LFMpara.o RMSerror.o
 RMSerror: $(OBJS)
 	$(CXX) $(OBJS) -o RMSerror $(LIBS)
 

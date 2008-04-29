@@ -1,6 +1,5 @@
 #include "LFMpara.h"
 #include <cassert>
-#include <iostream.h>
 using namespace std; 
 
 /**************************************************************************/

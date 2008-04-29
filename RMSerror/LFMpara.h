@@ -54,10 +54,10 @@ public:
   LFMpara(void);
   LFMpara(const char *file);
   ~LFMpara(void);
-  virtual bool open(const char *file);
-  virtual int  getDimensions(const char *variable, int *dimensions);
-  virtual bool getData(const char *variable, float *data);
-  virtual bool close(void);
+  bool open(const char *file);
+  int  getDimensions(const char *variable, int *dimensions);
+  bool getData(const char *variable, float *data);
+  bool close(void);
 
 private:
   int32 fid;
