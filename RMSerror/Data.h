@@ -1,11 +1,7 @@
 #ifndef __DATA_H__
 #define __DATA_H__
 
-#if NEWCC
 #include <iostream>
-#else
-#include <iostream.h>
-#endif
 
 /// Abstract base class for data file readers
 /**
