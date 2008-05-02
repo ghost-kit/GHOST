@@ -23,6 +23,7 @@ require DynaLoader;
     writelfmlinux
     writelfmparabluevista
     writelfmparalinux
+    writelfmparajet
     writecmitbluesky
     writecmitbluevista
     writecmitlinux
@@ -609,7 +610,9 @@ sub writelfmparalinux {
    print OUT "#run the code\n";
    printf OUT "mpirun -np $npes MSPHERE >& lfm-$basename-%4.4d.msg \n",$count;
    print OUT "\n";
-   printf OUT "mv LOGFILE LOGFILE-$basename-%4.4d\n",$count;
+   print OUT "foreach i (*.dmp)\n";
+   print OUT " mv \$i \$i:r.hdf\n";  
+   print OUT "end\n";  
    print OUT "\n";
    print OUT "# record the ending time of this portion of the run\n";
    printf OUT "echo \"$basename-%4.4d ended at\" >> $basename-%4.4d.status\n",
@@ -624,6 +627,54 @@ sub writelfmparalinux {
    print OUT "\n";
    close(OUT);
    chmod 0755,"$filename";
+}
+
+sub writelfmparajet {  
+    my ($count,$basename,$wallclock,$acctno,$npes,$wrkdir) = @_;  
+    my ($filename,$next);  
+     
+    $next = $count + 1;  
+    $filename = sprintf "$basename-%4.4d.csh",$count;  
+    open(OUT,">$filename") || die "Cannot open $filename";  
+    print OUT "#!/bin/csh  -f\n";  
+    printf OUT "#\$ -N $basename-%4.4d\n",$count;  
+    printf OUT "#\$ -o $basename-%4.4d.output\n",$count;  
+    printf OUT "#\$ -e $basename-%4.4d.error\n",$count;  
+    print OUT "#\$ -A $acctno\n";  
+    print OUT "#\$ -l h_rt=$wallclock\n";  
+    print OUT "#\$ -pe wcomp $npes\n";  
+    print OUT "\n";  
+    print OUT "cd $wrkdir\n";  
+    print OUT "\n";  
+    print OUT "#Record the starting time of this portion of the run\n";  
+    print OUT "\n";  
+    printf OUT "echo \"$basename-%4.4d started at\" > $basename-%4.4d.status\n",  
+    $count,$count;  
+    printf OUT "echo `date` >> $basename-%4.4d.status\n",$count;  
+    print OUT "\n";  
+    print OUT "#setup the input files\n";  
+    printf OUT "ln -sf INPUT1-%4.4d INPUT1\n",$count;  
+    print OUT "\n";  
+    print OUT "#run the code\n";  
+    printf OUT "mpirun -np $npes MSPHERE >& lfm-$basename-%4.4d.msg \n",$count;  
+    print OUT "\n";  
+    print OUT "foreach i (*.dmp)\n";  
+    print OUT " mv \$i \$i:r.hdf\n";  
+    print OUT "end\n";  
+    print OUT "\n";  
+    print OUT "# record the ending time of this portion of the run\n";  
+    printf OUT "echo \"$basename-%4.4d ended at\" >> $basename-%4.4d.status\n",  
+    $count,$count;  
+    printf OUT "echo `date` >> $basename-%4.4d.status\n",$count;  
+    print OUT "\n";  
+    print OUT "# look and see if there is more to do\n";  
+    printf OUT "if (-x $basename-%4.4d.csh) then\n",$next;  
+    printf OUT " echo \"Submitting $basename-%4.4d.csh\"\n",$next;  
+    printf OUT "  qsub < $basename-%4.4d.csh\n",$next;  
+    print OUT "endif\n";  
+    print OUT "\n";  
+    close(OUT);  
+    chmod 0755,"$filename";  
 }
 
 sub writecmitbu {
