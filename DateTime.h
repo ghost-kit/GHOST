@@ -87,6 +87,18 @@ public:
   /// Get the current day
   size_t getDay(void) { return day; }
   /// Get the current hours
+  size_t getYears(void) { return year; }
+  /// Get the current month
+  size_t getMonths(void) { return month; }
+  /// Get the current day
+  size_t getDays(void) { return day; }
+  /// Get the current hours
+  size_t getHour(void) { return hours; }
+  /// Get the current minutes
+  size_t getMinute(void) { return minutes; }
+  /// Get the current seconds
+  double getSecond(void) { return seconds; }  
+  /// Get the current hours
   size_t getHours(void) { return hours; }
   /// Get the current minutes
   size_t getMinutes(void) { return minutes; }
