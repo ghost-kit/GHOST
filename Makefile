@@ -31,7 +31,7 @@ include Make.machine
 OBJS = geopack.o DateTime.o MHDInnerBoundaryInterface.o parse_xjd.o \
        TinyXML/tinystr.o TinyXML/tinyxml.o TinyXML/tinyxmlerror.o TinyXML/tinyxmlparser.o
 
-all: common
+all: common RMSerror
 
 common: $(OBJS)
 	$(AR) rcs libcommon.a $(OBJS)
@@ -42,6 +42,9 @@ perlLibs: FORCE
 parse_xjd.o: 
 	cd TinyXML && $(MAKE) tinyxml_obj
 	$(MPICXX) -ITinyXML -c $(CCFLAGS) -o parse_xjd.o -LTinyXML parse_xjd.C
+
+RMSerror: FORCE
+	cd RMSerror && $(MAKE)
 
 clean:
 	cd perlLibs && $(MAKE) clean

@@ -1,7 +1,11 @@
 #ifndef __DATA_H__
 #define __DATA_H__
 
+#ifdef IBM
+#include <iostream.h>
+#else
 #include <iostream>
+#endif
 
 /// Abstract base class for data file readers
 /**
