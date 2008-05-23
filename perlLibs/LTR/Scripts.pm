@@ -408,7 +408,7 @@ sub writelfmparabluesky {
    printf OUT "ln -sf INPUT1-%4.4d INPUT1\n",$count;
    print OUT "\n";
    print OUT "#run the code\n";
-   printf OUT "MSPHERE >& lfm-$basename-%4.4d.msg \n",$count;
+   printf OUT "LFM >& lfm-$basename-%4.4d.msg \n",$count;
    print OUT "\n";
    printf OUT "mv LOGFILE LOGFILE-$basename-%4.4d\n",$count;
    printf OUT "mv DUMPHDF $basename-%4.4d.hdf\n",$count;
@@ -563,7 +563,7 @@ sub writelfmparabluevista {
    printf OUT "ln -sf INPUT1-%4.4d.xml INPUT1.xml\n",$count;
    print OUT "\n";
    print OUT "#run the code\n";
-   printf OUT "mpirun.lsf ./MSPHERE >& lfm-$basename-%4.4d.msg \n",$count;
+   printf OUT "mpirun.lsf ./LFM >& lfm-$basename-%4.4d.msg \n",$count;
    print OUT "\n";
    print OUT "foreach i (*.dmp)\n";
    print OUT " mv \$i \$i:r.hdf\n";
@@ -608,7 +608,7 @@ sub writelfmparalinux {
    printf OUT "ln -sf INPUT1-%4.4d INPUT1\n",$count;
    print OUT "\n";
    print OUT "#run the code\n";
-   printf OUT "mpirun -np $npes MSPHERE >& lfm-$basename-%4.4d.msg \n",$count;
+   printf OUT "mpirun -np $npes LFM >& lfm-$basename-%4.4d.msg \n",$count;
    print OUT "\n";
    print OUT "foreach i (*.dmp)\n";
    print OUT " mv \$i \$i:r.hdf\n";  
@@ -656,7 +656,7 @@ sub writelfmparajet {
     printf OUT "ln -sf INPUT1-%4.4d INPUT1\n",$count;  
     print OUT "\n";  
     print OUT "#run the code\n";  
-    printf OUT "mpirun -np $npes MSPHERE >& lfm-$basename-%4.4d.msg \n",$count;  
+    printf OUT "mpirun -np $npes LFM >& lfm-$basename-%4.4d.msg \n",$count;  
     print OUT "\n";  
     print OUT "foreach i (*.dmp)\n";  
     print OUT " mv \$i \$i:r.hdf\n";  
