@@ -7,6 +7,8 @@
 #include <iostream>
 #endif
 
+using namespace std;
+
 /// Abstract base class for data file readers
 /**
  *  Here's how you should use this class in some code:

@@ -42,7 +42,7 @@ bool ASCII::open(const char *file)
   ins.open(file);
 
   if (ins.fail()){
-    std::cerr << "*** Fail:  Unable to open \"" << file << "\".\n";
+    cerr << "*** Fail:  Unable to open \"" << file << "\".\n";
     return false;
   }
 
@@ -97,7 +97,7 @@ int ASCII::getDimensions(const char *variable, int *dimensions)
   open(filename);
 
   if (variableIndex >= nDims){
-    std::cerr << "*** ERROR:  Requested variable index \"" << variableIndex
+    cerr << "*** ERROR:  Requested variable index \"" << variableIndex
 	      << "\" is out of bounds of the rank of the dataset \"" << nDims 
 	      << "\".\n";
     return 0;
@@ -131,7 +131,7 @@ bool ASCII::getData(const char *variable, float *data)
       // find the correct token
       for ( int j=0; j < variableIndex; j++ ){
 	if (token == NULL){
-	  std::cerr << "*** ERROR reading data for variable \"" << variable << "\".\n";
+	  cerr << "*** ERROR reading data for variable \"" << variable << "\".\n";
 	  return false;
 	}
 	token = strtok(NULL, " \t ");

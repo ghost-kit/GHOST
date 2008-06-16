@@ -4,8 +4,8 @@ include ../../../env/Make.${MACHINE}
 HDFINC = -I$(HDF)/include
 HDFLIB = -L$(HDF)/lib -lmfhdf -ldf -ljpeg -lz 
 
-CFLAGS = $(TRAP) $(HDFINC) -DNDEBUG
-CXXFLAGS = $(TRAP) $(HDFINC) -DNDEBUG
+CFLAGS = $(ARCH) $(TRAP) $(HDFINC) -DNDEBUG
+CXXFLAGS = $(ARCH) $(TRAP) $(HDFINC) -DNDEBUG
 LIBS = $(HDFLIB)
 
 #
