@@ -5,7 +5,7 @@
 # Include compiler information
 include ../../env/Make.${MACHINE}
 # Specify compiler flags
-include Make.machine
+include Make.$(shell uname)
 
 #
 # Compiler instructions:
