@@ -405,7 +405,7 @@ sub writelfmparabluesky {
    printf OUT "echo `date` >> $basename-%4.4d.status\n",$count;
    print OUT "\n";
    print OUT "#setup the input files\n";
-   printf OUT "ln -sf INPUT1-%4.4d INPUT1\n",$count;
+   printf OUT "ln -sf INPUT1-%4.4d.xml INPUT1.xml\n",$count;
    print OUT "\n";
    print OUT "#run the code\n";
    printf OUT "LFM >& lfm-$basename-%4.4d.msg \n",$count;
