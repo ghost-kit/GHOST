@@ -1,6 +1,9 @@
 #include <cmath>
 #include <cassert>
 #include <cstring>
+// Some machines need iostream.h while others need iostream...
+// If you get errors with std::cout, try swapping these:
+// #include <iostream.h>
 #include <iostream>
 #include <limits>
 #include <mfhdf.h> // defines NC_VAR_DIMS
