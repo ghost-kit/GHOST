@@ -733,13 +733,19 @@ void MHDInnerBoundaryInterface::Export(const doubleArray & bx, const doubleArray
   soundSpeed = getVarSecondShell(cs);
 
   epset.exportArray("current",ic_err);
+#ifdef DEBUG_MODE_ON
   epset.printErrorMessage("     Current sent. Status",ic_err);
+#endif
 
   epset.exportArray("density",ic_err);
+#ifdef DEBUG_MODE_ON
   epset.printErrorMessage("     Density sent. Status",ic_err);
+#endif
 
   epset.exportArray("sound speed",ic_err);
+#ifdef DEBUG_MODE_ON
   epset.printErrorMessage("     Sound speed sent. Status",ic_err);
+#endif
 }
 
 /********************************************************************//**
@@ -762,10 +768,10 @@ void MHDInnerBoundaryInterface::Export(const doubleArray & bx, const doubleArray
 void MHDInnerBoundaryInterface::Import(doubleArray & eField_j, doubleArray & eField_k, doubleArray & velocity)
 {
   epset.importArray("potential",ic_err);
+#ifdef DEBUG_MODE_ON
   epset.printErrorMessage("     Potential for the two first shells received. Status",ic_err);
-
   cout << "Done"<<endl;
-
+#endif
   // Now do the dirty work: calculate the potential electric field
   // and the velocity at the inner boundary
 
@@ -1020,5 +1026,7 @@ doubleArray MHDInnerBoundaryInterface::dot(const doubleArray & a, const doubleAr
 void MHDInnerBoundaryInterface::sendScalars(const doubleArray & scalars) { 
   int nelems = scalars.elementCount();
   epset.bcastLocalArray("scalars",scalars,nelems,ic_err);
+#ifdef DEBUG_MODE_ON
   epset.printErrorMessage("Scalars sent. Status: ",ic_err);
+#endif
 }
