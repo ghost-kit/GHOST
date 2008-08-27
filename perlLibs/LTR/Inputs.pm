@@ -638,7 +638,7 @@ sub writeinput1xml {
            $gen->variable(
               $gen->name("BX_ZERO"),
               $gen->meta("Bx = Bx_zero + BY_COEF*BY + BZ_COEF*BZ"),
-              $gen->data("$bxc")
+              $gen->data("${bxc}e-5")
            ),
            $gen->variable(
               $gen->name("BY_COEF"),
