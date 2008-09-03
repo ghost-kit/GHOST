@@ -93,7 +93,6 @@ int main(int argc, char **argv)
   default:
     std::cerr << "*** Unknown dataset type " << dataset_type << "\n";
     return -1;
-    break;    
   }
 
   ///////////////////////////////////////////////////////////////
