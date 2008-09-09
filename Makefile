@@ -28,7 +28,7 @@ include Make.$(shell uname)
 
 .PHONY: perlLibs
 
-OBJS = geopack.o DateTime.o MHDInnerBoundaryInterface.o parse_xjd.o \
+OBJS = geopack.o DateTime.o MHDInnerBoundaryInterface.o MHD_IC_InnerBoundaryInterface.o parse_xjd.o \
        TinyXML/tinystr.o TinyXML/tinyxml.o TinyXML/tinyxmlerror.o TinyXML/tinyxmlparser.o
 
 all: common RMSerror 

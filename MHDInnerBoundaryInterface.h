@@ -3,27 +3,32 @@
  * \brief MHDInnerBoundaryInterface declaration
  *
  * \class MHDInnerBoundaryInterface 
- *
- * \brief The MHDInnerBoundaryInterface class defines functions for communication with
- * the MIX
+ * \brief Abstract base class that defines functions for communication with the MIX
  *
  *\author Slava Merkin (vgm at bu.edu) 
  *\since 08-2005
  *
- * This class defines functions for communication between an MHD code
- * and the Ionosphere Coupler/Solver code. The functions visible to
- * the outside world are Export(), Import(), sendScalars(), and
- * contructor MHDInnerBoundaryInterface(). This code implies that the MHD grid is a
- * logically spherical grid with the symmetry axis aligned with the SM
- * x-axis (LFM definition).
+ * Abstract base class that defines functions for communication
+ * between an MHD code and the Ionosphere Coupler/Solver code. 
+ *
+ * The virtual functions visible to the outside world are 
+ *   - MHDInnerBoundaryInterface()
+ *   - Export()
+ *   - Import(),
+ *   - sendScalars()
+ * These virtual functions must be defined in a derived class.
+ *
+ * This code implies that the MHD grid is a logically spherical grid
+ * with the symmetry axis aligned with the SM x-axis (LFM definition).
+ *
+ * \see MHD_IC_InnerBoundaryInterface.h
  */
 #ifndef INTERFACE_H
 #define INTERFACE_H
 
-#define PPLUSPLUS  //!< Compile a P++ code rather than A++
 
+#define PPLUSPLUS  //!< Compile a P++ code rather than A++
 #include <A++.h>
-#include <IC_EndPointSet.h>
 
 #ifndef PI
 #define PI 3.1415926
@@ -39,32 +44,25 @@
 #define STRLEN 256     //!< The maximum length of a character string 
 
 class MHDInnerBoundaryInterface {
- public:
+public:
 
   /**\brief Class constructor */
   MHDInnerBoundaryInterface(char*, char*,
-	    const doubleArray &, const doubleArray &, const doubleArray &, 
-	    const int, const int, const int);
+			    const doubleArray &, const doubleArray &, const doubleArray &, 
+			    const int, const int, const int);
+  virtual ~MHDInnerBoundaryInterface() {};
 
   /**\brief Export the MHD FAC, density and sound speed to the MIX code*/
-  void Export(const doubleArray &, const doubleArray &, const doubleArray &, 
-		   const doubleArray &, const doubleArray &);
+  virtual void Export(const doubleArray &, const doubleArray &, const doubleArray &, 
+		      const doubleArray &, const doubleArray &) = 0;
 
-  /**\brief Import potential and calculate electric field and velocity
-   *  at the inner MHD boundary*/
-  void Import(doubleArray &, doubleArray &, doubleArray &);
+  /**\brief Import potential and calculate electric field & velocity at the inner MHD boundary*/
+  virtual void Import(doubleArray &, doubleArray &, doubleArray &) = 0;
 
-  /** \brief Broadcasts a scalar array from the MHD code. Intended to
-   * communicate scalars such as UT and kill signal */
-  void sendScalars(const doubleArray &);
+  /** \brief Broadcast scalar array (i.e. UT & kill signal) from MHD code. */
+  virtual void sendScalars(const doubleArray &) = 0;
 
- private:
-  /**\name InterComm variables */
-  //@{
-  IC_EndPointSet epset; //!< InterComm end point set
-  int ic_err;
-  //@}
-
+protected:
   /**\name MHD grid dimension information */
   //@{
   const int ni;
