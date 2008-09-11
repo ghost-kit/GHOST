@@ -63,6 +63,14 @@ public:
   virtual void sendScalars(const doubleArray &) = 0;
 
 protected:
+  /**\brief Calculate FAC, density & sound speed in second shell before */
+  void prepareExport(const doubleArray &bx, const doubleArray &by, const doubleArray &bz, 
+		     const doubleArray &rho, const doubleArray &cs);
+
+  /**\brief Calculate the potential electric field & the velocity at the inner boundary */
+  void processImport(doubleArray & eField_j, doubleArray & eField_k, doubleArray & velocity);
+
+
   /**\name MHD grid dimension information */
   //@{
   const int ni;
@@ -76,6 +84,9 @@ protected:
   const int nkm1;
   //@}
 
+  doubleArray current, density, soundSpeed, potential;
+
+private:
   /**\name Dipole field functions */
   //@{
   /**\brief X-component of a unit vector in dipole field direction */
@@ -111,7 +122,7 @@ protected:
 
   /**\brief Calculate the velocity from the electric field at the inner boundary */
   doubleArray getVelocity(const doubleArray &, const doubleArray &, const doubleArray &);
-
+  //@}
 
   /**\name Vector manipulation functions */
   //@{
@@ -123,13 +134,13 @@ protected:
   /**\name Arrays dimensioned and assigned by the class constructor
    *  and then used by other functions of the class*/
   //@{
-  doubleArray current, density, soundSpeed, potential, volume, 
-    xCenter, yCenter, zCenter, bxDot, byDot, bzDot;
+  doubleArray volume, xCenter, yCenter, zCenter, bxDot, byDot, bzDot;
   doubleArray x_iFaceCenter, y_iFaceCenter, z_iFaceCenter;
   doubleArray x_jFaceCenter, y_jFaceCenter, z_jFaceCenter;
   doubleArray x_kFaceCenter, y_kFaceCenter, z_kFaceCenter;
   doubleArray di, dj, dk, i_x, i_y, i_z, j_x, j_y, j_z, k_x, k_y, k_z;
   //@}
+
 };
 
 #endif

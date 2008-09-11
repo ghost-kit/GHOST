@@ -99,24 +99,18 @@ MHD_IC_InnerBoundaryInterface::MHD_IC_InnerBoundaryInterface(char* jobDescriptio
  * \param[in] cs MHD sound speed
  *
  * The function is called from the main level program (MHD code). It
- * calls getParallelCurrent() and smoothParallelCurrent() to get the
- * FAC, then getVarSecondShell() gives the density and the sound
- * speed. After that InterComm exportArray() functions are called to
- * export current, density and sound speed (precisely in this order)
- * to the MIX code.
+ * calls prepareExport to get the FAC, density and sound speed in the
+ * second shell. After that InterComm exportArray() functions are
+ * called to export current, density and sound speed (precisely in
+ * this order) to the MIX code.
  ************************************************************************/
 void MHD_IC_InnerBoundaryInterface::Export(const doubleArray & bx, const doubleArray & by, const doubleArray & bz, 
 		   const doubleArray &rho, const doubleArray &cs)
 {
   // Calculate the FAC, density and sound speed in the second-shell
+  prepareExport(bx,by,bz, rho, cs);
 
-  // These two functions fill in values in the class-wide variable "current"
-  getParallelCurrent(bx,by,bz);
-  smoothParallelCurrent();
-
-  density = getVarSecondShell(rho);
-  soundSpeed = getVarSecondShell(cs);
-
+  // Export the data to MIX using InterComm
   epset.exportArray("current",ic_err);
 #ifdef DEBUG_MODE_ON
   epset.printErrorMessage("     Current sent. Status",ic_err);
@@ -145,10 +139,9 @@ void MHD_IC_InnerBoundaryInterface::Export(const doubleArray & bx, const doubleA
  *
  * The function first calls InterComm importArray() to get the
  * ionospheric potential in the first two shell from the MIX
- * code. Then getElectricField() calculates #eField_j and #eField_k at
- * the first shell (i=1) edges. Then #velocity is calculated by
- * calling getVelocity() at the centers of the first layer of cells
- * (i=1).
+ * code. Then processImport calculates #eField_j and #eField_k at the
+ * first shell (i=1) edges and #velocity is calculated at the centers
+ * of the first layer of cells (i=1).
  ************************************************************************/
 void MHD_IC_InnerBoundaryInterface::Import(doubleArray & eField_j, doubleArray & eField_k, doubleArray & velocity)
 {
@@ -160,15 +153,7 @@ void MHD_IC_InnerBoundaryInterface::Import(doubleArray & eField_j, doubleArray &
   // Now do the dirty work: calculate the potential electric field
   // and the velocity at the inner boundary
 
-  doubleArray eField_i; // This one is not needed in the calling function, so define it here
-  //  doubleArray eField_i(1,njp1,nkp1); // This one is not needed in the calling function, so define it here
-  getElectricField(eField_i, eField_j, eField_k);   // This fills in the values in the class-wide variable "potential"
-
-  velocity = getVelocity(eField_i, eField_j, eField_k);
-
-  // FOR LFM ONLY output -delta(Potential)*1.e8 instead of electric field
-  eField_j = -eField_j*dj*RION*1.e6;
-  eField_k = -eField_k*dk*RION*1.e6;
+  processImport(eField_j, eField_k, velocity);
 }
 
 

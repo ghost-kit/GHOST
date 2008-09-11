@@ -95,7 +95,7 @@ MHDInnerBoundaryInterface::MHDInnerBoundaryInterface(char* jobDescriptionMJD, ch
    potential(2,njp1,nkp1)
 {
 
-  cout << "MHDInnerBoundaryInterface is here..." << endl;
+  cout << "Initializing MHD Interface..." << endl;
   /*  Define the necessary ranges  */
   Range all, I(1,ni), Im1(1,nim1), Ip1(1,nip1), 
     J(1,nj), Jm1(1,njm1), Jp1(1,njp1), 
@@ -263,6 +263,67 @@ MHDInnerBoundaryInterface::MHDInnerBoundaryInterface(char* jobDescriptionMJD, ch
 
 } 
 
+/********************************************************************//**
+ * \author Peter Schmitt (schmitt at ucar.edu)
+ *
+ * \param[out] eField_j   Electric field j-component at the i=1 edge
+ * \param[out] eField_k   Electric field k-component at the i=1 edge
+ *
+ * \param[out] velocity Velocity (x,y,z components) at the center of
+ * the first layer of cells
+ *
+ * Calculate the potential electric field & the velocity at the inner boundary
+ *
+ * getElectricField() calculates #eField_j and #eField_k at
+ * the first shell (i=1) edges. 
+ * 
+ * #velocity is calculated by calling getVelocity() at the centers of
+ * the first layer of cells (i=1).
+ *
+ * \note processImport should only be called within a derived class'
+ * Import(...) method.
+ ************************************************************************/
+void MHDInnerBoundaryInterface::processImport(doubleArray & eField_j, doubleArray & eField_k, doubleArray & velocity)
+{
+  doubleArray eField_i; // This one is not needed in the calling function, so define it here
+  //  doubleArray eField_i(1,njp1,nkp1); // This one is not needed in the calling function, so define it here
+  getElectricField(eField_i, eField_j, eField_k);   // This fills in the values in the class-wide variable "potential"
+
+  velocity = getVelocity(eField_i, eField_j, eField_k);
+
+  // FOR LFM ONLY output -delta(Potential)*1.e8 instead of electric field
+  eField_j = -eField_j*dj*RION*1.e6;
+  eField_k = -eField_k*dk*RION*1.e6;
+}
+
+/********************************************************************//**
+ * \author Peter Schmitt (schmitt at ucar.edu)
+ *
+ * \param[in] bx MHD magnetic field x-component
+ * \param[in] by MHD magnetic field y-component
+ * \param[in] bz MHD magnetic field z-component
+ * \param[in] rho MHD density
+ * \param[in] cs MHD sound speed
+ *
+ * Calculate the FAC, density and sound speed in the second-shell
+ *
+ * This function calls getParallelCurrent() and
+ * smoothParallelCurrent() to get the FAC, then getVarSecondShell()
+ * gives the density and the sound speed.
+ *
+ * \note prepareExport should only be called within a derived class'
+ * Export(...) method.
+ ************************************************************************/
+void MHDInnerBoundaryInterface::prepareExport(const doubleArray &bx, const doubleArray &by, const doubleArray &bz, 
+					      const doubleArray &rho, const doubleArray &cs)
+{
+  // These two functions fill in values in the class-wide variable "current"
+  getParallelCurrent(bx,by,bz);
+  smoothParallelCurrent();
+
+  density = getVarSecondShell(rho);
+  soundSpeed = getVarSecondShell(cs);
+}
 
 /********************************************************************//**
  * \author Slava Merkin (vgm at bu.edu)
