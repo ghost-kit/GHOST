@@ -57,14 +57,42 @@ MHD_FE_InnerBoundaryInterface::MHD_FE_InnerBoundaryInterface(char* jobDescriptio
   // Base class constructor
   MHDInnerBoundaryInterface(jobDescriptionMJD, localName, x,y,z, NI,NJ,NK)
 {
+  // Stdout that we're using the file exchange interface...
   cout << "Initializing MHD File Exchange Interface..." << endl;
   ///////////////////////////////////////////////////////////////////////
 
+  // Should maybe use the stdio.h function "tmpnam"  for these files?
   MIXLockFile = "MIX_status";
   MHDLockFile = "MHD_status";
 
   assert( setMHDBusy() );
+
+  while( !isMIXBusy() ){
+#ifdef DEBUG_MODE_ON
+    std::cout << "  MHD_FE: Waiting for MIX to start...\n";
+#endif
+    sleep(2);
+  }
+#ifdef DEBUG_MODE_ON
+  std::cout << "  MHD_FE: MIX started.\n";
+#endif
+  // Sleep to prevent any buffered I/O issues with file exchanges
+  sleep(5);
 } 
+
+MHD_FE_InnerBoundaryInterface::~MHD_FE_InnerBoundaryInterface()
+{
+#ifdef DEBUG_MODE_ON
+  cout << "  MHD_FE: Destructor called.\n"; 
+#else 
+  assert( remove(MHDLockFile.c_str()) == 0 );
+ 
+  remove("MHD_scalars");
+  remove("MHD_current");
+  remove("MHD_density");
+  remove("MHD_soundSpeed");
+#endif
+}
 
 /********************************************************************//**
  * \author Peter Schmitt (schmitt at ucar.edu)
@@ -98,20 +126,27 @@ void MHD_FE_InnerBoundaryInterface::Export(const doubleArray & bx, const doubleA
 
   ///////////////////////////////////////////////////////////////////////
 
-  cout << "MHD Exported current, density & soundSpeed to MIX.  Time to read them into MIX.\n" << flush;
+#ifdef DEBUG_MODE_ON
+  cout << "  MHD_FE: MHD Exported current, density & soundSpeed to MIX.\n" << flush;
+#endif
   // Set status to "WAITING"
   assert( setMHDReady() );
 
   // Wait until MIX is finished "WORKING" 
-  while ( isMIXBusy() ){ 
-    cout << "Waiting until MIX is done importing current, density & soundSpeed...\n" << flush;
+  while ( ! isMIXReady() ){ 
+#ifdef DEBUG_MODE_ON
+    cout << "  MHD_FE: Waiting until MIX is done importing current, density & soundSpeed...\n" << flush;
+#endif
     sleep(2);
   }
-  cout << "MIX receieved current, density & soundSpeed.  Moving on.  \n";
-  assert( isMIXReady() );
-
+#ifdef DEBUG_MODE_ON
+  cout << "  MHD_FE: MIX receieved current, density & soundSpeed.  Moving on.  \n";
+#endif
   // Now that MIX is "WAITING", change MHD status to "WORKING"
   assert( setMHDBusy() );  
+
+  // Sleep to prevent any buffered I/O issues with file exchanges
+  sleep(5);
 }
 
 /********************************************************************//**
@@ -133,35 +168,44 @@ void MHD_FE_InnerBoundaryInterface::Export(const doubleArray & bx, const doubleA
 void MHD_FE_InnerBoundaryInterface::Import(doubleArray & eField_j, doubleArray & eField_k, doubleArray & velocity)
 {
   // Wait until MIX is finished "WORKING"
-  while ( isMIXBusy() ){
-    std::cout << "Waiting for MIX to export potential...\n" << flush;
+  while ( ! isMIXReady() ){
+#ifdef DEBUG_MODE_ON
+    std::cout << "  MHD_FE: Waiting for MIX to export potential...\n" << flush;
+#endif
     sleep(2);
   }
-  std::cout << "MIX has exported potential! Start reading it in.\n" << flush;
-  // make sure it's actually ready
-  assert( isMIXReady() );
-
+#ifdef DEBUG_MODE_ON
+  std::cout << "  MHD_FE: MIX has exported potential! Read it in.\n" << flush;
+#endif
   ///////////////////////////////////////////////////////////////////////
   // Import (read the data from file. . . )
 
   read3dData("MIX_potential", potential, 2, njp1, nkp1);
+#ifdef DEBUG_MODE_ON
   write3dData("MHD_potential", potential, 2, njp1, nkp1);
+#endif
 
   ///////////////////////////////////////////////////////////////////////
 
   // MHD is done reading.  Tell MIX to continue:
-  std::cout << "Potential in by MHD.\n";
+#ifdef DEBUG_MODE_ON
+  std::cout << "  MHD_FE: Potential read in by MHD.\n";
+#endif
+
   // Set MHD status to "WAITING"
   assert( setMHDReady() );
 
   // Do not return until MIX knows that we're done working.
-  while ( isMIXReady() ){
-    std:: cout << "Wait until MIX has acknowledged that we've received the potential...\n";
+  while ( ! isMIXBusy() ){
+#ifdef DEBUG_MODE_ON
+    std:: cout << "  MHD_FE: Waiting for MIX to acknowledge that we've received the potential...\n";
+#endif
     sleep(2);
   }
-  std::cout << "OK.  MIX has moved on.  MHD will now move on.\n";
-  // Make sure it's continued with doing its work
-  assert( isMIXBusy() );
+
+#ifdef DEBUG_MODE_ON
+  std::cout << "  MHD_FE: MIX acknowledgment; Moving on.\n";
+#endif
 
   // MIX has moved on.  Set MHD to busy
   assert( setMHDBusy() );
@@ -205,20 +249,29 @@ void MHD_FE_InnerBoundaryInterface::sendScalars(const doubleArray & scalars)
 
   ///////////////////////////////////////////////////////////////////////
 
-  cout << "MHD Scalars sent to MIX.  Time to read them into MIX.\n" << flush;
+#ifdef DEBUG_MODE_ON
+  cout << "  MHD_FE: MHD Scalars sent to MIX.\n" << flush;
+#endif
+
   // Set status to "WAITING"
   assert( setMHDReady() );
 
   // Wait until MIX is finished "WORKING" 
-  while ( isMIXBusy() ){ 
-    cout << "Waiting until MIX is done reading scalars...\n" << flush;
+  while ( ! isMIXReady() ){ 
+#ifdef DEBUG_MODE_ON
+    cout << "  MHD_FE: Waiting until MIX is done reading scalars...\n" << flush;
+#endif
     sleep(2);
   }
-  cout << "MIX receieved the scalars.  Moving on.  \n";
-  assert( isMIXReady() );
+#ifdef DEBUG_MODE_ON
+  cout << "  MHD_FE: MIX receieved the scalars.  Moving on.  \n";
+#endif
 
   // Now that MIX is "WAITING", change MHD status to "WORKING"
   assert( setMHDBusy() );  
+
+  // Sleep to prevent any buffered I/O issues with file exchanges
+  sleep(5);
 }
 
 /************************************************************************
@@ -256,9 +309,6 @@ bool MHD_FE_InnerBoundaryInterface::writeMHDLockFile(const string &status)
 
   // close the file
   outs.close();
-
-  // sleep to let the I/O buffer
-  sleep(5);
 
   return true;
 }

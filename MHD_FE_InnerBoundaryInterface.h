@@ -41,6 +41,8 @@ public:
 				const doubleArray &, const doubleArray &, const doubleArray &, 
 				const int, const int, const int);
 
+  virtual ~MHD_FE_InnerBoundaryInterface();
+
   /**\brief Export the MHD FAC, density and sound speed to the MIX code*/
   void Export(const doubleArray &, const doubleArray &, const doubleArray &, 
 	      const doubleArray &, const doubleArray &);
