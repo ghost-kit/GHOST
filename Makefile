@@ -34,9 +34,9 @@ OBJS = geopack.o DateTime.o parse_xjd.o \
 OBJS_MHD = MHDInnerBoundaryInterface.o MHD_IC_InnerBoundaryInterface.o MHD_FE_InnerBoundaryInterface.o
 
 all: common RMSerror 
-	- cd perlLibs && $(MAKE) 
 
 common: common-MIX common-LFM
+	$(AR) rcs libcommon.a $(OBJS) $(OBJS_MHD)
 
 common-MIX: $(OBJS)
 	$(AR) rcs libcommon-MIX.a $(OBJS)

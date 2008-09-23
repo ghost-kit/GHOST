@@ -1,6 +1,15 @@
 # Build and install local copy of dependencies for mklfmparascripts perl scripts
 
-all: Carp-Clan Bit-Vector Date-Calc XML-Generator LTR-Inputs
+all:
+####### If "lib" exists, but "lib64" doesn't, skip build & inform the user.
+	-@ test -d ../../lib -a ! -d ../../lib64 && printf "\"lib\" exists, but \"lib64\" doesnt.  Skipping Perl Library build.\n"
+####### If "lib64" exists, but "lib" doesn't, skip build & inform the user.
+	-@ test -d ../../lib64 -a ! -d ../../lib && printf "\"lib64\" exists, but \"lib\" doesnt.  Skipping Perl Library build.\n"
+####### If neither "lib" nor "lib64" exists, inform the user & build then Perl libraries.
+	-@ test ! -d ../../lib -a ! -d ../../lib64 && printf "Neither \"lib\" nor \"lib64\" exists. Building Perl libraries.\n"
+	-@ test ! -d ../../lib -a ! -d ../../lib64 && ${MAKE} build-all
+
+build-all: Carp-Clan Bit-Vector Date-Calc XML-Generator LTR-Inputs
 	- cp -r lib* ../..
 
 Carp-Clan:
