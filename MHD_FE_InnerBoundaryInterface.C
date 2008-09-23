@@ -296,21 +296,31 @@ void MHD_FE_InnerBoundaryInterface::Import(doubleArray & eField_j, doubleArray &
  ************************************************************************/
 void MHD_FE_InnerBoundaryInterface::sendScalars(const doubleArray & scalars) 
 { 
+#ifdef DEBUG_MODE_ON
+  cout << "DEBUG:  process " << Communication_Manager::My_Process_Number << " "
+       << "MHD_FE_InnerBoundaryInterface::sendScalars(...)\n";
+#endif
+
   ///////////////////////////////////////////////////////////////////////
 
-  // open "MHD_scalars" for writing
-  std::ofstream outs("MHD_scalars");
-
-  // Write scalars to file
-  for ( int i = 0; i < scalars.elementCount(); i++ ){
-    outs << scalars(i) << "\n";
+  if ( Communication_Manager::My_Process_Number == 0 ){
+    // open "MHD_scalars" for writing
+    std::ofstream outs("MHD_scalars");
+    
+    // Write scalars to file
+    for ( int i = 0; i < scalars.elementCount(); i++ ){
+      outs << scalars(i) << "\n";
+    }
+    
+    // Make sure to flush the IO to disk.
+    outs.flush();
+    
+    // close "MHD_scalars" file handle
+    outs.close();
   }
 
-  // Make sure to flush the IO to disk.
-  outs.flush();
-
-  // close "MHD_scalars" file handle
-  outs.close();
+  // Barrier to prevent race condition
+  Communication_Manager::Sync();
 
   ///////////////////////////////////////////////////////////////////////
 
