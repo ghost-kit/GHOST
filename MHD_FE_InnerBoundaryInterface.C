@@ -111,7 +111,10 @@ MHD_FE_InnerBoundaryInterface::~MHD_FE_InnerBoundaryInterface()
 void MHD_FE_InnerBoundaryInterface::Export(const doubleArray & bx, const doubleArray & by, const doubleArray & bz, 
 		   const doubleArray &rho, const doubleArray &cs)
 {
-  cout << Communication_Manager::My_Process_Number << ": inside Export(...)\n";
+#ifdef DEBUG_MODE_ON
+  cout << "DEBUG:  process " << Communication_Manager::My_Process_Number << " "
+       << "MHD_FE_InnerBoundaryInterface::Export(...)\n";
+#endif
 
   ///////////////////////////////////////////////////////////////////////
 
@@ -200,7 +203,10 @@ void MHD_FE_InnerBoundaryInterface::Export(const doubleArray & bx, const doubleA
  ************************************************************************/
 void MHD_FE_InnerBoundaryInterface::Import(doubleArray & eField_j, doubleArray & eField_k, doubleArray & velocity)
 {
-  cout << Communication_Manager::My_Process_Number << ": Import(...)\n";
+#ifdef DEBUG_MODE_ON
+  cout << "DEBUG:  process " << Communication_Manager::My_Process_Number << " "
+       << "MHD_FE_InnerBoundaryInterface::Import(...)\n";
+#endif
 
   // Wait until MIX is finished "WORKING"
   while ( ! isMIXReady() ){
@@ -353,42 +359,44 @@ void MHD_FE_InnerBoundaryInterface::sendScalars(const doubleArray & scalars)
 ************************************************************************/
 bool MHD_FE_InnerBoundaryInterface::writeMHDLockFile(const string &status)
 {
+#ifdef DEBUG_MODE_ON
+  cout << "DEBUG:  process " << Communication_Manager::My_Process_Number << " "
+       << "MHD_FE_InnerBoundaryInterface::writeMHDLockFile(...)\n";
+#endif
   
-  // open the file for writing
-  std::ofstream outs(MHDLockFile.c_str());
-  if (outs.bad()){
-    std::cerr << "*** Trouble Writting " << MHDLockFile << "\n";
-    return false;
+  bool return_value = true;
+
+  if ( Communication_Manager::My_Process_Number == 0 ){
+    // open the file for writing
+    std::ofstream outs(MHDLockFile.c_str());
+    if (outs.bad()){
+      std::cerr << "*** Trouble Writting " << MHDLockFile <<  " " << "on processor "
+		<< Communication_Manager::My_Process_Number  << "\n";
+      return_value = false;
+    }
+    
+    // write status
+    outs << status << "\n";
+    
+    // Make sure to flush the IO to disk.
+    outs.flush();
+    
+    // close the file
+    outs.close();
   }
-
-  // write status
-  outs << status << "\n";
-
-  // Make sure to flush the IO to disk.
-  outs.flush();
-
-  // close the file
-  outs.close();
-
+    
   // Barrier to prevent race condition
   Communication_Manager::Sync();
 
-  //  std::cout << "DEBUG:  process " << Communication_Manager::My_Process_Number
-  //	    << " in MHD_FE_InnerBoundaryInterface.C::writeMHDLockFile(...)\n";
-
   //FIXME    
   //FIXME    
-  //FIXME    ONLY THE HEAD NODE SHOULD DO I/O OPERATIONS
-  //FIXME    Should broadcast data out to children. . . 
-  //FIXME    
-  //FIXME    
-  //FIXME    But.. need to be careful about returning false
-  //FIXME    Should really call something like MPI_Abort()
-  //FIXME    if something goes wrong...
+  //FIXME    Need to be careful about return value...
+  //FIXME    Should broadcast it from the  head node and/or
+  //FIXME    call something like MPI_Abort() on error...
   //FIXME
   //FIXME
 
-  return true;
+  return return_value;
 }
 
 /********************************************************************//**
@@ -398,6 +406,9 @@ bool MHD_FE_InnerBoundaryInterface::writeMHDLockFile(const string &status)
 * \param[out] MIXLockFile text file contents.  Should be "WORKING" or "WAITING".
 *
 * Returns the contents of the ASCII file MIXLockFile.
+*
+* \FIXME This the MIX lock file is read by EVERY processor!
+*        Should probably just read this on the head node & broadcast it out...
 ************************************************************************/
 string MHD_FE_InnerBoundaryInterface::readMIXLockFile(void)
 {
@@ -434,12 +445,19 @@ string MHD_FE_InnerBoundaryInterface::readMIXLockFile(void)
  * \note The file format defined here needs to match that defined in
  * MHD_FE_Interface::write3dData
  *
- * \FIXME #data could be a template so we can handle any dimension data?
+ * \note This function only reads the data in on the head node (process 0)
+ *       You need to worry about gather/scatter operations outside this function. 
+ *
+ * \FIXME #data could be a template so we can handle any data type?
  ************************************************************************/
 void MHD_FE_InnerBoundaryInterface::read3dData(const string &filename, double *data,
 					       const int &ni, const int &nj, const int &nk)
 {
-  cout << Communication_Manager::My_Process_Number << ": inside write3dData(...)\n";
+#ifdef DEBUG_MODE_ON
+  cout << "DEBUG:  process " << Communication_Manager::My_Process_Number << " "
+       << "MHD_FE_InnerBoundaryInterface::read3dData(...)\n";
+#endif
+
   // We should only write the file once on the head node
   if ( Communication_Manager::My_Process_Number == 0 ){  
     // open the file for writing
@@ -491,12 +509,19 @@ void MHD_FE_InnerBoundaryInterface::read3dData(const string &filename, double *d
  * \note The file format defined here needs to match that defined in
  * MHD_FE_Interface::read3dData
  *
- * \FIXME #data could be a template so we can handle any dimension data?
+ * \note This function only reads the data in on the head node (process 0)
+ *       You need to worry about gather/scatter operations outside this function. 
+ *
+ * \FIXME #data could be a template so we can handle any data type?
  ************************************************************************/
 void MHD_FE_InnerBoundaryInterface::write3dData(const string &filename, const double *data,  
 						const int &ni, const int &nj, const int &nk)
 {  
-  cout << Communication_Manager::My_Process_Number << ": inside write3dData(...)\n";
+#ifdef DEBUG_MODE_ON
+  cout << "DEBUG:  process " << Communication_Manager::My_Process_Number << " "
+       << "MHD_FE_InnerBoundaryInterface::write3dData(...)\n";
+#endif
+
   // We should only write the file once on the head node
   if ( Communication_Manager::My_Process_Number == 0 ){  
     // open the file for writing
