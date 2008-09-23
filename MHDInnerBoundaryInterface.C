@@ -16,6 +16,7 @@
  * \param[in] NI  The number of shells in the i-th direction where to calculate the FAC
  * \param[in] NJ  The number of grid cells in the j-th direction
  * \param[in] NK  The number of grid cells in the k-th direction
+ * \param[in] NO2  n_order/2, corresponds to guard cell distribution, required for file exchange interface. Unused for InterComm interface.
  *
  * The constructor calculates a lot of grid-related quantities that
  * are needed for future calculations (especially the field-aligned
@@ -46,7 +47,7 @@
  ************************************************************************/
 MHDInnerBoundaryInterface::MHDInnerBoundaryInterface(char* jobDescriptionMJD, char* localName,
 		     const doubleArray &x, const doubleArray &y, const doubleArray &z,
-		     const int NI, const int NJ, const int NK)
+		     const int NI, const int NJ, const int NK, const int NO2)
   :ni(NI),               // Get the grid info
    nj(NJ),               // 
    nk(NK),               // 
@@ -56,6 +57,7 @@ MHDInnerBoundaryInterface::MHDInnerBoundaryInterface(char* jobDescriptionMJD, ch
    njp1(nj + 1),         // 
    nkm1(nk - 1),         // 
    nkp1(nk + 1),         // End grid info
+   no2(NO2),
    volume(nim1,njm1,nk), 
    xCenter(ni,nj,nkp1),
    yCenter(ni,nj,nkp1), 
@@ -341,8 +343,8 @@ void MHDInnerBoundaryInterface::prepareExport(const doubleArray &bx, const doubl
  * grid is periodic in k.
  ************************************************************************/
 void MHDInnerBoundaryInterface::getParallelCurrent(const doubleArray &Bx, 
-				   const doubleArray &By, 
-				   const doubleArray &Bz)
+						   const doubleArray &By, 
+						   const doubleArray &Bz)
 {
   /*  Define the necessary ranges  */
   Range all, I(1,ni), Im1(1,nim1), Ip1(1,nip1), J(1,nj), Jm1(1,njm1), Jp1(1,njp1), K(1,nk), Kp1(1,nkp1), Km1(1,nkm1);

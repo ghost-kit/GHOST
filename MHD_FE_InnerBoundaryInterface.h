@@ -39,7 +39,7 @@ public:
   /**\brief Class constructor */
   MHD_FE_InnerBoundaryInterface(char*, char*,
 				const doubleArray &, const doubleArray &, const doubleArray &, 
-				const int, const int, const int);
+				const int, const int, const int, const int);
 
   virtual ~MHD_FE_InnerBoundaryInterface();
 
@@ -73,10 +73,10 @@ private:
   string readMIXLockFile(void);
 
   /**\brief  Read a 3d array from file into #data*/
-  void read3dData(const string &filename, const doubleArray &data,  
+  void read3dData(const string &filename, double *data,  
 		  const int &ni, const int &nj, const int &nk);
   /**\brief  Write #data to file */
-  void write3dData(const string &filename, const doubleArray &data,  
+  void write3dData(const string &filename, const double *data,  
 		   const int &ni, const int &nj, const int &nk);
 
   /**\brief filename of MIX lock file. */

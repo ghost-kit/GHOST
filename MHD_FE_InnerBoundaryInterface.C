@@ -16,6 +16,7 @@
  * \param[in] NI  The number of shells in the i-th direction where to calculate the FAC
  * \param[in] NJ  The number of grid cells in the j-th direction
  * \param[in] NK  The number of grid cells in the k-th direction
+ * \param[in] NO2  n_order/2, corresponds to guard cell distribution, required for file exchange interface. Unused for InterComm interface.
  *
  * Constructor that initializes the LFM-MIX interface and brings up
  * the file exchange interface.
@@ -52,10 +53,10 @@
  ************************************************************************/
 MHD_FE_InnerBoundaryInterface::MHD_FE_InnerBoundaryInterface(char* jobDescriptionMJD, char* localName,
 		     const doubleArray &x, const doubleArray &y, const doubleArray &z,
-		     const int NI, const int NJ, const int NK)
+		     const int NI, const int NJ, const int NK, const int NO2)
   :
   // Base class constructor
-  MHDInnerBoundaryInterface(jobDescriptionMJD, localName, x,y,z, NI,NJ,NK)
+  MHDInnerBoundaryInterface(jobDescriptionMJD, localName, x,y,z, NI,NJ,NK, NO2)
 {
   // Stdout that we're using the file exchange interface...
   cout << "Initializing MHD File Exchange Interface..." << endl;
@@ -110,6 +111,8 @@ MHD_FE_InnerBoundaryInterface::~MHD_FE_InnerBoundaryInterface()
 void MHD_FE_InnerBoundaryInterface::Export(const doubleArray & bx, const doubleArray & by, const doubleArray & bz, 
 		   const doubleArray &rho, const doubleArray &cs)
 {
+  cout << Communication_Manager::My_Process_Number << ": inside Export(...)\n";
+
   ///////////////////////////////////////////////////////////////////////
 
   // Calculate the FAC, density and sound speed in the second-shell
@@ -117,12 +120,42 @@ void MHD_FE_InnerBoundaryInterface::Export(const doubleArray & bx, const doubleA
 
   ///////////////////////////////////////////////////////////////////////
   // Export the data to MIX using file exchanges.
-  
-  write3dData("MHD_current", current, njp1, nkp1, 0);
 
-  write3dData("MHD_density", density, njp1, nkp1, 0);
+  /* ************  P++ trickery to gather data to head node ************ */
+  // doing I/O on task 0
+  Range io_pe(0,0); 
 
-  write3dData("MHD_soundSpeed", soundSpeed, njp1, nkp1, 0);
+  // Strip guard cells to make indexing easy for dump
+  Partitioning_Type Guard(io_pe);
+  Guard.partitionAlongAxis(0,TRUE, 0);
+  Guard.partitionAlongAxis(1,FALSE,0);
+
+  // Dummy Variable used for I/O:
+  doubleArray D_VAR(njp1,nkp1,Guard);
+
+  Range Jp1(0, nj);
+  Range Kp1(0, nk);
+
+  /* ***************************** current ***************************** */
+  // P++ trickery analagous to MPI_GATHER of current to head node:
+  Communication_Manager::Sync();
+  D_VAR(Jp1, Kp1) = current(Jp1, Kp1);
+  // File I/O on head node:
+  write3dData("MHD_current", D_VAR.getDataPointer(), njp1, nkp1, 0);
+
+  /* ***************************** density ***************************** */
+  // P++ trickery analagous to MPI_GATHER of density to head node:
+  Communication_Manager::Sync();
+  D_VAR(Jp1, Kp1) = density(Jp1, Kp1);
+  // File I/O on head node:
+  write3dData("MHD_density", D_VAR.getDataPointer(), njp1, nkp1, 0);
+
+  /* *************************** soundSpeed **************************** */
+  // P++ trickery analagous to MPI_GATHER of sound speed to head node:
+  Communication_Manager::Sync();
+  D_VAR(Jp1, Kp1) = soundSpeed(Jp1, Kp1);
+  // File I/O on head node:
+  write3dData("MHD_soundSpeed", D_VAR.getDataPointer(), njp1, nkp1, 0);
 
   ///////////////////////////////////////////////////////////////////////
 
@@ -167,6 +200,8 @@ void MHD_FE_InnerBoundaryInterface::Export(const doubleArray & bx, const doubleA
  ************************************************************************/
 void MHD_FE_InnerBoundaryInterface::Import(doubleArray & eField_j, doubleArray & eField_k, doubleArray & velocity)
 {
+  cout << Communication_Manager::My_Process_Number << ": Import(...)\n";
+
   // Wait until MIX is finished "WORKING"
   while ( ! isMIXReady() ){
 #ifdef DEBUG_MODE_ON
@@ -180,7 +215,31 @@ void MHD_FE_InnerBoundaryInterface::Import(doubleArray & eField_j, doubleArray &
   ///////////////////////////////////////////////////////////////////////
   // Import (read the data from file. . . )
 
-  read3dData("MIX_potential", potential, 2, njp1, nkp1);
+  /* ************  P++ trickery to gather data to head node ************ */
+  // doing I/O on task 0
+  Range io_pe(0,0); 
+
+  // Strip guard cells to make indexing easy for dump
+  Partitioning_Type Guard(io_pe);
+  Guard.partitionAlongAxis(0,TRUE, 0);
+  Guard.partitionAlongAxis(1,TRUE, 0);
+  Guard.partitionAlongAxis(2,FALSE,0);
+
+  // Dummy Variable used for I/O:
+  doubleArray D_VAR(2, njp1,nkp1,Guard);
+
+  Range Ip1(0, 1);
+  Range Jp1(0, nj);
+  Range Kp1(0, nk);
+
+  /* **************************** potential **************************** */
+  Communication_Manager::Sync();
+  // File I/O on head node:
+  read3dData("MIX_potential", D_VAR.getDataPointer(), 2, njp1, nkp1);  
+
+  // P++ trickery analagous to MPI_SCATTER of current to head node:
+  potential(Ip1, Jp1, Kp1) = D_VAR(Ip1, Jp1, Kp1);
+
 #ifdef DEBUG_MODE_ON
   write3dData("MHD_potential", potential, 2, njp1, nkp1);
 #endif
@@ -294,6 +353,7 @@ void MHD_FE_InnerBoundaryInterface::sendScalars(const doubleArray & scalars)
 ************************************************************************/
 bool MHD_FE_InnerBoundaryInterface::writeMHDLockFile(const string &status)
 {
+  
   // open the file for writing
   std::ofstream outs(MHDLockFile.c_str());
   if (outs.bad()){
@@ -309,6 +369,24 @@ bool MHD_FE_InnerBoundaryInterface::writeMHDLockFile(const string &status)
 
   // close the file
   outs.close();
+
+  // Barrier to prevent race condition
+  Communication_Manager::Sync();
+
+  //  std::cout << "DEBUG:  process " << Communication_Manager::My_Process_Number
+  //	    << " in MHD_FE_InnerBoundaryInterface.C::writeMHDLockFile(...)\n";
+
+  //FIXME    
+  //FIXME    
+  //FIXME    ONLY THE HEAD NODE SHOULD DO I/O OPERATIONS
+  //FIXME    Should broadcast data out to children. . . 
+  //FIXME    
+  //FIXME    
+  //FIXME    But.. need to be careful about returning false
+  //FIXME    Should really call something like MPI_Abort()
+  //FIXME    if something goes wrong...
+  //FIXME
+  //FIXME
 
   return true;
 }
@@ -358,33 +436,44 @@ string MHD_FE_InnerBoundaryInterface::readMIXLockFile(void)
  *
  * \FIXME #data could be a template so we can handle any dimension data?
  ************************************************************************/
-void MHD_FE_InnerBoundaryInterface::read3dData(const string &filename, const doubleArray &data,
+void MHD_FE_InnerBoundaryInterface::read3dData(const string &filename, double *data,
 					       const int &ni, const int &nj, const int &nk)
 {
-  // open the file for writing
-  std::ifstream ins(filename.c_str());
-  if (ins.bad()){
-    std::cerr << "*** Trouble Writting " << filename << "\n";
-  }
+  cout << Communication_Manager::My_Process_Number << ": inside write3dData(...)\n";
+  // We should only write the file once on the head node
+  if ( Communication_Manager::My_Process_Number == 0 ){  
+    // open the file for writing
+    std::ifstream ins(filename.c_str());
+    if (ins.bad()){
+      std::cerr << "*** Trouble reading " << filename << "\n";
 
-  // read data
-  int ni_in, nj_in, nk_in;
-
-  ins >> ni_in >> nj_in >> nk_in;
-  assert( ni_in == ni );
-  assert( nj_in == nj );
-  assert( nk_in == nk );
-
-  for (int k = 0; k < max(nk, 1); k++){
-    for (int j = 0; j < max(nj, 1); j++){
-      for (int i = 0; i < max(ni, 1); i++){
-	ins >> data(i,j,k);
+      // FIXME: Need a more graceful way of exiting on all nodes, not just the I/O processor...
+      Optimization_Manager::Exit_Virtual_Machine();
+    }
+    
+    // read data
+    int ni_in, nj_in, nk_in;
+    
+    ins >> ni_in >> nj_in >> nk_in;
+    assert( ni_in == ni );
+    assert( nj_in == nj );
+    assert( nk_in == nk );
+    
+    for (int k = 0; k < max(nk, 1); k++){
+      for (int j = 0; j < max(nj, 1); j++){
+	for (int i = 0; i < max(ni, 1); i++){
+	  // ins >> data(i,j,k);
+	  ins >> data[i + j*(ni) + k*(ni*nj)];
+	}
       }
     }
+    
+    // close the file
+    ins.close();
   }
 
-  // close the file
-  ins.close();
+  // Barrier to prevent race condition
+  Communication_Manager::Sync();
 }
 
 /********************************************************************//**
@@ -404,30 +493,42 @@ void MHD_FE_InnerBoundaryInterface::read3dData(const string &filename, const dou
  *
  * \FIXME #data could be a template so we can handle any dimension data?
  ************************************************************************/
-void MHD_FE_InnerBoundaryInterface::write3dData(const string &filename, const doubleArray &data,  
+void MHD_FE_InnerBoundaryInterface::write3dData(const string &filename, const double *data,  
 						const int &ni, const int &nj, const int &nk)
-{
-  // open the file for writing
-  std::ofstream outs(filename.c_str());
-  if (outs.bad()){
-    std::cerr << "*** Trouble Writting " << filename << "\n";    
-  }
+{  
+  cout << Communication_Manager::My_Process_Number << ": inside write3dData(...)\n";
+  // We should only write the file once on the head node
+  if ( Communication_Manager::My_Process_Number == 0 ){  
+    // open the file for writing
+    std::ofstream outs(filename.c_str());
+    if (outs.bad()){
+      std::cerr << "*** Trouble Writting " << filename << "\n";    
 
-  // write data
-  outs << ni << "\t" << nj << "\t" << nk << "\n";
-  for (int k = 0; k < max(nk, 1); k++){
-    for (int j = 0; j < max(nj, 1); j++){
-      for (int i = 0; i < max(ni, 1); i++){
-	outs << data(i,j,k) << "\t";
+      // FIXME: Need a more graceful way of exiting on all nodes, not just the I/O processor...
+      Optimization_Manager::Exit_Virtual_Machine();
+    }
+    
+    // write data
+    outs << ni << "\t" << nj << "\t" << nk << "\n";
+    for (int k = 0; k < max(nk, 1); k++){
+      for (int j = 0; j < max(nj, 1); j++){
+	for (int i = 0; i < max(ni, 1); i++){
+	  //outs << data[k + (j*nk) + i*(nj*nk)] << "\t";
+	  outs << data[i + j*(ni) + k*(ni*nj)] << "\t";
+	  //outs << data(i,j,k) << "\t";
+	}
+	outs << "\n";
       }
       outs << "\n";
     }
-    outs << "\n";
+    
+    // Make sure to flush the IO to disk.
+    outs.flush();
+    
+    // close the file
+    outs.close();
   }
-
-  // Make sure to flush the IO to disk.
-  outs.flush();
-
-  // close the file
-  outs.close();
+  
+  // Barrier to prevent race condition
+  Communication_Manager::Sync();
 }
