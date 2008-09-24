@@ -57,20 +57,30 @@ private:
   /**\name File exchange members */
   //@{
 
-  /**\brief Returns true if MIX is busy */
-  bool isMIXBusy()  { return ( strcmp( "WORKING", readMIXLockFile().c_str() ) == 0 ); }
-  /**\brief Returns true if MIX is ready and waiting for the MHD */
-  bool isMIXReady() { return ( strcmp( "WAITING", readMIXLockFile().c_str() ) == 0 ); }
+  /**\brief Returns true if MHD is busy */
+  bool isMHDOld()  { return ( strcmp( "OLD", readLockFile(MHDLockFile).c_str() ) == 0 ); }
+  /**\brief Returns true if MHD is ready and waiting for the MHD */
+  bool isMHDNew() { return ( strcmp( "NEW", readLockFile(MHDLockFile).c_str() ) == 0 ); }
 
-  /**\brief Set the MHD lock file to "WORKING" (aka busy)  */
-  bool setMHDBusy(void)   { return writeMHDLockFile("WORKING"); }
-  /**\brief Set the MHD lock file to "WAITING" (aka ready) */
-  bool setMHDReady(void)  { return writeMHDLockFile("WAITING"); }
+  /**\brief Returns true if MIX is busy */
+  bool isMIXOld()  { return ( strcmp( "OLD", readLockFile(MIXLockFile).c_str() ) == 0 ); }
+  /**\brief Returns true if MIX is ready and waiting for the MHD */
+  bool isMIXNew() { return ( strcmp( "NEW", readLockFile(MIXLockFile).c_str() ) == 0 ); }
+
+  /**\brief Set the MHD lock file to "OLD" (aka busy)  */
+  bool setMHDOld(void)   { return writeLockFile(MHDLockFile, "OLD"); }
+  /**\brief Set the MHD lock file to "NEW" (aka ready) */
+  bool setMHDNew(void)  { return writeLockFile(MHDLockFile, "NEW"); }
+
+  /**\brief Set the MIX lock file to "OLD" (aka busy)  */
+  bool setMIXOld(void)   { return writeLockFile(MIXLockFile, "OLD"); }
+  /**\brief Set the MIX lock file to "NEW" (aka ready) */
+  bool setMIXNew(void)  { return writeLockFile(MIXLockFile, "NEW"); }
 
   /**\brief  Write #status to the MHD lock file */
-  bool  writeMHDLockFile(const string &status);
+  bool  writeLockFile(const string &filename, const string &status);
   /**\brief  Read the MIX lock file to check its status */
-  string readMIXLockFile(void);
+  string readLockFile(const string &filename);
 
   /**\brief  Read a 3d array from file into #data*/
   void read3dData(const string &filename, double *data,  

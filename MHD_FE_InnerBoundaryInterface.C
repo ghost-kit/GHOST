@@ -58,28 +58,17 @@ MHD_FE_InnerBoundaryInterface::MHD_FE_InnerBoundaryInterface(char* jobDescriptio
   // Base class constructor
   MHDInnerBoundaryInterface(jobDescriptionMJD, localName, x,y,z, NI,NJ,NK, NO2)
 {
-  // Stdout that we're using the file exchange interface...
   cout << "Initializing MHD File Exchange Interface..." << endl;
+
   ///////////////////////////////////////////////////////////////////////
 
-  // Should maybe use the stdio.h function "tmpnam"  for these files?
+  //FIXME: Should use the stdio.h function "tmpnam"  for these files?
   MIXLockFile = "MIX_status";
   MHDLockFile = "MHD_status";
 
-  assert( setMHDBusy() );
-
-  while( !isMIXBusy() ){
-#ifdef DEBUG_MODE_ON
-    std::cout << "  MHD_FE: Waiting for MIX to start...\n";
-#endif
-    sleep(2);
-  }
-#ifdef DEBUG_MODE_ON
-  std::cout << "  MHD_FE: MIX started.\n";
-#endif
-  // Sleep to prevent any buffered I/O issues with file exchanges
-  sleep(5);
-} 
+  // Set MHD data to "OLD"
+  assert( setMHDOld() );
+}
 
 MHD_FE_InnerBoundaryInterface::~MHD_FE_InnerBoundaryInterface()
 {
@@ -109,7 +98,7 @@ MHD_FE_InnerBoundaryInterface::~MHD_FE_InnerBoundaryInterface()
  * file exchanges to send these variables to MIX.
  ************************************************************************/
 void MHD_FE_InnerBoundaryInterface::Export(const doubleArray & bx, const doubleArray & by, const doubleArray & bz, 
-		   const doubleArray &rho, const doubleArray &cs)
+					   const doubleArray &rho, const doubleArray &cs)
 {
 #ifdef DEBUG_MODE_ON
   cout << "DEBUG:  process " << Communication_Manager::My_Process_Number << " "
@@ -120,6 +109,15 @@ void MHD_FE_InnerBoundaryInterface::Export(const doubleArray & bx, const doubleA
 
   // Calculate the FAC, density and sound speed in the second-shell
   prepareExport(bx,by,bz, rho, cs);
+
+  // Wait until MIX has set the MHDstatus to "old".
+  while ( ! isMHDOld() ){
+#ifdef DEBUG_MODE_ON
+    std::cout << "  MIX_FE: Waiting for MIX to acknowledge that its ready for data Export...\n" << flush;
+#endif
+    sleep(4);
+  }
+
 
   ///////////////////////////////////////////////////////////////////////
   // Export the data to MIX using file exchanges.
@@ -165,24 +163,9 @@ void MHD_FE_InnerBoundaryInterface::Export(const doubleArray & bx, const doubleA
 #ifdef DEBUG_MODE_ON
   cout << "  MHD_FE: MHD Exported current, density & soundSpeed to MIX.\n" << flush;
 #endif
-  // Set status to "WAITING"
-  assert( setMHDReady() );
 
-  // Wait until MIX is finished "WORKING" 
-  while ( ! isMIXReady() ){ 
-#ifdef DEBUG_MODE_ON
-    cout << "  MHD_FE: Waiting until MIX is done importing current, density & soundSpeed...\n" << flush;
-#endif
-    sleep(2);
-  }
-#ifdef DEBUG_MODE_ON
-  cout << "  MHD_FE: MIX receieved current, density & soundSpeed.  Moving on.  \n";
-#endif
-  // Now that MIX is "WAITING", change MHD status to "WORKING"
-  assert( setMHDBusy() );  
-
-  // Sleep to prevent any buffered I/O issues with file exchanges
-  sleep(5);
+  // Set MHD status to "new" since we've just sent the scalars.
+  assert( setMHDNew() );
 }
 
 /********************************************************************//**
@@ -208,13 +191,13 @@ void MHD_FE_InnerBoundaryInterface::Import(doubleArray & eField_j, doubleArray &
        << "MHD_FE_InnerBoundaryInterface::Import(...)\n";
 #endif
 
-  // Wait until MIX is finished "WORKING"
-  while ( ! isMIXReady() ){
+  while ( ! isMIXNew() ){
 #ifdef DEBUG_MODE_ON
     std::cout << "  MHD_FE: Waiting for MIX to export potential...\n" << flush;
 #endif
-    sleep(2);
+    sleep(4);
   }
+
 #ifdef DEBUG_MODE_ON
   std::cout << "  MHD_FE: MIX has exported potential! Read it in.\n" << flush;
 #endif
@@ -247,7 +230,7 @@ void MHD_FE_InnerBoundaryInterface::Import(doubleArray & eField_j, doubleArray &
   potential(Ip1, Jp1, Kp1) = D_VAR(Ip1, Jp1, Kp1);
 
 #ifdef DEBUG_MODE_ON
-  write3dData("MHD_potential", potential, 2, njp1, nkp1);
+  write3dData("MHD_potential", potential.getDataPointer(), 2, njp1, nkp1);
 #endif
 
   ///////////////////////////////////////////////////////////////////////
@@ -257,23 +240,8 @@ void MHD_FE_InnerBoundaryInterface::Import(doubleArray & eField_j, doubleArray &
   std::cout << "  MHD_FE: Potential read in by MHD.\n";
 #endif
 
-  // Set MHD status to "WAITING"
-  assert( setMHDReady() );
-
-  // Do not return until MIX knows that we're done working.
-  while ( ! isMIXBusy() ){
-#ifdef DEBUG_MODE_ON
-    std:: cout << "  MHD_FE: Waiting for MIX to acknowledge that we've received the potential...\n";
-#endif
-    sleep(2);
-  }
-
-#ifdef DEBUG_MODE_ON
-  std::cout << "  MHD_FE: MIX acknowledgment; Moving on.\n";
-#endif
-
-  // MIX has moved on.  Set MHD to busy
-  assert( setMHDBusy() );
+  // MHD is done reading the "new" variables.  Set MIX status to "old"
+  assert( setMIXOld() );
 
   ///////////////////////////////////////////////////////////////////////
   // Now do the dirty work: calculate the potential electric field
@@ -289,10 +257,9 @@ void MHD_FE_InnerBoundaryInterface::Import(doubleArray & eField_j, doubleArray &
  * \param[in] scalars to send to MIX.
  *
  * Perform the following steps:
+ *   # Wait until we know the scalars are old
  *   # Write scalars to file
- *   # Set status to "WAITING"
- *   # Wait until MIX is finished "WORKING" 
- *   # When MIX is "WAITING", change status to "WORKING"
+ *   # Set status to "new"
  ************************************************************************/
 void MHD_FE_InnerBoundaryInterface::sendScalars(const doubleArray & scalars) 
 { 
@@ -300,6 +267,18 @@ void MHD_FE_InnerBoundaryInterface::sendScalars(const doubleArray & scalars)
   cout << "DEBUG:  process " << Communication_Manager::My_Process_Number << " "
        << "MHD_FE_InnerBoundaryInterface::sendScalars(...)\n";
 #endif
+
+  // Wait until MIX has set the MHDstatus to "old".
+  while ( ! isMHDOld() ){
+#ifdef DEBUG_MODE_ON
+    std::cout << "  MIX_FE: Waiting for MIX to acknowledge that its ready for scalars...\n" << flush;
+#endif
+    sleep(4);
+  }
+  
+  cout << Communication_Manager::My_Process_Number
+       << ": MIX acknowledged that it's ready...\n";
+  
 
   ///////////////////////////////////////////////////////////////////////
 
@@ -325,33 +304,13 @@ void MHD_FE_InnerBoundaryInterface::sendScalars(const doubleArray & scalars)
   // close "MHD_scalars" file handle
   outs.close();
 
+  // Barrier to prevent race condition
   Communication_Manager::Sync();
 
   ///////////////////////////////////////////////////////////////////////
 
-#ifdef DEBUG_MODE_ON
-  cout << "  MHD_FE: MHD Scalars sent to MIX.\n" << flush;
-#endif
-
-  // Set status to "WAITING"
-  assert( setMHDReady() );
-
-  // Wait until MIX is finished "WORKING" 
-  while ( ! isMIXReady() ){ 
-#ifdef DEBUG_MODE_ON
-    cout << "  MHD_FE: Waiting until MIX is done reading scalars...\n" << flush;
-#endif
-    sleep(2);
-  }
-#ifdef DEBUG_MODE_ON
-  cout << "  MHD_FE: MIX receieved the scalars.  Moving on.  \n";
-#endif
-
-  // Now that MIX is "WAITING", change MHD status to "WORKING"
-  assert( setMHDBusy() );  
-
-  // Sleep to prevent any buffered I/O issues with file exchanges
-  sleep(5);
+  // Set MHD status to "new" since we've just sent the scalars.
+  assert( setMHDNew() );
 }
 
 /************************************************************************
@@ -362,8 +321,9 @@ void MHD_FE_InnerBoundaryInterface::sendScalars(const doubleArray & scalars)
 * \author Peter Schmitt (schmitt at ucar.edu)
 * \since 09-2008
 *
+* \param[in] filename - path to lockfile that we'll write.
 * \param[in] status - string that sets the MIX lock file status
-* (e.g. "WAITING" or "WORKING").
+* (e.g. "OLD" or "NEW").
 *
 * \param[out] bool - returns true if succesful.
 *
@@ -372,20 +332,20 @@ void MHD_FE_InnerBoundaryInterface::sendScalars(const doubleArray & scalars)
 * \FIXME Should probably handle errors within this function rather
 * than return a bool....
 ************************************************************************/
-bool MHD_FE_InnerBoundaryInterface::writeMHDLockFile(const string &status)
+bool MHD_FE_InnerBoundaryInterface::writeLockFile(const string &filename, const string &status)
 {
 #ifdef DEBUG_MODE_ON
   cout << "DEBUG:  process " << Communication_Manager::My_Process_Number << " "
-       << "MHD_FE_InnerBoundaryInterface::writeMHDLockFile(...)\n";
+       << "MHD_FE_InnerBoundaryInterface::writeLockFile(...)\n";
 #endif
   
   bool return_value = true;
 
   if ( Communication_Manager::My_Process_Number == 0 ){
     // open the file for writing
-    std::ofstream outs(MHDLockFile.c_str());
+    std::ofstream outs(filename.c_str());
     if (outs.bad()){
-      std::cerr << "*** Trouble Writting " << MHDLockFile <<  " " << "on processor "
+      std::cerr << "*** Trouble Writting " << filename <<  " " << "on processor "
 		<< Communication_Manager::My_Process_Number  << "\n";
       return_value = false;
     }
@@ -418,19 +378,20 @@ bool MHD_FE_InnerBoundaryInterface::writeMHDLockFile(const string &status)
 * \author Peter Schmitt (schmitt at ucar.edu)
 * \since 09-2008
 *
-* \param[out] MIXLockFile text file contents.  Should be "WORKING" or "WAITING".
+* \param[in] filename - path to lockfile that we'll read.
+* \param[out] MIXLockFile text file contents.  Should be "OLD" or "NEW".
 *
 * Returns the contents of the ASCII file MIXLockFile.
 *
 * \FIXME This the MIX lock file is read by EVERY processor!
 *        Should probably just read this on the head node & broadcast it out...
 ************************************************************************/
-string MHD_FE_InnerBoundaryInterface::readMIXLockFile(void)
+string MHD_FE_InnerBoundaryInterface::readLockFile(const string &filename)
 {
   // open the file for reading
-  std::ifstream ins(MIXLockFile.c_str());
+  std::ifstream ins(filename.c_str());
   if (ins.bad()){
-    std::cerr << "*** Trouble reading " << MIXLockFile << "\n";
+    std::cerr << "*** Trouble reading " << filename << "\n";
     // FIXME:  Error handling?
     return false;
   }
