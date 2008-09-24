@@ -276,9 +276,6 @@ void MHD_FE_InnerBoundaryInterface::sendScalars(const doubleArray & scalars)
     sleep(4);
   }
   
-  cout << Communication_Manager::My_Process_Number
-       << ": MIX acknowledged that it's ready...\n";
-  
 
   ///////////////////////////////////////////////////////////////////////
 
