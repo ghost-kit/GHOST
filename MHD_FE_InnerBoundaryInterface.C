@@ -303,23 +303,28 @@ void MHD_FE_InnerBoundaryInterface::sendScalars(const doubleArray & scalars)
 
   ///////////////////////////////////////////////////////////////////////
 
-  if ( Communication_Manager::My_Process_Number == 0 ){
-    // open "MHD_scalars" for writing
-    std::ofstream outs("MHD_scalars");
-    
-    // Write scalars to file
-    for ( int i = 0; i < scalars.elementCount(); i++ ){
-      outs << scalars(i) << "\n";
-    }
-    
-    // Make sure to flush the IO to disk.
-    outs.flush();
-    
-    // close "MHD_scalars" file handle
-    outs.close();
+  // FIXME: This should only be done on the head node (I/O processor)
+  // but the LFM-MIX binary seems to get confused when reading scalars(i)...
+
+  // open "MHD_scalars" for writing
+  std::ofstream outs("MHD_scalars");
+  
+  if (outs.bad()){
+    std::cerr << "*** Trouble Writting " << "MHD_scalars" << " on processor "
+	      << Communication_Manager::My_Process_Number  << "\n";
   }
 
-  // Barrier to prevent race condition
+  // Write scalars to file
+  for ( int i = 0; i < scalars.elementCount(); i++ ){
+    outs << scalars(i) << "\n";
+  }
+  
+  // Make sure to flush the IO to disk.
+  outs.flush();
+  
+  // close "MHD_scalars" file handle
+  outs.close();
+
   Communication_Manager::Sync();
 
   ///////////////////////////////////////////////////////////////////////
