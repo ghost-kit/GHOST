@@ -508,6 +508,7 @@ void MHD_FE_InnerBoundaryInterface::write3dData(const string &filename, const do
     
     // write data
     outs << ni << "\t" << nj << "\t" << nk << "\n";
+    outs.precision(8);
     for (int k = 0; k < max(nk, 1); k++){
       for (int j = 0; j < max(nj, 1); j++){
 	for (int i = 0; i < max(ni, 1); i++){
