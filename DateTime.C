@@ -244,7 +244,8 @@ void DateTime::updateYMDHMS(void)
   minutes = (size_t) floor(nMinutes+EPSILON);
 
   double nSeconds = (double) (nMinutes-minutes) * 60.0;
-  seconds = floor(nSeconds+EPSILON);
+  // round to the nearest tenth of a second
+  seconds = floor(nSeconds+1e-1);
 }
 
 ////////////////////////////////////////////////////////////////////////
