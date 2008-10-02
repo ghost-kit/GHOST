@@ -16,7 +16,6 @@
  * \param[in] NI  The number of shells in the i-th direction where to calculate the FAC
  * \param[in] NJ  The number of grid cells in the j-th direction
  * \param[in] NK  The number of grid cells in the k-th direction
- * \param[in] NO2  n_order/2, corresponds to guard cell distribution, required for file exchange interface. Unused for InterComm interface.
  *
  * Constructor that initializes the LFM-MIX interface and brings up
  * the file exchange interface.
@@ -53,10 +52,10 @@
  ************************************************************************/
 MHD_FE_InnerBoundaryInterface::MHD_FE_InnerBoundaryInterface(char* jobDescriptionMJD, char* localName,
 		     const doubleArray &x, const doubleArray &y, const doubleArray &z,
-		     const int NI, const int NJ, const int NK, const int NO2)
+		     const int NI, const int NJ, const int NK)
   :
   // Base class constructor
-  MHDInnerBoundaryInterface(jobDescriptionMJD, localName, x,y,z, NI,NJ,NK, NO2)
+  MHDInnerBoundaryInterface(jobDescriptionMJD, localName, x,y,z, NI,NJ,NK)
 {
   cout << "Initializing MHD File Exchange Interface..." << endl;
 

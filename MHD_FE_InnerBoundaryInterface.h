@@ -39,7 +39,7 @@ public:
   /**\brief Class constructor */
   MHD_FE_InnerBoundaryInterface(char*, char*,
 				const doubleArray &, const doubleArray &, const doubleArray &, 
-				const int, const int, const int, const int);
+				const int, const int, const int);
 
   virtual ~MHD_FE_InnerBoundaryInterface();
 

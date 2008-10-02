@@ -33,7 +33,7 @@ public:
   /**\brief Class constructor */
   MHD_IC_InnerBoundaryInterface(char*, char*,
 				const doubleArray &, const doubleArray &, const doubleArray &, 
-				const int, const int, const int, const int);
+				const int, const int, const int);
 
   /**\brief Export the MHD FAC, density and sound speed to the MIX code*/
   void Export(const doubleArray &, const doubleArray &, const doubleArray &, 

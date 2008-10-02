@@ -49,7 +49,7 @@ public:
   /**\brief Class constructor */
   MHDInnerBoundaryInterface(char*, char*,
 			    const doubleArray &, const doubleArray &, const doubleArray &, 
-			    const int, const int, const int, const int);
+			    const int, const int, const int);
   virtual ~MHDInnerBoundaryInterface() {};
 
   /**\brief Export the MHD FAC, density and sound speed to the MIX code*/
@@ -82,7 +82,6 @@ protected:
   const int njp1;
   const int nkp1;
   const int nkm1;
-  const int no2; // ( n_order / 2 )
   //@}
 
   doubleArray current, density, soundSpeed, potential;
