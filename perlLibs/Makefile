@@ -54,6 +54,6 @@ clean:
 	rm -rf Date-Calc-5.4 Date-Calc-5.4.tar
 	rm -rf XML-Generator-1.01 XML-Generator-1.01.tar
 	-test -e LTR/Makefile && cd LTR && ${MAKE} realclean
-	rm -rf lib lib64 man
+	rm -rf lib lib64 man share
 
 distclean: clean

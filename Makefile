@@ -59,7 +59,7 @@ clean:
 	cd RMSerror && $(MAKE) clean
 	cd TinyXML && $(MAKE) clean
 	rm -f *.o
-	rm -f libcommon.a
+	rm -f libcommon.a libcommon-MIX.a libcommon-LFM.a
 
 distclean: clean
 	cd perlLibs && $(MAKE) distclean
