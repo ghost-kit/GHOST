@@ -20,6 +20,7 @@ Carp-Clan:
 	cd Carp-Clan-5.3 && perl Makefile.PL PREFIX=${PWD}
 	cd Carp-Clan-5.3 && ${MAKE}; ${MAKE} install
 
+Bit-Vector: export OBJECT_MODE := 32
 Bit-Vector:
 	gunzip < Bit-Vector-6.4.tar.gz > Bit-Vector-6.4.tar
 	tar -xf Bit-Vector-6.4.tar
@@ -28,6 +29,7 @@ Bit-Vector:
 	cd Bit-Vector-6.4 && perl Makefile.PL PREFIX=${PWD}
 	cd Bit-Vector-6.4 && ${MAKE}; ${MAKE} install
 
+Date-Calc: export OBJECT_MODE := 32
 Date-Calc:
 	gunzip < Date-Calc-5.4.tar.gz > Date-Calc-5.4.tar
 	tar -xf Date-Calc-5.4.tar

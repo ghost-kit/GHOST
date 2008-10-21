@@ -221,7 +221,7 @@ bool check_variable(const char *variable, const float rms_tolerance, Data *base_
   //   5. Check within bounds /
   ////////////////////////////
   if ( rms_error > rms_tolerance ){
-    std::cerr << "*** FAIL: rms_error = " << rms_error
+    std::cerr << "WARNING: rms_error = " << rms_error
 	      << " exceeds threshold of " << rms_tolerance
 	      << " for variable \"" << variable << "\".\n";
     assert(rms_error < rms_tolerance);
