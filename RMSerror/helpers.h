@@ -124,8 +124,8 @@ d_type compute_rms_difference(const char *variable, const int &rank, const int *
   int nt,ni,nj,nk;
   
   switch(rank){
-  case 1:    nt = 0;          ni = dims[0];    nj = 0;          nk = 0;          break;
-  case 2:    nt = 0;          ni = dims[0];    nj = dims[1];    nk = 0;          break;
+  case 1:    nt = 0;          ni = dims[0];    nj = 1;          nk = 1;          break;
+  case 2:    nt = 0;          ni = dims[0];    nj = dims[1];    nk = 1;          break;
   case 3:    nt = 0;          ni = dims[0];    nj = dims[1];    nk = dims[2];    break;
   case 4:    nt = dims[0];    nk = dims[1];    nj = dims[2];    ni = dims[3];    break;
     // 4-d:       time             level            lat              lon
@@ -147,6 +147,7 @@ d_type compute_rms_difference(const char *variable, const int &rank, const int *
 	test_index = i + (j*ni)+k*(ni*nj)+test_step*(ni*nj*nk);
 
 	dx = base_data[base_index]-test_data[test_index];
+
 	// if |dx| - epsilon <= 0, then it is below machine roundoff error and we throw out the data point.
 	if ( (fabs(dx) - epsilon) > 0 ){      
 	  // data is non-zero
@@ -213,8 +214,8 @@ d_type compute_max_difference(const char *variable, const int &rank, const int *
   int nt,ni,nj,nk;
   
   switch(rank){
-  case 1:    nt = 0;          ni = dims[0];    nj = 0;          nk = 0;          break;
-  case 2:    nt = 0;          ni = dims[0];    nj = dims[1];    nk = 0;          break;
+  case 1:    nt = 0;          ni = dims[0];    nj = 1;          nk = 1;          break;
+  case 2:    nt = 0;          ni = dims[0];    nj = dims[1];    nk = 1;          break;
   case 3:    nt = 0;          ni = dims[0];    nj = dims[1];    nk = dims[2];    break;
   case 4:    nt = dims[0];    nk = dims[1];    nj = dims[2];    ni = dims[3];    break;
     // 4-d:       time             level            lat              lon
