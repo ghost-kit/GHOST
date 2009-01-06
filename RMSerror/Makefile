@@ -24,17 +24,19 @@ LIBS = $(EXTRA_LIBS) $(HDFLIB)
 # Make Targets
 #
 
-all: RMSerror install
+all: RMSerror CalculateNorm install
 
-OBJS = ASCII.o LFMpara.o RMSerror.o
-RMSerror: $(OBJS)
-	$(CXX) $(OBJS) -o RMSerror $(LIBS)
+RMSerror: RMSerror.o
+	$(CXX) RMSerror.o -o RMSerror $(LIBS)
 
-install: RMSerror
-	cp RMSerror ../../bin
+CalculateNorm: CalculateNorm.o
+	$(CXX) CalculateNorm.o -o CalculateNorm $(LIBS)
+
+install: RMSerror CalculateNorm
+	cp RMSerror CalculateNorm ../../bin
 
 clean:
-	rm -f *.o RMSerror
+	rm -f *.o RMSerror CalculateNorm
 
 distclean: clean
 	rm -f ../../bin/RMSerror

@@ -79,47 +79,47 @@ public:
 
   // Access Member Data:
   /// Get the current modified julian date
-  double getMJD(void) { return mjd; }
+  double getMJD(void) const { return mjd; }
   /// Get the current year
-  size_t getYear(void) { return year; }
+  size_t getYear(void) const { return year; }
   /// Get the current month
-  size_t getMonth(void) { return month; }
+  size_t getMonth(void) const { return month; }
   /// Get the current day
-  size_t getDay(void) { return day; }
+  size_t getDay(void) const { return day; }
   /// Get the current hours
-  size_t getYears(void) { return year; }
+  size_t getYears(void) const { return year; }
   /// Get the current month
-  size_t getMonths(void) { return month; }
+  size_t getMonths(void) const { return month; }
   /// Get the current day
-  size_t getDays(void) { return day; }
+  size_t getDays(void) const { return day; }
   /// Get the current hours
-  size_t getHour(void) { return hours; }
+  size_t getHour(void) const { return hours; }
   /// Get the current minutes
-  size_t getMinute(void) { return minutes; }
+  size_t getMinute(void) const { return minutes; }
   /// Get the current seconds
-  double getSecond(void) { return seconds; }  
+  double getSecond(void) const { return seconds; }  
   /// Get the current hours
-  size_t getHours(void) { return hours; }
+  size_t getHours(void) const { return hours; }
   /// Get the current minutes
-  size_t getMinutes(void) { return minutes; }
+  size_t getMinutes(void) const { return minutes; }
   /// Get the current seconds
-  double getSeconds(void) { return seconds; }  
+  double getSeconds(void) const { return seconds; }  
 
   /// Get the number of days elapsed since Epoch date
-  double getDaySinceEpoch(void) { return mjd; }
+  double getDaySinceEpoch(void) const { return mjd; }
   /// Get the number of hours elapsed since Epoch date
-  double getHoursSinceEpoch(void) { return 24*mjd; }
+  double getHoursSinceEpoch(void) const { return 24*mjd; }
   /// Get the number of minutes elapsed since Epoch date
-  double getMinutesSinceEpoch(void) { return 1440*mjd; } // 1440 = 24*60
+  double getMinutesSinceEpoch(void) const { return 1440*mjd; } // 1440 = 24*60
   /// Get the number of seconds elapsed since Epoch date
-  double getSecondsSinceEpoch(void) { return 86400*mjd; } // 86400 = 24*60*60
+  double getSecondsSinceEpoch(void) const { return 86400*mjd; } // 86400 = 24*60*60
 
   /// Get the day of the year
-  size_t getDayOfYear(void) { return dayOfYear(); }
+  size_t getDayOfYear(void) const { return dayOfYear(); }
 
   // Output:
   friend std::ostream& operator << (std::ostream& output, const DateTime& time);
-  std::string getDateTimeString(void);
+  std::string getDateTimeString(void) const;
 
   // Comparison
   bool operator < (const DateTime & date);
@@ -135,8 +135,8 @@ public:
   void operator -= (const DateTime & date);
  
 private:  
-  size_t dayOfYear(void);
-  double secOfDay(void);
+  size_t dayOfYear(void) const;
+  double secOfDay(void) const;
 
   void updateMJD(void);
   void updateYMDHMS(void);

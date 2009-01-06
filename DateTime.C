@@ -76,7 +76,7 @@ DateTime::DateTime(const double &MJD)
  *  i.e. January 31 = 31st day; February 32 = 32nd day...
  * @return the number of days since January 1
  */
-size_t DateTime::dayOfYear(void)
+size_t DateTime::dayOfYear(void) const
 {
   int i;  // loop counter
   size_t doy; // day of year
@@ -104,7 +104,7 @@ size_t DateTime::dayOfYear(void)
 /**
  * @return the seconds elapsed in the current day
  */
-double DateTime::secOfDay(void)
+double DateTime::secOfDay(void) const
 {
   double sod; // seconds of day
 
@@ -318,7 +318,7 @@ void DateTime::verifyYMDHMS(void)
  *  Returns a string of the form YYYY-MM-DDTHH-MM-SSZ.  This is useful
  *  for UTIO filenames, like we have used with CMIT.
  */
-std::string DateTime::getDateTimeString(void)
+std::string DateTime::getDateTimeString(void) const
 {
   std::string YYYY, MM, DD, HH, MMin, SS;
   std::stringstream out;

@@ -6,6 +6,7 @@
 // #include <iostream.h>
 #include <iostream>
 #include <limits>
+
 #include <mfhdf.h> // defines NC_VAR_DIMS
 
 #include "Data.h"
@@ -16,18 +17,26 @@
 
 /// Print usage information.
 void printHelp(const char *);
-/// Compute RMS error, check for infs and NaNs for variable between base_file and test_file.
-bool check_variable(const char *variable, const float rms_tolerance, Data *base_file, Data *test_file);
 
-/// RMSerror Application
+/// Compute norm, check for infs and NaNs for variable between base_file and test_file.
+template <typename d_type>
+bool check_variable(const int &norm_type, const char *variable, 
+		    Data *base_file, const int & base_step, 
+		    Data *test_file, const int &test_step);
+
+/// CalculatNorm Application
 /**
- *  Computes a normalized RMS error of <VARIABLE> for the data files <BASE_FILE> - <TEST_FILE>. 
+ *  Computes a norm of <VARIABLE> for timestep <BASE_STEP> and
+ *  <TEST_STEP> ofthe data files <BASE_FILE> & <TEST_FILE>.
  *
- *  http://en.wikipedia.org/wiki/Root_mean_square
+ *  Norm options:
+ *    - Max norm
+ *    - L2 norm (RMS error)
+ *        http://en.wikipedia.org/wiki/Root_mean_square
  *
- *  The RMS error is "normalized" in the sense that we compute
- *       ( (x_i - y_i)/( |x_i| + |y_i| ) )^2
- *  pointwise rather than (x_i - y_i)^2 for the RMS error.
+ *        The RMS error is "normalized" in the sense that we compute
+ *             ( (x_i - y_i)/( |x_i| + |y_i| ) )^2
+ *        pointwise rather than (x_i - y_i)^2 for the RMS error.
  *
  *  Psuedo-code for this application:
  *
@@ -39,19 +48,23 @@ bool check_variable(const char *variable, const float rms_tolerance, Data *base_
  *    for each variable in the file
  *      1. compare dimensions
  *      2. read data  
- *      3. Check for infs and NaNs
- *      4. compute RMS error
- *      5. Check within bounds
+ *      3. check for infs and NaNs
+ *      4. compute norm
  ************************************
+ *
+ * FIXME:  There's some overlap/duplicate code here with RMSerror.C... 
  */
 int main(int argc, char **argv)
 {
   char base_filename[2048], test_filename[2048];      // INPUT filenames of data that will be read
   int dataset_type;                                   // INPUT integer to keep track of what data is being
                                                       // read (ASCII=0, HDF=1, NETCDF=2, etc.)
-  float rms_tolerance;                                // INPUT tolerance that rms_error should be within.
-  char variable[128];                                 // variable name to read
+  int norm_type;                                      // 1=max norm, 2=Normalized RMS error
   Data *base_file, *test_file;                        // data that will be read
+  int base_step, test_step;
+  char variable[128];                                 // variable name to read
+  bool isFloat = false;
+  bool isDouble = false;
   
   // Initialize data
   base_file = NULL;
@@ -60,15 +73,17 @@ int main(int argc, char **argv)
   // SET COMMAND-LINE ARGS: //
   ///////////////////////////////////////////////////////////////
   // Check arguments
-  if ( argc < 6 ){
+  if ( argc < 8 ){
     printHelp(argv[0]);
     exit(0);
   }
   dataset_type = atoi(argv[1]);
-  strcpy(base_filename, argv[2]);
-  strcpy(test_filename, argv[3]);
-  strcpy(variable, argv[4]);  
-  rms_tolerance = atof(argv[5]);
+  norm_type = atoi(argv[2]);
+  strcpy(base_filename, argv[3]);
+  base_step = atoi(argv[4]);
+  strcpy(test_filename, argv[5]);
+  test_step = atoi(argv[6]);
+  strcpy(variable, argv[7]);  
   ///////////////////////////////////////////////////////////////
 
   //////////////
@@ -80,14 +95,17 @@ int main(int argc, char **argv)
   case 0: 
     base_file = new ASCII_data<float>((const char *) base_filename);
     test_file = new ASCII_data<float>((const char *) test_filename);
+    isFloat = true;
     break;
   case 1:
     base_file = new HDF_data<float>((const char *) base_filename);
     test_file = new HDF_data<float>((const char *) test_filename);
+    isFloat = true;
     break;
   case 2:
     base_file = new HDF_data<double>((const char *) base_filename);
     test_file = new HDF_data<double>((const char *) test_filename);
+    isDouble = true;
     break;
   default:
     std::cerr << "*** Unknown dataset type " << dataset_type << "\n";
@@ -96,8 +114,14 @@ int main(int argc, char **argv)
 
   ///////////////////////////////////////////////////////////////
   // verify the data:
-  if (! check_variable(variable, rms_tolerance, base_file, test_file)){
-    return -1;
+  if (isFloat){
+    if (! check_variable<float>(norm_type, variable, base_file, base_step, test_file, test_step)){
+      return -1;
+    }
+  }else if (isDouble){
+    if (! check_variable<double>(norm_type, variable, base_file, base_step, test_file, test_step)){
+      return -1;
+    }
   }
   ///////////////////////////////////////////////////////////////
 
@@ -122,30 +146,37 @@ void printHelp(const char * exe_name)
 {
   std::cout << exe_name << "\n"
 	    << "Usage: \n"
-	    << "\t RMSerror <FILE_TYPE_INTEGER> <BASE_FILE> <TEST_FILE> <VARIABLE> <TOLERANCE>\n"
+	    << "\t RMSdifference <FILE_TYPE> <NORM> <BASE_FILE> <BASE_STEP> <TEST_FILE> <TEST_STEP> <VARIABLE>\n"
 	    << "\n"
-	    << "\t FILE_TYPE_INTEGER - Integer number corresponding to file type\n"
+	    << "\t FILE_TYPE - Integer number corresponding to file type\n"
 	    << "\t\t 0  -  whitespace-separated ASCII text file with n columns; Specify column number in \"VARIABLE\".\n"
 	    << "\t\t 1  -  HDF (i.e. LFM-para and MIX files)\n"
 	    << "\t\t 2  -  NETCDF (i.e. TIEGCM files)\n"
+	    << "\t NORM\n"
+	    << "\t\t 1  -  Max norm\n"
+	    << "\t\t 2  -  L2 (Normalized RMS difference)\n"
 	    << "\t BASE_FILE - path to base \"gold standard\" data file\n"
+	    << "\t BASE_STEP - timestep of base file\n"
 	    << "\t TEST_FILE - path to test data file\n"
+	    << "\t TEST_STEP - timestep of test file\n"
 	    << "\t VARIABLE - variable to check\n"
-	    << "\t TOLERANCE - acceptable tolerance that the RMS error should be within\n"
 	    << "\n"
-	    << "Computes the RMS error of <VARIABLE> from <BASE_FILE> - <TEST_FILE>.\n"
+	    << "Computes the norm difference of <VARIABLE> from <BASE_FILE> - <TEST_FILE>.\n"
 	    << "\n";
 }
 
 /**************************************************************************/
 
-bool check_variable(const char *variable, const float rms_tolerance, Data *base_file, Data *test_file)
+template <typename d_type>
+bool check_variable(const int &norm_type, const char *variable, 
+		    Data *base_file, const int &base_step, 
+		    Data *test_file, const int &test_step)
 {
   int base_rank, test_rank;                           // rank (# of dimensions) of dataset variables
   int base_ijk[MAX_VAR_DIMS], test_ijk[MAX_VAR_DIMS]; // dimension of dataset
   int nElements;                                      // ni * nj * nk
-  float *base_data, *test_data;                       // variables to hold floating-point data that's read from file.
-  float rms_error;                                    // rms error that we're going to compute.  
+  d_type *base_data, *test_data;                       // variables to hold floating-point data that's read from file.
+  d_type norm;                                    // rms error that we're going to compute.  
 
   // initialize variables
   base_data = NULL;
@@ -166,6 +197,13 @@ bool check_variable(const char *variable, const float rms_tolerance, Data *base_
     return false;
   }
 
+  if ( base_rank < 4 ){
+    std::cerr << "*** Error: RMSdifference needs four-dimensional data, but rank(base_data) = " << base_rank << std::endl;
+  }
+  if ( test_rank < 4 ){
+    std::cerr << "*** Error: RMSdifference needs four-dimensional data, but rank(test_data) = " << test_rank << std::endl;
+  }
+
   if ( !check_dimensions(base_rank, base_ijk, test_rank, test_ijk) ){
     std::cerr << "*** Dimensions differ for variable \"" << variable << "\"!\n";
     return false;
@@ -180,13 +218,13 @@ bool check_variable(const char *variable, const float rms_tolerance, Data *base_
   }
 
   if (base_data == NULL){
-    base_data = new float[nElements];
+    base_data = new d_type[nElements];
   }
   else{
     std::cerr << "*** base_data already defined for variable \"" << variable << "\"!\n";
   }
   if(test_data == NULL){
-    test_data = new float[nElements];
+    test_data = new d_type[nElements];
   }
   else{
     std::cerr << "*** test_data already defined for variable \"" << variable << "\"!\n";
@@ -196,56 +234,48 @@ bool check_variable(const char *variable, const float rms_tolerance, Data *base_
   //   2. read data / 
   //////////////////
   if ( !base_file->getData(variable, base_data) ){
-    std::cerr << "*** Error reading data from \"" << base_file->getFilename() << "\" for variable \"" << variable << "\"!\n";
+    std::cerr << "*** Error reading data from \"" << base_file->getFilename() 
+	      << "\" for variable \"" << variable << "\"!\n";
     return false;
   }
   if ( !test_file->getData(variable, test_data) ){
-    std::cerr << "*** Error reading data from \"" << test_file->getFilename()  << "\" for variable \"" << variable << "\"!\n";
+    std::cerr << "*** Error reading data from \"" << test_file->getFilename() 
+	      << "\" for variable \"" << variable << "\"!\n";
     return false;
-  }
-  
-  //////////////////////////////////
-  //   3. Check for infs and NaNs /
-  ////////////////////////////////
-  if ( !global_check_valid_data(base_rank, base_ijk, base_data, test_data) ){
-    std::cerr << "*** Found an inf or NaN in the data for variable \"" << variable << "\"!\n";
-    return false;
-  }
-    
-  ////////////////////////////
-  //   4. compute RMS error /
-  //////////////////////////
-  rms_error = compute_global_rms_difference(variable, base_rank, base_ijk, base_data, test_data);
-
-  //////////////////////////////
-  //   5. Check within bounds /
-  ////////////////////////////
-  if ( rms_error > rms_tolerance ){
-    std::cerr << "WARNING: rms_error = " << rms_error
-	      << " exceeds threshold of " << rms_tolerance
-	      << " for variable \"" << variable << "\".\n";
-    assert(rms_error < rms_tolerance);
-    return false;
-  }    
+  }  
 
   ////////////////////////////
-  //  6. Free up the memory /
+  //   3. compute norm  error /
   //////////////////////////
+  switch(norm_type){
+  case 1:
+    norm = compute_max_difference(variable, base_rank, base_ijk, base_data, base_step, test_data,test_step);
+    break;
+  case 2:
+    norm = compute_rms_difference(variable, base_rank, base_ijk, base_data, base_step, test_data,test_step);
+    break;
+  default:
+    std::cerr << "*** Error computing norm_type=\"" << norm_type 
+	      << "\".  See usage message for valid norm_types." << std::endl;
+    break;
+  }
+
+  /////////////////////////////
+  //   4. Free up the memory /
+  ///////////////////////////
   delete[] base_data;
   delete[] test_data;
 
-  ///////////////////////
-  //  7. Output status /
-  /////////////////////
+  ////////////////////////
+  //   5. Output status /
+  //////////////////////
 #ifdef VERBOSE
   std::cout << "RMS error for variable "<< variable << "\" in "
 	    << "\"" << base_file->getFilename() << "\" to "
 	    << "\"" << test_file->getFilename() << "\":  "
-	    << rms_error << " < tolerance "
-	    << rms_tolerance << ".  "
-	    << "OK!\n";
+	    << norm << std::endl;
 #else
-    std::cout << rms_error << "\n";
+    std::cout << norm << "\n";
 #endif
   return true;
 }

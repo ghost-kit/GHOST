@@ -74,12 +74,12 @@ MHD_FE_InnerBoundaryInterface::~MHD_FE_InnerBoundaryInterface()
 #ifdef DEBUG_MODE_ON
   cout << "  MHD_FE: Destructor called.\n"; 
 #else 
-  assert( remove(MHDLockFile.c_str()) == 0 );
- 
-  remove("MHD_scalars");
-  remove("MHD_current");
-  remove("MHD_density");
-  remove("MHD_soundSpeed");
+  // Leave the files alone in case MHD finishes before ITM.
+  //assert( remove(MHDLockFile.c_str()) == 0 ); 
+  //remove("MHD_scalars");
+  //remove("MHD_current");
+  //remove("MHD_density");
+  //remove("MHD_soundSpeed");
 #endif
 }
 
@@ -289,11 +289,17 @@ void MHD_FE_InnerBoundaryInterface::sendScalars(const doubleArray & scalars)
 	      << Communication_Manager::My_Process_Number  << "\n";
   }
 
-  // Write scalars to file
-  for ( int i = 0; i < scalars.elementCount(); i++ ){
-    outs << scalars(i) << "\n";
-  }
-  
+  outs << scalars(0) << "\n"; // kill signal
+  outs << scalars(1) << "\n"; // Year
+  outs << scalars(2) << "\n"; // Month
+  outs << scalars(3) << "\n"; // Day
+  outs << scalars(4) << "\n"; // Hour
+  outs << scalars(5) << "\n"; // Minute
+  outs.precision(10);
+  outs << scalars(6) << "\n"; // Second (double-precisoin)
+  outs << scalars(7) << "\n"; // Tilt
+  outs << scalars(8) << "\n"; // Label (mhd time step number)
+
   // Make sure to flush the IO to disk.
   outs.flush();
   

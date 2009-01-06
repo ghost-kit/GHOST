@@ -7,8 +7,6 @@
 #include <iostream>
 #endif
 
-using namespace std;
-
 /// Abstract base class for data file readers
 /**
  *  Here's how you should use this class in some code:
@@ -16,12 +14,14 @@ using namespace std;
  *  Data base_file = new <file_type>;
  *
  *  Where <file_type> is a derived class to read the data, such as:
- *    - LFMpara
+ *    - ASCII_data
+ *    - HDF_data
+ *    - NETCDF_data
  *
- *  All of the variables that can be set should be listed in the
- *  header of the derived class, such as:
- *    - LFMpara.h
+ *  Example variables that can be set should be listed in the
+ *  header of the derived class, such as
  */
+//template<typename dtype>
 class Data
 {
 public:
@@ -30,7 +30,7 @@ public:
   /// Get dimensions of the dataset
   virtual int getDimensions(const char *variable, int *dimensions) = 0;
   /// Read the data from file.  Assumes that data is already allocated.
-  virtual bool getData(const char *variable, float *data) = 0;
+  virtual bool getData(const char *variable, void *data) = 0;
   /// Close access to file
   virtual bool close(void) = 0;
 

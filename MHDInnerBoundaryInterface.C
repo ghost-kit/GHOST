@@ -782,6 +782,15 @@ void MHDInnerBoundaryInterface::getElectricField(doubleArray & eField_i,
   eField_i(ONE,Jp1,Kp1) = - ( potential(1,Jp1-1,Kp1-1) - potential(0,Jp1-1,Kp1-1) )/di/RION*1.e2;  // in [V/m]
   eField_j(TWO,J,Kp1) = - ( potential(TWO-1,J ,Kp1-1) - potential(TWO-1,J-1,Kp1-1) )/dj/RION*1.e2;  // in [V/m]
 
+
+  /* VGM: 2008-11-14 The comment below is outdated. I did not handle
+     the electric field correctly. The old lines of code are commented
+     out as ******* as of today. The right way to treat the electric
+     field is as follows: Ei and Ej are well-defined everywhere, so
+     should be calculated as gradPhi. Ek is not well-defined only
+     right on the axis: j=1 and j=njp1. But right on the axis
+     Ek=0. The code below does just that as of today.*/
+
   // We know that dk is 0 for j=1 and j=njp1. gcc compiler supports
   // NaNs, so that we can get away by applying the following code at all
   // points (this results in getting NaN values at the nose and
@@ -793,12 +802,14 @@ void MHDInnerBoundaryInterface::getElectricField(doubleArray & eField_i,
   eField_k(TWO,J2nj,K) = - ( potential(TWO-1,J2nj-1,K) - potential(TWO-1,J2nj-1,K-1) )/dk(TWO,J2nj,K)/RION*1.e2;  // in [V/m]
 
   // Now set el. field to 0 at nZero edges at the nose and tail
-  int nZero = 2;
+  /********  int nZero = 2; */
+  int nZero = 1;
   Range indexZeroNose(1,nZero), indexZeroTail(njp1-nZero+1, njp1);
-  eField_i(ONE,indexZeroNose,Kp1) = eField_i(ONE,indexZeroTail,Kp1) = 0.;
+  /*********  eField_i(ONE,indexZeroNose,Kp1) = eField_i(ONE,indexZeroTail,Kp1) = 0.; */
   //  eField_j(TWO,indexZeroNose,Kp1) = eField_j(TWO,indexZeroTail,Kp1) = 0.;
   // The above is not correct because eField_j goes to nj, not to njp1. Therefore, indexZeroTail-1!
-  eField_j(TWO,indexZeroNose,Kp1) = eField_j(TWO,indexZeroTail-1,Kp1) = 0.;
+  /********  eField_j(TWO,indexZeroNose,Kp1) = eField_j(TWO,indexZeroTail-1,Kp1) = 0.; */
+  /********  eField_k(TWO,indexZeroNose,K) = eField_k(TWO,indexZeroTail,K) = 0.; */
   eField_k(TWO,indexZeroNose,K) = eField_k(TWO,indexZeroTail,K) = 0.;
 }
 

@@ -20,7 +20,7 @@ include Make.$(shell uname)
 	$(MPICXX) -c  $(CCFLAGS) $<
 
 .F.o:
-	$(MPIF77) -c $(FORTOPT) $(FFLAGS) $<
+	$(F77) -c $(GEOPACK_FFLAGS) $(FFLAGS) $<
 
 #
 # Make targets:
