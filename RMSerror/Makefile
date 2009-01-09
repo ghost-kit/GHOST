@@ -40,3 +40,4 @@ clean:
 
 distclean: clean
 	rm -f ../../bin/RMSerror
+	rm -f ../../bin/CalculateNorm

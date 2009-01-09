@@ -23,8 +23,8 @@ bool check_valid_data(const int &rank, const int *dims,
   int nt, ni,nj,nk;
   
   switch(rank){
-  case 1:    nt = 0;          ni = dims[0];    nj = 0;          nk = 0;          break;
-  case 2:    nt = 0;          ni = dims[0];    nj = dims[1];    nk = 0;          break;
+  case 1:    nt = 0;          ni = dims[0];    nj = 1;          nk = 1;          break;
+  case 2:    nt = 0;          ni = dims[0];    nj = dims[1];    nk = 1;          break;
   case 3:    nt = 0;          ni = dims[0];    nj = dims[1];    nk = dims[2];    break;
   case 4:    nt = dims[0];    nk = dims[1];    nj = dims[2];    ni = dims[3];    break;
     // 4-d:       time             level            lat              lon
