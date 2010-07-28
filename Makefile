@@ -28,21 +28,13 @@ include Make.$(shell uname)
 
 .PHONY: perlLibs
 
-OBJS = geopack.o DateTime.o parse_xjd.o \
+OBJS = Check_IC_Status.o geopack.o DateTime.o parse_xjd.o \
 	TinyXML/tinystr.o TinyXML/tinyxml.o TinyXML/tinyxmlerror.o TinyXML/tinyxmlparser.o
-
-OBJS_MHD = MHDInnerBoundaryInterface.o MHD_IC_InnerBoundaryInterface.o MHD_FE_InnerBoundaryInterface.o
 
 all: common RMSerror 
 
-common: common-MIX common-LFM
-	$(AR) rcs libcommon.a $(OBJS) $(OBJS_MHD)
-
-common-MIX: $(OBJS)
-	$(AR) rcs libcommon-MIX.a $(OBJS)
-
-common-LFM: $(OBJS) $(OBJS_MHD)
-	$(AR) rcs libcommon-LFM.a $(OBJS) $(OBJS_MHD)
+common: $(OBJS)
+	$(AR) rcs libcommon.a $(OBJS) 
 
 perlLibs: FORCE
 	cd perlLibs && $(MAKE)
@@ -59,7 +51,7 @@ clean:
 	cd RMSerror && $(MAKE) clean
 	cd TinyXML && $(MAKE) clean
 	rm -f *.o
-	rm -f libcommon.a libcommon-MIX.a libcommon-LFM.a
+	rm -f libcommon.a
 
 distclean: clean
 	cd perlLibs && $(MAKE) distclean

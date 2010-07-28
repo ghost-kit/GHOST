@@ -121,17 +121,8 @@ public:
   friend std::ostream& operator << (std::ostream& output, const DateTime& time);
   std::string getDateTimeString(void) const;
 
-  // Comparison
-  bool operator < (const DateTime & date);
-  bool operator <= (const DateTime & date);
-  bool operator > (const DateTime & date);
-  bool operator >= (const DateTime & date);
-  bool operator == (const DateTime & date);
-
   // Addition & Subtraction
-  friend DateTime operator + (const DateTime &date1, const DateTime & date2);
   void operator += (const DateTime & date);
-  friend DateTime operator - (const DateTime & date1, const DateTime & date2);
   void operator -= (const DateTime & date);
  
 private:  
@@ -159,5 +150,22 @@ private:
   /// Seconds of minute corresponding to mjd
   double seconds;
 };
+
+// Addition & Subtraction
+//
+// Overloaded as nonmember functions because they should not change member data.
+DateTime operator + (const DateTime &date1, const DateTime &date2);
+DateTime operator - (const DateTime &date1, const DateTime &date2);
+
+// DateTime comparison
+//
+// overloaded as nonmember functions to compare both const DateTime
+// objects (Compiler should automatically promote non-const to const
+// for both arguments).
+bool operator  < (const DateTime &d1, const DateTime &d2);
+bool operator <= (const DateTime &d1, const DateTime &d2);
+bool operator  > (const DateTime &d1, const DateTime &d2);
+bool operator >= (const DateTime &d1, const DateTime &d2);
+bool operator == (const DateTime &d1, const DateTime &d2);
 
 #endif

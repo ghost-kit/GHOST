@@ -1,7 +1,7 @@
 #include "tinyxml.h"
 #include <iostream>
 
-void parse_xjd(char *xjdName, char *compTypeInput, char *localName, int & localTasks)
+void parse_xjd(const char *xjdName, char *compTypeInput, char *localName, int & localTasks)
 {
   TiXmlDocument doc( xjdName );
   bool loadOkay = doc.LoadFile();

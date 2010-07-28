@@ -12,16 +12,10 @@ bool check_dimensions(int rank_1, int *dim1, int rank_2, int *dim2)
 
 /**************************************************************************/
 
-/// Check base_data and test_data for infs and NaNs.
-template<typename d_type>
-bool check_valid_data(const int &rank, const int *dims,
-		      const d_type *base_data, const int &base_step, 
-		      const d_type *test_data, const int &test_step)
+/// Use rank & dims to set nt,ni,nj,nk.
+void set_dimensions(const int &rank, const int *dims, 
+		    int &nt, int &ni, int &nj, int &nk)
 {
-  bool return_value = true;
-
-  int nt, ni,nj,nk;
-  
   switch(rank){
   case 1:    nt = 0;          ni = dims[0];    nj = 1;          nk = 1;          break;
   case 2:    nt = 0;          ni = dims[0];    nj = dims[1];    nk = 1;          break;
@@ -31,8 +25,20 @@ bool check_valid_data(const int &rank, const int *dims,
   case 0:    nt = 0;          ni = 0;          nj = 0;          nk = 0;
   default:
     std::cerr << "*** Error:  rank " << rank << " misunderstood.  We require rank <= 4" << std::endl;
-    return false;
   }
+}
+/**************************************************************************/
+
+/// Check base_data and test_data for infs and NaNs.
+template<typename d_type>
+bool check_valid_data(const int &rank, const int *dims,
+		      const d_type *base_data, const int &base_step, 
+		      const d_type *test_data, const int &test_step)
+{
+  bool return_value = true;
+
+  int nt, ni,nj,nk;
+  set_dimensions(rank, dims, nt,ni,nj,nk);
 
   int base_index, test_index;
 
@@ -113,8 +119,6 @@ d_type compute_rms_difference(const char *variable, const int &rank, const int *
 			      const d_type *base_data, const int &base_step,
 			      const d_type *test_data, const int &test_step)
 {
-  // machine roundoff error
-  d_type epsilon = std::numeric_limits<d_type>::epsilon();
   // We need to report a warning if the field is below roundoff error everywhere.
   bool isFieldZeroEverywhere = true;
 
@@ -122,18 +126,7 @@ d_type compute_rms_difference(const char *variable, const int &rank, const int *
   d_type dx;
 
   int nt,ni,nj,nk;
-  
-  switch(rank){
-  case 1:    nt = 0;          ni = dims[0];    nj = 1;          nk = 1;          break;
-  case 2:    nt = 0;          ni = dims[0];    nj = dims[1];    nk = 1;          break;
-  case 3:    nt = 0;          ni = dims[0];    nj = dims[1];    nk = dims[2];    break;
-  case 4:    nt = dims[0];    nk = dims[1];    nj = dims[2];    ni = dims[3];    break;
-    // 4-d:       time             level            lat              lon
-  case 0:    nt = 0;          ni = 0;          nj = 0;          nk = 0;
-  default:
-    std::cerr << "*** Error:  rank " << rank << " misunderstood.  We require rank <= 4" << std::endl;
-    return false;
-  }
+  set_dimensions(rank, dims, nt,ni,nj,nk);
 
   int base_index, test_index;
 
@@ -145,18 +138,15 @@ d_type compute_rms_difference(const char *variable, const int &rank, const int *
 	// Time loops on the slowest index:
 	base_index = i + (j*ni)+k*(ni*nj)+base_step*(ni*nj*nk);
 	test_index = i + (j*ni)+k*(ni*nj)+test_step*(ni*nj*nk);
-
+	
 	dx = base_data[base_index]-test_data[test_index];
-
-	// if |dx| - epsilon <= 0, then it is below machine roundoff error and we throw out the data point.
-	if ( (fabs(dx) - epsilon) > 0 ){      
+	// Do not divide by zero!
+	if ( (base_data[base_index] != 0) && (test_data[test_index] != 0) ){
 	  // data is non-zero
 	  isFieldZeroEverywhere = false;
 	  rms_error += dx*dx/( (fabs(base_data[base_index]) + fabs(test_data[test_index])) * 
 			       (fabs(base_data[base_index]) + fabs(test_data[test_index])) );
 	}
-	//else if ( (fabs(dx) - epsilon) <= 0 )
-	// data appears to be zero or within machine roundoff error 
       }
     }
   }
@@ -212,18 +202,7 @@ d_type compute_max_difference(const char *variable, const int &rank, const int *
   d_type dx;
 
   int nt,ni,nj,nk;
-  
-  switch(rank){
-  case 1:    nt = 0;          ni = dims[0];    nj = 1;          nk = 1;          break;
-  case 2:    nt = 0;          ni = dims[0];    nj = dims[1];    nk = 1;          break;
-  case 3:    nt = 0;          ni = dims[0];    nj = dims[1];    nk = dims[2];    break;
-  case 4:    nt = dims[0];    nk = dims[1];    nj = dims[2];    ni = dims[3];    break;
-    // 4-d:       time             level            lat              lon
-  case 0:    nt = 0;          ni = 0;          nj = 0;          nk = 0;
-  default:
-    std::cerr << "*** Error:  rank " << rank << " misunderstood.  We require rank <= 4" << std::endl;
-    return false;
-  }
+  set_dimensions(rank, dims, nt,ni,nj,nk);
 
   int base_index, test_index;
 

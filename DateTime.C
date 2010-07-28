@@ -376,86 +376,6 @@ std::ostream& operator<<(std::ostream& output, const DateTime& time)
 
 ////////////////////////////////////////////////////////////////////////
 
-/// date1 < date2
-/**
- *  Use modified julian date to determine if date1 is earlier than date2.
- *  @param date date to compare with
- *  @return true if input < date, false otherwise
- */
-bool DateTime::operator < (const DateTime & date)
-{
-  return (mjd < date.mjd);
-}
-
-////////////////////////////////////////////////////////////////////////
-
-/// date1 <= date2
-/**
- *  Use modified julian date to determine if date1 is earlier  or equal to date2.
- *  @param date date to compare with
- *  @return true if input <= date, false otherwise
- */
-bool DateTime::operator <= (const DateTime & date)
-{
-  return (mjd < date.mjd + EPSILON);
-}
-
-////////////////////////////////////////////////////////////////////////
-
-/// date1 > date2
-/**
- *  Use modified julian date to determine if date1 is later than date2.
- *  @param date date to compare with
- *  @return true if input > date, false otherwise
- */
-bool DateTime::operator > (const DateTime & date)
-{
-  return (mjd > date.mjd);
-}
-
-////////////////////////////////////////////////////////////////////////
-
-/// date1 >= date2
-/**
- *  Use modified julian date to determine if date1 is later than or equal to date2.
- *  @param date date to compare with
- *  @return true if input >= date, false otherwise
- */
-bool DateTime::operator >= (const DateTime & date)
-{
-  return (mjd > date.mjd - EPSILON);
-}
-
-////////////////////////////////////////////////////////////////////////
-
-/// date1 == date2
-/**
- *  Use modified julian date to determine if date1 is equal to date2.
- *  @param date date to compare with
- *  @return true if input == date, false otherwise
- */
-bool DateTime::operator == (const DateTime & date)
-{
-  return ( (mjd < date.mjd + EPSILON) &&
-	   (mjd > date.mjd - EPSILON) );
-}
-
-////////////////////////////////////////////////////////////////////////
-
-/// date1 + date2
-/**
- *  Add Modified Julian Dates and return DateTime object.
- *  @param date1
- *  @param date2
- *  @return new DateTime object that is the result of date1+date2
- */
-DateTime operator + (const DateTime & date1, const DateTime &date2)
-{
-  return DateTime(date1.mjd + date2.mjd);
-}
-
-////////////////////////////////////////////////////////////////////////
-
 /// this.mjd += date.mjd
 /**
  *  Add date.mjd to the current time, update the Year-Month-Day
@@ -470,20 +390,6 @@ void DateTime::operator += (const DateTime & date)
 
 ////////////////////////////////////////////////////////////////////////
 
-/// date1 - date2
-/**
- *  Subtracted Modified Julian Dates and return DateTime object.
- *  @param date1
- *  @param date2
- *  @return new DateTime object that is the result of date1-date2
- */
-DateTime operator - (const DateTime & date1, const DateTime &date2)
-{
-  return DateTime(date1.mjd - date2.mjd);
-}
-
-////////////////////////////////////////////////////////////////////////
-
 /// this.mjd -= date.mjd
 /**
  *  Add date.mjd to the current time, update the Year-Month-Day
@@ -494,6 +400,104 @@ void DateTime::operator -= (const DateTime & date)
 {
   mjd -= date.mjd;
   updateYMDHMS();
+}
+
+////////////////////////////////////////////////////////////////////////
+// Non-member functions:
+////////////////////////////////////////////////////////////////////////
+
+
+/// date1 + date2
+/**
+ *  Add Modified Julian Dates and return DateTime object.
+ *  @param date1
+ *  @param date2
+ *  @return new DateTime object that is the result of date1+date2
+ */
+DateTime operator + (const DateTime & date1, const DateTime &date2)
+{
+  return DateTime(date1.getMJD() + date2.getMJD());
+}
+
+////////////////////////////////////////////////////////////////////////
+
+/// date1 - date2
+/**
+ *  Subtracted Modified Julian Dates and return DateTime object.
+ *  @param date1
+ *  @param date2
+ *  @return new DateTime object that is the result of date1-date2
+ */
+DateTime operator - (const DateTime & date1, const DateTime &date2)
+{
+  return DateTime(date1.getMJD() - date2.getMJD());
+}
+
+////////////////////////////////////////////////////////////////////////
+
+
+/// date1 < date2
+/**
+ *  Use modified julian date to determine if date1 is earlier than date2.
+ *  @param date date to compare with
+ *  @return true if input < date, false otherwise
+ */
+bool operator <(const DateTime &d1, const DateTime &d2)
+{
+  return (d1.getMJD() < d2.getMJD());
+}
+
+////////////////////////////////////////////////////////////////////////
+
+/// date1 <= date2
+/**
+ *  Use modified julian date to determine if date1 is earlier  or equal to date2.
+ *  @param date date to compare with
+ *  @return true if input <= date, false otherwise
+ */
+bool operator <= (const DateTime &d1, const DateTime &d2)
+{
+  return (d1.getMJD() < d2.getMJD() + EPSILON);
+}
+
+////////////////////////////////////////////////////////////////////////
+
+/// date1 > date2
+/**
+ *  Use modified julian date to determine if date1 is later than date2.
+ *  @param date date to compare with
+ *  @return true if input > date, false otherwise
+ */
+bool operator >(const DateTime &d1, const DateTime &d2)
+{
+  return (d1.getMJD() > d2.getMJD());
+}
+
+////////////////////////////////////////////////////////////////////////
+
+/// date1 >= date2
+/**
+ *  Use modified julian date to determine if date1 is later than or equal to date2.
+ *  @param date date to compare with
+ *  @return true if input >= date, false otherwise
+ */
+bool operator >= (const DateTime & d1, const DateTime & d2)
+{
+  return (d1.getMJD() > d2.getMJD() - EPSILON);
+}
+
+////////////////////////////////////////////////////////////////////////
+
+/// date1 == date2
+/**
+ *  Use modified julian date to determine if date1 is equal to date2.
+ *  @param date date to compare with
+ *  @return true if input == date, false otherwise
+ */
+bool operator == (const DateTime & d1, const DateTime & d2)
+{
+  return ( (d1.getMJD() < d2.getMJD() + EPSILON) &&
+	   (d1.getMJD() > d2.getMJD() - EPSILON) );
 }
 
 ////////////////////////////////////////////////////////////////////////
