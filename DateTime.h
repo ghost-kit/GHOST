@@ -44,10 +44,11 @@ public:
   DateTime(const size_t &YEAR, const size_t &MONTH, const size_t &DAY, 
 	   const size_t &HOURS, const size_t &MINUTES, const double &SECONDS);
   DateTime(const double & MJD);
+  DateTime(const double & MJD, const double &fractionOfDay);
 
   // Set Member Data:
   /// Set modified julian date and update YYYY-MM-DD @ HH:MM:SS
-  void setMJD(const double &MJD) { mjd = MJD; updateYMDHMS(); }
+  void setMJD(const double &MJD) { fractionOfDay = modf(MJD, &mjd); updateYMDHMS(); }
   /// Set year and update modified julian date
   void setYear(const size_t &YEAR) { year = YEAR; updateMJD(); }
   /// Set month and update modified julian date
@@ -63,7 +64,7 @@ public:
 
   // Modify Member Data:
   /// Increment the current MJD by delta_MJD and update YYYY-MM-DD @ HH:MM:SS
-  void incrementMJD(const double &delta_MJD) {mjd += delta_MJD; updateYMDHMS(); }
+  void incrementMJD(const double &delta_MJD);
   /// Increment the current year by delta_YEAR and update modified julian date
   void incrementYear(const size_t &delta_YEAR) { year += delta_YEAR; updateMJD(); }
   /// Increment the current month by delta_MONTH and update modified julian date
@@ -79,7 +80,9 @@ public:
 
   // Access Member Data:
   /// Get the current modified julian date
-  double getMJD(void) const { return mjd; }
+  double getMJD(void) const { return (mjd+fractionOfDay); }
+  // get percentage of day elapsed
+  double getFractionOfDay(void) const { return fractionOfDay; }
   /// Get the current year
   size_t getYear(void) const { return year; }
   /// Get the current month
@@ -108,11 +111,11 @@ public:
   /// Get the number of days elapsed since Epoch date
   double getDaySinceEpoch(void) const { return mjd; }
   /// Get the number of hours elapsed since Epoch date
-  double getHoursSinceEpoch(void) const { return 24*mjd; }
+  double getHoursSinceEpoch(void) const { return 24*this->getMJD(); }
   /// Get the number of minutes elapsed since Epoch date
-  double getMinutesSinceEpoch(void) const { return 1440*mjd; } // 1440 = 24*60
+  double getMinutesSinceEpoch(void) const { return 1440*this->getMJD(); } // 1440 = 24*60
   /// Get the number of seconds elapsed since Epoch date
-  double getSecondsSinceEpoch(void) const { return 86400*mjd; } // 86400 = 24*60*60
+  double getSecondsSinceEpoch(void) const { return 86400*this->getMJD(); } // 86400 = 24*60*60
 
   /// Get the day of the year
   size_t getDayOfYear(void) const { return dayOfYear(); }
@@ -126,6 +129,9 @@ public:
   void operator -= (const DateTime & date);
  
 private:  
+  /// Increment fraction of day & update MJD if necessary.
+  void incrementFractionOfDay(const double &delta_frac);
+
   size_t dayOfYear(void) const;
   double secOfDay(void) const;
 
@@ -136,6 +142,7 @@ private:
 
   /// Modified Julian Date
   double mjd; 
+  double fractionOfDay;
 
   /// Year corresponding to mjd
   size_t year;

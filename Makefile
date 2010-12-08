@@ -26,18 +26,13 @@ include Make.$(shell uname)
 # Make targets:
 #
 
-.PHONY: perlLibs
-
 OBJS = Check_IC_Status.o geopack.o DateTime.o parse_xjd.o \
 	TinyXML/tinystr.o TinyXML/tinyxml.o TinyXML/tinyxmlerror.o TinyXML/tinyxmlparser.o
 
 all: common RMSerror 
 
 common: $(OBJS)
-	$(AR) rcs libcommon.a $(OBJS) 
-
-perlLibs: FORCE
-	cd perlLibs && $(MAKE)
+	$(AR) rcs libcommon.a $(OBJS)
 
 parse_xjd.o: 
 	cd TinyXML && $(MAKE) tinyxml_obj
@@ -46,17 +41,18 @@ parse_xjd.o:
 RMSerror: FORCE
 	cd RMSerror && $(MAKE)
 
+test:
+	${MAKE} -f Make.test
+
 clean:
-	cd perlLibs && $(MAKE) clean
 	cd RMSerror && $(MAKE) clean
 	cd TinyXML && $(MAKE) clean
 	rm -f *.o
 	rm -f libcommon.a
+	${MAKE} -f Make.test clean
 
 distclean: clean
-	cd perlLibs && $(MAKE) distclean
 	cd RMSerror && $(MAKE) distclean
 	cd TinyXML && $(MAKE) distclean
-	rm -rf ../lib ../lib64
 
 FORCE:

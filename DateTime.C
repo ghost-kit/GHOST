@@ -64,9 +64,53 @@ DateTime::DateTime(const size_t &YEAR, const size_t &MONTH, const size_t &DAY,
  */
 DateTime::DateTime(const double &MJD)
 {
-  mjd = MJD;
+  fractionOfDay = modf(MJD, &mjd);
 
   updateYMDHMS();
+}
+
+////////////////////////////////////////////////////////////////////////
+
+DateTime::DateTime(const double &MJD, const double & FRACTIONOFDAY)
+{
+  // MJD might have decimal portion
+  fractionOfDay = modf(MJD, &mjd);
+  // Now update from the input fraction of day.
+  incrementFractionOfDay(FRACTIONOFDAY);
+
+  updateYMDHMS();
+}
+
+////////////////////////////////////////////////////////////////////////
+
+void DateTime::incrementMJD(const double &delta_MJD)
+{
+  double nDays, deltaFracOfDay;
+
+  deltaFracOfDay = modf(delta_MJD, &nDays);
+
+  mjd += nDays;
+  
+  incrementFractionOfDay(deltaFracOfDay);
+
+  updateYMDHMS(); 
+}
+
+////////////////////////////////////////////////////////////////////////
+
+/// private member function to properly handle day boundaries when updating fractional component of a day.
+void DateTime::incrementFractionOfDay(const double &delta_frac)
+{
+  fractionOfDay += delta_frac;
+
+  // make sure we don't cross a day boundary
+  if (fractionOfDay >= 1.0){
+    double elapsedDays = 0.0;
+    fractionOfDay = modf(fractionOfDay, &elapsedDays);
+    mjd += elapsedDays;
+  }
+
+  // Phew. That sure was a frack of a day!
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -169,7 +213,8 @@ void DateTime::updateMJD(void)
   mjd = julianDate - epochJulianDate;
 
   // add the fractional part of a day
-  mjd += secOfDay() / 86400.0; // 86400 = 24*60*60 = # of seconds in a day.
+  fractionOfDay = 0.0;
+  incrementFractionOfDay( secOfDay() / 86400.0 ); // 86400 = 24*60*60 = # of seconds in a day.
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -192,12 +237,9 @@ void DateTime::updateMJD(void)
  */
 void DateTime::updateYMDHMS(void)
 {
-  // Remove fraction of day
-  double fractionOfDay = (mjd - floor(mjd));
-
   const long GREG=2299161; // JD for October 15, 1582 @ 12:00:00:00 UT
   long alpha, A, B, C, D, E;
-  long julian = (long) (mjd - fractionOfDay) + (long) epochJulianDate; // Convert to standard Julian Date  
+  long julian = (long) mjd + (long) epochJulianDate; // Convert to standard Julian Date  
   
   if (julian >= GREG) {
     // Gregorian Calendar correction
@@ -370,7 +412,7 @@ std::ostream& operator<<(std::ostream& output, const DateTime& time)
 	 << "[" << time.year << "-" << time.month << "-" << time.day
 	 << "] @ " << time.hours << ":" << time.minutes << ":" << time.seconds
 	 << std::endl;
-  output << "Modified Julian Date    = " << std::setprecision(30) << time.mjd << std::endl;
+  output << "Modified Julian Date    = " << std::setprecision(30) << time.getMJD() << std::endl;
   return output;
 }
 
@@ -385,6 +427,7 @@ std::ostream& operator<<(std::ostream& output, const DateTime& time)
 void DateTime::operator += (const DateTime & date)
 {
   mjd += date.mjd;
+  incrementFractionOfDay( date.fractionOfDay );
   updateYMDHMS();
 }
 
@@ -399,6 +442,7 @@ void DateTime::operator += (const DateTime & date)
 void DateTime::operator -= (const DateTime & date)
 {
   mjd -= date.mjd;
+  incrementFractionOfDay( -date.fractionOfDay );
   updateYMDHMS();
 }
 

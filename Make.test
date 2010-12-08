@@ -1,0 +1,34 @@
+# -*- mode: makefile -*-
+include ../../env/Make.${MACHINE}
+
+CXXTEST=../../common/test/cxxtest/cxxtestgen.pl --error-printer
+CXXFLAGS=-I../../common/test/cxxtest -I. 
+LIBS=
+
+#
+# Suffixes
+#
+# *.h "test suite" header file generates a *.cpp source file
+# *.cpp generated source file compile to an *.o object file
+# Building a test test creates a *_test executable
+#
+
+.SUFFIXES: .cxxTest .o .c .cxx .C 
+
+.cxxTest.cxx:
+	${CXXTEST} -o $(*F).cxx $<
+
+.cxx.o:
+	$(CXX) -c  $(CXXFLAGS) $<
+
+#
+# Targets
+#
+
+all: testDateTime
+
+testDateTime: testDateTime.cxx testDateTime.o DateTime.o
+	${CXX} ${CXXFLAGS} -o testDateTime testDateTime.o DateTime.o ${LIBS}
+
+clean:
+	rm -f *.cxx testDateTime

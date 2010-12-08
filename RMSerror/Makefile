@@ -33,11 +33,9 @@ CalculateNorm: CalculateNorm.o
 	$(CXX) CalculateNorm.o -o CalculateNorm $(LIBS)
 
 install: RMSerror CalculateNorm
-	cp RMSerror CalculateNorm ../../bin
+	cp RMSerror CalculateNorm ../../../build/bin
 
 clean:
 	rm -f *.o RMSerror CalculateNorm
 
 distclean: clean
-	rm -f ../../bin/RMSerror
-	rm -f ../../bin/CalculateNorm
