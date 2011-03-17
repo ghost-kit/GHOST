@@ -88,8 +88,6 @@ bool check_valid_data(const int &rank, const int *dims,
 template<typename d_type>
 bool global_check_valid_data(const int &rank, const int *dims, const d_type *base_data, const d_type *test_data)
 {
-  bool returnValue = true;
-
   if (rank == 4){
     for (int i=0; i < dims[0]; i++){
       if (!check_valid_data(rank, dims, base_data, i, test_data, i))
@@ -199,7 +197,6 @@ d_type compute_max_difference(const char *variable, const int &rank, const int *
 {
   d_type cur_error = 0.0;
   d_type max_error = 0.0;
-  d_type dx;
 
   int nt,ni,nj,nk;
   set_dimensions(rank, dims, nt,ni,nj,nk);
