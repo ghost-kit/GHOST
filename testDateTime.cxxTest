@@ -46,6 +46,51 @@ class DateTimeTest : public CxxTest::TestSuite
       TS_ASSERT_EQUALS( epochToValentinesDay2008.getMJD(), 54510.0);
     }
 
+
+  /** 
+   * Why does testIncrement exist?
+   *
+   *  There once was bug (fixed in r1659) where the LFM would perform an
+   *  operation (eg. file I/O or exchange data with MIX/RCM) one
+   *  second earlier than it should've.  This is particularly annoying
+   *  because some assumptions were made about file names.  The code
+   *  would occasionally die when reading a file named
+   *  
+   *       1995-03-21T04-51-59Z.hdf
+   * 
+   *  instead of 
+   * 
+   *       1995-03-21T04-52-00Z.hdf
+   *
+   *  This test makes sure that incrementing the time (and comparing
+   *  with ">=") will not have this "off by 1" error.
+   */
+  void testGreatOrEqual( void )
+    {
+      const float dt = 0.04007064;      
+
+      DateTime start(1995, 03, 21, 11, 0, 0);
+      DateTime stop(1995, 03, 21, 12, 0, 0);
+
+      DateTime next = start;
+      int iStep = 0;
+      start.incrementSeconds(60.0*iStep);
+      DateTime current = start;
+
+      cout << numeric_limits<double>::epsilon();
+
+      while (current < stop){
+	if (current >= next){
+	  next = start;
+	  next.incrementSeconds(60.0*iStep++);
+	  TS_ASSERT_DELTA(int(current.getSecond()), 0.0, 1e-1);
+	  cout << current.getDateTimeString() << endl;
+	}
+	current.incrementSeconds(dt);
+      }      
+
+    }
+
   void testSmallSecondResolution( void )
     {
       // Make sure that the modified julian date can capture resolution to the nearest second

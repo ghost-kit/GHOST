@@ -1,7 +1,9 @@
 #ifndef DATETIME_CONST_H_
 #define DATETIME_CONST_H_
 
-static double EPSILON = 1e-8;
+#include <limits>
+
+static double EPSILON = numeric_limits<double>::epsilon();
 /// Days per month
 /**  0   1   2   3   4   5   6   7   8   9  10  11  12
  *

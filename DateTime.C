@@ -527,7 +527,7 @@ bool operator >(const DateTime &d1, const DateTime &d2)
  */
 bool operator >= (const DateTime & d1, const DateTime & d2)
 {
-  return (d1.getMJD() > d2.getMJD() - EPSILON);
+  return (d1.getMJD() >= d2.getMJD());
 }
 
 ////////////////////////////////////////////////////////////////////////
