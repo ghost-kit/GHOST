@@ -77,14 +77,14 @@ class DateTimeTest : public CxxTest::TestSuite
       start.incrementSeconds(60.0*iStep);
       DateTime current = start;
 
-      cout << numeric_limits<double>::epsilon();
+      //cout << numeric_limits<double>::epsilon();
 
       while (current < stop){
 	if (current >= next){
 	  next = start;
 	  next.incrementSeconds(60.0*iStep++);
 	  TS_ASSERT_DELTA(int(current.getSecond()), 0.0, 1e-1);
-	  cout << current.getDateTimeString() << endl;
+	  //cout << current.getDateTimeString() << endl;
 	}
 	current.incrementSeconds(dt);
       }      
