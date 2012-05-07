@@ -1,118 +1,82 @@
-c
-
+c@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+c<pre>
 c
 c          ##########################################################################
 c          #                                                                        #
-c          #                             GEOPACK-2005                               #
+c          #                             GEOPACK-2008                               #
 c          #                     (MAIN SET OF FORTRAN CODES)                        #
-c          #                                                                        #
+c          #              (IGRF-11 coefficients added on Nov 30, 2010)              #
 c          ##########################################################################
 C
 c
 c  This collection of subroutines is a result of several upgrades of the original package
-c  written by N. A. Tsyganenko in 1978-1979. This version is dated May 04, 2005. On that
-c  date, the IGRF coefficients were updated according to the recently published table of
-c  IGRF-10 coefficients, so that the main field model now extends through 2010 (a linear
-c  extrapolation is used for 2005 - 2010, based on the table of secular velocities). For
-c  more details, see  http://www.ngdc.noaa.gov/IAGA/vmod/igrf.html (revision of 03/22/2005).
+c  written by N. A. Tsyganenko in 1978-1979.
 c
+c  PREFATORY NOTE TO THE VERSION OF FEBRUARY 8, 2008:
 c
-c  Prefatory notes to the version of April 22, 2003:
+c  To avoid inappropriate use of obsolete subroutines from earlier versions, a suffix 08 was
+c  added to the name of each subroutine in this release.
 c
-c  This package represents an in-depth revision of the previous version, with significant
-c  changes in the format of calling statements. Users should familiarize themselves with
-c  the new formats and rules, and accordingly adjust their source codes, as specified
-c  below. Please consult the documentation file geopack-2005.doc (also available from this
-c  site) for detailed descriptions of individual subroutines.
+c  A possibility has been added in this version to calculate vector components in the
+c  "Geocentric Solar Wind" (GSW) coordinate system, which, to our knowledge, was first
+c  introduced by Hones et al., Planet. Space Sci., v.34, p.889, 1986 (aka GSWM, see Appendix,
+c  Tsyganenko et al., JGRA, v.103(A4), p.6827, 1998). The GSW system is analogous to the
+c  standard GSM, except that its X-axis is antiparallel to the currently observed solar wind
+c  flow vector, rather than aligned with the Earth-Sun line. The orientation of axes in the
+c  GSW system can be uniquely defined by specifying three components (VGSEX,VGSEY,VGSEZ) of
+c  the solar wind velocity, and in the case of a strictly radial anti-sunward flow (VGSEY=
+c  VGSEZ=0) the GSW system becomes identical to the standard GSM, which fact was used here
+c  to minimize the number of subroutines in the package. To that end, instead of the special
+c  case of the GSM coordinates, this version uses a more general GSW system, and three more
+c  input parameters are added in the subroutine RECALC_08, the observed values (VGSEX,VGSEY,
+c  VGSEZ) of the solar wind velocity. Invoking RECALC_08 with VGSEY=VGSEZ=0 restores the
+c  standard (sunward) orientation of the X axis, which allows one to easily convert vectors
+c  between GSW and GSM, as well as to/from other standard and commonly used systems. For more
+c  details, see the documentation file GEOPACK-2008.DOC.
 c
-c  The following changes were made to the previous release of GEOPACK (of Jan 5, 2001).
+c  Another modification allows users to have more control over the procedure of field line
+c  mapping using the subroutine TRACE_08. To that end, three new input parameters were added
+c  in that subroutine, allowing one to set (i) an upper limit, DSMAX, on the automatically
+c  adjusted step size, (ii) a permissible step error, ERR, and (iii) maximal length, LMAX,
+c  of arrays where field line point coordinates are stored. Minor changes were also made in
+c  the tracing subroutine, to make it more compact and easier for understanding, and to
+c  prevent the algorithm from making uncontrollable large number of multiple loops in some
+c  cases with plasmoid-like field structures.
 c
-c (1) Subroutine IGRF, calculating the Earth's main field:
-
-c   (a) Two versions of this subroutine are provided here. In the first one (IGRF_GSM)
-c     both input (position) and output (field components) are in the Geocentric Solar-
-c     Magnetospheric Cartesian coordinates, while the second one (IGRF_GEO) uses sphe-
-c     rical geographical (geocentric) coordinates, as in the older releases.
-
-c   (b) updating of all expansion coefficients is now made separately in the s/r RECALC,
-c     which also takes into account the secular change of the coefficients within
-c     a given year (at the Earth's surface, the rate of the change can reach 7 nT/month).
-
-c   (c) the optimal length of spherical harmonic expansions is now automatically set
-c     inside the code, based on the radial distance, so that the deviation from the
-c     full-length approximation does not exceed 0.01 nT. (In the previous versions,
-c     the upper limit NM of the order of harmonics had to be specified by users),
+C  One more subroutine, named GEODGEO_08, was added to the package, allowing one to convert
+c  geodetic coordinates of a point in space (altitude above the Earth's WGS84 ellipsoid and
+c  geodetic latitude) to geocentric radial distance and colatitude, and vice versa.
 c
-c  (2) Subroutine DIP, calculating the Earth's field in the dipole approximation:
-
-c   (a) no longer accepts the tilt angle via the list of formal parameters. Instead,
-c     the sine SPS and cosine CPS of that angle are now forwarded into DIP via the
-c     first common block /GEOPACK1/.  Accordingly, there are two options: (i) to
-c     calculate SPS and CPS by calling RECALC before calling DIP, or (ii) to specify
-c     them explicitly. In the last case, SPS and CPS should be specified AFTER the
-c     invocation of RECALC (otherwise they will be overridden by those returned by
-c     RECALC).
-
-c   (b) the Earth's dipole moment is now calculated by RECALC, based on the table of
-c     the IGRF coefficients and their secular variation rates, for a given year and
-c     the day of the year, and the obtained value of the moment is forwarded into DIP
-c     via the second common block /GEOPACK2/. (In the previous versions, only a single
-c     fixed value was provided for the geodipole moment, corresponding to the most
-c     recent epoch).
-c
-c  (3) Subroutine RECALC now consolidates in one module all calculations needed to
-c     initialize and update the values of coefficients and quantities that vary in
-c     time, either due to secular changes of the main geomagnetic field or as a result
-c     of Earth's diurnal rotation and orbital motion around Sun. That allowed us to
-c     simplify the codes and make them more compiler-independent.
-c
-c  (4) Subroutine GEOMAG is now identical in its structure to other coordinate trans-
-c     formation subroutines. It no longer invokes RECALC from within GEOMAG, but uses
-c     precalculated values of the rotation matrix elements, obtained by a separate
-c     external invocation of RECALC. This eliminates possible interference of the
-c     two subroutines in the old version of the package.
-c
-c  (5) Subroutine TRACE (and the subsidiary modules STEP and RHAND):
-c
-c   (a) no longer needs to specify the highest order of spherical harmonics in the
-c     main geomagnetic field expansion - it is now calculated automatically inside the
-c     IGRF_GSM (or IGRF_GEO) subroutine.
-c
-c   (b) the internal field model can now be explicitly chosen by specifying the para-
-c      meter INNAME (either IGRF_GSM or DIP).
-c
-c  (6) A new subroutine BCARSP was added, providing a conversion of Cartesian field
-c     components into spherical ones (operation, inverse to that performed by the sub-
-c     routine  BSPCAR).
-c
-c  (7) Two new subroutines were added, SHUETAL_MGNP and T96_MGNP, providing the position
-c     of the magnetopause, according to the model of Shue et al. [1998] and the one
-c     used in the T96 magnetospheric magnetic field model.
-c
+C  For a complete list of modifications made earlier in previous versions, see the
+c  documentation file GEOPACK-2008.DOC.
 c
 c----------------------------------------------------------------------------------
 c
-      SUBROUTINE IGRF_GSM (XGSM,YGSM,ZGSM,HXGSM,HYGSM,HZGSM)
+      SUBROUTINE IGRF_GSW_08 (XGSW,YGSW,ZGSW,HXGSW,HYGSW,HZGSW)
 c
-C  CALCULATES COMPONENTS OF THE MAIN (INTERNAL) GEOMAGNETIC FIELD IN THE GEOCENTRIC SOLAR
-C  MAGNETOSPHERIC COORDINATE SYSTEM, USING IAGA INTERNATIONAL GEOMAGNETIC REFERENCE MODEL
-C  COEFFICIENTS (e.g., http://www.ngdc.noaa.gov/IAGA/vmod/igrf.html Revised: 22 March, 2005)
+C  CALCULATES COMPONENTS OF THE MAIN (INTERNAL) GEOMAGNETIC FIELD IN THE GEOCENTRIC SOLAR-WIND
+C  (GSW) COORDINATE SYSTEM, USING IAGA INTERNATIONAL GEOMAGNETIC REFERENCE MODEL COEFFICIENTS
+C  (e.g., http://www.ngdc.noaa.gov/IAGA/vmod/igrf.html, revised 22 March, 2005)
 c
+C  THE GSW SYSTEM IS ESSENTIALLY SIMILAR TO THE STANDARD GSM (THE TWO SYSTEMS BECOME IDENTICAL
+C  TO EACH OTHER IN THE CASE OF STRICTLY ANTI-SUNWARD SOLAR WIND FLOW). FOR A DETAILED
+C  DEFINITION, SEE INTRODUCTORY COMMENTS FOR THE SUBROUTINE GSWGSE_08 .
 C
-C  BEFORE THE FIRST CALL OF THIS SUBROUTINE, OR IF THE DATE/TIME (IYEAR,IDAY,IHOUR,MIN,ISEC)
-C  WAS CHANGED, THE MODEL COEFFICIENTS AND GEO-GSM ROTATION MATRIX ELEMENTS SHOULD BE UPDATED
-c  BY CALLING THE SUBROUTINE RECALC
+C  BEFORE THE FIRST CALL OF THIS SUBROUTINE, OR, IF THE DATE/TIME (IYEAR,IDAY,IHOUR,MIN,ISEC),
+C  OR THE SOLAR WIND VELOCITY COMPONENTS (VGSEX,VGSEY,VGSEZ) HAVE CHANGED, THE MODEL COEFFICIENTS
+c  AND GEO-GSW ROTATION MATRIX ELEMENTS SHOULD BE UPDATED BY CALLING THE SUBROUTINE RECALC_08.
 C
 C-----INPUT PARAMETERS:
 C
-C     XGSM,YGSM,ZGSM - CARTESIAN GSM COORDINATES (IN UNITS RE=6371.2 KM)
+C     XGSW,YGSW,ZGSW - CARTESIAN GEOCENTRIC SOLAR-WIND COORDINATES (IN UNITS RE=6371.2 KM)
 C
 C-----OUTPUT PARAMETERS:
 C
-C     HXGSM,HYGSM,HZGSM - CARTESIAN GSM COMPONENTS OF THE MAIN GEOMAGNETIC FIELD IN NANOTESLA
+C     HXGSW,HYGSW,HZGSW - CARTESIAN GEOCENTRIC SOLAR-WIND COMPONENTS OF THE MAIN GEOMAGNETIC
+C                           FIELD IN NANOTESLA
 C
-C     LAST MODIFICATION:  MAY 4, 2005.
-C     THIS VERSION OF THE CODE ACCEPTS DATES FROM 1965 THROUGH 2010.
+C     LAST MODIFICATION:  FEB 07, 2008.
+C     THIS VERSION OF THE CODE ACCEPTS DATES FROM 1965 THROUGH 2015.
 c
 C     AUTHOR: N. A. TSYGANENKO
 C
@@ -121,7 +85,7 @@ C
 
       DIMENSION A(14),B(14)
 
-      CALL GEOGSM (XGEO,YGEO,ZGEO,XGSM,YGSM,ZGSM,-1)
+      CALL GEOGSW_08 (XGEO,YGEO,ZGEO,XGSW,YGSW,ZGSW,-1)
       RHO2=XGEO**2+YGEO**2
       R=SQRT(RHO2+ZGEO**2)
       C=ZGEO/R
@@ -138,7 +102,7 @@ C
       PP=1./R
       P=PP
 C
-C  IN THIS NEW VERSION, THE OPTIMAL VALUE OF THE PARAMETER NM (MAXIMAL ORDER OF THE SPHERICAL
+C  IN THIS VERSION, THE OPTIMAL VALUE OF THE PARAMETER NM (MAXIMAL ORDER OF THE SPHERICAL
 C    HARMONIC EXPANSION) IS NOT USER-PRESCRIBED, BUT CALCULATED INSIDE THE SUBROUTINE, BASED
 C      ON THE VALUE OF THE RADIAL DISTANCE R:
 C
@@ -210,23 +174,23 @@ C
       HXGEO=HE*CF-BF*SF
       HYGEO=HE*SF+BF*CF
       HZGEO=BR*C-BT*S
-
-      CALL GEOGSM (HXGEO,HYGEO,HZGEO,HXGSM,HYGSM,HZGSM,1)
-
+C
+      CALL GEOGSW_08 (HXGEO,HYGEO,HZGEO,HXGSW,HYGSW,HZGSW,1)
+C
       RETURN
       END
 C
 c==========================================================================================
 C
 c
-      SUBROUTINE IGRF_GEO (R,THETA,PHI,BR,BTHETA,BPHI)
+      SUBROUTINE IGRF_GEO_08 (R,THETA,PHI,BR,BTHETA,BPHI)
 c
 C  CALCULATES COMPONENTS OF THE MAIN (INTERNAL) GEOMAGNETIC FIELD IN THE SPHERICAL GEOGRAPHIC
 C  (GEOCENTRIC) COORDINATE SYSTEM, USING IAGA INTERNATIONAL GEOMAGNETIC REFERENCE MODEL
 C  COEFFICIENTS  (e.g., http://www.ngdc.noaa.gov/IAGA/vmod/igrf.html, revised: 22 March, 2005)
 C
 C  BEFORE THE FIRST CALL OF THIS SUBROUTINE, OR IF THE DATE (IYEAR AND IDAY) WAS CHANGED,
-C  THE MODEL COEFFICIENTS SHOULD BE UPDATED BY CALLING THE SUBROUTINE RECALC
+C  THE MODEL COEFFICIENTS SHOULD BE UPDATED BY CALLING THE SUBROUTINE RECALC_08
 C
 C-----INPUT PARAMETERS:
 C
@@ -239,7 +203,7 @@ C     BR, BTHETA, BPHI - SPHERICAL COMPONENTS OF THE MAIN GEOMAGNETIC FIELD IN N
 C      (POSITIVE BR OUTWARD, BTHETA SOUTHWARD, BPHI EASTWARD)
 C
 C     LAST MODIFICATION:  MAY 4, 2005.
-C     THIS VERSION OF THE  CODE ACCEPTS DATES FROM 1965 THROUGH 2010.
+C     THIS VERSION OF THE  CODE ACCEPTS DATES FROM 1965 THROUGH 2015.
 c
 C     AUTHOR: N. A. TSYGANENKO
 C
@@ -329,39 +293,44 @@ C
 C
 c==========================================================================================
 c
-       SUBROUTINE DIP (XGSM,YGSM,ZGSM,BXGSM,BYGSM,BZGSM)
+       SUBROUTINE DIP_08 (XGSW,YGSW,ZGSW,BXGSW,BYGSW,BZGSW)
 C
-C  CALCULATES GSM COMPONENTS OF A GEODIPOLE FIELD WITH THE DIPOLE MOMENT
-C  CORRESPONDING TO THE EPOCH, SPECIFIED BY CALLING SUBROUTINE RECALC (SHOULD BE
-C  INVOKED BEFORE THE FIRST USE OF THIS ONE AND IN CASE THE DATE/TIME WAS CHANGED).
+C  CALCULATES GSW (GEOCENTRIC SOLAR-WIND) COMPONENTS OF GEODIPOLE FIELD WITH THE DIPOLE MOMENT
+C  CORRESPONDING TO THE EPOCH, SPECIFIED BY CALLING SUBROUTINE RECALC_08 (SHOULD BE
+C  INVOKED BEFORE THE FIRST USE OF THIS ONE, OR IF THE DATE/TIME, AND/OR THE OBSERVED
+C  SOLAR WIND DIRECTION, HAVE CHANGED.
 C
-C--INPUT PARAMETERS: XGSM,YGSM,ZGSM - GSM COORDINATES IN RE (1 RE = 6371.2 km)
+C  THE GSW COORDINATE SYSTEM IS ESSENTIALLY SIMILAR TO THE STANDARD GSM (THE TWO SYSTEMS BECOME
+C  IDENTICAL TO EACH OTHER IN THE CASE OF STRICTLY RADIAL ANTI-SUNWARD SOLAR WIND FLOW). ITS
+C  DETAILED DEFINITION IS GIVEN IN INTRODUCTORY COMMENTS FOR THE SUBROUTINE GSWGSE_08 .
+
+C--INPUT PARAMETERS: XGSW,YGSW,ZGSW - GSW COORDINATES IN RE (1 RE = 6371.2 km)
 C
-C--OUTPUT PARAMETERS: BXGSM,BYGSM,BZGSM - FIELD COMPONENTS IN GSM SYSTEM, IN NANOTESLA.
+C--OUTPUT PARAMETERS: BXGSW,BYGSW,BZGSW - FIELD COMPONENTS IN GSW SYSTEM, IN NANOTESLA.
 C
-C  LAST MODIFICATION: MAY 4, 2005
+C  LAST MODIFICATION: JAN 28, 2008.
 C
 C  AUTHOR: N. A. TSYGANENKO
 C
-      COMMON /GEOPACK1/ AAA(10),SPS,CPS,BBB(23)
+      COMMON /GEOPACK1/ AA(10),SPS,CPS,BB(22)
       COMMON /GEOPACK2/ G(105),H(105),REC(105)
-
+C
       DIPMOM=SQRT(G(2)**2+G(3)**2+H(3)**2)
-
-      P=XGSM**2
-      U=ZGSM**2
-      V=3.*ZGSM*XGSM
-      T=YGSM**2
+C
+      P=XGSW**2
+      U=ZGSW**2
+      V=3.*ZGSW*XGSW
+      T=YGSW**2
       Q=DIPMOM/SQRT(P+T+U)**5
-      BXGSM=Q*((T+U-2.*P)*SPS-V*CPS)
-      BYGSM=-3.*YGSM*Q*(XGSM*SPS+ZGSM*CPS)
-      BZGSM=Q*((P+T-2.*U)*CPS-V*SPS)
+      BXGSW=Q*((T+U-2.*P)*SPS-V*CPS)
+      BYGSW=-3.*YGSW*Q*(XGSW*SPS+ZGSW*CPS)
+      BZGSW=Q*((P+T-2.*U)*CPS-V*SPS)
       RETURN
       END
 
 C*******************************************************************
 c
-      SUBROUTINE SUN (IYEAR,IDAY,IHOUR,MIN,ISEC,GST,SLONG,SRASN,SDEC)
+      SUBROUTINE SUN_08 (IYEAR,IDAY,IHOUR,MIN,ISEC,GST,SLONG,SRASN,SDEC)
 C
 C  CALCULATES FOUR QUANTITIES NECESSARY FOR COORDINATE TRANSFORMATIONS
 C  WHICH DEPEND ON SUN POSITION (AND, HENCE, ON UNIVERSAL TIME AND SEASON)
@@ -397,8 +366,8 @@ C
       SOB=SIN(OBLIQ)
       SLP=SLONG-9.924E-5
 C
-C   THE LAST CONSTANT IS A CORRECTION FOR THE ANGULAR ABERRATION  DUE TO
-C   THE ORBITAL MOTION OF THE EARTH
+C   THE LAST CONSTANT IS A CORRECTION FOR THE ANGULAR ABERRATION DUE TO
+C   EARTH'S ORBITAL MOTION
 C
       SIND=SOB*SIN(SLP)
       COSD=SQRT(1.-SIND**2)
@@ -410,17 +379,17 @@ C
 C
 C================================================================================
 c
-      SUBROUTINE SPHCAR (R,THETA,PHI,X,Y,Z,J)
+      SUBROUTINE SPHCAR_08 (R,THETA,PHI,X,Y,Z,J)
 C
-C   CONVERTS SPHERICAL COORDS INTO CARTESIAN ONES AND VICA VERSA
+C   CONVERTS SPHERICAL COORDS INTO CARTESIAN ONES AND VICE VERSA
 C    (THETA AND PHI IN RADIANS).
 C
 C                  J>0            J<0
 C-----INPUT:   J,R,THETA,PHI     J,X,Y,Z
 C----OUTPUT:      X,Y,Z        R,THETA,PHI
 C
-C  NOTE: AT THE POLES (X=0 AND Y=0) WE ASSUME PHI=0 (WHEN CONVERTING
-C        FROM CARTESIAN TO SPHERICAL COORDS, I.E., FOR J<0)
+C  NOTE: AT THE POLES (X=0 AND Y=0) WE ASSUME PHI=0 WHEN CONVERTING
+C        FROM CARTESIAN TO SPHERICAL COORDS (I.E., FOR J<0)
 C
 C   LAST MOFIFICATION:  APRIL 1, 2003 (ONLY SOME NOTATION CHANGES AND MORE
 C                         COMMENTS ADDED)
@@ -451,11 +420,12 @@ C
 C
 C===========================================================================
 c
-      SUBROUTINE BSPCAR (THETA,PHI,BR,BTHETA,BPHI,BX,BY,BZ)
+      SUBROUTINE BSPCAR_08 (THETA,PHI,BR,BTHETA,BPHI,BX,BY,BZ)
 C
-C   CALCULATES CARTESIAN FIELD COMPONENTS FROM SPHERICAL ONES
+C   CALCULATES CARTESIAN FIELD COMPONENTS FROM LOCAL SPHERICAL ONES
+C
 C-----INPUT:   THETA,PHI - SPHERICAL ANGLES OF THE POINT IN RADIANS
-C              BR,BTHETA,BPHI -  SPHERICAL COMPONENTS OF THE FIELD
+C              BR,BTHETA,BPHI -  LOCAL SPHERICAL COMPONENTS OF THE FIELD
 C-----OUTPUT:  BX,BY,BZ - CARTESIAN COMPONENTS OF THE FIELD
 C
 C   LAST MOFIFICATION:  APRIL 1, 2003 (ONLY SOME NOTATION CHANGES)
@@ -475,13 +445,13 @@ C
 c
 C==============================================================================
 C
-      SUBROUTINE BCARSP (X,Y,Z,BX,BY,BZ,BR,BTHETA,BPHI)
+      SUBROUTINE BCARSP_08 (X,Y,Z,BX,BY,BZ,BR,BTHETA,BPHI)
 C
-CALCULATES SPHERICAL FIELD COMPONENTS FROM THOSE IN CARTESIAN SYSTEM
+CALCULATES LOCAL SPHERICAL FIELD COMPONENTS FROM THOSE IN CARTESIAN SYSTEM
 C
 C-----INPUT:   X,Y,Z  - CARTESIAN COMPONENTS OF THE POSITION VECTOR
 C              BX,BY,BZ - CARTESIAN COMPONENTS OF THE FIELD VECTOR
-C-----OUTPUT:  BR,BTHETA,BPHI - SPHERICAL COMPONENTS OF THE FIELD VECTOR
+C-----OUTPUT:  BR,BTHETA,BPHI - LOCAL SPHERICAL COMPONENTS OF THE FIELD VECTOR
 C
 C  NOTE: AT THE POLES (THETA=0 OR THETA=PI) WE ASSUME PHI=0,
 C        AND HENCE BTHETA=BX, BPHI=BY
@@ -513,7 +483,16 @@ C
 C
 c=====================================================================================
 C
-      SUBROUTINE RECALC (IYEAR,IDAY,IHOUR,MIN,ISEC)
+C     Wraps RECALC_08 with {VGSEX,VGSEY,VGSEZ}={-400.0,0.0,0.0} for GSM
+C     & SM transformations
+C
+      SUBROUTINE RECALC(IYEAR,IDAY,IHOUR,MIN,ISEC)
+      call RECALC_08(IYEAR, IDAY, IHOUR, MIN, ISEC, -400.0, 0.0, 0.0)
+      END SUBROUTINE RECALC
+C
+c=====================================================================================
+C
+      SUBROUTINE RECALC_08 (IYEAR,IDAY,IHOUR,MIN,ISEC,VGSEX,VGSEY,VGSEZ)
 C
 C  1. PREPARES ELEMENTS OF ROTATION MATRICES FOR TRANSFORMATIONS OF VECTORS BETWEEN
 C     SEVERAL COORDINATE SYSTEMS, MOST FREQUENTLY USED IN SPACE PHYSICS.
@@ -522,10 +501,11 @@ C  2. PREPARES COEFFICIENTS USED IN THE CALCULATION OF THE MAIN GEOMAGNETIC FIEL
 C      (IGRF MODEL)
 C
 C  THIS SUBROUTINE SHOULD BE INVOKED BEFORE USING THE FOLLOWING SUBROUTINES:
-C    IGRF_GEO, IGRF_GSM, DIP, GEOMAG, GEOGSM, MAGSM, SMGSM, GSMGSE, GEIGEO.
+C  IGRF_GEO_08, IGRF_GSW_08, DIP_08, GEOMAG_08, GEOGSW_08, MAGSW_08, SMGSW_08, GSWGSE_08,
+c  GEIGEO_08, TRACE_08, STEP_08, RHAND_08.
 C
-C  THERE IS NO NEED TO REPEATEDLY INVOKE RECALC, IF MULTIPLE CALCULATIONS ARE MADE
-C    FOR THE SAME DATE AND TIME.
+C  THERE IS NO NEED TO REPEATEDLY INVOKE RECALC_08, IF MULTIPLE CALCULATIONS ARE MADE
+C    FOR THE SAME DATE/TIME AND SOLAR WIND FLOW DIRECTION.
 C
 C-----INPUT PARAMETERS:
 C
@@ -534,28 +514,63 @@ C     IDAY  -  DAY OF YEAR (DAY 1 = JAN 1)
 C     IHOUR -  HOUR OF DAY (00 TO 23)
 C     MIN   -  MINUTE OF HOUR (00 TO 59)
 C     ISEC  -  SECONDS OF MINUTE (00 TO 59)
+C     VGSEX,VGSEY,VGSEZ - GSE (GEOCENTRIC SOLAR-ECLIPTIC) COMPONENTS OF THE OBSERVED
+C                              SOLAR WIND FLOW VELOCITY (IN KM/S)
 C
-C-----OUTPUT PARAMETERS:   NONE (ALL OUTPUT QUANTITIES ARE PLACED
+C  IMPORTANT: IF ONLY QUESTIONABLE INFORMATION (OR NO INFORMATION AT ALL) IS AVAILABLE
+C             ON THE SOLAR WIND SPEED, OR, IF THE STANDARD GSM AND/OR SM COORDINATES ARE
+C             INTENDED TO BE USED, THEN SET VGSEX=-400.0 AND VGSEY=VGSEZ=0. IN THIS CASE,
+C             THE GSW COORDINATE SYSTEM BECOMES IDENTICAL TO THE STANDARD GSM.
+C
+C             IF ONLY SCALAR SPEED V OF THE SOLAR WIND IS KNOWN, THEN SETTING
+C             VGSEX=-V, VGSEY=29.78, VGSEZ=0.0 WILL TAKE INTO ACCOUNT THE ~4 degs
+C             ABERRATION OF THE MAGNETOSPHERE DUE TO EARTH'S ORBITAL MOTION
+C
+C             IF ALL THREE GSE COMPONENTS OF THE SOLAR WIND VELOCITY ARE AVAILABLE,
+C             PLEASE NOTE THAT IN SOME SOLAR WIND DATABASES THE ABERRATION EFFECT
+C             HAS ALREADY BEEN TAKEN INTO ACCOUNT BY SUBTRACTING 29.78 KM/S FROM VYGSE;
+C             IN THAT CASE, THE UNABERRATED (OBSERVED) VYGSE VALUES SHOULD BE RESTORED
+C             BY ADDING BACK THE 29.78 KM/S CORRECTION. WHETHER OR NOT TO DO THAT, MUST
+C             BE EITHER VERIFIED WITH THE DATA ORIGINATOR OR DETERMINED BY AVERAGING
+C             VGSEY OVER A SUFFICIENTLY LONG TIME INTERVAL.
+C
+C-----OUTPUT PARAMETERS:  NONE (ALL OUTPUT QUANTITIES ARE PLACED
 C                         INTO THE COMMON BLOCKS /GEOPACK1/ AND /GEOPACK2/)
 C
-C    OTHER SUBROUTINES CALLED BY THIS ONE: SUN
+C    OTHER SUBROUTINES CALLED BY THIS ONE: SUN_08
 C
 C    AUTHOR:  N.A. TSYGANENKO
 C    DATE:    DEC.1, 1991
 C
+C    REVISION OF NOVEMBER 30, 2010:
+C
+C     The table of IGRF coefficients was extended to include those for the epoch 2010
+c         (for details, see http://www.ngdc.noaa.gov/IAGA/vmod/igrf.html)
+C
+C    REVISION OF NOVEMBER 15, 2007: ADDED THE POSSIBILITY TO TAKE INTO ACCOUNT THE OBSERVED
+C     DEFLECTION OF THE SOLAR WIND FLOW FROM STRICTLY RADIAL DIRECTION. TO THAT END, THREE
+C     GSE COMPONENTS OF THE SOLAR WIND VELOCITY WERE ADDED TO THE INPUT PARAMETERS.
+C
+c    CORRECTION OF MAY 9, 2006:  INTERPOLATION OF THE COEFFICIENTS (BETWEEN
+C     LABELS 50 AND 105) IS NOW MADE THROUGH THE LAST ELEMENT OF THE ARRAYS
+C     G(105)  AND H(105) (PREVIOUSLY MADE ONLY THROUGH N=66, WHICH IN SOME
+C     CASES CAUSED RUNTIME ERRORS)
+c
 C    REVISION OF MAY 3, 2005:
 C     The table of IGRF coefficients was extended to include those for the epoch 2005
 c       the maximal order of spherical harmonics was also increased up to 13
 c         (for details, see http://www.ngdc.noaa.gov/IAGA/vmod/igrf.html)
 c
 C    REVISION OF APRIL 3, 2003:
-c     The code now includes preparation of the model coefficients for the subroutines
-c       IGRF and GEOMAG. This eliminates the need for the SAVE statements, used in the
-c        old versions, making the codes easier and more compiler-independent.
+c    The code now includes preparation of the model coefficients for the subroutines
+c    IGRF_08 and GEOMAG_08. This eliminates the need for the SAVE statements, used
+c    in the old versions, making the codes easier and more compiler-independent.
 C
-      COMMON /GEOPACK1/ ST0,CT0,SL0,CL0,CTCL,STCL,CTSL,STSL,SFI,CFI,SPS,
-     * CPS,SHI,CHI,HI,PSI,XMUT,A11,A21,A31,A12,A22,A32,A13,A23,A33,DS3,
-     * CGST,SGST,BA(6)
+      SAVE ISW
+C
+      COMMON /GEOPACK1/ ST0,CT0,SL0,CL0,CTCL,STCL,CTSL,STSL,SFI,CFI,
+     * SPS,CPS,DS3,CGST,SGST,PSI,A11,A21,A31,A12,A22,A32,A13,A23,A33,
+     * E11,E21,E31,E12,E22,E32,E13,E23,E33
 C
 C  THE COMMON BLOCK /GEOPACK1/ CONTAINS ELEMENTS OF THE ROTATION MATRICES AND OTHER
 C   PARAMETERS RELATED TO THE COORDINATE TRANSFORMATIONS PERFORMED BY THIS PACKAGE
@@ -568,7 +583,10 @@ C    COEFFICIENTS USED IN THE RECURSION RELATIONS FOR LEGENDRE ASSOCIATE POLYNOM
 C
       DIMENSION G65(105),H65(105),G70(105),H70(105),G75(105),H75(105),
      + G80(105),H80(105),G85(105),H85(105),G90(105),H90(105),G95(105),
-     + H95(105),G00(105),H00(105),G05(105),H05(105),DG05(45),DH05(45)
+     + H95(105),G00(105),H00(105),G05(105),H05(105),G10(105),H10(105),
+     + DG10(45),DH10(45)
+C
+      DATA ISW /0/
 c
       DATA G65/0.,-30334.,-2119.,-1662.,2997.,1594.,1297.,-2038.,1292.,
      *856.,957.,804.,479.,-390.,252.,-219.,358.,254.,-31.,-157.,-62.,
@@ -635,7 +653,7 @@ c
      *         9.,     -4.,     -2.,      7.,      1.,     -6.,     -3.,
      *        -4.,      2.,     -5.,     -2.,      4.,      3.,      1.,
      *         3.,      3.,      0.,  39*0./
-
+C
       DATA H90/0.,      0.,   5406.,      0.,  -2279.,   -373.,      0.,
      *      -284.,    293.,   -352.,      0.,    247.,   -240.,     84.,
      *      -299.,      0.,     46.,    154.,   -153.,    -69.,     97.,
@@ -646,7 +664,7 @@ c
      *        -7.,     -7.,      9.,      8.,     -7.,      2.,      0.,
      *         2.,      1.,      3.,      6.,     -4.,      0.,     -2.,
      *         3.,     -1.,     -6.,   39*0./
-
+C
       DATA G95/0., -29692.,  -1784.,  -2200.,   3070.,   1681.,   1335.,
      *     -2267.,   1249.,    759.,    940.,    780.,    290.,   -418.,
      *       122.,   -214.,    352.,    235.,   -118.,   -166.,    -17.,
@@ -657,7 +675,7 @@ c
      *         8.,     -8.,     -1.,     10.,     -2.,     -8.,     -3.,
      *        -6.,      2.,     -4.,     -1.,      4.,      2.,      2.,
      *         5.,      1.,      0.,    39*0./
-
+C
       DATA H95/0.,      0.,   5306.,      0.,  -2366.,   -413.,      0.,
      *      -262.,    302.,   -427.,      0.,    262.,   -236.,     97.,
      *      -306.,      0.,     46.,    165.,   -143.,    -55.,    107.,
@@ -668,7 +686,7 @@ c
      *        -6.,     -8.,      8.,      5.,     -8.,      3.,      0.,
      *         1.,      0.,      4.,      5.,     -5.,     -1.,     -2.,
      *         1.,     -2.,     -7.,    39*0./
-
+C
       DATA G00/0.,-29619.4, -1728.2, -2267.7,  3068.4,  1670.9,  1339.6,
      *     -2288.,  1252.1,   714.5,   932.3,   786.8,    250.,   -403.,
      *      111.3,  -218.8,   351.4,   222.3,  -130.4,  -168.6,   -12.9,
@@ -684,8 +702,7 @@ c
      *       -0.5,     0.3,    -0.3,    -0.4,    -0.1,    -0.2,    -0.4,
      *       -0.2,    -0.9,     0.3,     0.1,    -0.4,     1.3,    -0.4,
      *        0.7,    -0.4,     0.3,    -0.1,     0.4,      0.,     0.1/
-
-
+C
       DATA H00/0.,      0.,  5186.1,      0., -2481.6,  -458.0,      0.,
      *     -227.6,   293.4,  -491.1,      0.,   272.6,  -231.9,   119.8,
      *     -303.8,      0.,    43.8,   171.9,  -133.1,   -39.3,   106.3,
@@ -701,56 +718,106 @@ c
      *        0.3,     0.0,     0.0,     0.3,    -0.9,    -0.4,     0.8,
      *        0.0,    -0.9,     0.2,     1.8,    -0.4,    -1.0,    -0.1,
      *        0.7,     0.3,     0.6,     0.3,    -0.2,    -0.5,    -0.9/
-     *
-
-      DATA G05/0.,-29556.8, -1671.8, -2340.5,   3047.,  1656.9,  1335.7,
-     *    -2305.3,  1246.8,   674.4,   919.8,   798.2,   211.5,  -379.5,
-     *      100.2,  -227.6,   354.4,   208.8,  -136.6,  -168.3,   -14.1,
-     *       72.9,    69.6,    76.6,  -151.1,   -15.0,    14.7,   -86.4,
-     *       79.8,   -74.4,    -1.4,    38.6,    12.3,     9.4,     5.5,
-     *        2.0,    24.8,     7.7,   -11.4,    -6.8,   -18.0,    10.0,
-     *        9.4,   -11.4,    -5.0,     5.6,     9.8,     3.6,    -7.0,
-     *        5.0,   -10.8,    -1.3,     8.7,    -6.7,    -9.2,    -2.2,
-     *       -6.3,     1.6,    -2.5,    -0.1,     3.0,     0.3,     2.1,
-     *        3.9,    -0.1,    -2.2,     2.9,    -1.6,    -1.7,     1.5,
-     *       -0.2,     0.2,    -0.7,     0.5,     1.8,     0.1,     1.0,
-     *        4.1,    -2.2,    -0.3,     0.3,     0.9,    -0.4,     1.0,
-     *       -0.4,     0.5,    -0.3,    -0.4,     0.0,    -0.4,     0.0,
-     *       -0.2,    -0.9,     0.3,     0.3,    -0.4,     1.2,    -0.4,
-     *        0.7,    -0.3,     0.4,    -0.1,     0.4,    -0.1,    -0.3/
-
-      DATA H05/0.,     0.0,  5080.0,     0.0, -2594.9,  -516.7,     0.0,
-     *     -200.4,   269.3,  -524.5,     0.0,   281.4,  -225.8,   145.7,
-     *     -304.7,     0.0,    42.7,   179.8,  -123.0,   -19.5,   103.6,
-     *        0.0,   -20.2,    54.7,    63.7,   -63.4,     0.0,    50.3,
-     *        0.0,   -61.4,   -22.5,     6.9,    25.4,    10.9,   -26.4,
-     *       -4.8,     0.0,    11.2,   -21.0,     9.7,   -19.8,    16.1,
-     *        7.7,   -12.8,    -0.1,     0.0,   -20.1,    12.9,    12.7,
-     *       -6.7,    -8.1,     8.1,     2.9,    -7.9,     5.9,     0.0,
-     *        2.4,     0.2,     4.4,     4.7,    -6.5,    -1.0,    -3.4,
-     *       -0.9,    -2.3,    -8.0,     0.0,     0.3,     1.4,    -0.7,
-     *       -2.4,     0.9,    -0.6,    -2.7,    -1.0,    -1.5,    -2.0,
-     *       -1.4,     0.0,    -0.5,     0.3,     2.3,    -2.7,     0.6,
-     *        0.4,     0.0,     0.0,     0.3,    -0.8,    -0.4,     1.0,
-     *        0.0,    -0.7,     0.3,     1.7,    -0.5,    -1.0,     0.0,
-     *        0.7,     0.2,     0.6,     0.4,    -0.2,    -0.5,    -1.0/
-
-      DATA DG05/0.0,   8.8,    10.8,   -15.0,    -6.9,    -1.0,    -0.3,
-     *         -3.1,  -0.9,    -6.8,    -2.5,     2.8,    -7.1,     5.9,
-     *         -3.2,  -2.6,     0.4,    -3.0,    -1.2,     0.2,    -0.6,
-     *         -0.8,   0.2,    -0.2,     2.1,    -2.1,    -0.4,     1.3,
-     *         -0.4,   0.0,    -0.2,     1.1,     0.6,     0.4,    -0.5,
-     *          0.9,  -0.2,     0.2,    -0.2,     0.2,    -0.2,     0.2,
-     *          0.5,  -0.7,     0.5/
-
-      DATA DH05/0.0,   0.0,   -21.3,     0.0,   -23.3,   -14.0,     0.0,
-     *          5.4,  -6.5,    -2.0,     0.0,     2.0,     1.8,     5.6,
-     *          0.0,   0.0,     0.1,     1.8,     2.0,     4.5,    -1.0,
-     *          0.0,  -0.4,    -1.9,    -0.4,    -0.4,    -0.2,     0.9,
-     *          0.0,   0.8,     0.4,     0.1,     0.2,    -0.9,    -0.3,
-     *          0.3,   0.0,    -0.2,     0.2,     0.2,     0.4,     0.2,
-     *         -0.3,   0.5,     0.4/
 C
+      DATA G05/0.,-29554.6, -1669.0, -2337.2,  3047.7,  1657.8,  1336.3,
+     *    -2305.8,  1246.4,   672.5,   920.6,   798.0,   210.7,  -379.9,
+     *      100.0,  -227.0,   354.4,   208.9,  -136.5,  -168.1,   -13.6,
+     *       73.6,    69.6,    76.7,  -151.3,   -14.6,    14.6,   -86.4,
+     *       79.9,   -74.5,    -1.7,    38.7,    12.3,     9.4,     5.4,
+     *        1.9,    24.8,     7.6,   -11.7,    -6.9,   -18.1,    10.2,
+     *        9.4,   -11.3,    -4.9,     5.6,     9.8,     3.6,    -6.9,
+     *        5.0,   -10.8,    -1.3,     8.8,    -6.7,    -9.2,    -2.2,
+     *       -6.1,     1.4,    -2.4,    -0.2,     3.1,     0.3,     2.1,
+     *        3.8,    -0.2,    -2.1,     2.9,    -1.6,    -1.9,     1.4,
+     *       -0.3,     0.3,    -0.8,     0.5,     1.8,     0.2,     1.0,
+     *        4.0,    -2.2,    -0.3,     0.2,     0.9,    -0.4,     1.0,
+     *       -0.3,     0.5,    -0.4,    -0.4,     0.1,    -0.5,    -0.1,
+     *       -0.2,    -0.9,     0.3,     0.3,    -0.4,     1.2,    -0.4,
+     *        0.8,    -0.3,     0.4,    -0.1,     0.4,    -0.1,    -0.2/
+C
+      DATA H05/0.,     0.0,  5078.0,     0.0, -2594.5,  -515.4,     0.0,
+     *     -198.9,   269.7,  -524.7,     0.0,   282.1,  -225.2,   145.2,
+     *     -305.4,     0.0,    42.7,   180.3,  -123.5,   -19.6,   103.9,
+     *        0.0,   -20.3,    54.8,    63.6,   -63.5,     0.2,    50.9,
+     *        0.0,   -61.1,   -22.6,     6.8,    25.4,    10.9,   -26.3,
+     *       -4.6,     0.0,    11.2,   -20.9,     9.8,   -19.7,    16.2,
+     *        7.6,   -12.8,    -0.1,     0.0,   -20.1,    12.7,    12.7,
+     *       -6.7,    -8.2,     8.1,     2.9,    -7.7,     6.0,     0.0,
+     *        2.2,     0.1,     4.5,     4.8,    -6.7,    -1.0,    -3.5,
+     *       -0.9,    -2.3,    -7.9,     0.0,     0.3,     1.4,    -0.8,
+     *       -2.3,     0.9,    -0.6,    -2.7,    -1.1,    -1.6,    -1.9,
+     *       -1.4,     0.0,    -0.6,     0.2,     2.4,    -2.6,     0.6,
+     *        0.4,     0.0,     0.0,     0.3,    -0.9,    -0.3,     0.9,
+     *        0.0,    -0.8,     0.3,     1.7,    -0.5,    -1.1,     0.0,
+     *        0.6,     0.2,     0.5,     0.4,    -0.2,    -0.6,    -0.9/
+C
+      DATA G10/0.,-29496.5, -1585.9, -2396.6,  3026.0,  1668.6,  1339.7,
+     *    -2326.3,  1231.7,   634.2,   912.6,   809.0,   166.6,  -357.1,
+     *       89.7,  -231.1,   357.2,   200.3,  -141.2,  -163.1,    -7.7,
+     *       72.8,    68.6,    76.0,  -141.4,   -22.9,    13.1,   -77.9,
+     *       80.4,   -75.0,    -4.7,    45.3,    14.0,    10.4,     1.6,
+     *        4.9,    24.3,     8.2,   -14.5,    -5.7,   -19.3,    11.6,
+     *       10.9,   -14.1,    -3.7,     5.4,     9.4,     3.4,    -5.3,
+     *        3.1,   -12.4,    -0.8,     8.4,    -8.4,   -10.1,    -2.0,
+     *       -6.3,     0.9,    -1.1,    -0.2,     2.5,    -0.3,     2.2,
+     *        3.1,    -1.0,    -2.8,     3.0,    -1.5,    -2.1,     1.6,
+     *       -0.5,     0.5,    -0.8,     0.4,     1.8,     0.2,     0.8,
+     *        3.8,    -2.1,    -0.2,     0.3,     1.0,    -0.7,     0.9,
+     *       -0.1,     0.5,    -0.4,    -0.4,     0.2,    -0.8,     0.0,
+     *       -0.2,    -0.9,     0.3,     0.4,    -0.4,     1.1,    -0.3,
+     *        0.8,    -0.2,     0.4,     0.0,     0.4,    -0.3,    -0.3/
+C
+      DATA H10/0.0,    0.0,  4945.1,     0.0, -2707.7,  -575.4,     0.0,
+     *      -160.5,   251.7, -536.8,     0.0,   286.4,  -211.2,   164.4,
+     *      -309.2,     0.0,   44.7,   188.9,  -118.1,     0.1,   100.9,
+     *         0.0,   -20.8,   44.2,    61.5,   -66.3,     3.1,    54.9,
+     *         0.0,   -57.8,  -21.2,     6.6,    24.9,     7.0,   -27.7,
+     *        -3.4,     0.0,   10.9,   -20.0,    11.9,   -17.4,    16.7,
+     *         7.1,   -10.8,    1.7,     0.0,   -20.5,    11.6,    12.8,
+     *        -7.2,    -7.4,    8.0,     2.2,    -6.1,     7.0,     0.0,
+     *         2.8,    -0.1,    4.7,     4.4,    -7.2,    -1.0,    -4.0,
+     *        -2.0,    -2.0,   -8.3,     0.0,     0.1,     1.7,    -0.6,
+     *        -1.8,     0.9,   -0.4,    -2.5,    -1.3,    -2.1,    -1.9,
+     *        -1.8,     0.0,   -0.8,     0.3,     2.2,    -2.5,     0.5,
+     *         0.6,     0.0,    0.1,     0.3,    -0.9,    -0.2,     0.8,
+     *         0.0,    -0.8,    0.3,     1.7,    -0.6,    -1.2,    -0.1,
+     *         0.5,     0.1,    0.5,     0.4,    -0.2,    -0.5,    -0.8/
+C
+      DATA DG10/0.0,  11.4,    16.7,   -11.3,    -3.9,     2.7,     1.3,
+     *         -3.9,  -2.9,    -8.1,    -1.4,     2.0,    -8.9,     4.4,
+     *         -2.3,  -0.5,     0.5,    -1.5,    -0.7,     1.3,     1.4,
+     *         -0.3,  -0.3,    -0.3,     1.9,    -1.6,    -0.2,     1.8,
+     *          0.2,  -0.1,    -0.6,     1.4,     0.3,     0.1,    -0.8,
+     *          0.4,  -0.1,     0.1,    -0.5,     0.3,    -0.3,     0.3,
+     *          0.2,  -0.5,     0.2/
+C
+      DATA DH10/0.0,   0.0,   -28.8,     0.0,   -23.0,   -12.9,     0.0,
+     *          8.6,  -2.9,    -2.1,     0.0,     0.4,     3.2,     3.6,
+     *         -0.8,   0.0,     0.5,     1.5,     0.9,     3.7,    -0.6,
+     *          0.0,  -0.1,    -2.1,    -0.4,    -0.5,     0.8,     0.5,
+     *          0.0,   0.6,     0.3,    -0.2,    -0.1,    -0.8,    -0.3,
+     *          0.2,   0.0,     0.0,     0.2,     0.5,     0.4,     0.1,
+     *         -0.1,   0.4,     0.4/
+C
+      IF (VGSEY.EQ.0..AND.VGSEZ.EQ.0..AND.ISW.NE.1) THEN
+      PRINT *, ''
+      PRINT *,
+     *' RECALC_08: RADIAL SOLAR WIND --> GSW SYSTEM IDENTICAL HERE'
+      PRINT *,
+     *' TO STANDARD GSM (I.E., XGSW AXIS COINCIDES WITH EARTH-SUN LINE)'
+      PRINT *, ''
+      ISW=1
+      ENDIF
+
+      IF ((VGSEY.NE.0..OR.VGSEZ.NE.0.).AND.ISW.NE.2) THEN           !  CORRECTED NOV.27, 2009
+      PRINT *, ''
+      PRINT *,
+     *' WARNING: NON-RADIAL SOLAR WIND FLOW SPECIFIED IN RECALC_08;'
+      PRINT *,
+     *' HENCE XGSW AXIS IS ASSUMED ORIENTED ANTIPARALLEL TO V_SW VECTOR'
+      PRINT *, ''
+      ISW=2
+      ENDIF
 C
       IY=IYEAR
 C
@@ -763,8 +830,8 @@ C
        WRITE (*,10) IYEAR,IY
       ENDIF
 
-      IF(IY.GT.2010) THEN
-       IY=2010
+      IF(IY.GT.2015) THEN
+       IY=2015
        WRITE (*,10) IYEAR,IY
       ENDIF
 
@@ -788,17 +855,17 @@ C
       IF (IY.LT.1995) GOTO 100         !INTERPOLATE BETWEEN 1990 - 1995
       IF (IY.LT.2000) GOTO 110         !INTERPOLATE BETWEEN 1995 - 2000
       IF (IY.LT.2005) GOTO 120         !INTERPOLATE BETWEEN 2000 - 2005
+      IF (IY.LT.2010) GOTO 130         !INTERPOLATE BETWEEN 2005 - 2010
 C
-C       EXTRAPOLATE BEYOND 2005:
+C       EXTRAPOLATE BEYOND 2010:
 C
-
-      DT=FLOAT(IY)+FLOAT(IDAY-1)/365.25-2005.
+      DT=FLOAT(IY)+FLOAT(IDAY-1)/365.25-2010.
       DO 40 N=1,105
-         G(N)=G05(N)
-         H(N)=H05(N)
+         G(N)=G10(N)
+         H(N)=H10(N)
          IF (N.GT.45) GOTO 40
-         G(N)=G(N)+DG05(N)*DT
-         H(N)=H(N)+DH05(N)*DT
+         G(N)=G(N)+DG10(N)*DT
+         H(N)=H(N)+DH10(N)*DT
 40    CONTINUE
       GOTO 300
 C
@@ -806,7 +873,7 @@ C       INTERPOLATE BETWEEEN 1965 - 1970:
 C
 50    F2=(FLOAT(IY)+FLOAT(IDAY-1)/365.25-1965)/5.
       F1=1.-F2
-      DO 55 N=1,66
+      DO 55 N=1,105
          G(N)=G65(N)*F1+G70(N)*F2
 55       H(N)=H65(N)*F1+H70(N)*F2
       GOTO 300
@@ -815,7 +882,7 @@ C       INTERPOLATE BETWEEN 1970 - 1975:
 C
 60    F2=(FLOAT(IY)+FLOAT(IDAY-1)/365.25-1970)/5.
       F1=1.-F2
-      DO 65 N=1,66
+      DO 65 N=1,105
          G(N)=G70(N)*F1+G75(N)*F2
 65       H(N)=H70(N)*F1+H75(N)*F2
       GOTO 300
@@ -824,7 +891,7 @@ C       INTERPOLATE BETWEEN 1975 - 1980:
 C
 70    F2=(FLOAT(IY)+FLOAT(IDAY-1)/365.25-1975)/5.
       F1=1.-F2
-      DO 75 N=1,66
+      DO 75 N=1,105
          G(N)=G75(N)*F1+G80(N)*F2
 75       H(N)=H75(N)*F1+H80(N)*F2
       GOTO 300
@@ -833,7 +900,7 @@ C       INTERPOLATE BETWEEN 1980 - 1985:
 C
 80    F2=(FLOAT(IY)+FLOAT(IDAY-1)/365.25-1980)/5.
       F1=1.-F2
-      DO 85 N=1,66
+      DO 85 N=1,105
          G(N)=G80(N)*F1+G85(N)*F2
 85       H(N)=H80(N)*F1+H85(N)*F2
       GOTO 300
@@ -842,7 +909,7 @@ C       INTERPOLATE BETWEEN 1985 - 1990:
 C
 90    F2=(FLOAT(IY)+FLOAT(IDAY-1)/365.25-1985)/5.
       F1=1.-F2
-      DO 95 N=1,66
+      DO 95 N=1,105
          G(N)=G85(N)*F1+G90(N)*F2
 95       H(N)=H85(N)*F1+H90(N)*F2
       GOTO 300
@@ -851,7 +918,7 @@ C       INTERPOLATE BETWEEN 1990 - 1995:
 C
 100   F2=(FLOAT(IY)+FLOAT(IDAY-1)/365.25-1990)/5.
       F1=1.-F2
-      DO 105 N=1,66
+      DO 105 N=1,105
          G(N)=G90(N)*F1+G95(N)*F2
 105      H(N)=H90(N)*F1+H95(N)*F2
       GOTO 300
@@ -874,84 +941,66 @@ C
 125      H(N)=H00(N)*F1+H05(N)*F2
       GOTO 300
 C
+C       INTERPOLATE BETWEEN 2005 - 2010:
+C
+130   F2=(FLOAT(IY)+FLOAT(IDAY-1)/365.25-2005)/5.
+      F1=1.-F2
+      DO 135 N=1,105
+         G(N)=G05(N)*F1+G10(N)*F2
+135      H(N)=H05(N)*F1+H10(N)*F2
+      GOTO 300
+C
 C   COEFFICIENTS FOR A GIVEN YEAR HAVE BEEN CALCULATED; NOW MULTIPLY
 C   THEM BY SCHMIDT NORMALIZATION FACTORS:
 C
 300   S=1.
-      DO 130 N=2,14
+      DO 150 N=2,14
          MN=N*(N-1)/2+1
          S=S*FLOAT(2*N-3)/FLOAT(N-1)
          G(MN)=G(MN)*S
          H(MN)=H(MN)*S
          P=S
-         DO 130 M=2,N
+         DO 150 M=2,N
             AA=1.
             IF (M.EQ.2) AA=2.
             P=P*SQRT(AA*FLOAT(N-M+1)/FLOAT(N+M-2))
             MNN=MN+M-1
             G(MNN)=G(MNN)*P
-130         H(MNN)=H(MNN)*P
+150         H(MNN)=H(MNN)*P
 
-           G10=-G(2)
-           G11= G(3)
-           H11= H(3)
+           G_10=-G(2)
+           G_11= G(3)
+           H_11= H(3)
 C
-C  NOW CALCULATE THE COMPONENTS OF THE UNIT VECTOR EzMAG IN GEO COORD.SYSTEM:
+C  NOW CALCULATE GEO COMPONENTS OF THE UNIT VECTOR EzMAG, PARALLEL TO GEODIPOLE AXIS:
 C   SIN(TETA0)*COS(LAMBDA0), SIN(TETA0)*SIN(LAMBDA0), AND COS(TETA0)
 C         ST0 * CL0                ST0 * SL0                CT0
 C
-      SQ=G11**2+H11**2
+      SQ=G_11**2+H_11**2
       SQQ=SQRT(SQ)
-      SQR=SQRT(G10**2+SQ)
-      SL0=-H11/SQQ
-      CL0=-G11/SQQ
+      SQR=SQRT(G_10**2+SQ)
+      SL0=-H_11/SQQ
+      CL0=-G_11/SQQ
       ST0=SQQ/SQR
-      CT0=G10/SQR
+      CT0=G_10/SQR
       STCL=ST0*CL0
       STSL=ST0*SL0
       CTSL=CT0*SL0
       CTCL=CT0*CL0
 C
-      CALL SUN (IY,IDAY,IHOUR,MIN,ISEC,GST,SLONG,SRASN,SDEC)
+C  NOW CALCULATE GEI COMPONENTS (S1,S2,S3) OF THE UNIT VECTOR S = EX_GSE
+C    POINTING FROM THE EARTH'S CENTER TO SUN
 C
-C  S1,S2, AND S3 ARE THE COMPONENTS OF THE UNIT VECTOR EXGSM=EXGSE IN THE
-C   SYSTEM GEI POINTING FROM THE EARTH'S CENTER TO THE SUN:
+      CALL SUN_08 (IY,IDAY,IHOUR,MIN,ISEC,GST,SLONG,SRASN,SDEC)
 C
       S1=COS(SRASN)*COS(SDEC)
       S2=SIN(SRASN)*COS(SDEC)
       S3=SIN(SDEC)
-      CGST=COS(GST)
-      SGST=SIN(GST)
 C
-C  DIP1, DIP2, AND DIP3 ARE THE COMPONENTS OF THE UNIT VECTOR EZSM=EZMAG
-C   IN THE SYSTEM GEI:
-C
-      DIP1=STCL*CGST-STSL*SGST
-      DIP2=STCL*SGST+STSL*CGST
-      DIP3=CT0
-C
-C  NOW CALCULATE THE COMPONENTS OF THE UNIT VECTOR EYGSM IN THE SYSTEM GEI
-C   BY TAKING THE VECTOR PRODUCT D x S AND NORMALIZING IT TO UNIT LENGTH:
-C
-      Y1=DIP2*S3-DIP3*S2
-      Y2=DIP3*S1-DIP1*S3
-      Y3=DIP1*S2-DIP2*S1
-      Y=SQRT(Y1*Y1+Y2*Y2+Y3*Y3)
-      Y1=Y1/Y
-      Y2=Y2/Y
-      Y3=Y3/Y
-C
-C   THEN IN THE GEI SYSTEM THE UNIT VECTOR Z = EZGSM = EXGSM x EYGSM = S x Y
-C    HAS THE COMPONENTS:
-C
-      Z1=S2*Y3-S3*Y2
-      Z2=S3*Y1-S1*Y3
-      Z3=S1*Y2-S2*Y1
-C
-C    THE VECTOR EZGSE (HERE DZ) IN GEI HAS THE COMPONENTS (0,-SIN(DELTA),
-C     COS(DELTA)) = (0.,-0.397823,0.917462); HERE DELTA = 23.44214 DEG FOR
-C   THE EPOCH 1978 (SEE THE BOOK BY GUREVICH OR OTHER ASTRONOMICAL HANDBOOKS).
-C    HERE THE MOST ACCURATE TIME-DEPENDENT FORMULA IS USED:
+C  NOW CALCULATE GEI COMPONENTS (DZ1,DZ2,DZ3) OF THE UNIT VECTOR EZGSE
+C  POINTING NORTHWARD AND ORTHOGONAL TO THE ECLIPTIC PLANE, AS
+C  (0,-SIN(OBLIQ),COS(OBLIQ)). FOR THE EPOCH 1978, OBLIQ = 23.44214 DEGS.
+C  HERE WE USE A MORE ACCURATE TIME-DEPENDENT VALUE, DETERMINED AS:
 C
       DJ=FLOAT(365*(IY-1900)+(IY-1901)/4 +IDAY)
      * -0.5+FLOAT(IHOUR*3600+MIN*60+ISEC)/86400.
@@ -961,39 +1010,114 @@ C
       DZ2=-SIN(OBLIQ)
       DZ3=COS(OBLIQ)
 C
-C  THEN THE UNIT VECTOR EYGSE IN GEI SYSTEM IS THE VECTOR PRODUCT DZ x S :
+C  NOW WE OBTAIN GEI COMPONENTS OF THE UNIT VECTOR EYGSE=(DY1,DY2,DY3),
+C  COMPLETING THE RIGHT-HANDED SYSTEM. THEY CAN BE FOUND FROM THE VECTOR
+C  PRODUCT EZGSE x EXGSE = (DZ1,DZ2,DZ3) x (S1,S2,S3):
 C
       DY1=DZ2*S3-DZ3*S2
       DY2=DZ3*S1-DZ1*S3
       DY3=DZ1*S2-DZ2*S1
 C
-C   THE ELEMENTS OF THE MATRIX GSE TO GSM ARE THE SCALAR PRODUCTS:
-C   CHI=EM22=(EYGSM,EYGSE), SHI=EM23=(EYGSM,EZGSE), EM32=(EZGSM,EYGSE)=-EM23,
-C     AND EM33=(EZGSM,EZGSE)=EM22
+C  NOW LET'S CALCULATE GEI COMPONENTS OF THE UNIT VECTOR X = EXGSW, DIRECTED ANTIPARALLEL
+C  TO THE OBSERVED SOLAR WIND FLOW. FIRST, CALCULATE ITS COMPONENTS IN GSE:
 C
-      CHI=Y1*DY1+Y2*DY2+Y3*DY3
-      SHI=Y1*DZ1+Y2*DZ2+Y3*DZ3
-      HI=ASIN(SHI)
+      V=SQRT(VGSEX**2+VGSEY**2+VGSEZ**2)
+      DX1=-VGSEX/V
+      DX2=-VGSEY/V
+      DX3=-VGSEZ/V
 C
-C    TILT ANGLE: PSI=ARCSIN(DIP,EXGSM)
+C  THEN IN GEI:
 C
-      SPS=DIP1*S1+DIP2*S2+DIP3*S3
+      X1=DX1*S1+DX2*DY1+DX3*DZ1
+      X2=DX1*S2+DX2*DY2+DX3*DZ2
+      X3=DX1*S3+DX2*DY3+DX3*DZ3
+C
+C  NOW CALCULATE GEI COMPONENTS (DIP1,DIP2,DIP3) OF THE UNIT VECTOR DIP = EZ_SM = EZ_MAG,
+C   ALIGNED WITH THE GEODIPOLE AND POINTING NORTHWARD FROM ECLIPTIC PLANE:
+C
+      CGST=COS(GST)
+      SGST=SIN(GST)
+C
+      DIP1=STCL*CGST-STSL*SGST
+      DIP2=STCL*SGST+STSL*CGST
+      DIP3=CT0
+C
+C  THIS ALLOWS US TO CALCULATE GEI COMPONENTS OF THE UNIT VECTOR Y = EYGSW
+C   BY TAKING THE VECTOR PRODUCT DIP x X AND NORMALIZING IT TO UNIT LENGTH:
+C
+      Y1=DIP2*X3-DIP3*X2
+      Y2=DIP3*X1-DIP1*X3
+      Y3=DIP1*X2-DIP2*X1
+      Y=SQRT(Y1*Y1+Y2*Y2+Y3*Y3)
+      Y1=Y1/Y
+      Y2=Y2/Y
+      Y3=Y3/Y
+C
+C   AND GEI COMPONENTS OF THE UNIT VECTOR Z = EZGSW = EXGSW x EYGSW = X x Y:
+C
+      Z1=X2*Y3-X3*Y2
+      Z2=X3*Y1-X1*Y3
+      Z3=X1*Y2-X2*Y1
+C
+C   ELEMENTS OF THE MATRIX GSE TO GSW ARE THE SCALAR PRODUCTS:
+C
+C  E11=(EXGSE,EXGSW)  E12=(EXGSE,EYGSW)  E13=(EXGSE,EZGSW)
+C  E21=(EYGSE,EXGSW)  E22=(EYGSE,EYGSW)  E23=(EYGSE,EZGSW)
+C  E31=(EZGSE,EXGSW)  E32=(EZGSE,EYGSW)  E33=(EZGSE,EZGSW)
+C
+      E11= S1*X1 +S2*X2 +S3*X3
+      E12= S1*Y1 +S2*Y2 +S3*Y3
+      E13= S1*Z1 +S2*Z2 +S3*Z3
+      E21=DY1*X1+DY2*X2+DY3*X3
+      E22=DY1*Y1+DY2*Y2+DY3*Y3
+      E23=DY1*Z1+DY2*Z2+DY3*Z3
+      E31=DZ1*X1+DZ2*X2+DZ3*X3
+      E32=DZ1*Y1+DZ2*Y2+DZ3*Y3
+      E33=DZ1*Z1+DZ2*Z2+DZ3*Z3
+C
+C   GEODIPOLE TILT ANGLE IN THE GSW SYSTEM: PSI=ARCSIN(DIP,EXGSW)
+C
+      SPS=DIP1*X1+DIP2*X2+DIP3*X3
       CPS=SQRT(1.-SPS**2)
       PSI=ASIN(SPS)
 C
-C    THE ELEMENTS OF THE MATRIX MAG TO SM ARE THE SCALAR PRODUCTS:
-C CFI=GM22=(EYSM,EYMAG), SFI=GM23=(EYSM,EXMAG); THEY CAN BE DERIVED AS FOLLOWS:
+C   ELEMENTS OF THE MATRIX GEO TO GSW ARE THE SCALAR PRODUCTS:
 C
-C IN GEO THE VECTORS EXMAG AND EYMAG HAVE THE COMPONENTS (CT0*CL0,CT0*SL0,-ST0)
-C  AND (-SL0,CL0,0), RESPECTIVELY.    HENCE, IN GEI THE COMPONENTS ARE:
+C   A11=(EXGEO,EXGSW), A12=(EYGEO,EXGSW), A13=(EZGEO,EXGSW),
+C   A21=(EXGEO,EYGSW), A22=(EYGEO,EYGSW), A23=(EZGEO,EYGSW),
+C   A31=(EXGEO,EZGSW), A32=(EYGEO,EZGSW), A33=(EZGEO,EZGSW),
+C
+C   ALL THE UNIT VECTORS IN BRACKETS ARE ALREADY DEFINED IN GEI:
+C
+C  EXGEO=(CGST,SGST,0), EYGEO=(-SGST,CGST,0), EZGEO=(0,0,1)
+C  EXGSW=(X1,X2,X3),  EYGSW=(Y1,Y2,Y3),   EZGSW=(Z1,Z2,Z3)
+C                                                           AND  THEREFORE:
+C
+      A11=X1*CGST+X2*SGST
+      A12=-X1*SGST+X2*CGST
+      A13=X3
+      A21=Y1*CGST+Y2*SGST
+      A22=-Y1*SGST+Y2*CGST
+      A23=Y3
+      A31=Z1*CGST+Z2*SGST
+      A32=-Z1*SGST+Z2*CGST
+      A33=Z3
+C
+C  NOW CALCULATE ELEMENTS OF THE MATRIX MAG TO SM (ONE ROTATION ABOUT THE GEODIPOLE AXIS);
+C   THEY ARE FOUND AS THE SCALAR PRODUCTS: CFI=GM22=(EYSM,EYMAG)=(EYGSW,EYMAG),
+C                                          SFI=GM23=(EYSM,EXMAG)=(EYGSW,EXMAG),
+C    DERIVED AS FOLLOWS:
+C
+C IN GEO, THE VECTORS EXMAG AND EYMAG HAVE THE COMPONENTS (CT0*CL0,CT0*SL0,-ST0)
+C  AND (-SL0,CL0,0), RESPECTIVELY.    HENCE, IN GEI THEIR COMPONENTS ARE:
 C  EXMAG:    CT0*CL0*COS(GST)-CT0*SL0*SIN(GST)
 C            CT0*CL0*SIN(GST)+CT0*SL0*COS(GST)
 C            -ST0
 C  EYMAG:    -SL0*COS(GST)-CL0*SIN(GST)
 C            -SL0*SIN(GST)+CL0*COS(GST)
 C             0
-C  THE COMPONENTS OF EYSM IN GEI WERE FOUND ABOVE AS Y1, Y2, AND Y3;
-C  NOW WE ONLY HAVE TO COMBINE THE QUANTITIES INTO SCALAR PRODUCTS:
+C  NOW, NOTE THAT GEI COMPONENTS OF EYSM=EYGSW WERE FOUND ABOVE AS Y1, Y2, AND Y3,
+C  AND WE ONLY HAVE TO COMBINE THESE QUANTITIES INTO SCALAR PRODUCTS:
 C
       EXMAGX=CT0*(CL0*CGST-SL0*SGST)
       EXMAGY=CT0*(CL0*SGST+SL0*CGST)
@@ -1003,57 +1127,101 @@ C
       CFI=Y1*EYMAGX+Y2*EYMAGY
       SFI=Y1*EXMAGX+Y2*EXMAGY+Y3*EXMAGZ
 C
-      XMUT=(ATAN2(SFI,CFI)+3.1415926536)*3.8197186342
-C
-C  THE ELEMENTS OF THE MATRIX GEO TO GSM ARE THE SCALAR PRODUCTS:
-C
-C   A11=(EXGEO,EXGSM), A12=(EYGEO,EXGSM), A13=(EZGEO,EXGSM),
-C   A21=(EXGEO,EYGSM), A22=(EYGEO,EYGSM), A23=(EZGEO,EYGSM),
-C   A31=(EXGEO,EZGSM), A32=(EYGEO,EZGSM), A33=(EZGEO,EZGSM),
-C
-C   ALL THE UNIT VECTORS IN BRACKETS ARE ALREADY DEFINED IN GEI:
-C
-C  EXGEO=(CGST,SGST,0), EYGEO=(-SGST,CGST,0), EZGEO=(0,0,1)
-C  EXGSM=(S1,S2,S3),  EYGSM=(Y1,Y2,Y3),   EZGSM=(Z1,Z2,Z3)
-C                                                           AND  THEREFORE:
-C
-      A11=S1*CGST+S2*SGST
-      A12=-S1*SGST+S2*CGST
-      A13=S3
-      A21=Y1*CGST+Y2*SGST
-      A22=-Y1*SGST+Y2*CGST
-      A23=Y3
-      A31=Z1*CGST+Z2*SGST
-      A32=-Z1*SGST+Z2*CGST
-      A33=Z3
-C
  10   FORMAT(//1X,
-     *'**** RECALC WARNS: YEAR IS OUT OF INTERVAL 1965-2010: IYEAR=',I4,
-     * /,6X,'CALCULATIONS WILL BE DONE FOR IYEAR=',I4,/)
+     *'**** RECALC_08 WARNS: YEAR IS OUT OF INTERVAL 1965-2015: IYEAR=',
+     *I4,/,6X,'CALCULATIONS WILL BE DONE FOR IYEAR=',I4,/)
       RETURN
       END
 c
-c====================================================================
+c==================================================================================
+
+      SUBROUTINE GSWGSE_08 (XGSW,YGSW,ZGSW,XGSE,YGSE,ZGSE,J)
 C
-      SUBROUTINE GEOMAG (XGEO,YGEO,ZGEO,XMAG,YMAG,ZMAG,J)
+C  THIS SUBROUTINE TRANSFORMS COMPONENTS OF ANY VECTOR BETWEEN THE STANDARD GSE
+C  COORDINATE SYSTEM AND THE GEOCENTRIC SOLAR-WIND (GSW, aka GSWM), DEFINED AS FOLLOWS
+C  (HONES ET AL., PLANET.SPACE SCI., V.34, P.889, 1986; TSYGANENKO ET AL., JGRA,
+C  V.103(A4), P.6827, 1998):
 C
-C    CONVERTS GEOGRAPHIC (GEO) TO DIPOLE (MAG) COORDINATES OR VICA VERSA.
+C  IN THE GSW SYSTEM, X AXIS IS ANTIPARALLEL TO THE OBSERVED DIRECTION OF THE SOLAR WIND FLOW.
+C  TWO OTHER AXES, Y AND Z, ARE DEFINED IN THE SAME WAY AS FOR THE STANDARD GSM, THAT IS,
+C  Z AXIS ORTHOGONAL TO X AXIS, POINTS NORTHWARD, AND LIES IN THE PLANE DEFINED BY THE X-
+C  AND GEODIPOLE AXIS. THE Y AXIS COMPLETES THE RIGHT-HANDED SYSTEM.
+C
+C  THE GSW SYSTEM BECOMES IDENTICAL TO THE STANDARD GSM IN THE CASE OF
+C   A STRICTLY RADIAL SOLAR WIND FLOW.
+C
+C  AUTHOR:  N. A. TSYGANENKO
+C  ADDED TO 2008 VERSION OF GEOPACK: JAN 27, 2008.
+C
+C                    J>0                       J<0
+C-----INPUT:   J,XGSW,YGSW,ZGSW          J,XGSE,YGSE,ZGSE
+C-----OUTPUT:    XGSE,YGSE,ZGSE            XGSW,YGSW,ZGSW
+C
+C  IMPORTANT THINGS TO REMEMBER:
+C
+C   (1) BEFORE CALLING GSWGSE_08, BE SURE TO INVOKE SUBROUTINE RECALC_08, IN ORDER
+C       TO DEFINE ALL NECESSARY ELEMENTS OF TRANSFORMATION MATRICES
+C
+C   (2) IN THE ABSENCE OF INFORMATION ON THE SOLAR WIND DIRECTION, E.G., WITH ONLY SCALAR
+C       SPEED V KNOWN, THIS SUBROUTINE CAN BE USED TO CONVERT VECTORS TO ABERRATED
+C       COORDINATE SYSTEM, TAKING INTO ACCOUNT EARTH'S ORBITAL SPEED OF 29 KM/S.
+C       TO DO THAT, SPECIFY THE LAST 3 PARAMETERS IN RECALC_08 AS FOLLOWS:
+C       VGSEX=-V, VGSEY=29.0, VGSEZ=0.0.
+C
+C       IT SHOULD ALSO BE KEPT IN MIND THAT IN SOME SOLAR WIND DATABASES THE ABERRATION
+C       EFFECT HAS ALREADY BEEN TAKEN INTO ACCOUNT BY SUBTRACTING 29 KM/S FROM VYGSE;
+C       IN THAT CASE, THE ORIGINAL VYGSE VALUES SHOULD BE RESTORED BY ADDING BACK THE
+C       29 KM/S CORRECTION. WHETHER OR NOT TO DO THAT, MUST BE VERIFIED WITH THE DATA
+C       ORIGINATOR (OR CAN BE DETERMINED BY CALCULATING THE AVERAGE VGSEY OVER
+C       A SUFFICIENTLY LONG TIME INTERVAL)
+C
+C   (3) IF NO INFORMATION IS AVAILABLE ON THE SOLAR WIND SPEED, THEN SET VGSEX=-400.0
+c       AND  VGSEY=VGSEZ=0. IN THAT CASE, THE GSW COORDINATE SYSTEM BECOMES
+c       IDENTICAL TO THE STANDARD ONE.
+C
+      COMMON /GEOPACK1/ AAA(25),E11,E21,E31,E12,E22,E32,E13,E23,E33
+C
+C  DIRECT TRANSFORMATION:
+C
+      IF (J.GT.0) THEN
+        XGSE=XGSW*E11+YGSW*E12+ZGSW*E13
+        YGSE=XGSW*E21+YGSW*E22+ZGSW*E23
+        ZGSE=XGSW*E31+YGSW*E32+ZGSW*E33
+      ENDIF
+C
+C   INVERSE TRANSFORMATION: CARRIED OUT USING THE TRANSPOSED MATRIX:
+C
+      IF (J.LT.0) THEN
+        XGSW=XGSE*E11+YGSE*E21+ZGSE*E31
+        YGSW=XGSE*E12+YGSE*E22+ZGSE*E32
+        ZGSW=XGSE*E13+YGSE*E23+ZGSE*E33
+      ENDIF
+C
+      RETURN
+      END
+C
+C========================================================================================
+C
+      SUBROUTINE GEOMAG_08 (XGEO,YGEO,ZGEO,XMAG,YMAG,ZMAG,J)
+C
+C    CONVERTS GEOGRAPHIC (GEO) TO DIPOLE (MAG) COORDINATES OR VICE VERSA.
 C
 C                    J>0                       J<0
 C-----INPUT:  J,XGEO,YGEO,ZGEO           J,XMAG,YMAG,ZMAG
 C-----OUTPUT:    XMAG,YMAG,ZMAG           XGEO,YGEO,ZGEO
 C
-C
-C  ATTENTION:  SUBROUTINE  RECALC  MUST BE INVOKED BEFORE GEOMAG IN TWO CASES:
+C  ATTENTION:  SUBROUTINE  RECALC_08  MUST BE INVOKED BEFORE GEOMAG_08 IN TWO CASES:
 C     /A/  BEFORE THE FIRST TRANSFORMATION OF COORDINATES
 C     /B/  IF THE VALUES OF IYEAR AND/OR IDAY HAVE BEEN CHANGED
 C
+C  NO INFORMATION IS REQUIRED HERE ON THE SOLAR WIND VELOCITY, SO ONE
+C  CAN SET VGSEX=-400.0, VGSEY=0.0, VGSEZ=0.0 IN RECALC_08.
 C
-C   LAST MOFIFICATION:  MARCH 30, 2003 (INVOCATION OF RECALC INSIDE THIS S/R WAS REMOVED)
+C   LAST MOFIFICATION:  JAN 28, 2008
 C
 C   AUTHOR:  N. A. TSYGANENKO
 C
-      COMMON /GEOPACK1/ ST0,CT0,SL0,CL0,CTCL,STCL,CTSL,STSL,AB(19),BB(8)
+      COMMON /GEOPACK1/ ST0,CT0,SL0,CL0,CTCL,STCL,CTSL,STSL,AB(26)
 
       IF(J.GT.0) THEN
        XMAG=XGEO*CTCL+YGEO*CTSL-ZGEO*ST0
@@ -1070,23 +1238,26 @@ C
 c
 c=========================================================================================
 c
-      SUBROUTINE GEIGEO (XGEI,YGEI,ZGEI,XGEO,YGEO,ZGEO,J)
+      SUBROUTINE GEIGEO_08 (XGEI,YGEI,ZGEI,XGEO,YGEO,ZGEO,J)
 C
 C   CONVERTS EQUATORIAL INERTIAL (GEI) TO GEOGRAPHICAL (GEO) COORDS
-C   OR VICA VERSA.
+C   OR VICE VERSA.
 C                    J>0                J<0
 C----INPUT:  J,XGEI,YGEI,ZGEI    J,XGEO,YGEO,ZGEO
 C----OUTPUT:   XGEO,YGEO,ZGEO      XGEI,YGEI,ZGEI
 C
-C  ATTENTION:  SUBROUTINE  RECALC  MUST BE INVOKED BEFORE GEIGEO IN TWO CASES:
+C  ATTENTION:  SUBROUTINE  RECALC_08  MUST BE INVOKED BEFORE GEIGEO_08 IN TWO CASES:
 C     /A/  BEFORE THE FIRST TRANSFORMATION OF COORDINATES
 C     /B/  IF THE CURRENT VALUES OF IYEAR,IDAY,IHOUR,MIN,ISEC HAVE BEEN CHANGED
 C
-C     LAST MODIFICATION:  MARCH 31, 2003
+C  NO INFORMATION IS REQUIRED HERE ON THE SOLAR WIND VELOCITY, SO ONE
+C  CAN SET VGSEX=-400.0, VGSEY=0.0, VGSEZ=0.0 IN RECALC_08.
+C
+C     LAST MODIFICATION:  JAN 28, 2008
 
 C     AUTHOR:  N. A. TSYGANENKO
 C
-      COMMON /GEOPACK1/ A(27),CGST,SGST,B(6)
+      COMMON /GEOPACK1/ A(13),CGST,SGST,B(19)
 C
       IF(J.GT.0) THEN
        XGEO=XGEI*CGST+YGEI*SGST
@@ -1103,23 +1274,32 @@ C
 C
 C=======================================================================================
 C
-      SUBROUTINE MAGSM (XMAG,YMAG,ZMAG,XSM,YSM,ZSM,J)
+      SUBROUTINE MAGSM_08 (XMAG,YMAG,ZMAG,XSM,YSM,ZSM,J)
 C
-C  CONVERTS DIPOLE (MAG) TO SOLAR MAGNETIC (SM) COORDINATES OR VICA VERSA
+C  CONVERTS DIPOLE (MAG) TO SOLAR MAGNETIC (SM) COORDINATES OR VICE VERSA
 C
 C                    J>0              J<0
 C----INPUT: J,XMAG,YMAG,ZMAG     J,XSM,YSM,ZSM
 C----OUTPUT:    XSM,YSM,ZSM       XMAG,YMAG,ZMAG
 C
-C  ATTENTION:  SUBROUTINE  RECALC  MUST BE INVOKED BEFORE MAGSM IN TWO CASES:
-C     /A/  BEFORE THE FIRST TRANSFORMATION OF COORDINATES
-C     /B/  IF THE VALUES OF IYEAR,IDAY,IHOUR,MIN,ISEC HAVE BEEN CHANGED
+C  ATTENTION:  SUBROUTINE  RECALC_08  MUST BE INVOKED BEFORE MAGSM_08 IN THREE CASES:
+C     /A/  BEFORE THE FIRST TRANSFORMATION OF COORDINATES, OR
+C     /B/  IF THE VALUES OF IYEAR,IDAY,IHOUR,MIN,ISEC HAVE CHANGED, AND/OR
+C     /C/  IF THE VALUES OF COMPONENTS OF THE SOLAR WIND FLOW VELOCITY HAVE CHANGED
 C
-C     LAST MODIFICATION:  MARCH 31, 2003
+C    IMPORTANT NOTE:
+C
+C        A NON-STANDARD DEFINITION IS IMPLIED HERE FOR THE SOLAR MAGNETIC COORDINATE
+C        SYSTEM:  IT IS ASSUMED THAT THE XSM AXIS LIES IN THE PLANE DEFINED BY THE
+C        GEODIPOLE AXIS AND THE OBSERVED VECTOR OF THE SOLAR WIND FLOW (RATHER THAN
+C        THE EARTH-SUN LINE).  IN ORDER TO CONVERT MAG COORDINATES TO AND FROM THE
+C        STANDARD SM COORDINATES, INVOKE RECALC_08 WITH VGSEX=-400.0, VGSEY=0.0, VGSEZ=0.0
+C
+C     LAST MODIFICATION:  FEB 07, 2008
 C
 C     AUTHOR:  N. A. TSYGANENKO
 C
-      COMMON /GEOPACK1/ A(8),SFI,CFI,B(7),AB(10),BA(8)
+      COMMON /GEOPACK1/ A(8),SFI,CFI,B(24)
 C
       IF (J.GT.0) THEN
        XSM=XMAG*CFI-YMAG*SFI
@@ -1134,67 +1314,43 @@ C
       RETURN
       END
 C
-C=======================================================================================
-C
-       SUBROUTINE GSMGSE (XGSM,YGSM,ZGSM,XGSE,YGSE,ZGSE,J)
-C
-C CONVERTS GEOCENTRIC SOLAR MAGNETOSPHERIC (GSM) COORDS TO SOLAR ECLIPTIC (GSE) ONES
-C   OR VICA VERSA.
-C                    J>0                J<0
-C-----INPUT: J,XGSM,YGSM,ZGSM    J,XGSE,YGSE,ZGSE
-C----OUTPUT:   XGSE,YGSE,ZGSE      XGSM,YGSM,ZGSM
-C
-C  ATTENTION:  SUBROUTINE  RECALC  MUST BE INVOKED BEFORE GSMGSE IN TWO CASES:
-C     /A/  BEFORE THE FIRST TRANSFORMATION OF COORDINATES
-C     /B/  IF THE VALUES OF IYEAR,IDAY,IHOUR,MIN,ISEC HAVE BEEN CHANGED
-C
-C     LAST MODIFICATION:  MARCH 31, 2003
-C
-C     AUTHOR:  N. A. TSYGANENKO
-C
-      COMMON /GEOPACK1/ A(12),SHI,CHI,AB(13),BA(8)
-C
-      IF (J.GT.0) THEN
-       XGSE=XGSM
-       YGSE=YGSM*CHI-ZGSM*SHI
-       ZGSE=YGSM*SHI+ZGSM*CHI
-      ELSE
-       XGSM=XGSE
-       YGSM=YGSE*CHI+ZGSE*SHI
-       ZGSM=ZGSE*CHI-YGSE*SHI
-      ENDIF
-
-      RETURN
-      END
-C
 C=====================================================================================
 C
-       SUBROUTINE SMGSM (XSM,YSM,ZSM,XGSM,YGSM,ZGSM,J)
+       SUBROUTINE SMGSW_08 (XSM,YSM,ZSM,XGSW,YGSW,ZGSW,J)
 C
-C CONVERTS SOLAR MAGNETIC (SM) TO GEOCENTRIC SOLAR MAGNETOSPHERIC
-C   (GSM) COORDINATES OR VICA VERSA.
+C  CONVERTS SOLAR MAGNETIC (SM) TO GEOCENTRIC SOLAR-WIND (GSW) COORDINATES OR VICE VERSA.
+C
 C                  J>0                 J<0
-C-----INPUT: J,XSM,YSM,ZSM        J,XGSM,YGSM,ZGSM
-C----OUTPUT:  XGSM,YGSM,ZGSM       XSM,YSM,ZSM
+C-----INPUT: J,XSM,YSM,ZSM        J,XGSW,YGSW,ZGSW
+C----OUTPUT:  XGSW,YGSW,ZGSW       XSM,YSM,ZSM
 C
-C  ATTENTION:  SUBROUTINE RECALC  MUST BE INVOKED BEFORE SMGSM IN TWO CASES:
+C  ATTENTION:  SUBROUTINE RECALC_08 MUST BE INVOKED BEFORE SMGSW_08 IN THREE CASES:
 C     /A/  BEFORE THE FIRST TRANSFORMATION OF COORDINATES
 C     /B/  IF THE VALUES OF IYEAR,IDAY,IHOUR,MIN,ISEC HAVE BEEN CHANGED
+C     /C/  IF THE VALUES OF COMPONENTS OF THE SOLAR WIND FLOW VELOCITY HAVE CHANGED
 C
-C     LAST MODIFICATION:  MARCH 31, 2003
+C    IMPORTANT NOTE:
+C
+C        A NON-STANDARD DEFINITION IS IMPLIED HERE FOR THE SOLAR MAGNETIC (SM) COORDINATE
+C        SYSTEM:  IT IS ASSUMED THAT THE XSM AXIS LIES IN THE PLANE DEFINED BY THE
+C        GEODIPOLE AXIS AND THE OBSERVED VECTOR OF THE SOLAR WIND FLOW (RATHER THAN
+C        THE EARTH-SUN LINE).  IN ORDER TO CONVERT MAG COORDINATES TO AND FROM THE
+C        STANDARD SM COORDINATES, INVOKE RECALC_08 WITH VGSEX=-400.0, VGSEY=0.0, VGSEZ=0.0
+C
+C     LAST MODIFICATION:  FEB 07, 2008
 C
 C     AUTHOR:  N. A. TSYGANENKO
 C
-      COMMON /GEOPACK1/ A(10),SPS,CPS,B(15),AB(8)
+      COMMON /GEOPACK1/ A(10),SPS,CPS,B(22)
 
       IF (J.GT.0) THEN
-       XGSM=XSM*CPS+ZSM*SPS
-       YGSM=YSM
-       ZGSM=ZSM*CPS-XSM*SPS
+       XGSW=XSM*CPS+ZSM*SPS
+       YGSW=YSM
+       ZGSW=ZSM*CPS-XSM*SPS
       ELSE
-       XSM=XGSM*CPS-ZGSM*SPS
-       YSM=YGSM
-       ZSM=XGSM*SPS+ZGSM*CPS
+       XSM=XGSW*CPS-ZGSW*SPS
+       YSM=YGSW
+       ZSM=XGSW*SPS+ZGSW*CPS
       ENDIF
 
       RETURN
@@ -1202,33 +1358,38 @@ C
 C
 C==========================================================================================
 C
-      SUBROUTINE GEOGSM (XGEO,YGEO,ZGEO,XGSM,YGSM,ZGSM,J)
+      SUBROUTINE GEOGSW_08 (XGEO,YGEO,ZGEO,XGSW,YGSW,ZGSW,J)
 C
-C CONVERTS GEOGRAPHIC (GEO) TO GEOCENTRIC SOLAR MAGNETOSPHERIC (GSM) COORDINATES
-C   OR VICA VERSA.
+C CONVERTS GEOGRAPHIC (GEO) TO GEOCENTRIC SOLAR-WIND (GSW) COORDINATES OR VICE VERSA.
 C
 C                   J>0                   J<0
-C----- INPUT:  J,XGEO,YGEO,ZGEO    J,XGSM,YGSM,ZGSM
-C---- OUTPUT:    XGSM,YGSM,ZGSM      XGEO,YGEO,ZGEO
+C----- INPUT:  J,XGEO,YGEO,ZGEO    J,XGSW,YGSW,ZGSW
+C---- OUTPUT:    XGSW,YGSW,ZGSW      XGEO,YGEO,ZGEO
 C
-C  ATTENTION:  SUBROUTINE  RECALC  MUST BE INVOKED BEFORE GEOGSM IN TWO CASES:
-C     /A/  BEFORE THE FIRST TRANSFORMATION OF COORDINATES
-C     /B/  IF THE VALUES OF IYEAR,IDAY,IHOUR,MIN,ISEC  HAVE BEEN CHANGED
+C  ATTENTION:  SUBROUTINE  RECALC_08  MUST BE INVOKED BEFORE GEOGSW_08 IN THREE CASES:
+C     /A/  BEFORE THE FIRST TRANSFORMATION OF COORDINATES, OR
+C     /B/  IF THE VALUES OF IYEAR,IDAY,IHOUR,MIN,ISEC  HAVE CHANGED, AND/OR
+C     /C/  IF THE VALUES OF COMPONENTS OF THE SOLAR WIND FLOW VELOCITY HAVE CHANGED
 C
-C     LAST MODIFICATION: MARCH 31, 2003
+C  NOTE: THIS SUBROUTINE CONVERTS GEO VECTORS TO AND FROM THE SOLAR-WIND GSW COORDINATE
+C        SYSTEM, TAKING INTO ACCOUNT POSSIBLE DEFLECTIONS OF THE SOLAR WIND DIRECTION FROM
+C        STRICTLY RADIAL.  BEFORE CONVERTING TO/FROM STANDARD GSM COORDINATES, INVOKE RECALC_08
+C        WITH VGSEX=-400.0 and VGSEY=0.0, VGSEZ=0.0
+C
+C     LAST MODIFICATION:  FEB 07, 2008
 C
 C     AUTHOR:  N. A. TSYGANENKO
 C
-      COMMON /GEOPACK1/AA(17),A11,A21,A31,A12,A22,A32,A13,A23,A33,D,B(8)
+      COMMON /GEOPACK1/ AA(16),A11,A21,A31,A12,A22,A32,A13,A23,A33,B(9)
 C
       IF (J.GT.0) THEN
-       XGSM=A11*XGEO+A12*YGEO+A13*ZGEO
-       YGSM=A21*XGEO+A22*YGEO+A23*ZGEO
-       ZGSM=A31*XGEO+A32*YGEO+A33*ZGEO
+       XGSW=A11*XGEO+A12*YGEO+A13*ZGEO
+       YGSW=A21*XGEO+A22*YGEO+A23*ZGEO
+       ZGSW=A31*XGEO+A32*YGEO+A33*ZGEO
       ELSE
-       XGEO=A11*XGSM+A21*YGSM+A31*ZGSM
-       YGEO=A12*XGSM+A22*YGSM+A32*ZGSM
-       ZGEO=A13*XGSM+A23*YGSM+A33*ZGSM
+       XGEO=A11*XGSW+A21*YGSW+A31*ZGSW
+       YGEO=A12*XGSW+A22*YGSW+A32*ZGSW
+       ZGEO=A13*XGSW+A23*YGSW+A33*ZGSW
       ENDIF
 
       RETURN
@@ -1236,28 +1397,113 @@ C
 C
 C=====================================================================================
 C
-      SUBROUTINE RHAND (X,Y,Z,R1,R2,R3,IOPT,PARMOD,EXNAME,INNAME)
+      SUBROUTINE GEODGEO_08 (H,XMU,R,THETA,J)
+C
+C  THIS SUBROUTINE (1) CONVERTS VERTICAL LOCAL HEIGHT (ALTITUDE) H AND GEODETIC
+C  LATITUDE XMU INTO GEOCENTRIC COORDINATES R AND THETA (GEOCENTRIC RADIAL
+C  DISTANCE AND COLATITUDE, RESPECTIVELY; ALSO KNOWN AS ECEF COORDINATES),
+C  AS WELL AS (2) PERFORMS THE INVERSE TRANSFORMATION FROM {R,THETA} TO {H,XMU}.
+C
+C  THE SUBROUTINE USES WORLD GEODETIC SYSTEM WGS84 PARAMETERS FOR THE EARTH'S
+C  ELLIPSOID. THE ANGULAR QUANTITIES (GEO COLATITUDE THETA AND GEODETIC LATITUDE
+C  XMU) ARE IN RADIANS, AND THE DISTANCES (GEOCENTRIC RADIUS R AND ALTITUDE H
+C  ABOVE THE EARTH'S ELLIPSOID) ARE IN KILOMETERS.
+C
+C  IF J>0, THE TRANSFORMATION IS MADE FROM GEODETIC TO GEOCENTRIC COORDINATES
+C   USING SIMPLE DIRECT EQUATIONS.
+C  IF J<0, THE INVERSE TRANSFORMATION FROM GEOCENTRIC TO GEODETIC COORDINATES
+C   IS MADE BY MEANS OF A FAST ITERATIVE ALGORITHM.
+C
+c-------------------------------------------------------------------------------
+C                   J>0                     |            J<0
+c-------------------------------------------|-----------------------------------
+C--INPUT:   J        H          XMU         |    J         R          THETA
+c         flag  altitude (km)  geodetic     |   flag   geocentric    spherical
+c                              latitude     |         distance (km) colatitude
+c                              (radians)    |                        (radians)
+c-------------------------------------------|-----------------------------------
+c                                           |
+C----OUTPUT:         R           THETA      |          H              XMU
+C                geocentric    spherical    |      altitude (km)    geodetic
+C                distance (km) colatitude   |                       latitude
+C                              (radians)    |                       (radians)
+C-------------------------------------------------------------------------------
+C
+C   AUTHOR:  N. A. TSYGANENKO
+c   DATE:    DEC 5, 2007
+C
+      DATA R_EQ, BETA /6378.137, 6.73949674228E-3/
+c
+c  R_EQ is the semi-major axis of the Earth's ellipsoid, and BETA is its
+c  second eccentricity squared
+c
+      DATA TOL /1.E-6/
+c
+c   Direct transformation (GEOD=>GEO):
+c
+      IF (J.GT.0) THEN
+       COSXMU=COS(XMU)
+       SINXMU=SIN(XMU)
+       DEN=SQRT(COSXMU**2+(SINXMU/(1.0+BETA))**2)
+       COSLAM=COSXMU/DEN
+       SINLAM=SINXMU/(DEN*(1.0+BETA))
+       RS=R_EQ/SQRT(1.0+BETA*SINLAM**2)
+       X=RS*COSLAM+H*COSXMU
+       Z=RS*SINLAM+H*SINXMU
+       R=SQRT(X**2+Z**2)
+       THETA=ACOS(Z/R)
+      ENDIF
+
+c
+c   Inverse transformation (GEO=>GEOD):
+c
+      IF (J.LT.0) THEN
+       N=0
+       PHI=1.570796327-THETA
+       PHI1=PHI
+  1    SP=SIN(PHI1)
+       ARG=SP*(1.0D0+BETA)/SQRT(1.0+BETA*(2.0+BETA)*SP**2)
+       XMUS=ASIN(ARG)
+       RS=R_EQ/SQRT(1.0+BETA*SIN(PHI1)**2)
+       COSFIMS=COS(PHI1-XMUS)
+       H=SQRT((RS*COSFIMS)**2+R**2-RS**2)-RS*COSFIMS
+       Z=RS*SIN(PHI1)+H*SIN(XMUS)
+       X=RS*COS(PHI1)+H*COS(XMUS)
+       RR=SQRT(X**2+Z**2)
+       DPHI=ASIN(Z/RR)-PHI
+       PHI1=PHI1-DPHI
+       N=N+1
+       IF (ABS(DPHI).GT.TOL.AND.N.LT.100) GOTO 1
+       XMU=XMUS
+      ENDIF
+
+      RETURN
+      END
+C
+C=====================================================================================
+C
+      SUBROUTINE RHAND_08 (X,Y,Z,R1,R2,R3,IOPT,PARMOD,EXNAME,INNAME)
 C
 C  CALCULATES THE COMPONENTS OF THE RIGHT HAND SIDE VECTOR IN THE GEOMAGNETIC FIELD
-C    LINE EQUATION  (a subsidiary subroutine for the subroutine STEP)
+C    LINE EQUATION  (a subsidiary subroutine for the subroutine STEP_08)
 C
-C     LAST MODIFICATION:  MARCH 31, 2003
+C     LAST MODIFICATION:  FEB 07, 2008
 C
 C     AUTHOR:  N. A. TSYGANENKO
 C
       DIMENSION PARMOD(10)
 C
 C     EXNAME AND INNAME ARE NAMES OF SUBROUTINES FOR THE EXTERNAL AND INTERNAL
-C     PARTS OF THE TOTAL FIELD
+C     PARTS OF THE TOTAL FIELD, E.G., T96_01 AND IGRF_GSW_08
 C
-      COMMON /GEOPACK1/ A(15),PSI,AA(10),DS3,BB(8)
+      COMMON /GEOPACK1/ A(12),DS3,BB(2),PSI,CC(18)
 
-      CALL EXNAME (IOPT,PARMOD,PSI,X,Y,Z,BXGSM,BYGSM,BZGSM)
-      CALL INNAME (X,Y,Z,HXGSM,HYGSM,HZGSM)
+      CALL EXNAME (IOPT,PARMOD,PSI,X,Y,Z,BXGSW,BYGSW,BZGSW)
+      CALL INNAME (X,Y,Z,HXGSW,HYGSW,HZGSW)
 
-      BX=BXGSM+HXGSM
-      BY=BYGSM+HYGSM
-      BZ=BZGSM+HZGSM
+      BX=BXGSW+HXGSW
+      BY=BYGSW+HYGSW
+      BZ=BZGSW+HZGSW
       B=DS3/SQRT(BX**2+BY**2+BZ**2)
       R1=BX*B
       R2=BY*B
@@ -1267,125 +1513,180 @@ C
 C
 C===================================================================================
 C
-      SUBROUTINE STEP (X,Y,Z,DS,ERRIN,IOPT,PARMOD,EXNAME,INNAME)
+      SUBROUTINE STEP_08(X,Y,Z,DS,DSMAX,ERRIN,IOPT,PARMOD,EXNAME,INNAME)
 C
-C   RE-CALCULATES {X,Y,Z}, MAKING A STEP ALONG A FIELD LINE.
-C   DS IS THE STEP SIZE, ERRIN IS PERMISSIBLE ERROR VALUE, IOPT SPECIFIES THE EXTERNAL
-C   MODEL VERSION, THE ARRAY PARMOD CONTAINS INPUT PARAMETERS FOR THAT MODEL
-C   EXNAME IS THE NAME OF THE EXTERNAL FIELD SUBROUTINE
-C   INNAME IS THE NAME OF THE INTERNAL FIELD SUBROUTINE (EITHER DIP OR IGRF)
+C   RE-CALCULATES THE INPUT VALUES {X,Y,Z} (IN GSW COORDINATES) FOR ANY POINT ON A FIELD LINE,
+C     BY MAKING A STEP ALONG THAT LINE USING RUNGE-KUTTA-MERSON ALGORITHM (G.N. Lance, Numerical
+C      methods for high-speed computers, Iliffe & Sons, London 1960.)
+C   DS IS A PRESCRIBED VALUE OF THE CURRENT STEP SIZE, DSMAX IS ITS UPPER LIMIT.
+C   ERRIN IS A PERMISSIBLE ERROR (ITS OPTIMAL VALUE SPECIFIED IN THE S/R TRACE_08)
+C     IF THE ACTUAL ERROR (ERRCUR) AT THE CURRENT STEP IS LARGER THAN ERRIN, THE STEP IS REJECTED,
+C       AND THE CALCULATION IS REPEATED ANEW WITH HALVED STEPSIZE DS.
+C     IF ERRCUR IS SMALLER THAN ERRIN, THE STEP IS ACCEPTED, AND THE CURRENT VALUE OF DS IS RETAINED
+C       FOR THE NEXT STEP.
+C     IF ERRCUR IS SMALLER THAN 0.04*ERRIN, THE STEP IS ACCEPTED, AND THE VALUE OF DS FOR THE NEXT STEP
+C       IS INCREASED BY THE FACTOR 1.5, BUT NOT LARGER THAN DSMAX.
+C   IOPT IS A FLAG, RESERVED FOR SPECIFYNG A VERSION OF THE EXTERNAL FIELD MODEL EXNAME.
+C   ARRAY PARMOD(10) CONTAINS INPUT PARAMETERS FOR THE MODEL EXNAME.
+C   EXNAME IS THE NAME OF THE SUBROUTINE FOR THE EXTERNAL FIELD MODEL.
+C   INNAME IS THE NAME OF THE SUBROUTINE FOR THE INTERNAL FIELD MODEL (EITHER DIP_08 OR IGRF_GSW_08)
 C
-C   ALL THE PARAMETERS ARE INPUT ONES; OUTPUT IS THE RENEWED TRIPLET X,Y,Z
+C   ALL THE ABOVE PARAMETERS ARE INPUT ONES; OUTPUT IS THE RECALCULATED VALUES OF X,Y,Z
 C
-C     LAST MODIFICATION:  MARCH 31, 2003
+C     LAST MODIFICATION:  APR 21, 2008   (SEE ERRATA AS OF THIS DATE)
 C
 C     AUTHOR:  N. A. TSYGANENKO
 C
       DIMENSION PARMOD(10)
-      COMMON /GEOPACK1/ A(26),DS3,B(8)
+      COMMON /GEOPACK1/ A(12),DS3,B(21)
       EXTERNAL EXNAME,INNAME
 
   1   DS3=-DS/3.
-      CALL RHAND (X,Y,Z,R11,R12,R13,IOPT,PARMOD,EXNAME,INNAME)
-      CALL RHAND (X+R11,Y+R12,Z+R13,R21,R22,R23,IOPT,PARMOD,EXNAME,
+      CALL RHAND_08 (X,Y,Z,R11,R12,R13,IOPT,PARMOD,EXNAME,INNAME)
+      CALL RHAND_08 (X+R11,Y+R12,Z+R13,R21,R22,R23,IOPT,PARMOD,EXNAME,
      * INNAME)
-      CALL RHAND (X+.5*(R11+R21),Y+.5*(R12+R22),Z+.5*
+      CALL RHAND_08 (X+.5*(R11+R21),Y+.5*(R12+R22),Z+.5*
      *(R13+R23),R31,R32,R33,IOPT,PARMOD,EXNAME,INNAME)
-      CALL RHAND (X+.375*(R11+3.*R31),Y+.375*(R12+3.*R32
+      CALL RHAND_08 (X+.375*(R11+3.*R31),Y+.375*(R12+3.*R32
      *),Z+.375*(R13+3.*R33),R41,R42,R43,IOPT,PARMOD,EXNAME,INNAME)
-      CALL RHAND (X+1.5*(R11-3.*R31+4.*R41),Y+1.5*(R12-
+      CALL RHAND_08 (X+1.5*(R11-3.*R31+4.*R41),Y+1.5*(R12-
      *3.*R32+4.*R42),Z+1.5*(R13-3.*R33+4.*R43),
      *R51,R52,R53,IOPT,PARMOD,EXNAME,INNAME)
       ERRCUR=ABS(R11-4.5*R31+4.*R41-.5*R51)+ABS(R12-4.5*R32+4.*R42-.5*
      *R52)+ABS(R13-4.5*R33+4.*R43-.5*R53)
-      IF (ERRCUR.LT.ERRIN) GOTO 2
+C
+C  READY FOR MAKING THE STEP, BUT CHECK THE ACCURACY; IF INSUFFICIENT,
+C   REPEAT THE STEP WITH HALVED STEPSIZE:
+C
+      IF (ERRCUR.GT.ERRIN) THEN
       DS=DS*.5
       GOTO 1
+      ENDIF
+C
+C  ACCURACY IS ACCEPTABLE, BUT CHECK IF THE STEPSIZE IS NOT TOO LARGE;
+C    OTHERWISE REPEAT THE STEP WITH DS=DSMAX
+C
+      IF (ABS(DS).GT.DSMAX) THEN
+      DS=SIGN(DSMAX,DS)
+      GOTO 1
+      ENDIF
+C
+C  MAKING THE STEP:
+C
   2   X=X+.5*(R11+4.*R41+R51)
       Y=Y+.5*(R12+4.*R42+R52)
       Z=Z+.5*(R13+4.*R43+R53)
-      IF(ERRCUR.LT.ERRIN*.04.AND.ABS(DS).LT.1.33) DS=DS*1.5
+C
+C  IF THE ACTUAL ERROR IS TOO SMALL (LESS THAN 4% OF ERRIN) AND DS SMALLER
+C   THAN DSMAX/1.5, THEN WE INCREASE THE STEPSIZE FOR THE NEXT STEP BY 50%
+C
+      IF(ERRCUR.LT.ERRIN*.04.AND.DS.LT.DSMAX/1.5) DS=DS*1.5
       RETURN
       END
 C
 C==============================================================================
 C
-      SUBROUTINE TRACE (XI,YI,ZI,DIR,RLIM,R0,IOPT,PARMOD,EXNAME,INNAME,
-     *XF,YF,ZF,XX,YY,ZZ,L)
+      SUBROUTINE TRACE_08 (XI,YI,ZI,DIR,DSMAX,ERR,RLIM,R0,IOPT,PARMOD,
+     * EXNAME,INNAME,XF,YF,ZF,XX,YY,ZZ,L,LMAX)
 C
 C  TRACES A FIELD LINE FROM AN ARBITRARY POINT OF SPACE TO THE EARTH'S
 C  SURFACE OR TO A MODEL LIMITING BOUNDARY.
 C
-C  THE HIGHEST ORDER OF SPHERICAL HARMONICS IN THE MAIN FIELD EXPANSION USED
-C  IN THE MAPPING IS CALCULATED AUTOMATICALLY. IF INNAME=IGRF_GSM, THEN AN IGRF MODEL
-C  FIELD WILL BE USED, AND IF INNAME=DIP, A PURE DIPOLE FIELD WILL BE USED.
-
-C  IN ANY CASE, BEFORE CALLING TRACE, ONE SHOULD INVOKE RECALC, TO CALCULATE CORRECT
-C  VALUES OF THE IGRF COEFFICIENTS AND ALL QUANTITIES NEEDED FOR TRANSFORMATIONS
-C  BETWEEN COORDINATE SYSTEMS INVOLVED IN THIS CALCULATIONS.
+C  THIS SUBROUTINE ALLOWS TWO OPTIONS:
 C
-C  ALTERNATIVELY, THE SUBROUTINE RECALC CAN BE INVOKED WITH THE DESIRED VALUES OF
-C  IYEAR AND IDAY (TO SPECIFY THE DIPOLE MOMENT), WHILE THE VALUES OF THE DIPOLE
-C  TILT ANGLE PSI (IN RADIANS) AND ITS SINE (SPS) AND COSINE (CPS) CAN BE EXPLICITLY
-C  SPECIFIED AND FORWARDED TO THE COMMON BLOCK GEOPACK1 (11th, 12th, AND 16th ELEMENTS, RESP.)
+C  (1) IF INNAME=IGRF_GSW_08, THEN THE IGRF MODEL WILL BE USED FOR CALCULATING
+C      CONTRIBUTION FROM EARTH'S INTERNAL SOURCES. IN THIS CASE, SUBROUTINE
+C      RECALC_08 MUST BE CALLED BEFORE USING TRACE_08, WITH PROPERLY SPECIFIED DATE,
+C      UNIVERSAL TIME, AND SOLAR WIND VELOCITY COMPONENTS, TO CALCULATE IN ADVANCE
+C      ALL QUANTITIES NEEDED FOR THE MAIN FIELD MODEL AND FOR TRANSFORMATIONS
+C      BETWEEN INVOLVED COORDINATE SYSTEMS.
+C
+C  (2) IF INNAME=DIP_08, THEN A PURE DIPOLE FIELD WILL BE USED INSTEAD OF THE IGRF MODEL.
+C      IN THIS CASE, THE SUBROUTINE RECALC_08 MUST ALSO BE CALLED BEFORE TRACE_08.
+C      HERE ONE CAN CHOOSE EITHER TO
+C      (a) CALCULATE DIPOLE TILT ANGLE BASED ON DATE, TIME, AND SOLAR WIND DIRECTION,
+C   OR (b) EXPLICITLY SPECIFY THAT ANGLE, WITHOUT ANY REFERENCE TO DATE/UT/SOLAR WIND.
+C      IN THE LAST CASE (b), THE SINE (SPS) AND COSINE (CPS) OF THE DIPOLE TILT
+C      ANGLE MUST BE SPECIFIED IN ADVANCE (BUT AFTER HAVING CALLED RECALC_08) AND FORWARDED
+C      IN THE COMMON BLOCK /GEOPACK1/ (IN ITS 11th AND 12th ELEMENTS, RESPECTIVELY).
+C      IN THIS CASE THE ROLE OF THE SUBROUTINE RECALC_08 IS REDUCED TO ONLY CALCULATING
+C      THE COMPONENTS OF THE EARTH'S DIPOLE MOMENT.
 C
 C------------- INPUT PARAMETERS:
 C
-C   XI,YI,ZI - GSM COORDS OF INITIAL POINT (IN EARTH RADII, 1 RE = 6371.2 km),
+C   XI,YI,ZI - GSW COORDS OF THE FIELD LINE STARTING POINT (IN EARTH RADII, 1 RE = 6371.2 km),
 C
-C   DIR - SIGN OF THE TRACING DIRECTION: IF DIR=1.0 THEN WE MOVE ANTIPARALLEL TO THE
-C     FIELD VECTOR (E.G. FROM NORTHERN TO SOUTHERN CONJUGATE POINT),
-C     AND IF DIR=-1.0 THEN THE TRACING GOES IN THE OPPOSITE DIRECTION.
+C   DIR - SIGN OF THE TRACING DIRECTION: IF DIR=1.0 THEN THE TRACING IS MADE ANTIPARALLEL
+C     TO THE TOTAL FIELD VECTOR (E.G., FROM NORTHERN TO SOUTHERN CONJUGATE POINT);
+C     IF DIR=-1.0 THEN THE TRACING PROCEEDS IN THE OPPOSITE DIRECTION, THAT IS, PARALLEL TO
+C     THE TOTAL FIELD VECTOR.
 C
-C   R0 -  RADIUS OF A SPHERE (IN RE) FOR WHICH THE FIELD LINE ENDPOINT COORDINATES
-C     XF,YF,ZF  SHOULD BE CALCULATED.
+C   DSMAX - UPPER LIMIT ON THE STEPSIZE (SETS A DESIRED MAXIMAL SPACING BETWEEN
+C                 THE FIELD LINE POINTS)
 C
-C   RLIM - UPPER LIMIT OF THE GEOCENTRIC DISTANCE, WHERE THE TRACING IS TERMINATED.
+C   ERR - PERMISSIBLE STEP ERROR. A REASONABLE ESTIMATE PROVIDING A SUFFICIENT ACCURACY FOR MOST
+C         APPLICATIONS IS ERR=0.0001. SMALLER/LARGER VALUES WILL RESULT IN LARGER/SMALLER NUMBER
+C         OF STEPS AND, HENCE, OF OUTPUT FIELD LINE POINTS. NOTE THAT USING MUCH SMALLER VALUES
+C         OF ERR MAY REQUIRE USING A DOUBLE PRECISION VERSION OF THE ENTIRE PACKAGE.
 C
-C   IOPT - A MODEL INDEX; CAN BE USED FOR SPECIFYING AN OPTION OF THE EXTERNAL FIELD
-C       MODEL (E.G., INTERVAL OF THE KP-INDEX). ALTERNATIVELY, ONE CAN USE THE ARRAY
+C   R0 -  RADIUS OF A SPHERE (IN RE), DEFINING THE INNER BOUNDARY OF THE TRACING REGION
+C         (USUALLY, EARTH'S SURFACE OR THE IONOSPHERE, WHERE R0~1.0)
+C         IF THE FIELD LINE REACHES THAT SPHERE FROM OUTSIDE, ITS INBOUND TRACING IS
+C         TERMINATED AND THE CROSSING POINT COORDINATES XF,YF,ZF  ARE CALCULATED.
+C
+C   RLIM - RADIUS OF A SPHERE (IN RE), DEFINING THE OUTER BOUNDARY OF THE TRACING REGION;
+C         IF THE FIELD LINE REACHES THAT BOUNDARY FROM INSIDE, ITS OUTBOUND TRACING IS
+C         TERMINATED AND THE CROSSING POINT COORDINATES XF,YF,ZF ARE CALCULATED.
+C
+C   IOPT - A MODEL INDEX; CAN BE USED FOR SPECIFYING A VERSION OF THE EXTERNAL FIELD
+C       MODEL (E.G., A NUMBER OF THE KP-INDEX INTERVAL). ALTERNATIVELY, ONE CAN USE THE ARRAY
 C       PARMOD FOR THAT PURPOSE (SEE BELOW); IN THAT CASE IOPT IS JUST A DUMMY PARAMETER.
 C
-C   PARMOD -  A 10-ELEMENT ARRAY CONTAINING MODEL PARAMETERS, NEEDED FOR A UNIQUE
-C      SPECIFICATION OF THE EXTERNAL FIELD. THE CONCRETE MEANING OF THE COMPONENTS
-C      OF PARMOD DEPENDS ON A SPECIFIC VERSION OF THE EXTERNAL FIELD MODEL.
+C   PARMOD -  A 10-ELEMENT ARRAY CONTAINING INPUT PARAMETERS NEEDED FOR A UNIQUE
+C      SPECIFICATION OF THE EXTERNAL FIELD MODEL. THE CONCRETE MEANING OF THE COMPONENTS
+C      OF PARMOD DEPENDS ON A SPECIFIC VERSION OF THAT MODEL.
 C
 C   EXNAME - NAME OF A SUBROUTINE PROVIDING COMPONENTS OF THE EXTERNAL MAGNETIC FIELD
-C    (E.G., T96_01).
+C    (E.G., T89, OR T96_01, ETC.).
 C   INNAME - NAME OF A SUBROUTINE PROVIDING COMPONENTS OF THE INTERNAL MAGNETIC FIELD
-C    (EITHER DIP OR IGRF_GSM).
+C    (EITHER DIP_08 OR IGRF_GSW_08).
+C
+C   LMAX - MAXIMAL LENGTH OF THE ARRAYS XX,YY,ZZ, IN WHICH COORDINATES OF THE FIELD
+C          LINE POINTS ARE STORED. LMAX SHOULD BE SET EQUAL TO THE ACTUAL LENGTH OF
+C          THE ARRAYS, DEFINED IN THE MAIN PROGRAM AS ACTUAL ARGUMENTS OF THIS SUBROUTINE.
 C
 C-------------- OUTPUT PARAMETERS:
 C
-C   XF,YF,ZF - GSM COORDS OF THE LAST CALCULATED POINT OF A FIELD LINE
-C   XX,YY,ZZ - ARRAYS, CONTAINING COORDS OF FIELD LINE POINTS. HERE THEIR MAXIMAL LENGTH WAS
-C      ASSUMED EQUAL TO 999.
-C   L - ACTUAL NUMBER OF THE CALCULATED FIELD LINE POINTS. IF L EXCEEDS 999, TRACING
-C     TERMINATES, AND A WARNING IS DISPLAYED.
+C   XF,YF,ZF - GSW COORDINATES OF THE ENDPOINT OF THE TRACED FIELD LINE.
+C   XX,YY,ZZ - ARRAYS OF LENGTH LMAX, CONTAINING COORDINATES OF THE FIELD LINE POINTS.
+C   L - ACTUAL NUMBER OF FIELD LINE POINTS, GENERATED BY THIS SUBROUTINE.
 C
+C ----------------------------------------------------------
 C
-C     LAST MODIFICATION:  MARCH 31, 2003.
+C     LAST MODIFICATION:  JAN 30, 2008.
 C
 C     AUTHOR:  N. A. TSYGANENKO
 C
-      DIMENSION XX(1000),YY(1000),ZZ(1000), PARMOD(10)
-      COMMON /GEOPACK1/ AA(26),DD,BB(8)
+      DIMENSION XX(LMAX),YY(LMAX),ZZ(LMAX), PARMOD(10)
+      COMMON /GEOPACK1/ AA(12),DD,BB(21)
       EXTERNAL EXNAME,INNAME
 C
-      ERR=0.0001
       L=0
+      NREV=0
+      DD=DIR
+C
+C  INITIALIZE THE STEP SIZE AND STARTING PONT:
+C
       DS=0.5*DIR
       X=XI
       Y=YI
       Z=ZI
-      DD=DIR
-      AL=0.
 c
-c  here we call RHAND just to find out the sign of the radial component of the field
+c  here we call RHAND_08 just to find out the sign of the radial component of the field
 c   vector, and to determine the initial direction of the tracing (i.e., either away
 c   or towards Earth):
 c
-      CALL RHAND (X,Y,Z,R1,R2,R3,IOPT,PARMOD,EXNAME,INNAME)
+      CALL RHAND_08 (X,Y,Z,R1,R2,R3,IOPT,PARMOD,EXNAME,INNAME)
       AD=0.01
       IF (X*R1+Y*R2+Z*R3.LT.0.) AD=-0.01
 C
@@ -1395,51 +1696,58 @@ c (2) if DIR=-1 (tracing parallel to B vector) then the sign of AD is opposite t
 c     AD is defined in order to initialize the value of RR (radial distance at previous step):
 
       RR=SQRT(X**2+Y**2+Z**2)+AD
+c
   1   L=L+1
-      IF(L.GT.999) GOTO 7
+      IF(L.GT.LMAX) GOTO 7
       XX(L)=X
       YY(L)=Y
       ZZ(L)=Z
       RYZ=Y**2+Z**2
       R2=X**2+RYZ
       R=SQRT(R2)
-
+C
 c  check if the line hit the outer tracing boundary; if yes, then terminate
-c   the tracing (label 8):
+c   the tracing (label 8). The outer boundary is assumed reached, when the line
+c   crosses any of the 3 surfaces: (1) a sphere R=RLIM, (2) a cylinder of radius 40Re,
+c   coaxial with the XGSW axis, (3) the plane X=20Re:
 
-      IF (R.GT.RLIM.OR.RYZ.GT.1600.D0.OR.X.GT.20.D0) GOTO 8
+      IF (R.GT.RLIM.OR.RYZ.GT.1600..OR.X.GT.20.) GOTO 8
 c
 c  check whether or not the inner tracing boundary was crossed from outside,
 c  if yes, then calculate the footpoint position by interpolation (go to label 6):
 c
       IF (R.LT.R0.AND.RR.GT.R) GOTO 6
 
-c  check if (i) we are moving outward, or (ii) we are still sufficiently
-c    far from Earth (beyond R=5Re); if yes, proceed further:
+c  check if we are moving outward, or R is still larger than 3Re; if yes, proceed further:
 c
-      IF (R.GE.RR.OR.R.GT.5.) GOTO 5
-
-c  now we moved closer inward (between R=3 and R=5); go to 3 and begin logging
-c  previous values of X,Y,Z, to be used in the interpolation (after having
-c  crossed the inner tracing boundary):
-
-      IF (R.GE.3.) GOTO 3
+      IF (R.GE.RR.OR.R.GE.3.) GOTO 4
 c
-c  we entered inside the sphere R=3: to avoid too large steps (and hence inaccurate
-c  interpolated position of the footpoint), enforce the progressively smaller
-c  stepsize values as we approach the inner boundary R=R0:
+c  now we entered inside the sphere R=3: to avoid too large steps (and hence
+c  inaccurate interpolated position of the footpoint), enforce the progressively
+c  smaller stepsize values as we approach the inner boundary R=R0:
 c
       FC=0.2
       IF(R-R0.LT.0.05) FC=0.05
       AL=FC*(R-R0+0.2)
       DS=DIR*AL
-      GOTO 4
-  3   DS=DIR
+c
   4   XR=X
       YR=Y
       ZR=Z
-  5   RR=R
-      CALL STEP (X,Y,Z,DS,ERR,IOPT,PARMOD,EXNAME,INNAME)
+c
+      DRP=R-RR
+      RR=R
+c
+      CALL STEP_08 (X,Y,Z,DS,DSMAX,ERR,IOPT,PARMOD,EXNAME,INNAME)
+c
+C  check the total number NREV of changes in the tracing radial direction; (NREV.GT.2) means
+c   that the line started making multiple loops, in which case we stop the process:
+C
+      R=SQRT(X**2+Y**2+Z**2)
+      DR=R-RR
+      IF (DRP*DR.LT.0.) NREV=NREV+1
+      IF (NREV.GT.2) GOTO 8
+C
       GOTO 1
 c
 c  find the footpoint position by interpolating between the current and previous
@@ -1451,29 +1759,38 @@ c
       Z=Z-(Z-ZR)*R1
       GOTO 8
   7   WRITE (*,10)
-      L=999
+      L=LMAX
   8   XF=X
       YF=Y
       ZF=Z
+C
+C  replace the coordinates of the last (L-th) point in the XX,YY,ZZ arrays
+C   so that they correspond to the estimated footpoint position {XF,YF,ZF},
+c   satisfying:  sqrt(XF**2+YF**2+ZF**2}=R0
+C
+      XX(L)=XF
+      YY(L)=YF
+      ZZ(L)=ZF
+C
       RETURN
- 10   FORMAT(//,1X,'**** COMPUTATIONS IN THE SUBROUTINE TRACE ARE',
-     *' TERMINATED: THE CURRENT NUMBER OF POINTS EXCEEDED 1000 ****'//)
+ 10   FORMAT(//,1X,'**** COMPUTATIONS IN THE SUBROUTINE TRACE_08 ARE',
+     *' TERMINATED: THE NUMBER OF POINTS EXCEEDED LMAX ****'//)
       END
 c
 C====================================================================================
 C
-      SUBROUTINE SHUETAL_MGNP(XN_PD,VEL,BZIMF,XGSM,YGSM,ZGSM,
+      SUBROUTINE SHUETAL_MGNP_08(XN_PD,VEL,BZIMF,XGSW,YGSW,ZGSW,
      *  XMGNP,YMGNP,ZMGNP,DIST,ID)
 C
-C  FOR ANY POINT OF SPACE WITH COORDINATES (XGSM,YGSM,ZGSM) AND SPECIFIED CONDITIONS
+C  FOR ANY POINT OF SPACE WITH COORDINATES (XGSW,YGSW,ZGSW) AND SPECIFIED CONDITIONS
 C  IN THE INCOMING SOLAR WIND, THIS SUBROUTINE:
 C
-C (1) DETERMINES IF THE POINT (XGSM,YGSM,ZGSM) LIES INSIDE OR OUTSIDE THE
+C (1) DETERMINES IF THE POINT (XGSW,YGSW,ZGSW) LIES INSIDE OR OUTSIDE THE
 C      MODEL MAGNETOPAUSE OF SHUE ET AL. (JGR-A, V.103, P. 17691, 1998).
 C
-C (2) CALCULATES THE GSM POSITION OF A POINT {XMGNP,YMGNP,ZMGNP}, LYING AT THE MODEL
+C (2) CALCULATES THE GSW POSITION OF A POINT {XMGNP,YMGNP,ZMGNP}, LYING AT THE MODEL
 C      MAGNETOPAUSE AND ASYMPTOTICALLY TENDING TO THE NEAREST BOUNDARY POINT WITH
-C      RESPECT TO THE OBSERVATION POINT {XGSM,YGSM,ZGSM}, AS IT APPROACHES THE MAGNETO-
+C      RESPECT TO THE OBSERVATION POINT {XGSW,YGSW,ZGSW}, AS IT APPROACHES THE MAGNETO-
 C      PAUSE.
 C
 C  INPUT: XN_PD - EITHER SOLAR WIND PROTON NUMBER DENSITY (PER C.C.) (IF VEL>0)
@@ -1484,23 +1801,23 @@ C         VEL - EITHER SOLAR WIND VELOCITY (KM/SEC)
 C                  OR ANY NEGATIVE NUMBER, WHICH INDICATES THAT XN_PD STANDS
 C                     FOR THE SOLAR WIND PRESSURE, RATHER THAN FOR THE DENSITY
 C
-C         XGSM,YGSM,ZGSM - GSM POSITION OF THE OBSERVATION POINT IN EARTH RADII
+C         XGSW,YGSW,ZGSW - GSW POSITION OF THE OBSERVATION POINT IN EARTH RADII
 C
-C  OUTPUT: XMGNP,YMGNP,ZMGNP - GSM POSITION OF THE BOUNDARY POINT
-C          DIST - DISTANCE (IN RE) BETWEEN THE OBSERVATION POINT (XGSM,YGSM,ZGSM)
+C  OUTPUT: XMGNP,YMGNP,ZMGNP - GSW POSITION OF THE BOUNDARY POINT
+C          DIST - DISTANCE (IN RE) BETWEEN THE OBSERVATION POINT (XGSW,YGSW,ZGSW)
 C                 AND THE MODEL NAGNETOPAUSE
 C          ID -  POSITION FLAG:  ID=+1 (-1) MEANS THAT THE OBSERVATION POINT
 C          LIES INSIDE (OUTSIDE) OF THE MODEL MAGNETOPAUSE, RESPECTIVELY.
 C
-C  OTHER SUBROUTINES USED: T96_MGNP
+C  OTHER SUBROUTINES USED: T96_MGNP_08
 C
 c          AUTHOR:  N.A. TSYGANENKO,
 C          DATE:    APRIL 4, 2003.
 C
       IF (VEL.LT.0.) THEN
-        PD=XN_PD
+        P=XN_PD
       ELSE
-        PD=1.94E-6*XN_PD*VEL**2  ! PD IS THE SOLAR WIND DYNAMIC PRESSURE (IN nPa)
+        P=1.94E-6*XN_PD*VEL**2  ! P IS THE SOLAR WIND DYNAMIC PRESSURE (IN nPa)
       ENDIF
 
 c
@@ -1508,8 +1825,8 @@ c  DEFINE THE ANGLE PHI, MEASURED DUSKWARD FROM THE NOON-MIDNIGHT MERIDIAN PLANE
 C  IF THE OBSERVATION POINT LIES ON THE X AXIS, THE ANGLE PHI CANNOT BE UNIQUELY
 C  DEFINED, AND WE SET IT AT ZERO:
 c
-      IF (YGSM.NE.0..OR.ZGSM.NE.0.) THEN
-         PHI=ATAN2(YGSM,ZGSM)
+      IF (YGSW.NE.0..OR.ZGSW.NE.0.) THEN
+         PHI=ATAN2(YGSW,ZGSW)
       ELSE
          PHI=0.
       ENDIF
@@ -1518,17 +1835,17 @@ C  FIRST, FIND OUT IF THE OBSERVATION POINT LIES INSIDE THE SHUE ET AL BDRY
 C  AND SET THE VALUE OF THE ID FLAG:
 C
       ID=-1
-      R0=(10.22+1.29*TANH(0.184*(BZIMF+8.14)))*PD**(-.15151515)
-      ALPHA=(0.58-0.007*BZIMF)*(1.+0.024*ALOG(PD))
-      R=SQRT(XGSM**2+YGSM**2+ZGSM**2)
-      RM=R0*(2./(1.+XGSM/R))**ALPHA
+      R0=(10.22+1.29*TANH(0.184*(BZIMF+8.14)))*P**(-.15151515)
+      ALPHA=(0.58-0.007*BZIMF)*(1.+0.024*ALOG(P))
+      R=SQRT(XGSW**2+YGSW**2+ZGSW**2)
+      RM=R0*(2./(1.+XGSW/R))**ALPHA
       IF (R.LE.RM) ID=+1
 C
 C  NOW, FIND THE CORRESPONDING T96 MAGNETOPAUSE POSITION, TO BE USED AS
 C  A STARTING APPROXIMATION IN THE SEARCH OF A CORRESPONDING SHUE ET AL.
 C  BOUNDARY POINT:
 C
-      CALL T96_MGNP (PD,-1.,XGSM,YGSM,ZGSM,XMT96,YMT96,ZMT96,DIST,ID96)
+      CALL T96_MGNP_08(P,-1.,XGSW,YGSW,ZGSW,XMT96,YMT96,ZMT96,DIST,ID96)
 C
       RHO2=YMT96**2+ZMT96**2
       R=SQRT(RHO2+XMT96**2)
@@ -1573,18 +1890,18 @@ C
       YMGNP=RHO*SIN(PHI)
       ZMGNP=RHO*COS(PHI)
 
-      DIST=SQRT((XGSM-XMGNP)**2+(YGSM-YMGNP)**2+(ZGSM-ZMGNP)**2)
+      DIST=SQRT((XGSW-XMGNP)**2+(YGSW-YMGNP)**2+(ZGSW-ZMGNP)**2)
 
       RETURN
       END
 C
 C=======================================================================================
 C
-      SUBROUTINE T96_MGNP (XN_PD,VEL,XGSM,YGSM,ZGSM,XMGNP,YMGNP,ZMGNP,
+      SUBROUTINE T96_MGNP_08(XN_PD,VEL,XGSW,YGSW,ZGSW,XMGNP,YMGNP,ZMGNP,
      * DIST,ID)
 C
-C  FOR ANY POINT OF SPACE WITH GIVEN COORDINATES (XGSM,YGSM,ZGSM), THIS SUBROUTINE DEFINES
-C  THE POSITION OF A POINT (XMGNP,YMGNP,ZMGNP) AT THE T96 MODEL MAGNETOPAUSE, HAVING THE
+C  FOR ANY POINT OF SPACE WITH GIVEN COORDINATES (XGSW,YGSW,ZGSW), THIS SUBROUTINE DEFINES
+C  THE POSITION OF A POINT (XMGNP,YMGNP,ZMGNP) AT THE T96 MODEL MAGNETOPAUSE WITH THE
 C  SAME VALUE OF THE ELLIPSOIDAL TAU-COORDINATE, AND THE DISTANCE BETWEEN THEM.  THIS IS
 C  NOT THE SHORTEST DISTANCE D_MIN TO THE BOUNDARY, BUT DIST ASYMPTOTICALLY TENDS TO D_MIN,
 C  AS THE OBSERVATION POINT GETS CLOSER TO THE MAGNETOPAUSE.
@@ -1595,12 +1912,12 @@ C         VEL - EITHER SOLAR WIND VELOCITY (KM/SEC)
 C                  OR ANY NEGATIVE NUMBER, WHICH INDICATES THAT XN_PD STANDS
 C                     FOR THE SOLAR WIND PRESSURE, RATHER THAN FOR THE DENSITY
 C
-C         XGSM,YGSM,ZGSM - COORDINATES OF THE OBSERVATION POINT IN EARTH RADII
+C         XGSW,YGSW,ZGSW - COORDINATES OF THE OBSERVATION POINT IN EARTH RADII
 C
-C  OUTPUT: XMGNP,YMGNP,ZMGNP - GSM POSITION OF THE BOUNDARY POINT, HAVING THE SAME
-C          VALUE OF TAU-COORDINATE AS THE OBSERVATION POINT (XGSM,YGSM,ZGSM)
+C  OUTPUT: XMGNP,YMGNP,ZMGNP - GSW POSITION OF THE BOUNDARY POINT, HAVING THE SAME
+C          VALUE OF TAU-COORDINATE AS THE OBSERVATION POINT (XGSW,YGSW,ZGSW)
 C          DIST -  THE DISTANCE BETWEEN THE TWO POINTS, IN RE,
-C          ID -    POSITION FLAG; ID=+1 (-1) MEANS THAT THE POINT (XGSM,YGSM,ZGSM)
+C          ID -    POSITION FLAG; ID=+1 (-1) MEANS THAT THE POINT (XGSW,YGSW,ZGSW)
 C          LIES INSIDE (OUTSIDE) THE MODEL MAGNETOPAUSE, RESPECTIVELY.
 C
 C  THE PRESSURE-DEPENDENT MAGNETOPAUSE IS THAT USED IN THE T96_01 MODEL
@@ -1643,30 +1960,30 @@ C
 C
 C  (XM IS THE X-COORDINATE OF THE "SEAM" BETWEEN THE ELLIPSOID AND THE CYLINDER)
 C
-C     (FOR DETAILS ON THE ELLIPSOIDAL COORDINATES, SEE THE PAPER:
+C     (FOR DETAILS OF THE ELLIPSOIDAL COORDINATES, SEE THE PAPER:
 C      N.A.TSYGANENKO, SOLUTION OF CHAPMAN-FERRARO PROBLEM FOR AN
 C      ELLIPSOIDAL MAGNETOPAUSE, PLANET.SPACE SCI., V.37, P.1037, 1989).
 C
-       IF (YGSM.NE.0..OR.ZGSM.NE.0.) THEN
-          PHI=ATAN2(YGSM,ZGSM)
+       IF (YGSW.NE.0..OR.ZGSW.NE.0.) THEN
+          PHI=ATAN2(YGSW,ZGSW)
        ELSE
           PHI=0.
        ENDIF
 C
-       RHO=SQRT(YGSM**2+ZGSM**2)
+       RHO=SQRT(YGSW**2+ZGSW**2)
 C
-       IF (XGSM.LT.XM) THEN
-           XMGNP=XGSM
+       IF (XGSW.LT.XM) THEN
+           XMGNP=XGSW
            RHOMGNP=A*SQRT(S0**2-1)
            YMGNP=RHOMGNP*SIN(PHI)
            ZMGNP=RHOMGNP*COS(PHI)
-           DIST=SQRT((XGSM-XMGNP)**2+(YGSM-YMGNP)**2+(ZGSM-ZMGNP)**2)
+           DIST=SQRT((XGSW-XMGNP)**2+(YGSW-YMGNP)**2+(ZGSW-ZMGNP)**2)
            IF (RHOMGNP.GT.RHO) ID=+1
            IF (RHOMGNP.LE.RHO) ID=-1
            RETURN
        ENDIF
 C
-          XKSI=(XGSM-X0)/A+1.
+          XKSI=(XGSW-X0)/A+1.
           XDZT=RHO/A
           SQ1=SQRT((1.+XKSI)**2+XDZT**2)
           SQ2=SQRT((1.-XKSI)**2+XDZT**2)
@@ -1682,11 +1999,11 @@ C
           YMGNP=RHOMGNP*SIN(PHI)
           ZMGNP=RHOMGNP*COS(PHI)
 C
-C  NOW CALCULATE THE DISTANCE BETWEEN THE POINTS {XGSM,YGSM,ZGSM} AND {XMGNP,YMGNP,ZMGNP}:
+C  NOW CALCULATE THE DISTANCE BETWEEN THE POINTS {XGSW,YGSW,ZGSW} AND {XMGNP,YMGNP,ZMGNP}:
 C   (IN GENERAL, THIS IS NOT THE SHORTEST DISTANCE D_MIN, BUT DIST ASYMPTOTICALLY TENDS
 C    TO D_MIN, AS WE ARE GETTING CLOSER TO THE MAGNETOPAUSE):
 C
-      DIST=SQRT((XGSM-XMGNP)**2+(YGSM-YMGNP)**2+(ZGSM-ZMGNP)**2)
+      DIST=SQRT((XGSW-XMGNP)**2+(YGSW-YMGNP)**2+(ZGSW-ZMGNP)**2)
 C
       IF (SIGMA.GT.S0) ID=-1   !  ID=-1 MEANS THAT THE POINT LIES OUTSIDE
       IF (SIGMA.LE.S0) ID=+1   !  ID=+1 MEANS THAT THE POINT LIES INSIDE
@@ -1696,4 +2013,4 @@ C                                           THE MAGNETOSPHERE
 C
 C===================================================================================
 C
-c
+c</pre>
