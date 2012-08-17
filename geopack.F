@@ -488,7 +488,7 @@ C     & SM transformations
 C
       SUBROUTINE RECALC(IYEAR,IDAY,IHOUR,MIN,ISEC)
       call RECALC_08(IYEAR, IDAY, IHOUR, MIN, ISEC, -400.0, 0.0, 0.0)
-      END SUBROUTINE RECALC
+      END
 C
 c=====================================================================================
 C
