@@ -180,7 +180,8 @@ double DateTime::secOfDay(void) const
  */
 void DateTime::updateMJD(void)
 {
-  verifyYMDHMS();
+  // If YMDHMS has any goofy values (ie. negative seconds), verify/correct it:
+  setValidYMDHMS();
 
   long alpha;
   long julianDate;
@@ -303,24 +304,43 @@ void DateTime::updateYMDHMS(void)
  *
  * 3.    December 32, 2007 is really January 1, 2008
  */
-void DateTime::verifyYMDHMS(void)
+void DateTime::setValidYMDHMS(const long &year, const long &month, const long &day, const long &hours, const long &minutes, const double &seconds)
 {
+  long year_i = year;
+  long month_i = month;
+  long day_i = day;
+  long hours_i = hours;
+  long minutes_i = minutes;
+  double seconds_d = seconds;
+  
   /***** Check seconds *****/
-  while (seconds >= 60.0){
-    seconds -= 60.0;
-    minutes++;
+  while (seconds_d >= 60.0){
+    seconds_d -= 60.0;
+    minutes_i++;
   }
-
+  while (seconds_d < 0){
+    seconds_d += 60.0;
+    minutes_i--;
+  }
+  
   /***** Check minutes *****/
-  while (minutes >= 60){
-    minutes -= 60;
-    hours++;
+  while (minutes_i >= 60){
+    minutes_i -= 60;
+    hours_i++;
+  }
+  while (minutes_i < 0){
+    minutes_i += 60;
+    hours_i--;
   }
 
   /***** Check hours *****/
-  while (hours >= 24){
-    hours -= 24;
-    day++;
+  while (hours_i >= 24){
+    hours_i -= 24;
+    day_i++;
+  }
+  while (hours_i < 0){
+    hours_i += 24;
+    day_i--;
   }
 
   /***** Check days *****/
@@ -335,22 +355,51 @@ void DateTime::verifyYMDHMS(void)
    * Source: http://en.wikipedia.org/wiki/Leap_year
    */
   bool isLeapYear = false;
-  if (  ( (year%4) == 0 ) && ( (year%100) != 0 )  )
+  if (  ( (year_i%4) == 0 ) && ( (year_i%100) != 0 )  )
     isLeapYear = true;
-  if ( (year%400) == 400 )
+  if ( (year_i%400) == 400 )
     isLeapYear = true;
 
   // note: false=0 and true=1 
-  while (day >  DAYS_PER_MONTH[isLeapYear][month%12]){
-    day = day - DAYS_PER_MONTH[isLeapYear][month%12];
-    month++;
+  while (day_i >  DAYS_PER_MONTH[isLeapYear][month_i%12]){
+    day_i = day_i - DAYS_PER_MONTH[isLeapYear][month_i%12];
+    month_i++;
+  }
+  
+  // We can only have positive numbers of days!
+  while (day_i < 0){
+    month_i--;
+
+    if (month_i <= 0){
+      month_i += 12;
+      year_i--;
+      if (  ( (year_i%4) == 0 ) && ( (year_i%100) != 0 )  )
+	isLeapYear = true;
+      if ( (year_i%400) == 400 )
+	isLeapYear = true;
+    }
+
+    day_i += DAYS_PER_MONTH[isLeapYear][month_i%12];
   }
 
+
   /***** check months *****/
-  while (month > 12){
-    month -= 12;
-    year++;
+  while (month_i > 12){
+    month_i -= 12;
+    year_i++;
   }
+
+  /*  What does it mean to decrement the date by 1 month?  Is -1
+   *  month == 28, 29, 30 or 31 days?  
+   */
+  assert (month_i > 0);
+
+  this->year = size_t(year_i);
+  this->month = size_t(month_i);
+  this->day = size_t(day_i);
+  this->hours = size_t(hours_i);
+  this->minutes = size_t(minutes_i); 
+  this->seconds = seconds_d;
 }
 
 ////////////////////////////////////////////////////////////////////////
