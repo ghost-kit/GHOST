@@ -66,6 +66,11 @@ DateTime::DateTime(const double &MJD)
 {
   fractionOfDay = modf(MJD, &mjd);
 
+  // Ensure fractionOfDay is positive.  fractionOfDay == -0.75 means 25% in to the day (ie., hour=6).
+  if (fractionOfDay < 0){
+    fractionOfDay+=1.0;
+  }
+
   updateYMDHMS();
 }
 

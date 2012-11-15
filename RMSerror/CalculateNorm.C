@@ -173,7 +173,7 @@ bool check_variable(const int &norm_type, const char *variable,
 		    Data *test_file, const int &test_step)
 {
   int base_rank, test_rank;                           // rank (# of dimensions) of dataset variables
-  int base_ijk[MAX_VAR_DIMS], test_ijk[MAX_VAR_DIMS]; // dimension of dataset
+  int base_ijk[H4_MAX_VAR_DIMS], test_ijk[H4_MAX_VAR_DIMS]; // dimension of dataset
   int nElements;                                      // ni * nj * nk
   d_type *base_data, *test_data;                       // variables to hold floating-point data that's read from file.
   d_type norm;                                    // rms error that we're going to compute.  

@@ -1,12 +1,13 @@
 #ifndef __CHECK_IC_STATUS__
 #define __CHECK_IC_STATUS__
 
-#include "InterComm.h"
+#include <mpi.h>
+#include <Ppp_InterComm.h>
 #include <iostream>
 
 #define CHECK_IC_EPS_STATUS(FUNCTION, STATUS)		        \
 {                                                               \
-  if (STATUS != 0)	                                        \
+  if (STATUS != IC_EndPoint::IC_OK)				\
     failed_status_check(__FILE__, __LINE__, FUNCTION, STATUS);  \
 }
 

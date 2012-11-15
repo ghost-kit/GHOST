@@ -8,6 +8,14 @@
 // custom
 #include "Data.h"
 
+#ifndef H4_MAX_NC_NAME
+#define H4_MAX_NC_NAME MAX_NC_NAME
+#endif
+
+#ifndef H4_MAX_VAR_DIMS
+#define H4_MAX_VAR_DIMS MAX_VAR_DIMS
+#endif
+
 /// Class to read HDF data files for RMS error application.
 /**
  *  Manages reading dimension and data information for HDF4 files.
@@ -143,9 +151,9 @@ public:
     int32 variableId;                   // HDF variable ID
     int32 SDselectId;                   // HDF selection ID
     int32 errorId;                      // HDF error ID
-    char dataName[MAX_NC_NAME];         // Meta-data name of variable
+    char dataName[H4_MAX_NC_NAME];         // Meta-data name of variable
     int32 rank;                         // should be 1 or 3 (scalar or 3-d vector) for this data.
-    int32 dimensions_i32[MAX_VAR_DIMS]; // dimensions of the variable
+    int32 dimensions_i32[H4_MAX_VAR_DIMS]; // dimensions of the variable
     int32 dataType;                     // Internal HDF datatype of variable
     int32 nAttributes;                  // number of attributes for the data set
     
@@ -171,7 +179,7 @@ public:
     }
     
     // Rank should always be lass than 3
-    assert( rank <= MAX_VAR_DIMS );
+    assert( rank <= H4_MAX_VAR_DIMS );
     
     // We should probably have either 4-byte single or 8-byte double-precision numbers.
     // data type table is available at:
@@ -183,7 +191,7 @@ public:
     //cout << "nAttributes = " << nAttributes << std::endl;
     
     // set dimensions as integers
-    for (int i = 0; i < MAX_VAR_DIMS; i++){
+    for (int i = 0; i < H4_MAX_VAR_DIMS; i++){
       dimensions[i] = dimensions_i32[i];
     }
     
@@ -219,14 +227,14 @@ public:
     int32 dataType;                      // Internal HDF datatype of variable
     int32 nAttributes;                   // number of attributes for the data set
     int32 rank;                          // rank of the variable.
-    int32 dimensions_i32[MAX_VAR_DIMS];  // used to compute indexEnd
-    int32 indexStart[MAX_VAR_DIMS];      // [x,y,z] starting location from where data is read
-    int32 indexEnd[MAX_VAR_DIMS];        // [x,y,z] number of values to be read along each dimension
-    char dataName[MAX_NC_NAME];          // 
+    int32 dimensions_i32[H4_MAX_VAR_DIMS];  // used to compute indexEnd
+    int32 indexStart[H4_MAX_VAR_DIMS];      // [x,y,z] starting location from where data is read
+    int32 indexEnd[H4_MAX_VAR_DIMS];        // [x,y,z] number of values to be read along each dimension
+    char dataName[H4_MAX_NC_NAME];          // 
     
     int i;
     
-    for(i=0;i<MAX_VAR_DIMS;i++) {
+    for(i=0;i<H4_MAX_VAR_DIMS;i++) {
       dimensions_i32[i] = 0;
       indexStart[i] = 0;
       indexEnd[i] = 0;

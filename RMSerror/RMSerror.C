@@ -19,6 +19,10 @@ void printHelp(const char *);
 /// Compute RMS error, check for infs and NaNs for variable between base_file and test_file.
 bool check_variable(const char *variable, const float rms_tolerance, Data *base_file, Data *test_file);
 
+#ifndef H4_MAX_VAR_DIMS
+#define H4_MAX_VAR_DIMS MAX_VAR_DIMS
+#endif
+
 /// RMSerror Application
 /**
  *  Computes a normalized RMS error of <VARIABLE> for the data files <BASE_FILE> - <TEST_FILE>. 
@@ -142,7 +146,7 @@ void printHelp(const char * exe_name)
 bool check_variable(const char *variable, const float rms_tolerance, Data *base_file, Data *test_file)
 {
   int base_rank, test_rank;                           // rank (# of dimensions) of dataset variables
-  int base_ijk[MAX_VAR_DIMS], test_ijk[MAX_VAR_DIMS]; // dimension of dataset
+  int base_ijk[H4_MAX_VAR_DIMS], test_ijk[H4_MAX_VAR_DIMS]; // dimension of dataset
   int nElements;                                      // ni * nj * nk
   float *base_data, *test_data;                       // variables to hold floating-point data that's read from file.
   float rms_error;                                    // rms error that we're going to compute.  

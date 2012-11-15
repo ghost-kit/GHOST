@@ -6,7 +6,7 @@ HDFLIB = -L$(HDF)/lib -lmfhdf -ldf -ljpeg -lz
 
 CFLAGS = $(ARCH) $(TRAP) $(HDFINC) -DNDEBUG
 CXXFLAGS = $(ARCH) $(TRAP) $(HDFINC) -DNDEBUG
-LIBS = $(EXTRA_LIBS) $(HDFLIB)
+LIBS = $(EXTRA_LIBS) $(HDFLIB) $(MACHLIB)
 
 #
 # Compiler instructions:
