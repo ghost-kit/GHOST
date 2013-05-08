@@ -33,6 +33,7 @@ all: common RMSerror
 
 common: $(OBJS)
 	$(AR) rcs libcommon.a $(OBJS)
+	cp libcommon.a ../../build/lib/
 
 parse_xjd.o: 
 	cd TinyXML && $(MAKE) tinyxml_obj
