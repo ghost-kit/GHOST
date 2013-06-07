@@ -316,6 +316,16 @@ class DateTimeTest : public CxxTest::TestSuite
 
       TS_ASSERT_EQUALS( date_leap_year.getDayOfYear(), 61);
     }
+
+  void testOperatorEquals( void )
+  {
+    DateTime d1(55663.79166);
+    DateTime d2(55663.833);
+    
+    TS_ASSERT_EQUALS(d1, d1);
+    TS_ASSERT_EQUALS(d2, d2);
+    TS_ASSERT_DIFFERS(d1, d2);
+  }
 };
 
 #endif /*DATETIME_TEST_H_*/
