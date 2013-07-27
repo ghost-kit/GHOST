@@ -1,8 +1,0 @@
-# -*- mode: makefile -*-
-#
-# Compiler flags
-#
-FFLAGS = $(OPTLVL) $(MACHOPT) $(TRAP) $(EXTRA_F_FLAGS) -I.  
-CCFLAGS =$(OPTLVL) $(MACHOPT) $(TRAP) $(EXTRA_C_FLAGS) -I. -I$(P++)/include -I$(INTERCOMM)/include -I$(INTERCOMM)/include/ezxml -I$(INTERCOMM)/include/p++ 
-LDFLAGS = $(OPTLVL) $(MACHOPT) $(TRAP)
-LIBS = 
