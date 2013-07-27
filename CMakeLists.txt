@@ -18,7 +18,7 @@ endif (USE_MPI)
 ########
 # Hdf4 #
 ########################################################################
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/../cmake/")
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 find_package(HDF4 REQUIRED)
 if (HDF4_FOUND)
   find_package(JPEG)
