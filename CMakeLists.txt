@@ -32,7 +32,7 @@ endif (HDF4_FOUND)
 ########
 # Hdf5 #
 ########################################################################
-find_package(Hdf5)
+find_package(HDF5)
 if (HDF5_FOUND)
   set(HDF5_INCLUDE_DIRS ${HDF5_C_INCLUDE_DIR})
   set( HDF5_LIBRARIES ${HDF5_hdf5_LIBRARY} ${HDF5_m_LIBRARY} ${HDF5_z_LIBRARY} )
