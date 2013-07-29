@@ -1,6 +1,11 @@
 cmake_minimum_required(VERSION 2.8)
 PROJECT("DateTime")
 
+if(USE_FPIC)
+   set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} -fPIC)
+endif(USE_FPIC)
+
+
 add_library(
             DateTime
             STATIC
@@ -8,10 +13,6 @@ add_library(
             )
 
 INCLUDE_DIRECTORIES(${DateTime_SOURCE_DIR})
-
-IF(FIX_FPIC)
-    set(CMAKE_CXX_FLAFS ${CMAKE_CXX_FLAGS} -fPIC)
-ENDIF(FIX_FPIC)
 
 find_package(CxxTest)
 if(CXXTEST_FOUND)
