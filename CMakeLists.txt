@@ -7,7 +7,11 @@ add_library(
             DateTime.C
             )
 
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
+INCLUDE_DIRECTORIES(${DateTime_SOURCE_DIR})
+
+IF(FIX_FPIC)
+    set(CMAKE_CXX_FLAFS ${CMAKE_CXX_FLAGS} -fPIC)
+ENDIF(FIX_FPIC)
 
 find_package(CxxTest)
 if(CXXTEST_FOUND)
