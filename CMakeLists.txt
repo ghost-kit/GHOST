@@ -21,9 +21,11 @@ endif (USE_MPI)
 ########
 # Hdf4 #
 ########################################################################
-
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
-
+if(AS_SUBMODULE)
+   set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/io/cmake")
+else(NOT AS_SUBMODULE) 
+   set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
+endif(AS_SUBMODULE)
 
 find_package(HDF4 REQUIRED)
 if (HDF4_FOUND)
