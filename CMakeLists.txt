@@ -10,6 +10,7 @@ ADD_SUBDIRECTORY(cxform)
 INCLUDE_DIRECTORIES(${ENLIL_reader_SOURCE_DIR}/cxform)
 link_directories(${ENLIL_reader_BINARY_DIR}/cxform)
 
+set(USE_FPIC true CACHE INTERNAL "")
 add_subdirectory(DateTime)
 INCLUDE_DIRECTORIES(${ENLILreader_SOURCE_DIR}/DateTime)
 link_directories(${ENLILreader_BINARY_DIR}/DateTime)
