@@ -23,8 +23,8 @@ endif (USE_MPI)
 # Hdf4 #
 ########################################################################
 if(AS_SUBMODULE)
-   set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/io/cmake"}
-else() 
+   set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/io/cmake")
+else(NOT AS_SUBMODULE) 
    set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 endif(AS_SUBMODULE)
 
