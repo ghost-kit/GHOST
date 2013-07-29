@@ -3,9 +3,13 @@ cmake_minimum_required(VERSION 2.8)
 #FIXME:  Use "find_package" for A++, MPI and Hdf4 rather than these options:
 option (USE_APP "Use A++ and/or P++ for array storage" OFF)
 option (USE_MPI "Build parallel I/O (Warning: leave this off, it's untested)" OFF)
+option (AS_SUBMODULE "build io as a submodule" OFF)
+option (USE_FPIC "Fix build error that required -fPIC" OFF)
 
 #this is the temp fix for fPIC error... just uncomment and rebuild
-#set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} -fPIC)
+if(USE_FPIC)
+   set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} -fPIC)
+endif(USE_FPIC)
 
 if (USE_APP)
   add_definitions(-DBUILD_WITH_APP)
@@ -18,7 +22,12 @@ endif (USE_MPI)
 ########
 # Hdf4 #
 ########################################################################
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
+if(AS_SUBMODULE)
+   set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/io/cmake"}
+else() 
+   set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
+endif(AS_SUBMODULE)
+
 find_package(HDF4 REQUIRED)
 if (HDF4_FOUND)
   find_package(JPEG)
