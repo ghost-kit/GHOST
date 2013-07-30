@@ -22,7 +22,7 @@ endif (USE_MPI)
 ########
 # Hdf4 #
 ########################################################################
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${io_SOURCE_DIR}/cmake/")
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmake/")
 
 find_package(HDF4 REQUIRED)
 if (HDF4_FOUND)
@@ -72,16 +72,16 @@ add_library(io STATIC
 ###########
 # cxxtest #
 ########################################################################
-set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${io_SOURCE_DIR}/cxxtest)
+set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${PROJECT_SOURCE_DIR}/cxxtest)
 find_package(CxxTest) 
 if(CXXTEST_FOUND)
   set(CXXTEST_USE_PYTHON TRUE)
   include_directories(${CXXTEST_INCLUDE_DIR})
   enable_testing()
-  CXXTEST_ADD_TEST(testErrorQueue testErrorQueue.C "${io_SOURCE_DIR}/testErrorQueue.cxxTest")
+  CXXTEST_ADD_TEST(testErrorQueue testErrorQueue.C "${PROJECT_SOURCE_DIR}/testErrorQueue.cxxTest")
   ADD_LIBRARY(test_ErrorQueue ErrorQueue.h ErrorQueue.C)
   TARGET_LINK_LIBRARIES(testErrorQueue test_ErrorQueue)
-  CXXTEST_ADD_TEST(testNoppNompi testNoppNompi.C "${io_SOURCE_DIR}/testNoppNompi.cxxTest")
+  CXXTEST_ADD_TEST(testNoppNompi testNoppNompi.C "${PROJECT_SOURCE_DIR}/testNoppNompi.cxxTest")
   target_link_libraries(testNoppNompi io ${IO_LIBRARIES} )
 else ()
   message ( STATUS "Could NOT find CxxTest - unit testing not available" )
