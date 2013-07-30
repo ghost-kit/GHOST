@@ -1,5 +1,5 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
-PROJECT("CXForm - Enlil")
+PROJECT("cxform")
 
 add_library(
             cxform
