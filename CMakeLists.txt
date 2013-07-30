@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 2.8.9)
 project("io")
 
 #FIXME:  Use "find_package" for A++, MPI and Hdf4 rather than these options:
@@ -70,8 +70,8 @@ add_library(io STATIC
 ###########
 # cxxtest #
 ########################################################################
-set( CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${io_SOURCE_DIR}/cxxtest )
-find_package(CxxTest)
+set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${io_SOURCE_DIR}/cxxtest)
+find_package(CxxTest) 
 if(CXXTEST_FOUND)
   set(CXXTEST_USE_PYTHON TRUE)
   include_directories(${CXXTEST_INCLUDE_DIR})
