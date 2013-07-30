@@ -1,4 +1,5 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 2.8.9)
+project("io")
 
 #FIXME:  Use "find_package" for A++, MPI and Hdf4 rather than these options:
 option (USE_APP "Use A++ and/or P++ for array storage" OFF)
@@ -21,14 +22,11 @@ endif (USE_MPI)
 ########
 # Hdf4 #
 ########################################################################
-if(AS_SUBMODULE)
-   set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/io/cmake")
-else(NOT AS_SUBMODULE) 
-   set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
-endif(AS_SUBMODULE)
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${io_SOURCE_DIR}/cmake/")
 
 find_package(HDF4 REQUIRED)
 if (HDF4_FOUND)
+  message(STATUS "HDF4 Found!")
   find_package(JPEG)
   find_package(ZLIB)
   
@@ -42,6 +40,7 @@ endif (HDF4_FOUND)
 ########################################################################
 find_package(HDF5)
 if (HDF5_FOUND)
+  message(STATUS "HDF5 Found!")
   set(HDF5_INCLUDE_DIRS ${HDF5_C_INCLUDE_DIR})
   set( HDF5_LIBRARIES ${HDF5_hdf5_LIBRARY} ${HDF5_m_LIBRARY} ${HDF5_z_LIBRARY} )
   add_definitions(-DHAS_HDF5)
@@ -71,16 +70,16 @@ add_library(io STATIC
 ###########
 # cxxtest #
 ########################################################################
-set( CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/../cxxtest )
-find_package(CxxTest)
+set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${io_SOURCE_DIR}/cxxtest)
+find_package(CxxTest) 
 if(CXXTEST_FOUND)
   set(CXXTEST_USE_PYTHON TRUE)
   include_directories(${CXXTEST_INCLUDE_DIR})
   enable_testing()
-  CXXTEST_ADD_TEST(testErrorQueue testErrorQueue.C "${CMAKE_CURRENT_SOURCE_DIR}/testErrorQueue.cxxTest")
+  CXXTEST_ADD_TEST(testErrorQueue testErrorQueue.C "${io_SOURCE_DIR}/testErrorQueue.cxxTest")
   ADD_LIBRARY(test_ErrorQueue ErrorQueue.h ErrorQueue.C)
   TARGET_LINK_LIBRARIES(testErrorQueue test_ErrorQueue)
-  CXXTEST_ADD_TEST(testNoppNompi testNoppNompi.C "${CMAKE_CURRENT_SOURCE_DIR}/testNoppNompi.cxxTest")
+  CXXTEST_ADD_TEST(testNoppNompi testNoppNompi.C "${io_SOURCE_DIR}/testNoppNompi.cxxTest")
   target_link_libraries(testNoppNompi io ${IO_LIBRARIES} )
 else ()
   message ( STATUS "Could NOT find CxxTest - unit testing not available" )
