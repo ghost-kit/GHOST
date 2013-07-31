@@ -1,3 +1,6 @@
 [submodule "io"]
 	path = io
 	url = git://github.com/ghost-kit/io
+[submodule "Shared"]
+	path = Shared
+	url = git://github.com/ghost-kit/Shared
