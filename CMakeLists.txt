@@ -30,7 +30,7 @@ endif( PREFIX )
 
 ##CACHE SETTINGS! ##
 message(WARNING "IF you are having problems building the shared repo, try deleting your CMakeCache.txt file and rebuilding")
-set(USE_FPIC true CACHE INTERNAL "")
+set(USE_FPIC ON CACHE INTERNAL "")
 set(BUILD_IO ON CACHE INTERNAL "")
 
 ## Add shared Library ##
@@ -38,6 +38,7 @@ add_subdirectory(Shared)
 
 include_directories( ${SHARED_INCLUDE_DIR} )
 message(STATUS "Shared Include: ${SHARED_INCLUDE_DIR}")
+message(STATUS "Shared LIBRARY: ${SHARED_LIBRARIES}")
 
 FIND_PACKAGE(ParaView REQUIRED)
 
@@ -50,7 +51,6 @@ ADD_PARAVIEW_PLUGIN(vtkLFMReader "1.0"
 Target_LINK_LIBRARIES(vtkLFMReader 
   io
 #  vtkhdf5
-  ${IO_LIBRARIES}
 )
 
 
