@@ -85,7 +85,7 @@ find_package(Boost COMPONENTS DATE_TIME)
 find_package(CDF REQUIRED)
 
 include_directories(${CDF_INCLUDE_DIR} ${Boost_INCLUDE_DIRS})
-set(LIBS ${LIBS} ${CDF_LIBRARIES} ${Boost_LIBRARIES})
+set(LIBS ${LIBS} ${CDF_LIBRARY} ${Boost_LIBRARIES})
 
 # wrap QT
 QT4_WRAP_CPP(
