@@ -22,7 +22,6 @@ project(lfm)
 
 ########################################################################
 
-
 if( PREFIX )
   set( CMAKE_INCLUDE_PATH /usr/include ${PREFIX}/include ${CMAKE_INCLUDE_PATH} )
   set( CMAKE_LIBRARY_PATH /usr/lib ${PREFIX}/lib ${CMAKE_LIBRARY_PATH} )
