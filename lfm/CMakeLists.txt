@@ -22,7 +22,6 @@ project(lfm)
 
 ########################################################################
 
-
 if( PREFIX )
   set( CMAKE_INCLUDE_PATH /usr/include ${PREFIX}/include ${CMAKE_INCLUDE_PATH} )
   set( CMAKE_LIBRARY_PATH /usr/lib ${PREFIX}/lib ${CMAKE_LIBRARY_PATH} )
@@ -49,6 +48,7 @@ ADD_PARAVIEW_PLUGIN(vtkLFMReader "1.0"
   GUI_RESOURCE_FILES vtkLFMGUI.xml)
 
 Target_LINK_LIBRARIES(vtkLFMReader 
+  io
   ${SHARED_LIBRARIES}
 #  vtkhdf5
 )
