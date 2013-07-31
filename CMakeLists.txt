@@ -27,7 +27,7 @@ if(BUILD_IO)
 
     set(IO_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/io)
     set(IO_LIBRARY_DIR ${PROJECT_BINARY_DIR}/io)
-    set(IO_LIBRARIES ${PROJECT_BINARY_DIR}/io/libio.a)
+    set(IO_LIBRARIES io)
 
     ##DEBUG##
     message(STATUS "IO include: ${IO_INCLUDE_DIR}")
@@ -44,7 +44,7 @@ if(BUILD_DATETIME)
 
     set(DATETIME_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/DateTime)
     set(DATETIME_LIBRARY_DIR ${PROJECT_BINARY_DIR}/DateTime)
-    set(DATETIME_LIBRARIES ${PROJECT_BINARY_DIR}/DateTime/libDateTime.a)
+    set(DATETIME_LIBRARIES DateTime)
 
     ##DEBUG##
     message(STATUS "DateTime include: ${DATETIME_INCLUDE_DIR}")
@@ -60,7 +60,7 @@ if(BUILD_CXFORM)
 
     set(CXFORM_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/cxform)
     set(CXFORM_LIBRARY_DIR ${PROJECT_BINARY_DIR}/cxform)
-    set(CXFORM_LIBRARIES ${PROJECT_BINARY_DIR}/cxform/libcxform.a)
+    set(CXFORM_LIBRARIES cxform)
 
     ##DEBUG##
     message(STATUS "cxform include: ${CXFORM_INCLUDE_DIR}")
