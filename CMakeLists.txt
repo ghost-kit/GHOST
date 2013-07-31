@@ -1,4 +1,4 @@
-PROJECT(CDAweb_Tool_Kit)
+PROJECT("CDAwebToolKit")
 cmake_minimum_required(VERSION 2.8.9 FATAL_ERROR)
 
 ##########################################################################
@@ -63,7 +63,7 @@ if( BUILD_MAC )
 
 endif( BUILD_MAC )
 
-set( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/" )
+set( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmake/" )
 
 
 #I am setting this from the cmake command line
@@ -80,9 +80,12 @@ include(ParaViewPlugins)
 set(Boost_USE_STATIC_LIBS ON)
 set(Boost_USE_MULTITHREADED ON)
 find_package(Boost COMPONENTS DATE_TIME)
-include_directories(${LIBCDF_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
-set(LIBS ${LIBS} ${LIBCDF_LIBRARIES} ${Boost_LIBRARIES})
 
+##find cdf
+find_package(CDF REQUIRED)
+
+include_directories(${CDF_INCLUDE_DIR} ${Boost_INCLUDE_DIRS})
+set(LIBS ${LIBS} ${CDF_LIBRARIES} ${Boost_LIBRARIES})
 
 # wrap QT
 QT4_WRAP_CPP(
@@ -155,11 +158,11 @@ target_link_libraries(CDAWebTK ${LIBS})
 
 #for the mac distribution build
 add_custom_target(dist
-    COMMAND ${CMAKE_COMMAND}  -DBINARY_DIR:PATH=${CMAKE_CURRENT_BINARY_DIR}
+    COMMAND ${CMAKE_COMMAND}  -DBINARY_DIR:PATH=${PROJECT_BINARY_DIR}
                               -DPV_SUPERBUILD_LIST_DIR:PATH=${ParaView_SuperBuild_DIR}/Projects
                               -DPARAVIEW_BINARY_DIR:PATH=${ParaView_DIR}
                               -DQT_LIBRARY_DIR:PATH=${QT_LIBRARY_DIR}
-                              -DTMP_DIR:PATH=${CMAKE_CURRENT_BINARY_DIR}
-                              -Dbundle_name:STRING=${CMAKE_CURRENT_BINARY_DIR}/CDAwebTK.tgz
-                              -P ${CMAKE_CURRENT_LIST_DIR}/install_CDAwebTK.cmake
+                              -DTMP_DIR:PATH=${PROJECT_BINARY_DIR}
+                              -Dbundle_name:STRING=${PROJECT_BINARY_DIR}/CDAwebTK.tgz
+                              -P ${PROJECT_LIST_DIR}/install_CDAwebTK.cmake
 )
