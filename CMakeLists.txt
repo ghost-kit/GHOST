@@ -12,14 +12,14 @@ add_library(
             DateTime.C
             )
 
-INCLUDE_DIRECTORIES(${DateTime_SOURCE_DIR})
+INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR})
 
 find_package(CxxTest)
 if(CXXTEST_FOUND)
   set(CXXTEST_USE_PYTHON TRUE)
   include_directories(${CXXTEST_INCLUDE_DIR})
   enable_testing()
-  CXXTEST_ADD_TEST(testDateTime testErrorQueue.C "${DateTime_SOURCE_DIR}/tests/testDateTime.cxxTest")
+  CXXTEST_ADD_TEST(testDateTime testErrorQueue.C "${PROJECT_SOURCE_DIR}/tests/testDateTime.cxxTest")
   target_link_libraries(testDateTime DateTime )
 else ()
   message ( STATUS "Could NOT find CxxTest - unit testing not available" )
