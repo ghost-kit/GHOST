@@ -44,6 +44,7 @@ if(BUILD_DATETIME)
 
     set(DATETIME_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/DateTime)
     set(DATETIME_LIBRARY_DIR ${PROJECT_BINARY_DIR}/DateTime)
+    set(DATETIME_LIBRARIES ${PROJECT_BINARY_DIR}/DateTime/libDateTime.a)
 
     ##DEBUG##
     message(STATUS "DateTime include: ${DATETIME_INCLUDE_DIR}")
