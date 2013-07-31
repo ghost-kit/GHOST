@@ -2,9 +2,9 @@ cmake_minimum_required(VERSION 2.8.9)
 project(GHOST_Shared)
 
 #Options for building
-option(BUILD_IO "Build the IO package" ON )
-option(BUILD_DATETIME "Build the DateTime package" ON )
-option(BUILD_CXFORM "Builds the CXFORM package" ON )
+option(BUILD_IO "Build the IO package" OFF )
+option(BUILD_DATETIME "Build the DateTime package" OFF )
+option(BUILD_CXFORM "Builds the CXFORM package" OFF )
 option(USE_FPIC "Use the -fPIC compiler flag to fix various issues" OFF )
 
 if(BUILD_IO)
@@ -20,6 +20,7 @@ endif()
 
 ### IO LIBRARY ###
 if(BUILD_IO)
+    message(STATUS "BUILDING IO")
     add_subdirectory(${PROJECT_SOURCE_DIR}/io)
     INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/io)
     LINK_DIRECTORIES(${PROJECT_BINARY_DIR}/io)
@@ -36,6 +37,7 @@ endif()
 
 ### DATETIME LIBRARY ###
 if(BUILD_DATETIME)
+    message(STATUS "BUILDING DATETIME")
     add_subdirectory(${PROJECT_SOURCE_DIR}/DateTime)
     INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/DateTime)
     LINK_DIRECTORIES(${PROJECT_BINARY_DIR}/DateTime)
@@ -50,6 +52,7 @@ endif()
 
 ### CXFORM LIBRARY ###
 if(BUILD_CXFORM)
+    message(STATUS "BUILDING CXFORM")
     add_subdirectory(${PROJECT_SOURCE_DIR}/cxform)
     INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/cxform)
     LINK_DIRECTORIES(${PROJECT_BINARY_DIR}/cxform)
