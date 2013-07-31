@@ -6,7 +6,7 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
 #SET(ParaView_DIR /Volumes/Data/Development/SwFT/superbuild/paraview/src/paraview-build)
 SET(ParaView_SuperBuild_DIR /Volumes/Data/Development/SwFt/ParaViewSuperbuild/)
 
-set(BUILD_IO OFF CACHE INTERNAL "")
+set(BUILD_DATETIME ON CACHE INTERNAL "")
 set(USE_FPIC ON CACHE INTERNAL "")
 ADD_SUBDIRECTORY(Shared)
 INCLUDE_DIRECTORIES(${SHARED_INCLUDE_DIR})
@@ -23,7 +23,7 @@ ADD_PARAVIEW_PLUGIN(vtkEnlilReader "2.0.1"
 
 SET(KIT_LIBS  vtkNetCDF_cxx )
 
-Target_LINK_LIBRARIES(vtkEnlilReader  ${ParaView_LIBRARIES} ${KIT_LIBS} DateTime cxform)
+Target_LINK_LIBRARIES(vtkEnlilReader  ${ParaView_LIBRARIES} ${KIT_LIBS} DateTime)
 
 
 # Adding 'dist' Make target to deploy plugin that's compatible with
