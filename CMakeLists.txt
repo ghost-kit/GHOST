@@ -49,6 +49,7 @@ ADD_PARAVIEW_PLUGIN(vtkLFMReader "1.0"
   GUI_RESOURCE_FILES vtkLFMGUI.xml)
 
 Target_LINK_LIBRARIES(vtkLFMReader 
+  io
   ${SHARED_LIBRARIES}
 #  vtkhdf5
 )
