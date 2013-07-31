@@ -1,6 +1,6 @@
 #include "vtkLFMReader.h"
 
-#include "io/Io.hpp"
+#include "Io.hpp"
 
 #include <algorithm>
 

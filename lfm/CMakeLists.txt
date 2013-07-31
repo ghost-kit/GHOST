@@ -1,4 +1,5 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
+project(lfm)
 
 # Required variables:
 #  * ParaView_DIR: Path to directory containing ParaViewConfig.cmake
@@ -27,14 +28,17 @@ if( PREFIX )
   set( CMAKE_LIBRARY_PATH /usr/lib ${PREFIX}/lib ${CMAKE_LIBRARY_PATH} )
 endif( PREFIX )
 
-set( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}io/cmake/" )
-set(USE_FPIC true CACHE INTERNAL "")
-set(AS_SUBMODULE true CACHE INTERNAL "")
+##CACHE SETTINGS! ##
+message(WARNING "IF you are having problems building the shared repo, try deleting your CMakeCache.txt file and rebuilding")
+set(USE_FPIC ON CACHE INTERNAL "")
+set(BUILD_IO ON CACHE INTERNAL "")
 
-add_subdirectory(io) 
-GET_DIRECTORY_PROPERTY(IO_INCLUDES DIRECTORY io DEFINITION IO_INCLUDES)
-GET_DIRECTORY_PROPERTY(IO_LIBRARIES DIRECTORY io DEFINITION IO_LIBRARIES)
-include_directories( ${IO_INCLUDES} )
+## Add shared Library ##
+add_subdirectory(Shared)
+
+include_directories( ${SHARED_INCLUDE_DIR} )
+message(STATUS "Shared Include: ${SHARED_INCLUDE_DIR}")
+message(STATUS "Shared LIBRARY: ${SHARED_LIBRARIES}")
 
 FIND_PACKAGE(ParaView REQUIRED)
 
@@ -45,9 +49,8 @@ ADD_PARAVIEW_PLUGIN(vtkLFMReader "1.0"
   GUI_RESOURCE_FILES vtkLFMGUI.xml)
 
 Target_LINK_LIBRARIES(vtkLFMReader 
-  io
+  ${SHARED_LIBRARIES}
 #  vtkhdf5
-  ${IO_LIBRARIES}
 )
 
 
