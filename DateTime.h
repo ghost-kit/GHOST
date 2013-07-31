@@ -123,6 +123,7 @@ public:
   // Output:
   friend std::ostream& operator << (std::ostream& output, const DateTime& time);
   std::string getDateTimeString(void) const;
+  std::string getISO8601DateTimeString(void) const;
 
   // Addition & Subtraction
   void operator += (const DateTime & date);
