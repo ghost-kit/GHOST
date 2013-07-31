@@ -35,6 +35,7 @@ set(BUILD_IO ON CACHE INTERNAL "")
 
 ## Add shared Library ##
 add_subdirectory(Shared)
+
 include_directories( ${SHARED_INCLUDE_DIR} )
 message(STATUS "Shared Include: ${SHARED_INCLUDE_DIR}")
 
