@@ -402,6 +402,46 @@ std::string DateTime::getDateTimeString(void) const
 
 ////////////////////////////////////////////////////////////////////////
 
+/// Get formatted DateTime string in the ISO8601 format YYYYMMDDTHHMMSSZ
+
+std::string DateTime::getISO8601DateTimeString(void) const
+{
+  std::string YYYY, MM, DD, HH, MMin, SS;
+  std::stringstream out;
+
+  out << year;
+
+  if (month < 10)
+    out << "0" << month;
+  else
+    out << month;
+
+  if (day < 10)
+    out << "0" << day << "T";
+  else
+    out << day << "T";
+
+  if (hours < 10)
+    out << "0" << hours;
+  else
+    out << hours;
+
+  if (minutes < 10)
+    out << "0" << minutes;
+  else
+    out << minutes;
+
+  if (seconds < 10.0)
+    out << "0" << (size_t) seconds << "Z";
+  else
+    out << (size_t) seconds << "Z";
+
+  return out.str();
+}
+
+
+////////////////////////////////////////////////////////////////////////
+
 /// Output DateTime object
 /**
  *  Write DateTime information (Year-Month-Day @ hour:minute:second)
