@@ -78,10 +78,11 @@ include(ParaViewPlugins)
 #needed for these plugins
 # At present I am specifying ${LIBCDF_INCLUDE_DIRS} and ${LIBCDF_LIBRARIES} from the cmake command line
 set(Boost_USE_STATIC_LIBS ON)
-set(Boost_USE_MULTITHREADED ON)
-find_package(Boost COMPONENTS DATE_TIME)
+set(Boost_USE_MULTITHREAD ON)
+find_package(Boost COMPONENTS date_time REQUIRED)
 
 ##find cdf
+set(CDF_USE_STATIC_LIBS ON)
 find_package(CDF REQUIRED)
 
 include_directories(${CDF_INCLUDE_DIR} ${Boost_INCLUDE_DIRS})
