@@ -19,7 +19,7 @@ if(SHARED_USE_FPIC)
 endif()
 
 ### IO LIBRARY ###
-if(BUILD_IO)
+if(SHARED_BUILD_IO)
     message(STATUS "BUILDING IO")
     add_subdirectory(${PROJECT_SOURCE_DIR}/io)
 
@@ -40,7 +40,7 @@ endif()
 
 
 ### DATETIME LIBRARY ###
-if(BUILD_DATETIME)
+if(SHARED_BUILD_DATETIME)
     message(STATUS "BUILDING DATETIME")
     add_subdirectory(${PROJECT_SOURCE_DIR}/DateTime)
 
@@ -60,7 +60,7 @@ if(BUILD_DATETIME)
 endif()
 
 ### CXFORM LIBRARY ###
-if(BUILD_CXFORM)
+if(SHARED_BUILD_CXFORM)
     message(STATUS "BUILDING CXFORM")
     add_subdirectory(${PROJECT_SOURCE_DIR}/cxform)
 
