@@ -74,7 +74,7 @@ endif()
 #CDAweb ToolKit
 if(GHOST_BUILD_CDAWEB)
     message(STATUS "Building CDAweb ToolKit Module")
-    set(CDAWEB_SOURCE_DIR "${CMAKE_SOURCE_DIR}/CDAweb")
+    set(CDAWebTK_SOURCE_DIR ${CMAKE_SOURCE_DIR}/CDAweb)
     include(CDAweb/CDAwebFileList.cmake)
 endif()
 
