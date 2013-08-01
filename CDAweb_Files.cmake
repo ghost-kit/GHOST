@@ -3,13 +3,13 @@
 # wrap QT
 QT4_WRAP_CPP(
     MOC_BUILT_SOURCES
-    filterNetworkAccessModule.h
-    ScInfoPropWidget.h
-    status.h
-    filedownloader.h
-    vtkSpaceCraftInfo.h
-    pathSelector.h
-    newFileChooserWidget.h
+        filterNetworkAccessModule.h
+        ScInfoPropWidget.h
+        status.h
+        filedownloader.h
+        vtkSpaceCraftInfo.h
+        pathSelector.h
+        newFileChooserWidget.h
     )
 
 # Wrap UI

@@ -1,6 +1,10 @@
 PROJECT("CDAwebToolKit")
 cmake_minimum_required(VERSION 2.8.9 FATAL_ERROR)
 
+if(QTCREATOR)
+    FILE(GLOB HEADERS "include/*.h")
+endif()
+
 ##########################################################################
 # General Requirements:
 #  * This plugin requires PARAVIEW v. 4.0.1 or LATER because of feature set used
@@ -95,6 +99,7 @@ endif()
 include(ParaViewPlugins)
 
 #get file list
+INCLUDE_DIRECTORIES(include)
 include(CDAweb_Files.cmake)
 
 #plugin (Filter for CDAweb)
@@ -105,6 +110,7 @@ ADD_PARAVIEW_PLUGIN(CDAWebTK "1.0.0.beta1"
         SOURCES ${PLUGIN_src}
                 ${QT_Auto_src}
                 ${PROP_src}
+               # ${HEADERS}
                 )
 
 target_link_libraries(CDAWebTK ${LIBS})
