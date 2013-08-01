@@ -29,8 +29,8 @@ endif( PREFIX )
 
 ##CACHE SETTINGS! ##
 message(WARNING "IF you are having problems building the shared repo, try deleting your CMakeCache.txt file and rebuilding")
-set(USE_FPIC ON CACHE INTERNAL "")
-set(BUILD_IO ON CACHE INTERNAL "")
+set(SHARED_USE_FPIC ON CACHE INTERNAL "")
+set(SHARED_BUILD_IO ON CACHE INTERNAL "")
 
 ## Add shared Library ##
 add_subdirectory(Shared)
