@@ -1,4 +1,4 @@
-PROJECT("CDAwebToolKit")
+PROJECT("CDAWebTK")
 cmake_minimum_required(VERSION 2.8.9 FATAL_ERROR)
 
 if(QTCREATOR)
