@@ -1,8 +1,13 @@
-PROJECT(CDAwebTK)
+PROJECT("CDAWebTK")
+
 cmake_minimum_required(VERSION 2.8.9 FATAL_ERROR)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 ##########################################################################
+
+if(QTCREATOR)
+    FILE(GLOB HEADERS "include/*.h")
+endif()
 
 ##########################################################################
 
@@ -66,21 +71,22 @@ endif()
 #needed to build plugins
 include(ParaViewPlugins)
 
-##get the file list for compilation
-include(CDAwebFileList.cmake)
-
+#get file list
+include(CDAweb_Files.cmake)
 
 #plugin (Filter for CDAweb)
 ADD_PARAVIEW_PLUGIN(CDAWebTK "1.0.0.beta1"
-        SERVER_MANAGER_XML ${CDAWEB_SM_XML}
-        GUI_INTERFACES ${CDAWEB_GUI_INT}
-        SERVER_MANAGER_SOURCES ${CDAWEB_SM_SRC}
-        SOURCES ${CDAWEB_SRC_LIST}
+        SERVER_MANAGER_XML ${SM_XML}
+        GUI_INTERFACES ${PROP_ifaces}
+        SERVER_MANAGER_SOURCES ${PLUGIN_SM_src}
+        SOURCES ${PLUGIN_src}
+                ${QT_Auto_src}
+                ${PROP_src}
+               # ${HEADERS}
+
                 )
 
 target_link_libraries(CDAWebTK ${LIBS})
-
-
 
 #for the mac distribution build
 add_custom_target(dist
