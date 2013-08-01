@@ -6,8 +6,8 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
 #SET(ParaView_DIR /Volumes/Data/Development/SwFT/superbuild/paraview/src/paraview-build)
 SET(ParaView_SuperBuild_DIR /Volumes/Data/Development/SwFt/ParaViewSuperbuild/)
 
-set(BUILD_DATETIME ON CACHE INTERNAL "")
-set(USE_FPIC ON CACHE INTERNAL "")
+set(SHARED_BUILD_DATETIME ON CACHE INTERNAL "")
+set(SHARED_USE_FPIC ON CACHE INTERNAL "")
 ADD_SUBDIRECTORY(Shared)
 INCLUDE_DIRECTORIES(${SHARED_INCLUDE_DIR})
 
