@@ -63,7 +63,7 @@ if( BUILD_MAC )
 
 endif( BUILD_MAC )
 
-set( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmake/" )
+set( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/CMake/" )
 
 ##shared files
 set(SHARED_BUILD_DATETIME ON CACHE INTERNAL "")
@@ -93,6 +93,9 @@ endif()
 
 #needed to build plugins
 include(ParaViewPlugins)
+
+include(CMake/CDAwebFileList.cmake)
+
 
 # wrap QT
 QT4_WRAP_CPP(
