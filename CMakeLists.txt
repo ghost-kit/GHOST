@@ -23,6 +23,15 @@ include(Utilities/Git/Git.cmake)
 include(Utilities/ParaView/ParaViewDetermineVersion.cmake)
 include(CMakeDependentOption)
 
+##shared files
+set(SHARED_BUILD_DATETIME ON CACHE INTERNAL "")
+set(SHARED_BUILD_IO ON CACHE INTERNAL "")
+set(SHARED_BUILD_CXFORM ON CACHE INTERNAL "")
+set(SHARED_USE_FPIC ON CACHE INTERNAL "")
+add_subdirectory("${PROJECT_SOURCE_DIR}/Shared")
+INCLUDE_DIRECTORIES(${SHARED_INCLUDE_DIR})
+set(LIBS ${LIBS} ${SHARED_LIBRARIES})
+
 #Get ParaView (so we can build our module!!)
 if(NOT ParaView_BINARY_DIR)
     find_package(ParaView REQUIRED)
@@ -55,8 +64,6 @@ option(GHOST_BUILD_CDAWEB "Build the ParaView CDAweb Tool Kit" ON)
 if(GHOST_BUILD_LFM)
     message(STATUS "Building LFM Reader Module")
 
-
-
 endif()
 
 #ENLIL Reader
@@ -67,8 +74,16 @@ endif()
 #CDAweb ToolKit
 if(GHOST_BUILD_CDAWEB)
     message(STATUS "Building CDAweb ToolKit Module")
+    set(CDAWEB_SOURCE_DIR "${CMAKE_SOURCE_DIR}/CDAweb")
+    include(CDAweb/CDAwebFileList.cmake)
 endif()
 
+##gather all built files
+set(SERVER_MAN_XML_LIST ${CDAWEB_SM_XML})
+set(GUI_RF_XML_LIST )
+set(GUI_INTERFACE_LIST ${CDAWEB_GUI_INT})
+set(SERVER_MAN_SRC_LIST ${CDAWEB_SM_SRC})
+set(ADD_SRC_LIST ${CDAWEB_SRC_LIST})
 
 
 ## Add the Plugin Definitions
@@ -79,3 +94,6 @@ ADD_PARAVIEW_PLUGIN(GHOST                   ${GHOST_VERSION_FULL}
                     SERVER_MANAGER_SOURCES  ${SERVER_MAN_SRC_LIST}
                     SOURCES                 ${ADD_SRC_LIST}
                    )
+
+
+target_link_libraries(GHOST ${LIBS})
