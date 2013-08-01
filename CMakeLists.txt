@@ -83,8 +83,8 @@ find_package(Boost COMPONENTS date_time REQUIRED)
 set(CDF_USE_STATIC_LIBS ON)
 find_package(CDF REQUIRED)
 
-include_directories(${CDF_INCLUDE_DIR} ${Boost_INCLUDE_DIRS} ${SHARED_INCLUDE_DIR})
-set(LIBS ${LIBS} ${CDF_LIBRARY} ${Boost_LIBRARIES})
+include_directories(${CDF_INCLUDES} ${Boost_INCLUDE_DIRS} ${SHARED_INCLUDE_DIR})
+set(LIBS ${LIBS} ${CDF_LIBRARIES} ${Boost_LIBRARIES} ${SHARED_LIBRARIES})
 #I am setting this from the cmake command line
 if(NOT ParaView_BINARY_DIR)
   find_package(ParaView REQUIRED)
@@ -93,7 +93,6 @@ endif()
 
 #needed to build plugins
 include(ParaViewPlugins)
-
 
 # wrap QT
 QT4_WRAP_CPP(

@@ -1,8 +1,7 @@
 # Try to find NASA Common Data Format (CDF) Library
 # Defines:  CDF_FOUND - system contains CDF
 #           CDF_INCLUDE_DIR - Include Directories for CDF
-#           CDF_LIBRARIES - Lirbraries required for CDF
-#           CDF_DEFINITIONS - Compiler Switches required for using CDF
+#           CDF_LIB - Lirbraries required for CDF
 
 if(CDF_INCLUDES)
     #already in cache
