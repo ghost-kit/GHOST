@@ -65,7 +65,26 @@ endif( BUILD_MAC )
 
 set( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmake/" )
 
+##shared files
+set(SHARED_BUILD_DATETIME ON CACHE INTERNAL "")
+set(SHARED_USE_FPIC ON CACHE INTERNAL "")
+add_subdirectory("${PROJECT_SOURCE_DIR}/Shared")
 
+message(STATUS "DateTime (Includes) : ${SHARED_INCLUDE_DIR}")
+message(STATUS "DateTime (Libraries): ${SHARED_LIBRARIES}")
+
+#needed for these plugins
+# At present I am specifying ${LIBCDF_INCLUDE_DIRS} and ${LIBCDF_LIBRARIES} from the cmake command line
+set(Boost_USE_STATIC_LIBS ON)
+set(Boost_USE_MULTITHREAD ON)
+find_package(Boost COMPONENTS date_time REQUIRED)
+
+##find cdf
+set(CDF_USE_STATIC_LIBS ON)
+find_package(CDF REQUIRED)
+
+include_directories(${CDF_INCLUDES} ${Boost_INCLUDE_DIRS} ${SHARED_INCLUDE_DIR})
+set(LIBS ${LIBS} ${CDF_LIBRARIES} ${Boost_LIBRARIES} ${SHARED_LIBRARIES})
 #I am setting this from the cmake command line
 if(NOT ParaView_BINARY_DIR)
   find_package(ParaView REQUIRED)
@@ -74,18 +93,6 @@ endif()
 
 #needed to build plugins
 include(ParaViewPlugins)
-
-#needed for these plugins
-# At present I am specifying ${LIBCDF_INCLUDE_DIRS} and ${LIBCDF_LIBRARIES} from the cmake command line
-set(Boost_USE_STATIC_LIBS ON)
-set(Boost_USE_MULTITHREADED ON)
-find_package(Boost COMPONENTS DATE_TIME)
-
-##find cdf
-find_package(CDF REQUIRED)
-
-include_directories(${CDF_INCLUDE_DIR} ${Boost_INCLUDE_DIRS})
-set(LIBS ${LIBS} ${CDF_LIBRARY} ${Boost_LIBRARIES})
 
 # wrap QT
 QT4_WRAP_CPP(
@@ -129,7 +136,6 @@ set(PLUGIN_src filterNetworkAccessModule.cpp
                 vtkSpaceCraftInfo.cxx
                 ScInfoPropWidget.cpp
                 status.cpp
-                DateTime.C
                 filedownloader.cpp
                 timefithandler.cpp
                 BadDataHandler.cpp

@@ -1,25 +1,24 @@
 # Try to find NASA Common Data Format (CDF) Library
 # Defines:  CDF_FOUND - system contains CDF
 #           CDF_INCLUDE_DIR - Include Directories for CDF
-#           CDF_LIBRARIES - Lirbraries required for CDF
-#           CDF_DEFINITIONS - Compiler Switches required for using CDF
+#           CDF_LIB - Lirbraries required for CDF
 
-find_package(PkgConfig)
-pkg_check_modules(PC_cdf QUIET cdf)
-set(cdf_DEFINITIONS ${PC_cdf_CFLAGS_OTHER})
+if(CDF_INCLUDES)
+    #already in cache
+    set(CDF_FIND_QUIETLY TRUE)
+endif(CDF_INCLUDES)
 
-find_path(cdf_INCLUDE_DIR cdf/xpath.h
-                HINTS ${PC_cdf_INCLUDEDIR} ${PC_cdf_INCLUDE_DIRS}
-                PATH_SUFFIXES cdf )
+find_path(CDF_INCLUDES cdf.h)
 
-find_library(cdf_LIBRARY_NAMES cdf
-                HINTS ${PC_cdf_LIBDIR} ${PC_cdf_LIBRARY_DIRS})
+if(CDF_USE_STATIC_LIBS)
+    find_library(CDF_LIB NAMES libcdf.a)
+else()
+    find_library(CDF_LIB NAMES cdf)
+endif(CDF_USE_STATIC_LIBS)
 
-set(cdf_LIBRARIES ${cdf_LIBRARY})
-set(cdf_INCLUDE_DIR ${cdf_INCLUDE_DIR})
+set(CDF_LIBRARIES "${CDF_LIB}")
 
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(cdf DEFAULT_MSG
-                                  cdf_LIBRARY cdf_INCLUDE_DIR)
+find_package_handle_standard_args( CDF DEFAULT_MSG CDF_LIBRARIES CDF_INCLUDES )
 
-mark_as_advanced(cdf_INCLUDE_DIR cdf_LIBRARY)
+mark_as_advanced(CDF_LIB CDF_INCLUDES)
