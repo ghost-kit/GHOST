@@ -1,39 +1,10 @@
-PROJECT("CDAwebToolKit")
+PROJECT(CDAwebTK)
 cmake_minimum_required(VERSION 2.8.9 FATAL_ERROR)
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 ##########################################################################
-# General Requirements:
-#  * This plugin requires PARAVIEW v. 4.0.1 or LATER because of feature set used
-#  * This plugin requires CMAKE 2.8.9 or later because ParaView Requires it
-#  * This plugin utilizes BOOST.  if boost is not built into ParaView you must have access to the
-#       BOOST static DATE_TIME library
-#  * If building on Joshua Murphy's mac for distribution, use the -DBUILD_MAC=1 flag
-#
-# Required variables:
-#  * ParaView_DIR: Path to directory containing ParaViewConfig.cmake
-#  * ParaView_SuperBuild: Mac OS-X only:  SuperBuild is shipped with fixup_plugin.py, which is part of the SuperBuild.
-#  * PREFIX:  Path to relevant libraries (HDF4, JPEG, etc)
-#  * LIBCDF_LIBRARIES: path to static cdf library (libcdf.a) from the NASA cdf library (http://cdf.gsfc.nasa.gov/)
-#  * LIBCDF_INCLUDE_DIRS: path to the include files from the above library (if not in the system include path)
-#
-# There are two ways to set required variables for building this plugin:
-#  1.  Pass via command-line arguments (recommended):
-#
-#      cmake .. -DParaView_DIR=/Users/schmitt/paraview/opt/ParaView-3.98.1_OSX-10.7/paraview/src/paraview-build \
-#               -DParaView_SuperBuild_DIR=/Users/schmitt/paraview/opt/src/ParaViewSuperbuild-3.98.0 \
-#               -PREFIX=/Users/schmitt/paraview/opt \
-#               -DLIBCDF_LIBRARIES=/usr/local/lib/libcdf.a
-#               -DLIBCDF_INCLUDE_DIRS=/usr/local/include
-#               -DBUILD_MAC=1
-#
-#  2.  Hard-code it in this file by uncommenting the following lines:
 
-#set(ParaView_DIR /Volumes/Data/Development/ParaView/superbuild/paraview/src/paraview-build)
-#set(ParaView_SuperBuild_DIR /Volumes/Data/Development/ParaView/ParaViewSuperbuild)
-#set(LIBCDF_LIBRARIES /Applications/cdf34_1-dist/lib/libcdf.a)
-#set(LIBCDF_INCLUDE_DIRS /Applications/cdf34_1-dist/include)
-
-########################################################################
+##########################################################################
 
 if( PREFIX )
   set( CMAKE_INCLUDE_PATH /usr/include ${PREFIX}/include ${CMAKE_INCLUDE_PATH} )
@@ -63,7 +34,8 @@ if( BUILD_MAC )
 
 endif( BUILD_MAC )
 
-set( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/CMake/" )
+set( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CDAwebTK_SOURCE_DIR}/CMake/" )
+INCLUDE_DIRECTORIES(src/include)
 
 ##shared files
 set(SHARED_BUILD_DATETIME ON CACHE INTERNAL "")
@@ -94,71 +66,16 @@ endif()
 #needed to build plugins
 include(ParaViewPlugins)
 
-include(CMake/CDAwebFileList.cmake)
-
-
-# wrap QT
-QT4_WRAP_CPP(
-    MOC_BUILT_SOURCES
-    filterNetworkAccessModule.h
-    ScInfoPropWidget.h
-    status.h
-    filedownloader.h
-    vtkSpaceCraftInfo.h
-    pathSelector.h
-    newFileChooserWidget.h
-    )
-
-# Wrap UI
-QT4_WRAP_UI(
-    UI_BUILT_SOURCES
-    ScInfoPropWidget.ui
-    status.ui
-    pathSelector.ui
-    )
-
-# Property Widgets
-set(outifaces0)
-set(outsrcs0)
-ADD_PARAVIEW_PROPERTY_WIDGET(outifaces0 outsrcs0
-        TYPE "SpaceCraftInfoProperties"
-        CLASS_NAME "ScInfoPropWidget")
-
-set(outifaces1)
-set(outsrcs1)
-ADD_PARAVIEW_PROPERTY_WIDGET(outifaces1 outsrcs1
-        TYPE "PathSelectionProperty"
-        CLASS_NAME "pathSelector")
-
-# Set up files for compilation
-set(SM_XML SpaceCraftInfoFilter.xml SpaceCraftInfoSource.xml)
-set(PROP_ifaces ${outifaces0} ${outifaces1})
-set(PROP_src ${outsrcs0} ${outsrcs1})
-set(QT_Auto_src ${MOC_BUILT_SOURCES} ${UI_BUILT_SOURCES})
-set(PLUGIN_src filterNetworkAccessModule.cpp
-                vtkSpaceCraftInfo.cxx
-                ScInfoPropWidget.cpp
-                status.cpp
-                filedownloader.cpp
-                timefithandler.cpp
-                BadDataHandler.cpp
-                cdfDataReader.cpp
-                omitBDHandler.cpp
-                pathSelector.cxx
-                newFileChooserWidget.cxx)
-
-set(PLUGIN_SM_src vtkSpaceCraftInfoFilter.cpp
-                  vtkSpaceCraftInfoSource.cpp)
+##get the file list for compilation
+include(CDAwebFileList.cmake)
 
 
 #plugin (Filter for CDAweb)
 ADD_PARAVIEW_PLUGIN(CDAWebTK "1.0.0.beta1"
-        SERVER_MANAGER_XML ${SM_XML}
-        GUI_INTERFACES ${PROP_ifaces}
-        SERVER_MANAGER_SOURCES ${PLUGIN_SM_src}
-        SOURCES ${PLUGIN_src}
-                ${QT_Auto_src}
-                ${PROP_src}
+        SERVER_MANAGER_XML ${CDAWEB_SM_XML}
+        GUI_INTERFACES ${CDAWEB_GUI_INT}
+        SERVER_MANAGER_SOURCES ${CDAWEB_SM_SRC}
+        SOURCES ${CDAWEB_SRC_LIST}
                 )
 
 target_link_libraries(CDAWebTK ${LIBS})
