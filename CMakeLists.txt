@@ -76,6 +76,7 @@ Try deleting your CMakeCache.txt file and rebuilding")
 #LFM Reader
 if(GHOST_BUILD_LFM)
     message(STATUS "Building LFM Reader Module")
+    include(lfm/LFM_Files.cmake)
 
     #Need LFM
     include(lfm/LFM_Files.cmake)
