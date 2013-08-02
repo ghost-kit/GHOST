@@ -7,6 +7,13 @@ option(SHARED_BUILD_DATETIME "Build the DateTime package" OFF )
 option(SHARED_BUILD_CXFORM "Builds the CXFORM package" OFF )
 option(SHARED_USE_FPIC "Use the -fPIC compiler flag to fix various issues" OFF )
 
+IF(QTCREATOR)
+    set(SHARED_BUILD_IO ON)
+    set(SHARED_BUILD_DATETIME ON)
+    set(SHARED_BUILD_CXFORM ON)
+    set(SHARED_USE_FPIC ON)
+endif()
+
 if(BUILD_IO)
     option(IO_USE_APP "Use A++ and/or P++ for array storage" OFF)
     option(IO_USE_MPI "Build parallel I/O (Warning: leave this off, it's untested)" OFF)

@@ -5,6 +5,11 @@ project("io")
 option (USE_APP "Use A++ and/or P++ for array storage" OFF)
 option (USE_MPI "Build parallel I/O (Warning: leave this off, it's untested)" OFF)
 option (USE_FPIC "Fix build error that required -fPIC" OFF)
+option (USE_STATIC_LIBRARIES "Use Static Libraries to build" OFF)
+
+if(USE_STATIC_LIBRARIES)
+    set(CMAKE_EXE_LINKER_FLAGS ${CMAKE_EXE_LINKER_FLAGS} -static)
+endif()
 
 #this is the temp fix for fPIC error... just uncomment and rebuild
 if(USE_FPIC)
