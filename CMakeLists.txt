@@ -2,17 +2,20 @@ cmake_minimum_required(VERSION 2.8.9)
 project(GHOST_Shared)
 
 #Options for building
-option(SHARED_BUILD_IO "Build the IO package" OFF )
+option(SHARED_BUILD_IO "Build the IO package" ON )
 option(SHARED_BUILD_DATETIME "Build the DateTime package" OFF )
 option(SHARED_BUILD_CXFORM "Builds the CXFORM package" OFF )
 option(SHARED_USE_FPIC "Use the -fPIC compiler flag to fix various issues" OFF )
 
-IF(QTCREATOR)
+if(QTCREATOR)
     set(SHARED_BUILD_IO ON)
     set(SHARED_BUILD_DATETIME ON)
     set(SHARED_BUILD_CXFORM ON)
     set(SHARED_USE_FPIC ON)
+
+    set(PV_SBUILD_DIR "/home/jjm390/Developer/ParaView/build401" CACHE INTERNAL "")
 endif()
+
 
 if(BUILD_IO)
     option(IO_USE_APP "Use A++ and/or P++ for array storage" OFF)
