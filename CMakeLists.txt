@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 2.8.9)
-project(GhostKit)
+project(GHOST)
 
 #Disallow in-source builds
-if("${GhostKit_SOURCE_DIR}" STREQUAL "${GhostKit_BINARY_DIR}")
+if("${GHOST_SOURCE_DIR}" STREQUAL "${GHOST_BINARY_DIR}")
     message (FATAL_ERROR
         "GhostKit REQUIRES an out of source Build."
         "Please Create a separate binary build directory and run CMake there.")
@@ -74,20 +74,19 @@ endif()
 #CDAweb ToolKit
 if(GHOST_BUILD_CDAWEB)
     message(STATUS "Building CDAweb ToolKit Module")
-    set(CDAWebTK_SOURCE_DIR ${CMAKE_SOURCE_DIR}/CDAweb)
-    include(CDAweb/CDAwebFileList.cmake)
+    include(CDAweb/CDAweb_Files.cmake)
 endif()
 
 ##gather all built files
-set(SERVER_MAN_XML_LIST ${CDAWEB_SM_XML})
+set(SERVER_MAN_XML_LIST ${SM_XML})
 set(GUI_RF_XML_LIST )
-set(GUI_INTERFACE_LIST ${CDAWEB_GUI_INT})
-set(SERVER_MAN_SRC_LIST ${CDAWEB_SM_SRC})
-set(ADD_SRC_LIST ${CDAWEB_SRC_LIST})
+set(GUI_INTERFACE_LIST ${PROP_ifaces})
+set(SERVER_MAN_SRC_LIST ${PLUGIN_SM_src})
+set(ADD_SRC_LIST ${PLUGIN_src} ${PROP_src} ${QT_Auto_src})
 
 
 ## Add the Plugin Definitions
-ADD_PARAVIEW_PLUGIN(GHOST                   ${GHOST_VERSION_FULL}
+ADD_PARAVIEW_PLUGIN(GhostKit                ${GHOST_VERSION_FULL}
                     SERVER_MANAGER_XML      ${SERVER_MAN_XML_LIST}
                     GUI_RESOURCE_FILES      ${GUI_RF_XML_LIST}
                     GUI_INTERFACES          ${GUI_INTERFACE_LIST}
@@ -96,4 +95,4 @@ ADD_PARAVIEW_PLUGIN(GHOST                   ${GHOST_VERSION_FULL}
                    )
 
 
-target_link_libraries(GHOST ${LIBS})
+target_link_libraries(GhostKit ${LIBS})
