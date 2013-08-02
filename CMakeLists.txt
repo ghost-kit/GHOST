@@ -3,39 +3,11 @@ cmake_minimum_required(VERSION 2.8.9 FATAL_ERROR)
 
 if(QTCREATOR)
     FILE(GLOB HEADERS "include/*.h")
+    set(ParaView_DIR ../../ParaView/build401/paraview/src/paraview-build)
 endif()
 
 ##########################################################################
-# General Requirements:
-#  * This plugin requires PARAVIEW v. 4.0.1 or LATER because of feature set used
-#  * This plugin requires CMAKE 2.8.9 or later because ParaView Requires it
-#  * This plugin utilizes BOOST.  if boost is not built into ParaView you must have access to the
-#       BOOST static DATE_TIME library
-#  * If building on Joshua Murphy's mac for distribution, use the -DBUILD_MAC=1 flag
-#
-# Required variables:
-#  * ParaView_DIR: Path to directory containing ParaViewConfig.cmake
-#  * ParaView_SuperBuild: Mac OS-X only:  SuperBuild is shipped with fixup_plugin.py, which is part of the SuperBuild.
-#  * PREFIX:  Path to relevant libraries (HDF4, JPEG, etc)
-#  * LIBCDF_LIBRARIES: path to static cdf library (libcdf.a) from the NASA cdf library (http://cdf.gsfc.nasa.gov/)
-#  * LIBCDF_INCLUDE_DIRS: path to the include files from the above library (if not in the system include path)
-#
-# There are two ways to set required variables for building this plugin:
-#  1.  Pass via command-line arguments (recommended):
-#
-#      cmake .. -DParaView_DIR=/Users/schmitt/paraview/opt/ParaView-3.98.1_OSX-10.7/paraview/src/paraview-build \
-#               -DParaView_SuperBuild_DIR=/Users/schmitt/paraview/opt/src/ParaViewSuperbuild-3.98.0 \
-#               -PREFIX=/Users/schmitt/paraview/opt \
-#               -DLIBCDF_LIBRARIES=/usr/local/lib/libcdf.a
-#               -DLIBCDF_INCLUDE_DIRS=/usr/local/include
-#               -DBUILD_MAC=1
-#
-#  2.  Hard-code it in this file by uncommenting the following lines:
 
-#set(ParaView_DIR /Volumes/Data/Development/ParaView/superbuild/paraview/src/paraview-build)
-#set(ParaView_SuperBuild_DIR /Volumes/Data/Development/ParaView/ParaViewSuperbuild)
-#set(LIBCDF_LIBRARIES /Applications/cdf34_1-dist/lib/libcdf.a)
-#set(LIBCDF_INCLUDE_DIRS /Applications/cdf34_1-dist/include)
 
 ########################################################################
 
