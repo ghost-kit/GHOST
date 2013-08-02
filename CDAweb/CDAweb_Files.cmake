@@ -47,20 +47,20 @@ set(PROP_ifaces ${outifaces0} ${outifaces1})
 set(PROP_src ${outsrcs0} ${outsrcs1})
 set(QT_Auto_src ${MOC_BUILT_SOURCES} ${UI_BUILT_SOURCES})
 set(PLUGIN_src
-                ${CDAWebTK_SOURCE_DIR}/filterNetworkAccessModule.cpp
+                ${CDAWebTK_SOURCE_DIR}/filterNetworkAccessModule.cxx
                 ${CDAWebTK_SOURCE_DIR}/vtkSpaceCraftInfo.cxx
-                ${CDAWebTK_SOURCE_DIR}/ScInfoPropWidget.cpp
-                ${CDAWebTK_SOURCE_DIR}/status.cpp
-                ${CDAWebTK_SOURCE_DIR}/filedownloader.cpp
-                ${CDAWebTK_SOURCE_DIR}/timefithandler.cpp
-                ${CDAWebTK_SOURCE_DIR}/BadDataHandler.cpp
-                ${CDAWebTK_SOURCE_DIR}/cdfDataReader.cpp
-                ${CDAWebTK_SOURCE_DIR}/omitBDHandler.cpp
+                ${CDAWebTK_SOURCE_DIR}/ScInfoPropWidget.cxx
+                ${CDAWebTK_SOURCE_DIR}/status.cxx
+                ${CDAWebTK_SOURCE_DIR}/filedownloader.cxx
+                ${CDAWebTK_SOURCE_DIR}/timefithandler.cxx
+                ${CDAWebTK_SOURCE_DIR}/BadDataHandler.cxx
+                ${CDAWebTK_SOURCE_DIR}/cdfDataReader.cxx
+                ${CDAWebTK_SOURCE_DIR}/omitBDHandler.cxx
                 ${CDAWebTK_SOURCE_DIR}/pathSelector.cxx
                 ${CDAWebTK_SOURCE_DIR}/newFileChooserWidget.cxx
     )
 
 set(PLUGIN_SM_src
-                    ${CDAWebTK_SOURCE_DIR}/vtkSpaceCraftInfoFilter.cpp
-                    ${CDAWebTK_SOURCE_DIR}/vtkSpaceCraftInfoSource.cpp
+                    ${CDAWebTK_SOURCE_DIR}/vtkSpaceCraftInfoFilter.cxx
+                    ${CDAWebTK_SOURCE_DIR}/vtkSpaceCraftInfoSource.cxx
     )
