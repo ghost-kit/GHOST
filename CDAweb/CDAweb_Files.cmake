@@ -71,6 +71,7 @@ set(CDAWebTK_SRC
         ${CDAWebTK_SOURCE_DIR}/src/omitBDHandler.cxx
         ${CDAWebTK_SOURCE_DIR}/src/pathSelector.cxx
         ${CDAWebTK_SOURCE_DIR}/src/newFileChooserWidget.cxx
+        ${CDAWebTK_PROP_SRC}
         ${CDAWebTK_MOC_BUILT_SOURCES}
         ${CDAWebTK_UI_BUILT_SOURCES}
         ${CDAWebTK_QT_SRC}

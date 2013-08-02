@@ -84,7 +84,8 @@ if(GHOST_BUILD_ENLIL)
     message(STATUS "Building ENLIL Reader Module")
 
     #Need Enlil
-    set(LIBS ${LIBS} vtkNetCDF_cxx ${ParaView_LIBRARIES})
+    INCLUDE_DIRECTORIES(enlil/src)
+    set(LIBS ${LIBS} vtkNetCDF_cxx)
     include(enlil/Enlil_Files.cmake)
 
 endif()
@@ -101,11 +102,23 @@ if(GHOST_BUILD_CDAWEB)
 endif()
 
 ##gather all built files
-set(SERVER_MAN_XML_LIST ${CDAWebTK_SM_XML} ${ENLIL_SM_XML})
-set(GUI_RF_XML_LIST     ${ENLIL_GUI_XML})
-set(GUI_INTERFACE_LIST  ${CDAWebTK_PROP_IFACES} )
-set(SERVER_MAN_SRC_LIST ${CDAWebTK_SM_SRC} ${ENLIL_SM_SRC})
-set(ADD_SRC_LIST        ${CDAWebTK_SRC} ${ENLIL_SRC})
+set(SERVER_MAN_XML_LIST ${ENLIL_SM_XML}
+                        ${CDAWebTK_SM_XML}
+    )
+
+set(GUI_RF_XML_LIST     ${ENLIL_GUI_XML}
+    )
+
+set(GUI_INTERFACE_LIST  ${CDAWebTK_PROP_IFACES}
+    )
+
+set(SERVER_MAN_SRC_LIST ${ENLIL_SM_SRC}
+                        ${CDAWebTK_SM_SRC}
+    )
+
+set(ADD_SRC_LIST        ${ENLIL_SRC}
+                        ${CDAWebTK_SRC}
+    )
 
 
 ## Add the Plugin Definitions
