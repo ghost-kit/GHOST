@@ -1,134 +1,42 @@
-cmake_minimum_required(VERSION 2.8.9)
-project(GHOST)
+CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
+PROJECT("ENLIL")
+set(ParaView_DIR "/home/jjm390/Developer/ParaView/build401/paraview/src/paraview-build")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
 
-###
-if(QTCREATOR)
-    set(ParaView_DIR "/home/jjm390/Developer/ParaView/build401/paraview/src/paraview-build")
-endif()
+#SET(ParaView_DIR /Volumes/Data/Development/SwFT/superbuild/paraview/src/paraview-build)
+SET(ParaView_SuperBuild_DIR /Volumes/Data/Development/SwFt/ParaViewSuperbuild/)
 
-
-##OPTIONS##
-#Turn on or off the components of the tool kit
-option(GHOST_BUILD_LFM "Build the ParaView LFM Reader" ON)
-option(GHOST_BUILD_ENLIL "Build the ParaView ENLIL Reader" ON)
-option(GHOST_BUILD_CDAWEB "Build the ParaView CDAweb Tool Kit" ON)
-
-option(GHOST_BUILD_STATIC "Build the plugin with static libraries." ON)
-
-
-#Disallow in-source builds
-if("${GHOST_SOURCE_DIR}" STREQUAL "${GHOST_BINARY_DIR}")
-    message (FATAL_ERROR
-        "GhostKit REQUIRES an out of source Build."
-        "Please Create a separate binary build directory and run CMake there.")
-endif()
-
-#Set Output Direcotries
-set(CMAKE_RUNTIME_OUTPUT_DIRECOTORY "${CMAKE_BINARY_DIR}/bin")
-
-if(UNIX)
-    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY  "${CMAKE_BINARY_DIR}/lib")
-else()
-    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
-endif()
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY  "${CMAKE_BINARY_DIR}/lib")
-
-#Utilities for include
-include(Utilities/Git/Git.cmake)
-include(Utilities/ParaView/ParaViewDetermineVersion.cmake)
-include(CMakeDependentOption)
-
-##shared files
 set(SHARED_BUILD_DATETIME ON CACHE INTERNAL "")
-set(SHARED_BUILD_IO ON CACHE INTERNAL "")
-set(SHARED_BUILD_CXFORM ON CACHE INTERNAL "")
 set(SHARED_USE_FPIC ON CACHE INTERNAL "")
-add_subdirectory("${PROJECT_SOURCE_DIR}/Shared")
-INCLUDE_DIRECTORIES(${SHARED_INCLUDE_DIR})
-set(LIBS ${LIBS} ${SHARED_LIBRARIES})
+ADD_SUBDIRECTORY(Shared)
+INCLUDE_DIRECTORIES(${SHARED_INCLUDE_DIR} ${CMAKE_CURRENT_LIST_DIR}/src)
 
-#Get ParaView (so we can build our module!!)
-if(NOT ParaView_BINARY_DIR)
-    find_package(ParaView REQUIRED)
-    include(${PARAVIEW_USE_FILE})
-endif()
+FIND_PACKAGE(ParaView REQUIRED)
+INCLUDE(${PARAVIEW_USE_FILE})
 
-#Versioning of the plugin
-set(ORGANIZATION "LASP & HAO")
-set(GHOST_VERSION_MAJOR 1)
-set(GHOST_VERSION_MINOR 0)
-set(GHOST_VERSION_PATCH 0)
-set(GHOST_VERSION_PATCH_EXTRA "beta 1")
-set(GHOST_VERSION "1.0")
-set(GHOST_VERSION_FULL "1.0.0 Beta 1")
+include(Enlil_Files.cmake)
 
-determine_version(${CMAKE_SOURCE_DIR} ${GIT_EXECUTABLE} "GHOST")
+ADD_PARAVIEW_PLUGIN(vtkEnlilReader "2.0.1"
+  SERVER_MANAGER_XML        ${ENLIL_SM_XML}
+  SERVER_MANAGER_SOURCES    ${ENLIL_SM_SRC}
+  SOURCES                   ${ENLIL_SRC}
+  GUI_RESOURCE_FILES        ${ENLIL_GUI_XML}
+)
 
-message(STATUS "Using Git Executable: ${GIT_EXECUTABLE}")
-message(STATUS "BUILDING VERSION ${GHOST_VERSION_FULL}")
+SET(KIT_LIBS  vtkNetCDF_cxx ${SHARED_LIBRARIES})
 
-message(STATUS "Building Selected Modules into GHOST.
-If Problems are Encountered while building,
-Try deleting your CMakeCache.txt file and rebuilding")
-
-#Collect the information on the components
-#----------------------------------------#
-#LFM Reader
-if(GHOST_BUILD_LFM)
-    message(STATUS "Building LFM Reader Module")
-
-endif()
-
-#ENLIL Reader
-if(GHOST_BUILD_ENLIL)
-    message(STATUS "Building ENLIL Reader Module")
-
-    #Need Enlil
-    INCLUDE_DIRECTORIES(enlil/src)
-    set(LIBS ${LIBS} vtkNetCDF_cxx)
-    include(enlil/Enlil_Files.cmake)
-
-endif()
-
-#CDAweb ToolKit
-if(GHOST_BUILD_CDAWEB)
-    message(STATUS "Building CDAweb ToolKit Module")
-
-    #Need CDAweb
-    set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_LIST_DIR}/CDAweb/cmake)
-    find_package(CDF REQUIRED)
-    set(LIBS ${LIBS} ${CDF_LIBRARIES})
-    include(CDAweb/CDAweb_Files.cmake)
-endif()
-
-##gather all built files
-set(SERVER_MAN_XML_LIST ${ENLIL_SM_XML}
-                        ${CDAWebTK_SM_XML}
-    )
-
-set(GUI_RF_XML_LIST     ${ENLIL_GUI_XML}
-    )
-
-set(GUI_INTERFACE_LIST  ${CDAWebTK_PROP_IFACES}
-    )
-
-set(SERVER_MAN_SRC_LIST ${ENLIL_SM_SRC}
-                        ${CDAWebTK_SM_SRC}
-    )
-
-set(ADD_SRC_LIST        ${ENLIL_SRC}
-                        ${CDAWebTK_SRC}
-    )
+Target_LINK_LIBRARIES(vtkEnlilReader ${KIT_LIBS} )
 
 
-## Add the Plugin Definitions
-ADD_PARAVIEW_PLUGIN(GhostKit                ${GHOST_VERSION_FULL}
-                    SERVER_MANAGER_XML      ${SERVER_MAN_XML_LIST}
-                    GUI_RESOURCE_FILES      ${GUI_RF_XML_LIST}
-                    GUI_INTERFACES          ${GUI_INTERFACE_LIST}
-                    SERVER_MANAGER_SOURCES  ${SERVER_MAN_SRC_LIST}
-                    SOURCES                 ${ADD_SRC_LIST}
-                   )
-
-
-target_link_libraries(GhostKit ${LIBS})
+# Adding 'dist' Make target to deploy plugin that's compatible with
+# KitWare release of ParaView for Mac OS-X.  Requires SuperBuild with
+# GIT_TAG set accordingly in versions.cmake.
+add_custom_target(dist
+    COMMAND ${CMAKE_COMMAND}  -DBINARY_DIR:PATH=${CMAKE_CURRENT_BINARY_DIR}
+                              -DPV_SUPERBUILD_LIST_DIR:PATH=${ParaView_SuperBuild_DIR}/Projects
+                              -DPARAVIEW_BINARY_DIR:PATH=${ParaView_DIR}
+ 			      -DQT_LIBRARY_DIR:PATH=${QT_LIBRARY_DIR}
+                              -DTMP_DIR:PATH=${CMAKE_CURRENT_BINARY_DIR}
+                              -Dbundle_name:STRING=${CMAKE_CURRENT_BINARY_DIR}/vtkEnlilReader.tgz
+                              -P ${CMAKE_CURRENT_LIST_DIR}/install_vtkEnlilReader.cmake
+)
