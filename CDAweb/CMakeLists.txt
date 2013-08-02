@@ -17,7 +17,7 @@ endif()
 ##########################################################################
 
 
-########################################################################
+##########################################################################
 
 if( PREFIX )
   set( CMAKE_INCLUDE_PATH /usr/include ${PREFIX}/include ${CMAKE_INCLUDE_PATH} )
@@ -79,7 +79,7 @@ endif()
 include(ParaViewPlugins)
 
 #get file list
-INCLUDE_DIRECTORIES(include)
+INCLUDE_DIRECTORIES(src)
 include(CDAweb_Files.cmake)
 
 #plugin (Filter for CDAweb)
