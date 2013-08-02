@@ -1,6 +1,6 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
-PROJECT("ENLILreader")
-
+PROJECT("ENLIL")
+set(ParaView_DIR "/home/jjm390/Developer/ParaView/build401/paraview/src/paraview-build")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
 
 #SET(ParaView_DIR /Volumes/Data/Development/SwFT/superbuild/paraview/src/paraview-build)
@@ -14,12 +14,14 @@ INCLUDE_DIRECTORIES(${SHARED_INCLUDE_DIR})
 FIND_PACKAGE(ParaView REQUIRED)
 INCLUDE(${PARAVIEW_USE_FILE})
 
+include(Enlil_Files.cmake)
 
 ADD_PARAVIEW_PLUGIN(vtkEnlilReader "2.0.1"
-  SERVER_MANAGER_XML vtkEnlilReader.xml
-  SERVER_MANAGER_SOURCES vtkEnlilReader.cxx
-  SOURCES readerCache.cpp readerCacheManager.cpp
-  GUI_RESOURCE_FILES vtkEnlilGUI.xml)
+  SERVER_MANAGER_XML            ${ENLIL_SM_XML}
+  SERVER_MANAGER_SOURCES        ${ENLIL_SM_SRC}
+  SOURCES                       ${ENLIL_SRC}
+  GUI_RESOURCE_FILES            ${ENLIL_GUI_XML}
+)
 
 SET(KIT_LIBS  vtkNetCDF_cxx )
 

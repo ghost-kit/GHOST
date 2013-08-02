@@ -1,7 +1,20 @@
 cmake_minimum_required(VERSION 2.8.9)
 project(GHOST)
 
-set(ParaView_DIR "/home/jjm390/Developer/ParaView/build401/paraview/src/paraview-build")
+###
+if(QTCREATOR)
+    set(ParaView_DIR "/home/jjm390/Developer/ParaView/build401/paraview/src/paraview-build")
+endif()
+
+
+##OPTIONS##
+#Turn on or off the components of the tool kit
+option(GHOST_BUILD_LFM "Build the ParaView LFM Reader" ON)
+option(GHOST_BUILD_ENLIL "Build the ParaView ENLIL Reader" ON)
+option(GHOST_BUILD_CDAWEB "Build the ParaView CDAweb Tool Kit" ON)
+
+option(GHOST_BUILD_STATIC "Build the plugin with static libraries." ON)
+
 
 #Disallow in-source builds
 if("${GHOST_SOURCE_DIR}" STREQUAL "${GHOST_BINARY_DIR}")
@@ -54,11 +67,9 @@ determine_version(${CMAKE_SOURCE_DIR} ${GIT_EXECUTABLE} "GHOST")
 message(STATUS "Using Git Executable: ${GIT_EXECUTABLE}")
 message(STATUS "BUILDING VERSION ${GHOST_VERSION_FULL}")
 
-#Turn on or off the components of the tool kit
-option(GHOST_BUILD_LFM "Build the ParaView LFM Reader" ON)
-option(GHOST_BUILD_ENLIL "Build the ParaView ENLIL Reader" ON)
-option(GHOST_BUILD_CDAWEB "Build the ParaView CDAweb Tool Kit" ON)
-
+message(STATUS "Building Selected Modules into GHOST.
+If Problems are Encountered while building,
+Try deleting your CMakeCache.txt file and rebuilding")
 
 #Collect the information on the components
 #----------------------------------------#
@@ -71,25 +82,30 @@ endif()
 #ENLIL Reader
 if(GHOST_BUILD_ENLIL)
     message(STATUS "Building ENLIL Reader Module")
+
+    #Need Enlil
+    set(LIBS ${LIBS} vtkNetCDF_cxx ${ParaView_LIBRARIES})
+    include(enlil/Enlil_Files.cmake)
+
 endif()
 
 #CDAweb ToolKit
 if(GHOST_BUILD_CDAWEB)
+    message(STATUS "Building CDAweb ToolKit Module")
+
     #Need CDAweb
     set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_LIST_DIR}/CDAweb/cmake)
-    message(STATUS "Building CDAweb ToolKit Module")
     find_package(CDF REQUIRED)
     set(LIBS ${LIBS} ${CDF_LIBRARIES})
-    INCLUDE_DIRECTORIES(CDAweb)
     include(CDAweb/CDAweb_Files.cmake)
 endif()
 
 ##gather all built files
-set(SERVER_MAN_XML_LIST ${SM_XML})
-set(GUI_RF_XML_LIST )
-set(GUI_INTERFACE_LIST ${PROP_ifaces})
-set(SERVER_MAN_SRC_LIST ${PLUGIN_SM_src})
-set(ADD_SRC_LIST ${PLUGIN_src} ${PROP_src} ${QT_Auto_src})
+set(SERVER_MAN_XML_LIST ${CDAWebTK_SM_XML} ${ENLIL_SM_XML})
+set(GUI_RF_XML_LIST     ${ENLIL_GUI_XML})
+set(GUI_INTERFACE_LIST  ${CDAWebTK_PROP_IFACES} )
+set(SERVER_MAN_SRC_LIST ${CDAWebTK_SM_SRC} ${ENLIL_SM_SRC})
+set(ADD_SRC_LIST        ${CDAWebTK_SRC} ${ENLIL_SRC})
 
 
 ## Add the Plugin Definitions
