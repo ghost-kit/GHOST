@@ -1,5 +1,9 @@
 #Splitting out files list
 
+if(NOT CDAWebTK_SOURCE_DIR)
+    set(CDAWebTK_SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR})
+endif()
+
 # wrap QT
 QT4_WRAP_CPP(
     MOC_BUILT_SOURCES
