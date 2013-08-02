@@ -17,10 +17,11 @@ INCLUDE(${PARAVIEW_USE_FILE})
 include(Enlil_Files.cmake)
 
 ADD_PARAVIEW_PLUGIN(vtkEnlilReader "2.0.1"
-  SERVER_MANAGER_XML            ${ENLIL_SM_XML}
-  SERVER_MANAGER_SOURCES        ${ENLIL_SM_SRC}
-  SOURCES                       ${ENLIL_SRC}
-  GUI_RESOURCE_FILES            ${ENLIL_GUI_XML}
+  SERVER_MANAGER_XML        xml/vtkEnlilReader.xml          #${ENLIL_SM_XML}
+  SERVER_MANAGER_SOURCES    src/vtkEnlilReader.cxx          #${ENLIL_SM_SRC}
+  SOURCES                   src/readerCache.cxx             #${ENLIL_SRC}
+                            src/readerCacheManager.cxx
+  GUI_RESOURCE_FILES        xml/vtkEnlilGUI.xml             #${ENLIL_GUI_XML}
 )
 
 SET(KIT_LIBS  vtkNetCDF_cxx )
