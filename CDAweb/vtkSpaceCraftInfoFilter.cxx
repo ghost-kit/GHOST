@@ -1,4 +1,4 @@
-#include "headers/vtkSpaceCraftInfoFilter.h"
+#include "vtkSpaceCraftInfoFilter.h"
 
 #include "vtkCommand.h"
 #include "vtkAbstractArray.h"

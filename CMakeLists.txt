@@ -73,7 +73,11 @@ endif()
 
 #CDAweb ToolKit
 if(GHOST_BUILD_CDAWEB)
+    #Need CDAweb
+    set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} CDAweb/CMake)
     message(STATUS "Building CDAweb ToolKit Module")
+    find_package(CDF REQUIRED)
+    INCLUDE_DIRECTORIES(CDAweb)
     include(CDAweb/CDAweb_Files.cmake)
 endif()
 
