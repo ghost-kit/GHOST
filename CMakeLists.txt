@@ -76,6 +76,7 @@ Try deleting your CMakeCache.txt file and rebuilding")
 #LFM Reader
 if(GHOST_BUILD_LFM)
     message(STATUS "Building LFM Reader Module")
+    include(lfm/LFM_Files.cmake)
 
 endif()
 
@@ -103,16 +104,19 @@ endif()
 
 ##gather all built files
 set(SERVER_MAN_XML_LIST ${ENLIL_SM_XML}
+                        ${LFM_SM_XML}
                         ${CDAWebTK_SM_XML}
     )
 
 set(GUI_RF_XML_LIST     ${ENLIL_GUI_XML}
+                        ${LFM_GUI_XML}
     )
 
 set(GUI_INTERFACE_LIST  ${CDAWebTK_PROP_IFACES}
     )
 
 set(SERVER_MAN_SRC_LIST ${ENLIL_SM_SRC}
+                        ${LFM_SM_SRC}
                         ${CDAWebTK_SM_SRC}
     )
 
