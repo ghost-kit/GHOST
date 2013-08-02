@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 2.8.9)
 project(GHOST)
 
+set(ParaView_DIR "/home/jjm390/Developer/ParaView/build401/paraview/src/paraview-build")
+
 #Disallow in-source builds
 if("${GHOST_SOURCE_DIR}" STREQUAL "${GHOST_BINARY_DIR}")
     message (FATAL_ERROR
@@ -74,9 +76,10 @@ endif()
 #CDAweb ToolKit
 if(GHOST_BUILD_CDAWEB)
     #Need CDAweb
-    set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} CDAweb/CMake)
+    set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_LIST_DIR}/CDAweb/cmake)
     message(STATUS "Building CDAweb ToolKit Module")
     find_package(CDF REQUIRED)
+    set(LIBS ${LIBS} ${CDF_LIBRARIES})
     INCLUDE_DIRECTORIES(CDAweb)
     include(CDAweb/CDAweb_Files.cmake)
 endif()
