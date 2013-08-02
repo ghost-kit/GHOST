@@ -42,10 +42,14 @@ message(STATUS "Shared LIBRARY: ${SHARED_LIBRARIES}")
 FIND_PACKAGE(ParaView REQUIRED)
 
 INCLUDE(${PARAVIEW_USE_FILE})
+
+include(Enlil_Files.cmake)
+
 ADD_PARAVIEW_PLUGIN(vtkLFMReader "1.0"
-  SERVER_MANAGER_XML vtkLFMReader.xml
-  SERVER_MANAGER_SOURCES vtkLFMReader.cxx 
-  GUI_RESOURCE_FILES vtkLFMGUI.xml)
+        SERVER_MANAGER_XML      ${LFM_SM_XML} #vtkLFMReader.xml
+        SERVER_MANAGER_SOURCES  ${LFM_SM_SRC} #vtkLFMReader.cxx
+        GUI_RESOURCE_FILES      ${LFM_GUI_XML} #vtkLFMGUI.xml
+    )
 
 Target_LINK_LIBRARIES(vtkLFMReader 
   io
