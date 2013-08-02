@@ -1,7 +1,7 @@
 PROJECT("CDAWebTK")
 cmake_minimum_required(VERSION 2.8.9 FATAL_ERROR)
 
-option(QTCREATOR "Include all headers and xml files in QTCreator" OFF)
+option(QTCREATOR "View all headers and xml files in QTCreator" OFF)
 
 if(QTCREATOR)
 #These command are used to reveal code in QTCreator that may not be directly linked.
