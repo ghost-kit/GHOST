@@ -1,15 +1,15 @@
 PROJECT("CDAWebTK")
-
 cmake_minimum_required(VERSION 2.8.9 FATAL_ERROR)
-set(CMAKE_INCLUDE_CURRENT_DIR ON)
-
-##########################################################################
 
 if(QTCREATOR)
     FILE(GLOB HEADERS "include/*.h")
+    set(ParaView_DIR ../../ParaView/build401/paraview/src/paraview-build)
 endif()
 
 ##########################################################################
+
+
+########################################################################
 
 if( PREFIX )
   set( CMAKE_INCLUDE_PATH /usr/include ${PREFIX}/include ${CMAKE_INCLUDE_PATH} )
@@ -39,8 +39,7 @@ if( BUILD_MAC )
 
 endif( BUILD_MAC )
 
-set( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CDAwebTK_SOURCE_DIR}/CMake/" )
-INCLUDE_DIRECTORIES(src/include)
+set( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmake/" )
 
 ##shared files
 set(SHARED_BUILD_DATETIME ON CACHE INTERNAL "")
@@ -72,6 +71,7 @@ endif()
 include(ParaViewPlugins)
 
 #get file list
+INCLUDE_DIRECTORIES(include)
 include(CDAweb_Files.cmake)
 
 #plugin (Filter for CDAweb)
@@ -83,10 +83,11 @@ ADD_PARAVIEW_PLUGIN(CDAWebTK "1.0.0.beta1"
                 ${QT_Auto_src}
                 ${PROP_src}
                # ${HEADERS}
-
                 )
 
 target_link_libraries(CDAWebTK ${LIBS})
+
+
 
 #for the mac distribution build
 add_custom_target(dist
