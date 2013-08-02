@@ -9,7 +9,7 @@ SET(ParaView_SuperBuild_DIR /Volumes/Data/Development/SwFt/ParaViewSuperbuild/)
 set(SHARED_BUILD_DATETIME ON CACHE INTERNAL "")
 set(SHARED_USE_FPIC ON CACHE INTERNAL "")
 ADD_SUBDIRECTORY(Shared)
-INCLUDE_DIRECTORIES(${SHARED_INCLUDE_DIR})
+INCLUDE_DIRECTORIES(${SHARED_INCLUDE_DIR} ${CMAKE_CURRENT_LIST_DIR}/src)
 
 FIND_PACKAGE(ParaView REQUIRED)
 INCLUDE(${PARAVIEW_USE_FILE})
@@ -17,10 +17,11 @@ INCLUDE(${PARAVIEW_USE_FILE})
 include(Enlil_Files.cmake)
 
 ADD_PARAVIEW_PLUGIN(vtkEnlilReader "2.0.1"
-  SERVER_MANAGER_XML            ${ENLIL_SM_XML}
-  SERVER_MANAGER_SOURCES        ${ENLIL_SM_SRC}
-  SOURCES                       ${ENLIL_SRC}
-  GUI_RESOURCE_FILES            ${ENLIL_GUI_XML}
+  SERVER_MANAGER_XML        xml/vtkEnlilReader.xml          #${ENLIL_SM_XML}
+  SERVER_MANAGER_SOURCES    src/vtkEnlilReader.cxx          #${ENLIL_SM_SRC}
+  SOURCES                   src/readerCache.cxx             #${ENLIL_SRC}
+                            src/readerCacheManager.cxx
+  GUI_RESOURCE_FILES        xml/vtkEnlilGUI.xml             #${ENLIL_GUI_XML}
 )
 
 SET(KIT_LIBS  vtkNetCDF_cxx )
