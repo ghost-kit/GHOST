@@ -1,8 +1,16 @@
 PROJECT("CDAWebTK")
 cmake_minimum_required(VERSION 2.8.9 FATAL_ERROR)
 
+option(QTCREATOR "Include all headers and xml files in QTCreator" OFF)
+
 if(QTCREATOR)
-    FILE(GLOB HEADERS "include/*.h")
+#These command are used to reveal code in QTCreator that may not be directly linked.
+#This passes those file names to the Files List in Make Plugin, but are not necessary
+#to build the final product.
+#It is not recomended to build the final binary with this setting on.
+
+    FILE(GLOB HEADERS  "src/*.h")
+    FILE(GLOB XMLFILES "xml/*.xml")
     set(ParaView_DIR ../../ParaView/build401/paraview/src/paraview-build)
 endif()
 
@@ -82,7 +90,8 @@ ADD_PARAVIEW_PLUGIN(CDAWebTK "1.0.0.beta1"
         SOURCES ${PLUGIN_src}
                 ${QT_Auto_src}
                 ${PROP_src}
-               # ${HEADERS}
+                ${HEADERS}      #IF QTCREATOR is active, this shows all header files in project window
+                ${XMLFILES}     #IF QTCREATOR is active, this shows all XML files in project window
                 )
 
 target_link_libraries(CDAWebTK ${LIBS})
