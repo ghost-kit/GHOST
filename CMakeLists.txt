@@ -1,134 +1,110 @@
-cmake_minimum_required(VERSION 2.8.9)
-project(GHOST)
+PROJECT("CDAWebTK")
+cmake_minimum_required(VERSION 2.8.9 FATAL_ERROR)
 
-###
+option(QTCREATOR "View all headers and xml files in QTCreator" OFF)
+
 if(QTCREATOR)
-    set(ParaView_DIR "/home/jjm390/Developer/ParaView/build401/paraview/src/paraview-build")
+#These command are used to reveal code in QTCreator that may not be directly linked.
+#This passes those file names to the Files List in Make Plugin, but are not necessary
+#to build the final product.
+#It is not recomended to build the final binary with this setting on.
+
+    FILE(GLOB HEADERS  "src/*.h")
+    FILE(GLOB XMLFILES "xml/*.xml")
+    set(ParaView_DIR ../../ParaView/build401/paraview/src/paraview-build)
 endif()
 
-
-##OPTIONS##
-#Turn on or off the components of the tool kit
-option(GHOST_BUILD_LFM "Build the ParaView LFM Reader" ON)
-option(GHOST_BUILD_ENLIL "Build the ParaView ENLIL Reader" ON)
-option(GHOST_BUILD_CDAWEB "Build the ParaView CDAweb Tool Kit" ON)
-
-option(GHOST_BUILD_STATIC "Build the plugin with static libraries." ON)
+##########################################################################
 
 
-#Disallow in-source builds
-if("${GHOST_SOURCE_DIR}" STREQUAL "${GHOST_BINARY_DIR}")
-    message (FATAL_ERROR
-        "GhostKit REQUIRES an out of source Build."
-        "Please Create a separate binary build directory and run CMake there.")
-endif()
+##########################################################################
 
-#Set Output Direcotries
-set(CMAKE_RUNTIME_OUTPUT_DIRECOTORY "${CMAKE_BINARY_DIR}/bin")
+if( PREFIX )
+  set( CMAKE_INCLUDE_PATH /usr/include ${PREFIX}/include ${CMAKE_INCLUDE_PATH} )
+  set( CMAKE_LIBRARY_PATH /usr/lib ${PREFIX}/lib ${CMAKE_LIBRARY_PATH} )
+endif( PREFIX )
 
-if(UNIX)
-    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY  "${CMAKE_BINARY_DIR}/lib")
-else()
-    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
-endif()
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY  "${CMAKE_BINARY_DIR}/lib")
+#convienience funciton for ME. :)
+if( BUILD_MAC )
+  message(WARNING ": Your have selected to build on Joshua Murphy's Development Mac [At LASP], so I hope that is where you are!!!")
+  message(STATUS "Changing your compilers Now!")
+  set(CMAKE_C_COMPILER /Applications/Xcode-4.3.app/Contents/Developer/usr/bin/gcc)
+  set(CMAKE_CXX_COMPILER /Applications/Xcode-4.3.app/Contents/Developer/usr/bin/g++)
+  set(CMAKE_LIBRARY_PATH /Applications/Xcode-4.3.app/Contents/Developer/usr/lib)
+  set(CMAKE_INCLUDE_PATH /Applications/Xcode-4.3.app/Contents/Developer/usr/include)
+  set(CMAKE_OSX_ARCHITECTURES x86_64)
+  set(CMAKE_OSX_DEPLOYMENT_TARGET 10.6)
+  set(CMAKE_OSX_SYSROOT /Applications/Xcode-4.3.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.6.sdk)
+  set(ParaView_DIR /Volumes/Data/Development/ParaView/superbuild/paraview/src/paraview-build)
+  set(ParaView_SuperBuild_DIR /Volumes/Data/Development/ParaView/ParaViewSuperbuild)
+  set(LIBCDF_LIBRARIES /Applications/cdf34_1-dist/lib/libcdf.a)
+  set(LIBCDF_INCLUDE_DIRS /Applications/cdf34_1-dist/include)
+  message(STATUS ": Your Compilers are now:")
+  message(STATUS "CXX: ${CMAKE_CXX_COMPILER}")
+  message(STATUS "C:   ${CMAKE_C_COMPILER}")
+  message(STATUS "You are now using the MAC OS X 10.6 SDK in Xcode-4.3")
+  message(STATUS "Thank you for using Joshua Murphy's Mac.")
 
-#Utilities for include
-include(Utilities/Git/Git.cmake)
-include(Utilities/ParaView/ParaViewDetermineVersion.cmake)
-include(CMakeDependentOption)
+endif( BUILD_MAC )
+
+set( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmake/" )
 
 ##shared files
 set(SHARED_BUILD_DATETIME ON CACHE INTERNAL "")
-set(SHARED_BUILD_IO ON CACHE INTERNAL "")
-set(SHARED_BUILD_CXFORM ON CACHE INTERNAL "")
 set(SHARED_USE_FPIC ON CACHE INTERNAL "")
 add_subdirectory("${PROJECT_SOURCE_DIR}/Shared")
-INCLUDE_DIRECTORIES(${SHARED_INCLUDE_DIR})
-set(LIBS ${LIBS} ${SHARED_LIBRARIES})
 
-#Get ParaView (so we can build our module!!)
+message(STATUS "DateTime (Includes) : ${SHARED_INCLUDE_DIR}")
+message(STATUS "DateTime (Libraries): ${SHARED_LIBRARIES}")
+
+#needed for these plugins
+# At present I am specifying ${LIBCDF_INCLUDE_DIRS} and ${LIBCDF_LIBRARIES} from the cmake command line
+set(Boost_USE_STATIC_LIBS ON)
+set(Boost_USE_MULTITHREAD ON)
+find_package(Boost COMPONENTS date_time REQUIRED)
+
+##find cdf
+set(CDF_USE_STATIC_LIBS ON)
+find_package(CDF REQUIRED)
+
+include_directories(${CDF_INCLUDES} ${Boost_INCLUDE_DIRS} ${SHARED_INCLUDE_DIR})
+set(LIBS ${LIBS} ${CDF_LIBRARIES} ${Boost_LIBRARIES} ${SHARED_LIBRARIES})
+#I am setting this from the cmake command line
 if(NOT ParaView_BINARY_DIR)
-    find_package(ParaView REQUIRED)
-    include(${PARAVIEW_USE_FILE})
+  find_package(ParaView REQUIRED)
+  include(${PARAVIEW_USE_FILE})
 endif()
 
-#Versioning of the plugin
-set(ORGANIZATION "LASP & HAO")
-set(GHOST_VERSION_MAJOR 1)
-set(GHOST_VERSION_MINOR 0)
-set(GHOST_VERSION_PATCH 0)
-set(GHOST_VERSION_PATCH_EXTRA "beta 1")
-set(GHOST_VERSION "1.0")
-set(GHOST_VERSION_FULL "1.0.0 Beta 1")
+#needed to build plugins
+include(ParaViewPlugins)
 
-determine_version(${CMAKE_SOURCE_DIR} ${GIT_EXECUTABLE} "GHOST")
+#get file list
+INCLUDE_DIRECTORIES(src)
+include(CDAweb_Files.cmake)
 
-message(STATUS "Using Git Executable: ${GIT_EXECUTABLE}")
-message(STATUS "BUILDING VERSION ${GHOST_VERSION_FULL}")
+#plugin (Filter for CDAweb)
+ADD_PARAVIEW_PLUGIN(CDAWebTK "1.0.0.beta1"
+        SERVER_MANAGER_XML ${SM_XML}
+        GUI_INTERFACES ${PROP_ifaces}
+        SERVER_MANAGER_SOURCES ${PLUGIN_SM_src}
+        SOURCES ${PLUGIN_src}
+                ${QT_Auto_src}
+                ${PROP_src}
+                ${HEADERS}      #IF QTCREATOR is active, this shows all header files in project window
+                ${XMLFILES}     #IF QTCREATOR is active, this shows all XML files in project window
+                )
 
-message(STATUS "Building Selected Modules into GHOST.
-If Problems are Encountered while building,
-Try deleting your CMakeCache.txt file and rebuilding")
-
-#Collect the information on the components
-#----------------------------------------#
-#LFM Reader
-if(GHOST_BUILD_LFM)
-    message(STATUS "Building LFM Reader Module")
-
-endif()
-
-#ENLIL Reader
-if(GHOST_BUILD_ENLIL)
-    message(STATUS "Building ENLIL Reader Module")
-
-    #Need Enlil
-    INCLUDE_DIRECTORIES(enlil/src)
-    set(LIBS ${LIBS} vtkNetCDF_cxx)
-    include(enlil/Enlil_Files.cmake)
-
-endif()
-
-#CDAweb ToolKit
-if(GHOST_BUILD_CDAWEB)
-    message(STATUS "Building CDAweb ToolKit Module")
-
-    #Need CDAweb
-    set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_LIST_DIR}/CDAweb/cmake)
-    find_package(CDF REQUIRED)
-    set(LIBS ${LIBS} ${CDF_LIBRARIES})
-    include(CDAweb/CDAweb_Files.cmake)
-endif()
-
-##gather all built files
-set(SERVER_MAN_XML_LIST ${ENLIL_SM_XML}
-                        ${CDAWebTK_SM_XML}
-    )
-
-set(GUI_RF_XML_LIST     ${ENLIL_GUI_XML}
-    )
-
-set(GUI_INTERFACE_LIST  ${CDAWebTK_PROP_IFACES}
-    )
-
-set(SERVER_MAN_SRC_LIST ${ENLIL_SM_SRC}
-                        ${CDAWebTK_SM_SRC}
-    )
-
-set(ADD_SRC_LIST        ${ENLIL_SRC}
-                        ${CDAWebTK_SRC}
-    )
+target_link_libraries(CDAWebTK ${LIBS})
 
 
-## Add the Plugin Definitions
-ADD_PARAVIEW_PLUGIN(GhostKit                ${GHOST_VERSION_FULL}
-                    SERVER_MANAGER_XML      ${SERVER_MAN_XML_LIST}
-                    GUI_RESOURCE_FILES      ${GUI_RF_XML_LIST}
-                    GUI_INTERFACES          ${GUI_INTERFACE_LIST}
-                    SERVER_MANAGER_SOURCES  ${SERVER_MAN_SRC_LIST}
-                    SOURCES                 ${ADD_SRC_LIST}
-                   )
 
-
-target_link_libraries(GhostKit ${LIBS})
+#for the mac distribution build
+add_custom_target(dist
+    COMMAND ${CMAKE_COMMAND}  -DBINARY_DIR:PATH=${PROJECT_BINARY_DIR}
+                              -DPV_SUPERBUILD_LIST_DIR:PATH=${ParaView_SuperBuild_DIR}/Projects
+                              -DPARAVIEW_BINARY_DIR:PATH=${ParaView_DIR}
+                              -DQT_LIBRARY_DIR:PATH=${QT_LIBRARY_DIR}
+                              -DTMP_DIR:PATH=${PROJECT_BINARY_DIR}
+                              -Dbundle_name:STRING=${PROJECT_BINARY_DIR}/CDAwebTK.tgz
+                              -P ${PROJECT_LIST_DIR}/install_CDAwebTK.cmake
+)
