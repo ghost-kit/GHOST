@@ -43,7 +43,7 @@ FIND_PACKAGE(ParaView REQUIRED)
 
 INCLUDE(${PARAVIEW_USE_FILE})
 
-include(Enlil_Files.cmake)
+include(LFM_Files.cmake)
 
 ADD_PARAVIEW_PLUGIN(vtkLFMReader "1.0"
         SERVER_MANAGER_XML      ${LFM_SM_XML} #vtkLFMReader.xml
