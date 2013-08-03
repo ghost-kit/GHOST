@@ -75,7 +75,7 @@ find_library(JPEG_LIBRARY NAMES ${JPEG_NAMES} )
 
 # handle the QUIETLY and REQUIRED arguments and set JPEG_FOUND to TRUE if
 # all listed variables are TRUE
-include(${CMAKE_MODULE_PATH}/FindPackageHandleStandardArgs.cmake)
+include(FindPackageHandleStandardArgs)
 FIND_PACKAGE_HANDLE_STANDARD_ARGS(JPEG DEFAULT_MSG JPEG_LIBRARY JPEG_INCLUDE_DIR)
 
 if(JPEG_FOUND)
