@@ -6,36 +6,47 @@ option (USE_APP "Use A++ and/or P++ for array storage" OFF)
 option (USE_MPI "Build parallel I/O (Warning: leave this off, it's untested)" OFF)
 option (USE_FPIC "Fix build error that required -fPIC" OFF)
 option (USE_STATIC_LIBRARIES "Use Static Libraries to build" OFF)
-option (USE_PARAVIEW_LIBS "Use the ParaView Libraries" ON)
-
-if(USE_PARAVIEW_LIBS)
-    message(STATUS "Building with ParaView Libraries")
-    if(NOT PV_SBUILD_DIR)
-        message(FATAL_ERROR "You MUST define PV_SBUILD_DIR
-to be the location of the successfully built ParaView Superbuild that
-you will be building against.  Please set and try again.")
-
-    else()
-        message(STATUS "Superbuild Directory :${PV_SBUILD_DIR}")
-    endif()
-
-    set(PV_LIB_DIR ${PV_SBUILD_DIR}/install/lib)
-
-    set(PV_HDF5_LIBS ${PV_LIB_DIR}/libhdf5.so;${PV_LIB_DIR}/libhdf5_hl.so;${PV_LIB_DIR}/)
-    set(PV_HDF5_INCLUDE_DIR ${PV_SBUILD_DIR}/install/include)
-
-    message(STATUS: "PV_HDF5 libraries: ${PV_HDF5_LIBS}")
-
-    message(STATUS "PARAVIEW LIBRARIES: ${ParaView_LIBRARIES}")
-
-endif()
+option (USE_PARAVIEW_LIBS "Use the ParaView Libraries" OFF)
 
 if(USE_STATIC_LIBRARIES)
-    message(STATUS "BUILDING WITH STATIC LIBRARIES")
+    message("BUILDING WITH STATIC LIBRARIES")
     set(CMAKE_FIND_LIBRARY_PREFIXES "${CMAKE_STATIC_LIBRARY_SUFFIX}")
-    add_definitions(-DHDF5_USE_STATIC_LIBRARIES=true)
-    message(STATUS "Static Suffix: ${CMAKE_STATIC_LIBRARY_SUFFIX}")
-    set(CMAKE_LINK_DEPENDS_NO_SHARED true)
+
+
+    find_package(JPEG)
+    find_library(HDF4_LIBRARY NAMES df dfalt PATH_SUFFIXES hdf)
+    find_library(MFHDF4_LIBRARY NAMES mfhdf mfhdfalt PATH_SUFFIXES hdf)
+    set(HDF4_LIBRARIES ${MFHDF4_LIBRARY} ${HDF4_LIBRARY})
+    find_path(HDF4_INCLUDE_DIR NAMES hdf.h PATH_SUFFIXES hdf)
+    include(CheckLibraryExists)
+    include(FindPackageHandleStandardArgs)
+    if(HDF4_LIBRARIES)
+        set(CMAKE_REQUIRED_LIBRARIES z ${JPEG_LIBRARIES})
+        check_library_exists("${HDF4_LIBRARIES}" Hopen "" HDF4_WO_SZIP)
+        if(HDF4_WO_SZIP)
+                set(HDF4_EXTRA_LIBRARIES ${CMAKE_REQUIRED_LIBRARIES})
+                find_package_handle_standard_args(HDF4 DEFAULT_MSG HDF4_LIBRARIES HDF4_EXTRA_LIBRARIES HDF4_INCLUDE_DIR)
+        else(HDF4_WO_SZIP)
+                find_library(SZIP_LIBRARIES NAMES sz szip)
+                if(SZIP_LIBRARIES)
+                        set(CMAKE_REQUIRED_LIBRARIES ${CMAKE_REQUIRED_LIBRARIES} ${SZIP_LIBRARIES})
+                        check_library_exists("${HDF4_LIBRARIES}" Hopen "" HDF4_W_SZIP)
+                        if(HDF4_W_SZIP)
+                                set(HDF4_EXTRA_LIBRARIES ${CMAKE_REQUIRED_LIBRARIES})
+                                find_package_handle_standard_args(HDF4 DEFAULT_MSG HDF4_LIBRARIES HDF4_EXTRA_LIBRARIES HDF4_INCLUDE_DIR)
+                        endif(HDF4_W_SZIP)
+                endif(SZIP_LIBRARIES)
+        endif(HDF4_WO_SZIP)
+        set(CMAKE_REQUIRED_LIBRARIES)
+     endif(HDF4_LIBRARIES)
+
+
+    set(HDF5_LIBRARIES ${H5_STATIC_LIBS})
+    set(HDF4_LIBRARIES ${H4_STATIC_LIBS} ${SZIP_STATIC_LIBRARIES} ${JPEG_STATIC_LIBRARIES})
+
+    message("HDF5: LIBS: ${HDF5_LIBRARIES} INC: ${HDF5_INCLUDE_DIR}")
+    message("HDF4: LIBS: ${HDF4_LIBRARIES} INC: ${HDF4_INCLUDE_DIR}")
+
 endif()
 
 #this is the temp fix for fPIC error... just uncomment and rebuild
@@ -70,7 +81,7 @@ endif (HDF4_FOUND)
 ########
 # Hdf5 #
 ########################################################################
-if(NOT USE_PARAVIEW_LIBS)
+if(NOT USE_STATIC_LIBRARIES)
     find_package(HDF5 COMPONENTS C )
     message(STATUS "Linking to HDF5: ${HDF5_LIBRARIES} ${PHDF5_LIBRARIES}")
 
@@ -87,9 +98,6 @@ if(NOT USE_PARAVIEW_LIBS)
             add_definitions(-DHAS_PHDF5)
         endif (HDF5_IS_PARALLEL)
     endif (HDF5_FOUND)
-else()
-    set(HDF5_LIBRARIES ${PV_HDF5_LIBS})
-    set(HDF5_INCLUDE_DIRS ${PV_HDF5_INCLUDE_DIR})
 
 endif()
 ##############
