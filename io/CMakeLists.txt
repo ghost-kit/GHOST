@@ -8,20 +8,11 @@ option (USE_FPIC "Fix build error that required -fPIC" OFF)
 option (USE_STATIC_LIBRARIES "Use Static Libraries to build" OFF)
 option (USE_PARAVIEW_LIBS "Use the ParaView Libraries" OFF)
 
+#Build statically if needed
 if(USE_STATIC_LIBRARIES)
     message("BUILDING WITH STATIC LIBRARIES")
-    set(CMAKE_FIND_LIBRARY_PREFIXES "${CMAKE_STATIC_LIBRARY_SUFFIX}")
-
-    set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_LIST_DIR}/cmake)
-    find_package(StaticHDF4 REQUIRED)
-
-
-    set(HDF5_LIBRARIES ${H5_STATIC_LIBS})
-    set(HDF4_LIBRARIES ${HDF4_LIBRARIES} ${HDF4_EXTRA_LIBRARIES})
-
-    message("HDF5: LIBS: ${HDF5_LIBRARIES} INC: ${HDF5_INCLUDE_DIR}")
-    message("HDF4: LIBS: ${HDF4_LIBRARIES} INC: ${HDF4_INCLUDE_DIR}")
-
+    set(HDF4_LIBRARIES_NAME "StaticHDF4")
+    set(HDF5_USE_STATIC_LIBRARIES true)
 endif()
 
 #this is the temp fix for fPIC error... just uncomment and rebuild
@@ -29,10 +20,12 @@ if(USE_FPIC)
    set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} -fPIC)
 endif(USE_FPIC)
 
+## Use APP option
 if (USE_APP)
   add_definitions(-DBUILD_WITH_APP)
 endif (USE_APP)
 
+## Use MPI option
 if (USE_MPI)
   add_definitions(-DBUILD_WITH_MPI)
 endif (USE_MPI)
@@ -41,14 +34,13 @@ endif (USE_MPI)
 # Hdf4 #
 ########################################################################
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/cmake/")
-find_package(HDF4 REQUIRED)
+find_package(${HDF4_LIBRARIES_NAME} REQUIRED)
 
 if (HDF4_FOUND)
   message(STATUS "HDF4 Found!")
 
   set(HDF4_LIBRARIES ${HDF4_EXTRA_LIBRARIES} ${HDF4_LIBRARIES})
-
-  message(STATUS "Linking to HDF4: ${HDF4_LIBRARIES}")
+  message(STATUS "Linking HDF4 Libraries: ${HDF4_LIBRARIES}")
 
   add_definitions(-DHAS_HDF4)
 endif (HDF4_FOUND)
@@ -56,9 +48,8 @@ endif (HDF4_FOUND)
 ########
 # Hdf5 #
 ########################################################################
-if(NOT USE_STATIC_LIBRARIES)
     find_package(HDF5 COMPONENTS C )
-    message(STATUS "Linking to HDF5: ${HDF5_LIBRARIES} ${PHDF5_LIBRARIES}")
+    message(STATUS "Linking HDF5 Libraries: ${HDF5_LIBRARIES} ${PHDF5_LIBRARIES}")
 
     if (HDF5_FOUND)
         message(STATUS "HDF5 Found!")
@@ -74,7 +65,6 @@ if(NOT USE_STATIC_LIBRARIES)
         endif (HDF5_IS_PARALLEL)
     endif (HDF5_FOUND)
 
-endif()
 ##############
 # io library #
 ########################################################################
