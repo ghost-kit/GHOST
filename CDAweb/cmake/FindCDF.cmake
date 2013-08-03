@@ -11,9 +11,9 @@ endif(CDF_INCLUDES)
 find_path(CDF_INCLUDES cdf.h)
 
 if(CDF_USE_STATIC_LIBS)
-    find_library(CDF_LIB NAMES libcdf.a)
+    find_library(CDF_LIB NAMES ${CMAKE_STATIC_LIBRARY_PREFIX}cdf${CMAKE_STATIC_LIBRARY_SUFFIX})
 else()
-    find_library(CDF_LIB NAMES cdf)
+    find_library(CDF_LIB NAMES ${CMAKE_SHARED_LIBRARY_PREFIX}cdf${CMAKE_SHARED_LIBRARY_SUFFIX})
 endif(CDF_USE_STATIC_LIBS)
 
 set(CDF_LIBRARIES "${CDF_LIB}")
