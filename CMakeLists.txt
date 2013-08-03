@@ -12,7 +12,6 @@ endif()
 option(GHOST_BUILD_LFM "Build the ParaView LFM Reader" ON)
 option(GHOST_BUILD_ENLIL "Build the ParaView ENLIL Reader" ON)
 option(GHOST_BUILD_CDAWEB "Build the ParaView CDAweb Tool Kit" ON)
-
 option(GHOST_BUILD_STATIC "Build the plugin with static libraries." ON)
 
 
@@ -100,6 +99,10 @@ if(GHOST_BUILD_CDAWEB)
 
     #Need CDAweb
     set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_LIST_DIR}/CDAweb/cmake)
+    if(GHOST_BUILD_STATIC)
+        set(CDF_USE_STATIC_LIBS true)
+    endif()
+
     find_package(CDF REQUIRED)
     set(LIBS ${LIBS} ${CDF_LIBRARIES})
     include(CDAweb/CDAweb_Files.cmake)
