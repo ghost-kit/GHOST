@@ -70,7 +70,14 @@
 
 find_path(JPEG_INCLUDE_DIR jpeglib.h)
 
-set(JPEG_NAMES ${JPEG_NAMES} ${CMAKE_STATIC_LIBRARY_PREFIX}jpeg${CMAKE_STATIC_LIBRARY_SUFFIX})
+#Modified by Joshua Murphy on 4 AUGUST 2013
+#   to allow looking for static libraries
+if(JPEG_USE_STATIC_LIBRARIES)
+    set(JPEG_NAMES ${JPEG_NAMES} ${CMAKE_STATIC_LIBRARY_PREFIX}jpeg${CMAKE_STATIC_LIBRARY_SUFFIX})
+else()
+    set(JPEG_NAMES ${JPEG_NAMES} ${CMAKE_SHARED_LIBRARY_PREFIX}jpeg${CMAKE_SHARED_LIBRARY_SUFFIX})
+endif()
+
 find_library(JPEG_LIBRARY NAMES ${JPEG_NAMES} )
 
 # handle the QUIETLY and REQUIRED arguments and set JPEG_FOUND to TRUE if
