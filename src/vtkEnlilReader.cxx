@@ -35,7 +35,8 @@
 #include "vtkMultiProcessController.h"
 #include "vtkToolkits.h"
 
-#include "vtk_netcdfcpp.h"
+#include <vtknetcdf/include/netcdf.h>
+#include <vtknetcdf/cxx/netcdfcpp.h>
 #include <iostream>
 
 
