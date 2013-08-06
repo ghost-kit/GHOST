@@ -1,0 +1,16 @@
+
+We would like to thank the zlib team for distributing this library.
+http://www.zlib.net
+
+                      HDF Group Release notes for ZLIB 1.2.5
+                          May 17, 2011
+
+HDF changes:
+   -- Remove files not used by HDF distribution
+
+   -- CMake support added (CMakeLists.txt, src/CMakeLists.txt, and config/cmake folder), which allows for shared or static builds. No files were altered.
+
+User support:
+    Report all problems with this distribution to help@hdfgroup.org.
+    For more information on ZLIB, see:
+        http://www.zlib.net/
