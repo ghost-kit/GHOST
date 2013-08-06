@@ -114,7 +114,11 @@ if(NOT WIN32)
     include(CheckFortran)
 endif()
 
+include(jpeg)
+include(zlib)
+include(szip)
 include(hdf4)
+include(hdf5)
 
 process_dependencies()
 
