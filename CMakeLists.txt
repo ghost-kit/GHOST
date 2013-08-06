@@ -1,6 +1,15 @@
 cmake_minimum_required(VERSION 2.8.9)
 project(GHOST)
 
+###DEVELOPMENT SWITCHES####
+if(JOSH_MURPHY)
+    if(APPLE)
+        set(CMAKE_OSX_DEPLOYMENT_TARGET "10.6")
+        set(CMAKE_OSX_SYSROOT "/Applications/Xcode-4.3.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.6.sdk")
+    endif()
+endif()
+###END DEVELOPMENT SWITCHES###
+
 ###########################################################################################################
 ## This file is the master build file for the GHOST ParaView plugin.  It is partially derived from the   ##
 ## ParaViewSuperbuild CMakeLists.txt file distributed in the ParaViewSuperbuild package.                 ##
@@ -15,6 +24,7 @@ if(APPLE)
 endif()
 
 set(GHOST_CMAKE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/CMake")
+set(GHOST_PROJECTS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/projects")
 set(GHOST_PV_CMAKE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/Utilities/ParaView")
 set(GHOST_BINARY_DIR "${GHOST_BINARY_DIR}")
 
@@ -44,6 +54,11 @@ set(CMAKE_MODULE_PATH
 ###------------------------------------------------------------------------------------------------------
 # setup some standard variables
 set(install_location "${CMAKE_CURRENT_BINARY_DIR}/install")
+set (download_location "${CMAKE_CURRENT_BINARY_DIR}/downloads"
+     CACHE PATH "Location where source tar-balls are (to be) downloaded.")
+mark_as_advanced(download_location)
+
+###------------------------------------------------------------------------------------------------------
 
 if(WIN32)
     set(ldflags)
@@ -85,7 +100,7 @@ string(STRIP "${cflags}"  cflags)
 
 ###-------------------------------------------------------------------------------------------------------
 include(ParaViewModules)
-
+include(dep_versions)
 
 ###-------------------------------------------------------------------------------------------------------
 # Projects to be built
