@@ -32,3 +32,6 @@ add_revision(jpeg
 add_revision(cdf
     URL "http://cdaweb.gsfc.nasa.gov/pub/software/cdf/dist/cdf34_1/unix/cdf34_1-dist-all.tar.gz"
     URL_MD5 85918abf003b8fa5da42244e68fee8f7)
+
+add_revision(shared
+    SOURCE_DIR ${CMAKE_SOURCE_DIR}/shared)

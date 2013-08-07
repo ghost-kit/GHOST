@@ -3,34 +3,10 @@ project(GHOST_Shared)
 
 #Options for building
 option(SHARED_BUILD_IO "Build the IO package" ON )
-option(SHARED_BUILD_DATETIME "Build the DateTime package" OFF )
-option(SHARED_BUILD_CXFORM "Builds the CXFORM package" OFF )
-option(SHARED_USE_FPIC "Use the -fPIC compiler flag to fix various issues" OFF )
-option(SHARED_BUILD_STATIC "BUILD AS STATIC LIBRARY ARCHIVE" OFF)
-
-if(QTCREATOR)
-    set(SHARED_BUILD_IO ON)
-    set(SHARED_BUILD_DATETIME ON)
-    set(SHARED_BUILD_CXFORM ON)
-    set(SHARED_USE_FPIC ON)
-    set(SHARED_BUILD_STATIC OFF)
-
-endif()
-
-if(SHARED_BUILD_STATIC)
-    set(USE_STATIC_LIBRARIES ON CACHE INTERNAL "")
-endif()
-
-if(BUILD_IO)
-    option(IO_USE_APP "Use A++ and/or P++ for array storage" OFF)
-    option(IO_USE_MPI "Build parallel I/O (Warning: leave this off, it's untested)" OFF)
-endif(BUILD_IO)
+option(SHARED_BUILD_DATETIME "Build the DateTime package" ON )
+option(SHARED_BUILD_CXFORM "Builds the CXFORM package" ON )
 
 message(STATUS "Building selected libraries")
-
-if(SHARED_USE_FPIC)
-    set(USE_FPIC true CACHE INTERNAL "")
-endif()
 
 ### IO LIBRARY ###
 if(SHARED_BUILD_IO)
@@ -95,7 +71,9 @@ if(SHARED_BUILD_CXFORM)
     message(STATUS "cxform libraries: ${CXFORM_LIBRARY_DIR}")
 endif()
 
-set(SHARED_INCLUDE_DIR ${IO_INCLUDE_DIR} ${DATETIME_INCLUDE_DIR} ${CXFORM_INCLUDE_DIR} CACHE INTERNAL "")
-set(SHARED_LIBRARY_DIR ${IO_LIBRARY_DIR} ${DATETIME_LIBRARY_DIR} ${CXFORM_LIBRARY_DIR} CACHE INTERNAL "")
-set(SHARED_LIBRARIES ${IO_LIBRARIES} ${DATETIME_LIBRARIES} ${CXFORM_LIBRARIES} CACHE INTERNAL "")
 
+INSTALL(FILES ${DATETIME_INCLUDE_DIR}/DateTime.h  ${IO_INCLUDE_DIR}/Io.h ${CXFORM_INCLUDES}/cxform.h
+        DESTINATION include)
+
+INSTALL(FILES ${PROJECT_BINARY_DIR}/cxform/cxform.a ${PROJECT_BINARY_DIR}/io/io.a ${PROJECT_BINARY_DIR}/DateTime/DateTime.a
+        DESTINATION lib)

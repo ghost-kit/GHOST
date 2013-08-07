@@ -10,9 +10,8 @@ if(JOSH_MURPHY)
 endif()
 
 if(QTCREATOR)
-    set(ENABLE_hdf4  true)
-    set(ENABLE_hdf5 true)
-    set(ENABLE_cdf true)
+    set(ENABLE_shared  true)
+
 endif()
 
 ###END DEVELOPMENT SWITCHES###
@@ -207,6 +206,7 @@ include(szip)
 include(hdf4)
 include(hdf5)
 include(cdf)
+include(shared)
 
 process_dependencies()
 
