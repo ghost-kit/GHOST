@@ -8,6 +8,13 @@ if(JOSH_MURPHY)
         set(CMAKE_OSX_SYSROOT "/Applications/Xcode-4.3.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.6.sdk")
     endif()
 endif()
+
+if(QTCREATOR)
+    set(ENABLE_hdf4  true)
+    set(ENABLE_hdf5 true)
+    set(ENABLE_cdf true)
+endif()
+
 ###END DEVELOPMENT SWITCHES###
 
 ###########################################################################################################
@@ -199,6 +206,7 @@ include(zlib)
 include(szip)
 include(hdf4)
 include(hdf5)
+include(cdf)
 
 process_dependencies()
 

@@ -28,3 +28,7 @@ add_revision(hdf4
 add_revision(jpeg
     URL "http://www.hdfgroup.org/ftp/lib-external/jpeg/src/jpegsrc.v6b.tar.gz"
     URL_MD5 83992a9466af7536da30efe6b51d4064)
+
+add_revision(cdf
+    URL "http://cdaweb.gsfc.nasa.gov/pub/software/cdf/dist/cdf34_1/unix/cdf34_1-dist-all.tar.gz"
+    URL_MD5 85918abf003b8fa5da42244e68fee8f7)
