@@ -11,4 +11,5 @@ add_external_project_or_use_system(
                     --mandir=<INSTALL_DIR>/man
                     --bindir=<INSTALL_DIR/bin
 
+  INSTALL_COMMAND make install
 )
