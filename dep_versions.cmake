@@ -21,6 +21,10 @@ add_revision(hdf5
   URL "http://paraview.org/files/dependencies/hdf5-1.8.9.tar.gz"
   URL_MD5 d1266bb7416ef089400a15cc7c963218)
 
-add_revision(jpeg
+add_revision(hdf4
     URL "http://www.hdfgroup.org/ftp/HDF/HDF_Current/src/hdf-4.2.9.tar.gz"
-    URL_MD5 6af240405f2095e2718f303e7fba1d26)
+    URL_MD5 b49f1fd65e4857c6f6d7da151b96f32a)
+
+add_revision(jpeg
+    URL "http://www.hdfgroup.org/ftp/lib-external/jpeg/src/jpegsrc.v6b.tar.gz"
+    URL_MD5 83992a9466af7536da30efe6b51d4064)

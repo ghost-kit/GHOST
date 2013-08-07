@@ -5,11 +5,12 @@ add_external_project(
 
   # HDF5 1.8.9 has a CMake install rule bug. Fix that.
   PATCH_COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                ${SuperBuild_PROJECTS_DIR}/patches/hdf5.CMakeLists.txt
+                ${GHOST_PV_CMAKE_DIR}/patches/hdf5.CMakeLists.txt
                 <SOURCE_DIR>/CMakeLists.txt
 
   CMAKE_ARGS
-    -DBUILD_SHARED_LIBS:BOOL=TRUE
+    -DBUILD_SHARED_LIBS:BOOL=FALSE
+    -DBUILD_STATIC_LIBS:BOOL=TRUE
     -DHDF5_ENABLE_Z_LIB_SUPPORT:BOOL=TRUE
     -DHDF5_ENABLE_SZIP_SUPPORT:BOOL=TRUE
     -DHDF5_ENABLE_SZIP_ENCODING:BOOL=TRUE

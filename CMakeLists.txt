@@ -37,11 +37,19 @@ elseif(WIN32)
     set(platform "win32")
 endif()
 
+#-----------------------------------------------------------------------------
+# Cross compilation
+set (CROSS_BUILD_STAGE "HOST" CACHE STRING
+  "Cross compilation stage: either HOST(ie no crosscompile)|TOOLS|CROSS")
+set_property(CACHE CROSS_BUILD_STAGE PROPERTY STRINGS
+   "HOST" "TOOLS" "CROSS")
+
 
 ###------------------------------------------------------------------------------------------------------
 # Setup CMAKE_MODULE_PATH
-
+string(TOLOWER "${CROSS_BUILD_STAGE}" lstage)
 set(CMAKE_MODULE_PATH
+  "${GHOST_PROJECTS_DIR}/${platform}/${lstage}"
   "${GHOST_PROJECTS_DIR}/${platform}"
   "${GHOST_PROJECTS_DIR}/common"
   "${GHOST_PROJECTS_DIR}"
@@ -50,11 +58,59 @@ set(CMAKE_MODULE_PATH
   "${CMAKE_CURRENT_SOURCE_DIR}"
   ${CMAKE_MODULE_PATH})
 
+#-----------------------------------------------------------------------------
+if(NOT CROSS_BUILD_STAGE STREQUAL "HOST")
+  include(CrossCompilationMacros)
+
+  #ask user to say what machine they are compiling onto
+  #so we can get the right environment settings
+  query_target_machine()
+
+  if(CROSS_BUILD_STAGE STREQUAL "CROSS")
+    #configure the platform dependent settings
+    #64bit_build, static_only, mpi search path
+    do_cross_platform_settings()
+
+    #find location of hosttools or host build to get compilation tools from
+    find_hosttools()
+  endif()
+endif()
+
+include(CMakeDependentOption)
+
+#-----------------------------------------------------------------------------
+# Collect information about the build platform.
+include(CheckTypeSize)
+
+if(NOT CROSS_BUILD_STAGE STREQUAL "CROSS")
+  check_type_size(void* VOID_PTR_SIZE BUILTIN_TYPES_ONLY)
+  if(VOID_PTR_SIZE EQUAL 8)
+    set(64bit_build TRUE)
+  else()
+    set(64bit_build FALSE)
+  endif()
+endif()
+
+
+# Set suffix to be used for generating archives. This ensures that the package
+# files have decent names that we can directly upload to the website.
+set(package_suffix "${CMAKE_SYSTEM_NAME}")
+if(64bit_build)
+  set(package_suffix "${package_suffix}-64bit")
+else()
+  set(package_suffix "${package_suffix}-32bit")
+endif()
+
+include(paraview_version)
+
+option(TRUST_SVN_CERTIFICATES_AUTOMATICALLY
+  "Trust SVN certificates automatically" ON)
+mark_as_advanced(TRUST_SVN_CERTIFICATES_AUTOMATICALLY)
 
 ###------------------------------------------------------------------------------------------------------
 # setup some standard variables
 set(install_location "${CMAKE_CURRENT_BINARY_DIR}/install")
-set (download_location "${CMAKE_CURRENT_BINARY_DIR}/downloads"
+set(download_location "${CMAKE_CURRENT_BINARY_DIR}/downloads"
      CACHE PATH "Location where source tar-balls are (to be) downloaded.")
 mark_as_advanced(download_location)
 
@@ -98,6 +154,30 @@ string(STRIP "${cppflags}" cppflags)
 string(STRIP "${cxxflags}" cxxflags)
 string(STRIP "${cflags}"  cflags)
 
+#-----------------------------------------------------------------------------
+## Top-level options. These must be limited to a commonly used subset with
+## default values being used for building ParaView binaries.
+#option(PV_COMMAND_LINE_TOOLS_ONLY
+#  "Turn this ON to build command lines tools alone." OFF)
+
+if (WIN32)
+  if ( (NOT "${CMAKE_GENERATOR}" MATCHES "^NMake.*$") OR
+       (NOT "${CMAKE_GENERATOR}" MATCHES "^Visual Studio.*$"))
+  # not use VS environment. We need to be pointed to nmake and devenv paths
+  # since they are needed when building tools (qt, python, etc.)
+    find_program(DEVENV_PATH devenv)
+    find_program(NMAKE_PATH nmake)
+    mark_as_advanced(DEVENV_PATH NMAKE_PATH)
+  endif()
+  # Freetype uses its own build system on win32...
+  find_program(FTJAM_EXECUTABLE jam)
+  mark_as_advanced(FTJAM_EXECUTABLE)
+  if (freetype_ENABLED)
+    if (NOT FTJAM_EXECUTABLE)
+      message(FATAL_ERROR "FreeType's 'jam' build tool not found! Download it from http://sourceforge.net/projects/freetype/files/ftjam/2.5.2/ and set FTJAM_EXECUTABLE appropriately.")
+    endif()
+  endif()
+endif()
 ###-------------------------------------------------------------------------------------------------------
 include(ParaViewModules)
 include(dep_versions)
