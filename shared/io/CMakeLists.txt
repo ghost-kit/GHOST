@@ -8,26 +8,7 @@ endif()
 #FIXME:  Use "find_package" for A++, MPI and Hdf4 rather than these options:
 option (USE_APP "Use A++ and/or P++ for array storage" OFF)
 option (USE_MPI "Build parallel I/O (Warning: leave this off, it's untested)" OFF)
-option (USE_FPIC "Fix build error that required -fPIC" OFF)
-option (USE_STATIC_LIBRARIES "Use Static Libraries to build" ON)
-
-#Build statically if needed
-if(USE_STATIC_LIBRARIES)
-    message("BUILDING WITH STATIC LIBRARIES")
-    set(HDF4_LIBRARIES_NAME "StaticHDF4")
-    set(HDF5_USE_STATIC_LIBRARIES true)
-    set(JPEG_USE_STATIC_LIBRARIES true)
-    set(IO_ZLIB StaticZLIB)
-else()
-    message("BUILDING WITH DYNAMIC LIBRARIES")
-    set(HDF4_LIBRARIES_NAME "HDF4")
-    set(IO_ZLIB ZLIB)
-endif()
-
-#this is the temp fix for fPIC error... just uncomment and rebuild
-if(USE_FPIC)
-   set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} -fPIC)
-endif(USE_FPIC)
+option (USE_MASTER_BUILD "Use Master Build Libraries to build" OFF)
 
 ## Use APP option
 if (USE_APP)
@@ -42,26 +23,55 @@ endif (USE_MPI)
 ########
 # Hdf4 #
 ########################################################################
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/cmake/")
-find_package(${HDF4_LIBRARIES_NAME} REQUIRED)
+if(NOT USE_MASTER_BUILD)
+    set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/cmake/")
+    find_package(HDF4 REQUIRED)
 
-if (HDF4_FOUND)
-  message(STATUS "HDF4 Found!")
-  message(STATUS "Linking HDF4 Libraries: ${HDF4_LIBRARIES}")
-  message(STATUS "EXTRA HDF4 Lirbraries: ${HDF4_EXTRA_LIBRARIES}")
+    message("SETTING AUTO-DETECTED LIBRARIES")
 
-  find_package(JPEG)
-  message(STATUS "JPEG: ${JPEG_LIBRARY}")
+    if(HDF4_FOUND)
+        message(STATUS "HDF4 Found!")
+        message(STATUS "Linking HDF4 Libraries: ${HDF4_LIBRARIES}")
+        message(STATUS "EXTRA HDF4 Lirbraries: ${HDF4_EXTRA_LIBRARIES}")
 
-  find_package(${IO_ZLIB})
-  set(HDF4_LIBRARIES ${HDF4_LIBRARIES} ${ZLIB_LIBRARY})
+        find_package(JPEG)
+        message(STATUS "JPEG: ${JPEG_LIBRARY}")
 
-  add_definitions(-DHAS_HDF4)
-endif (HDF4_FOUND)
+        find_package(ZLIB)
+        set(HDF4_LIBRARIES ${HDF4_LIBRARIES} ${ZLIB_LIBRARY} ${JPEG_LIBRARY})
+
+        add_definitions(-DHAS_HDF4)
+    endif(HDF4_FOUND)
+
+else()
+
+    message("SETTING MASTER BUILD LIBRARIES")
+
+    INCLUDE_DIRECTORIES(${CMAKE_INSTALL_PREFIX}/include)
+
+    set(HDF4_LIBRARIES
+            ${CMAKE_INSTALL_PREFIX}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}df${CMAKE_STATIC_LIBRARY_SUFFIX}
+            ${CMAKE_INSTALL_PREFIX}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}mfhdf${CMAKE_STATIC_LIBRARY_SUFFIX}
+            ${CMAKE_INSTALL_PREFIX}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}sz${CMAKE_STATIC_LIBRARY_SUFFIX}
+            ${CMAKE_INSTALL_PREFIX}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}z${CMAKE_STATIC_LIBRARY_SUFFIX}
+            ${CMAKE_STATIC_LIBRARY_PREFIX}m${CMAKE_STATIC_LIBRARY_SUFFIX}
+        )
+
+    set(JPEG_LIBRARIES
+            ${CMAKE_INSTALL_PREFIX}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}jpeg${CMAKE_STATIC_LIBRARY_SUFFIX}
+        )
+
+
+    add_definitions(-DHAS_HDF4:BOOL=true)
+
+endif()
 
 ########
 # Hdf5 #
 ########################################################################
+if(NOT USE_MASTER_BUILD)
+
+
     find_package(HDF5 COMPONENTS C )
     message(STATUS "IO: Linking HDF5 Libraries: ${HDF5_LIBRARIES} ${PHDF5_LIBRARIES}")
 
@@ -79,16 +89,28 @@ endif (HDF4_FOUND)
         endif (HDF5_IS_PARALLEL)
     endif (HDF5_FOUND)
 
+else()
+
+    set(HDF5_LIBRARIES
+            ${CMAKE_INSTALL_PREFIX}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}hdf5${CMAKE_STATIC_LIBRARY_SUFFIX}
+            ${CMAKE_INSTALL_PREFIX}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}hdf5_hl${CMAKE_STATIC_LIBRARY_SUFFIX}
+            ${CMAKE_INSTALL_PREFIX}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}z${CMAKE_STATIC_LIBRARY_SUFFIX}
+            ${CMAKE_STATIC_LIBRARY_PREFIX}m${CMAKE_STATIC_LIBRARY_SUFFIX}
+        )
+
+endif()
+
 ##############
 # io library #
 ########################################################################
 set( IO_INCLUDES ${HDF4_INCLUDE_DIR} ${HDF5_INCLUDE_DIRS} )
 include_directories(${IO_INCLUDES})
 set( IO_LIBRARIES
+            ${HDF4_LIBRARIES}
+            ${JPEG_LIBRARIES}
             ${HDF5_LIBRARIES}
             ${PHDF5_LIBRARIES}
-            ${HDF4_LIBRARIES}
-            ${JPEG_LIBRARIES} )
+            )
 
 message(STATUS "IO: LINKING LIBRARIES: ${IO_LIBRARIES}")
 
@@ -101,12 +123,16 @@ add_library(io STATIC
             PHdf5.hpp PHdf5.C
             ${IO_CMAKE} )
 
+if(USE_MASTER_BUILD)
+    message("LINKING LIBRARIES for MASTER BUILD")
+    message("Libraries Linked: ${IO_LIBRARIES}")
+    target_link_libraries(io ${IO_LIBRARIES})
+endif()
 
 
 ###########
 # cxxtest #
 ########################################################################
-if(NOT USE_STATIC_LIBRARIES)
     set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${PROJECT_SOURCE_DIR}/cxxtest)
     find_package(CxxTest)
     if(CXXTEST_FOUND)
@@ -117,8 +143,7 @@ if(NOT USE_STATIC_LIBRARIES)
         ADD_LIBRARY(test_ErrorQueue ErrorQueue.h ErrorQueue.C)
         TARGET_LINK_LIBRARIES(testErrorQueue test_ErrorQueue)
         CXXTEST_ADD_TEST(testNoppNompi testNoppNompi.C "${PROJECT_SOURCE_DIR}/testNoppNompi.cxxTest")
-        target_link_libraries(testNoppNompi io ${IO_LIBRARIES} )
-    else ()
+        target_link_libraries(testNoppNompi io ${HDF4_LIBRARIES} ${IO_LIBRARIES} )
+    else()
         message ( STATUS "Could NOT find CxxTest - unit testing not available" )
-    endif ()
-endif()
+    endif()

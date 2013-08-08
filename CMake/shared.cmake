@@ -8,5 +8,6 @@ add_external_project(
         -DSHARED_BUILD_IO:BOOL=true
         -DSHARED_BUILD_DATETIME:BOOL=true
         -DSHARED_BUILD_CXFORM:BOOL=true
+        -DUSE_MASTER_BUILD:BOOL=true
 
 )

@@ -1,4 +1,4 @@
-project(ghost)
+project(ghost_modules)
 cmake_minimum_required(VERSION 2.8.9)
 
 message("BUILDING GHOST!!! IF you got this far, you have won half the battle!")
@@ -7,8 +7,8 @@ if(DEP_INCLUDE_DIR)
     INCLUDE_DIRECTORIES(${DEP_INCLUDE_DIR})
 endif()
 
-##OPTIONS##
-#Turn on or off the components of the tool kit
+###OPTIONS##
+##Turn on or off the components of the tool kit
 option(GHOST_BUILD_LFM "Build the ParaView LFM Reader" ON)
 option(GHOST_BUILD_ENLIL "Build the ParaView ENLIL Reader" ON)
 option(GHOST_BUILD_CDAWEB "Build the ParaView CDAweb Tool Kit" ON)
@@ -30,45 +30,49 @@ include(../Utilities/Git/Git.cmake)
 include(../Utilities/ParaView/ParaViewDetermineVersion.cmake)
 include(CMakeDependentOption)
 
-if(NOT GHOST_MASTER_BUILD)
-    ##shared files
-    set(SHARED_BUILD_DATETIME ON CACHE INTERNAL "")
-    set(SHARED_BUILD_IO ON CACHE INTERNAL "")
-    set(SHARED_BUILD_CXFORM ON CACHE INTERNAL "")
-    set(SHARED_USE_FPIC ON CACHE INTERNAL "")
 
 
-    add_subdirectory("${PROJECT_SOURCE_DIR}/../Shared")
-    INCLUDE_DIRECTORIES(${SHARED_INCLUDE_DIR})
-    set(LIBS ${LIBS} ${SHARED_LIBRARIES})
-else()
+####WORKING ON THIS RIGHT NOW>>>>
+if(GHOST_MASTER_BUILD)
+    message("CMAKE_SOURCE_DIR: ${CMAKE_SOURCE_DIR}")
+    set(HDF4_LIBS
+            ${CMAKE_INSTALL_PREFIX}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}df${CMAKE_STATIC_LIBRARY_SUFFIX}
+            ${CMAKE_INSTALL_PREFIX}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}mfhdf${CMAKE_STATIC_LIBRARY_SUFFIX}
+            ${CMAKE_INSTALL_PREFIX}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}z${CMAKE_STATIC_LIBRARY_SUFFIX}
+            ${CMAKE_INSTALL_PREFIX}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}sz${CMAKE_STATIC_LIBRARY_SUFFIX}
+            ${CMAKE_INSTALL_PREFIX}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}jpeg${CMAKE_STATIC_LIBRARY_SUFFIX}
+            m
 
-###WORKING ON THIS RIGHT NOW>>>>
-    set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/shared/io/cmake ${CMAKE_MODULE_PATH})
-    find_package(StaticHDF4)
-    find_package(HDF5)
-    find_package(CDF)
-
-    message("AUTO LIBS: ${HDF4_LIBRARIES} ${HDF4_EXTRA_LIBRARIES} ${HDF5_LIBRARIES} ${CDF_LIBRARY}")
-
-
-    set(LIBS
-        ${CMAKE_STATIC_LIBRARY_PREFIX}io${CMAKE_STATIC_LIBRARY_SUFFIX};
-        ${CMAKE_STATIC_LIBRARY_PREFIX}DateTime${CMAKE_STATIC_LIBRARY_SUFFIX};
-        ${CMAKE_STATIC_LIBRARY_PREFIX}cxform${CMAKE_STATIC_LIBRARY_SUFFIX};
-        ${CMAKE_STATIC_LIBRARY_PREFIX}cdf${CMAKE_STATIC_LIBRARY_SUFFIX};
-        ${CMAKE_STATIC_LIBRARY_PREFIX}jpeg${CMAKE_STATIC_LIBRARY_SUFFIX};
-        ${CMAKE_STATIC_LIBRARY_PREFIX}z${CMAKE_STATIC_LIBRARY_SUFFIX};
-        ${CMAKE_STATIC_LIBRARY_PREFIX}sz${CMAKE_STATIC_LIBRARY_SUFFIX};
-        ${CMAKE_STATIC_LIBRARY_PREFIX}df${CMAKE_STATIC_LIBRARY_SUFFIX};
-        ${CMAKE_STATIC_LIBRARY_PREFIX}mfhdf${CMAKE_STATIC_LIBRARY_SUFFIX};
-        ${CMAKE_STATIC_LIBRARY_PREFIX}hdf5${CMAKE_STATIC_LIBRARY_SUFFIX};
-        ${CMAKE_STATIC_LIBRARY_PREFIX}hdf5_hl${CMAKE_STATIC_LIBRARY_SUFFIX};
-        m;
         )
 
+    set(HDF5_LIBS
+            ${CMAKE_INSTALL_PREFIX}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}hdf5${CMAKE_STATIC_LIBRARY_SUFFIX}
+            ${CMAKE_INSTALL_PREFIX}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}hdf5_hl${CMAKE_STATIC_LIBRARY_SUFFIX}
+            ${CMAKE_INSTALL_PREFIX}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}sz${CMAKE_STATIC_LIBRARY_SUFFIX}
+            m
+        )
+
+    set(SHARED_LIBS
+            ${CMAKE_INSTALL_PREFIX}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}io${CMAKE_STATIC_LIBRARY_SUFFIX}
+            ${CMAKE_INSTALL_PREFIX}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}DateTime${CMAKE_STATIC_LIBRARY_SUFFIX}
+            ${CMAKE_INSTALL_PREFIX}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}cxform${CMAKE_STATIC_LIBRARY_SUFFIX}
+        )
+
+    set(LIBS
+            ${SHARED_LIBS}
+            ${HDF4_LIBS}
+            ${HDF5_LIBS}
+        )
 
     message("GHOST_LIBS: ${LIBS}")
+
+else()
+
+    message(FATAL_ERROR "NON Master Build is not yet supported")
+
+    find_package(HDF4)
+    find_package(HDF5)
+
 endif()
 
 #Get ParaView (so we can build our module!!)
@@ -112,11 +116,8 @@ endif()
 if(GHOST_BUILD_ENLIL)
     message(STATUS "Building ENLIL Reader Module")
 
-
-        #Need Enlil
+    #Need Enlil
     set(LIBS ${LIBS} vtkNetCDF_cxx)
-
-
     include(enlil/Enlil_Files.cmake)
 
 endif()
@@ -126,12 +127,6 @@ if(GHOST_BUILD_CDAWEB)
     message(STATUS "Building CDAweb ToolKit Module")
 
     #Need CDAweb
-    if(NOT GHOST_MASTER_BUILD)
-        set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_LIST_DIR}/CDAweb/cmake)
-        find_package(CDF REQUIRED)
-        set(LIBS ${LIBS} ${CDF_LIBRARIES})
-    endif()
-
     include(CDAweb/CDAweb_Files.cmake)
 endif()
 
@@ -168,7 +163,7 @@ ADD_PARAVIEW_PLUGIN(GhostKit                ${GHOST_VERSION_FULL}
                    )
 
 
-target_link_libraries(GhostKit ${LIBS})
+target_link_libraries(GhostKit ${HDF4_LIBS} ${HDF5_LIBS} ${SHARED_LIBS})
 
 
 INSTALL(TARGETS GhostKit

@@ -11,6 +11,11 @@ message(STATUS "Building selected libraries")
 ### IO LIBRARY ###
 if(SHARED_BUILD_IO)
     message(STATUS "BUILDING IO")
+
+    if(USE_MASTER_BUILD)
+        set(USE_MASTER_BUILD true CACHE INTERNAL "")
+    endif()
+
     add_subdirectory(${PROJECT_SOURCE_DIR}/io)
 
     GET_DIRECTORY_PROPERTY(IO_INCLUDES DIRECTORY io DEFINITION IO_INCLUDES)
