@@ -13,6 +13,16 @@ add_revision(zlib
   URL_MD5 60df6a37c56e7c1366cca812414f7b85)
 # NOTE: if updating zlib version, fix patch in zlib.cmake
 
+if (UNIX)
+  add_revision(mpi
+    URL "http://paraview.org/files/dependencies/mpich2-1.4.1p1.tar.gz"
+    URL_MD5 b470666749bcb4a0449a072a18e2c204)
+elseif (WIN32)
+  add_revision(mpi
+    URL "http://www.paraview.org/files/dependencies/openmpi-1.4.4.tar.gz"
+    URL_MD5 7253c2a43445fbce2bf4f1dfbac113ad)
+endif()
+
 add_revision(szip
   URL "http://paraview.org/files/dependencies/szip-2.1.tar.gz"
   URL_MD5 902f831bcefb69c6b635374424acbead)
@@ -40,3 +50,6 @@ add_revision(cdf
 
 add_revision(shared
     SOURCE_DIR ${CMAKE_SOURCE_DIR}/shared)
+
+add_revision(ghost
+    SOURCE_DIR ${CMAKE_SOURCE_DIR}/modules)

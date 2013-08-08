@@ -9,5 +9,4 @@ add_external_project(
         -DSHARED_BUILD_DATETIME:BOOL=true
         -DSHARED_BUILD_CXFORM:BOOL=true
 
-
 )
