@@ -130,25 +130,29 @@ if(GHOST_BUILD_CDAWEB)
 endif()
 
 ##gather all built files
-set(SERVER_MAN_XML_LIST ${ENLIL_SM_XML}
+set(SERVER_MAN_XML_LIST ${CDAWebTK_SM_XML}
+                        ${ENLIL_SM_XML}
                         ${LFM_SM_XML}
-                        ${CDAWebTK_SM_XML}
+
     )
 
-set(GUI_RF_XML_LIST     ${ENLIL_GUI_XML}
+set(GUI_RF_XML_LIST
+                        ${ENLIL_GUI_XML}
                         ${LFM_GUI_XML}
     )
 
 set(GUI_INTERFACE_LIST  ${CDAWebTK_PROP_IFACES}
     )
 
-set(SERVER_MAN_SRC_LIST ${ENLIL_SM_SRC}
+set(SERVER_MAN_SRC_LIST ${CDAWebTK_SM_SRC}
+                        ${ENLIL_SM_SRC}
                         ${LFM_SM_SRC}
-                        ${CDAWebTK_SM_SRC}
     )
 
-set(ADD_SRC_LIST        ${ENLIL_SRC}
-                        ${CDAWebTK_SRC}
+set(ADD_SRC_LIST        ${CDAWebTK_SRC}
+                        ${CDAWeb_PROP_SRC}
+                        ${ENLIL_SRC}
+
     )
 
 
@@ -162,7 +166,7 @@ ADD_PARAVIEW_PLUGIN(GhostKit                ${GHOST_VERSION_FULL}
                    )
 
 #BECAUSE OF STRANGE LINKING REQUIREMENTS FOR STATIC LIBRARIES, SOME LIBRARIES NEED TO BE LISTED TWICE.
-set(GHOST_LIBS ${HDF4_LIBS} ${HDF_EXTRA_LIBS} ${SHARED_LIBS} ${CDF_LIBS} ${HDF4_LIBS} ${HDF5_LIBS} ${HDF_EXTRA_LIBS} ${OTHER_REQ_LIBS})
+set(GHOST_LIBS ${HDF4_LIBS} ${HDF_EXTRA_LIBS} ${CDF_LIBS} ${SHARED_LIBS} ${CDF_LIBS} ${HDF4_LIBS} ${HDF5_LIBS} ${HDF_EXTRA_LIBS} ${OTHER_REQ_LIBS})
 
 message("GHOST_LIBS: ${GHOST_LIBS}")
 
