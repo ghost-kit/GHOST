@@ -5,9 +5,6 @@ add_external_project_or_use_system(
   # remove the zconf.h as a patch step.
   PATCH_COMMAND ${CMAKE_COMMAND} -E remove -f <SOURCE_DIR>/zconf.h
 
-  BUILD_COMMAND "${CMAKE_MAKE_PROGRAM} zlibstatic"
-
-  INSTALL_COMMAND "${CMAKE_MAKE_PROGRAM} install"
 
   )
 

@@ -2,11 +2,13 @@ add_external_project(
     hdf4
     DEPENDS jpeg zlib szip
 
-    CMAKE_ARGS
-        -DBUILD_SHARED_LIBS:BOOL=FALSE
-        -DHDF4_ALLOW_EXTERNAL_SUPPORT:BOOL=TRUE
-        -DHDF4_ENABLE_Z_LIB_SUPPORT:BOOL=TRUE
-        -DHDF4_ENABLE_SZIP_SUPPORT:BOOL=TRUE
-        -DHDF4_ENABLE_NETCDF:BOOL=FALSE
+    CONFIGURE_COMMAND
+        <SOURCE_DIR>/configure
+        --prefix=<INSTALL_DIR>
+        --enable-static
+        --enable-production
+        --with-szlib
+        --with-jpeg
+        --with-zlib
 
 )
