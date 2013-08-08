@@ -77,10 +77,13 @@ INSTALL(FILES
             ${PROJECT_BINARY_DIR}/DateTime/${CMAKE_STATIC_LIBRARY_PREFIX}DateTime${CMAKE_STATIC_LIBRARY_SUFFIX}
         DESTINATION lib/)
 
+FILE(GLOB io_files "${PROJECT_SOURCE_DIR}/io/*.hpp")
+
 INSTALL(FILES
         ${PROJECT_SOURCE_DIR}/DateTime/DateTime.h
         ${PROJECT_SOURCE_DIR}/DateTime/DateTime_const.h
-        ${PROJECT_SOURCE_DIR}/io/Io.hpp
+        ${io_files}
+        ${PROJECT_SOURCE_DIR}/io/ErrorQueue.h
         ${PROJECT_SOURCE_DIR}/cxform/cxform.h
         DESTINATION include/)
 

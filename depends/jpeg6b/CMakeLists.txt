@@ -16,7 +16,7 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
 set(TOOL_LIBJPEG_SOURCE jpegsrc.v6b.tar.gz)
 set(TOOL_LIBJPEG_DIR jpeg-6b/)
-set(CONFIG_ADD_OPTIONS "--prefix;${CMAKE_INSTALL_PREFIX};--enable-static;--enable-shared")
+set(CONFIG_ADD_OPTIONS "--prefix;${CMAKE_INSTALL_PREFIX};--enable-static;--disable-shared")
 	if(DEFINED CMAKE_TOOLCHAIN_FILE)
 		add_custom_command(
 			OUTPUT BUILD_LIBJPEG
