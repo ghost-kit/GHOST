@@ -8,6 +8,10 @@
 #   ..
 # endif()
 
+add_revision(boost
+  URL "http://www.paraview.org/files/dependencies/boost_1_50_0.tar.gz"
+  URL_MD5 dbc07ab0254df3dda6300fd737b3f264)
+
 add_revision(zlib
   URL "http://www.paraview.org/files/dependencies/zlib-1.2.7.tar.gz"
   URL_MD5 60df6a37c56e7c1366cca812414f7b85)
