@@ -1,4 +1,4 @@
-project(ghost_modules)
+project(ghost-kit)
 cmake_minimum_required(VERSION 2.8.9)
 
 message("BUILDING GHOST!!! IF you got this far, you have won half the battle!")
@@ -178,9 +178,24 @@ message("GHOST_LIBS: ${GHOST_LIBS}")
 #AWEFUL HACK, but it works.
 target_link_libraries(GhostKit ${GHOST_LIBS} ${GHOST_LIBS})
 
+# Adding 'dist' Make target to deploy plugin that's compatible with
+# KitWare release of ParaView for Mac OS-X.  Requires SuperBuild with
+# GIT_TAG set accordingly in versions.cmake.
+add_custom_target(dist
+    COMMAND ${CMAKE_COMMAND}  -DBINARY_DIR:PATH=${CMAKE_CURRENT_BINARY_DIR}
+                              -DPV_SUPERBUILD_LIST_DIR:PATH=${GHOST_PV_CMAKE_DIR}
+                              -DPARAVIEW_BINARY_DIR:PATH=${ParaView_DIR}
+                              -DQT_LIBRARY_DIR:PATH=${QT_LIBRARY_DIR}
+                              -DTMP_DIR:PATH=${CMAKE_CURRENT_BINARY_DIR}
+                              -DPROJECT_NAME:STRING=${CMAKE_PROJECT_NAME}
+                              -DTARGET_NAME:STRING="GhostKit"
+                              -Dbundle_name:STRING=${CMAKE_INSTALL_PREFIX}/release/ghost_plugin.tgz
+                              -P ${CMAKE_CURRENT_LIST_DIR}/install_ghost_mac.cmake
+)
+
 
 INSTALL(TARGETS GhostKit
         RUNTIME DESTINATION bin
-        LIBRARY DESTINATION plugin
-        ARCHIVE DESTINATION plugin
+        LIBRARY DESTINATION release
+        ARCHIVE DESTINATION release
 )

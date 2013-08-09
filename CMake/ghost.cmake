@@ -9,4 +9,7 @@ add_external_project(
         -DParaView_DIR=${ParaView_DIR}
         -DDEP_INCLUDE_DIR=${install_location}/include
 
+    INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} dist && ${CMAKE_MAKE_PROGRAM} install
+
 )
+
