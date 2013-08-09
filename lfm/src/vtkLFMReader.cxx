@@ -166,7 +166,7 @@ int vtkLFMReader::RequestInformation (vtkInformation* request,
       stringstream ssVarName;
       string varName;
 
-      ssVarName << "rho_" << fluidNumber << "_";
+      ssVarName << "rho_." << fluidNumber;
       varName = ssVarName.str();
       if (hasVariable(variables, varName)){
 	stringstream description;
@@ -175,7 +175,7 @@ int vtkLFMReader::RequestInformation (vtkInformation* request,
       }
       
       ssVarName.str(string());
-      ssVarName << "c_" << fluidNumber << "_";
+      ssVarName << "c_." << fluidNumber;
       varName = ssVarName.str();
       if (hasVariable(variables, varName)){
 	stringstream description;
@@ -184,13 +184,13 @@ int vtkLFMReader::RequestInformation (vtkInformation* request,
       }
 
       ssVarName.str(string());
-      ssVarName << "vx_" << fluidNumber << "_";
+      ssVarName << "vx_." << fluidNumber;
       string xVarName = ssVarName.str();
       ssVarName.str(string());
-      ssVarName << "vy_" << fluidNumber << "_";
+      ssVarName << "vy_." << fluidNumber;
       string yVarName = ssVarName.str();
       ssVarName.str(string());
-      ssVarName << "vz_" << fluidNumber << "_";
+      ssVarName << "vz_." << fluidNumber;
       string zVarName = ssVarName.str();
       if (hasVariable(variables, xVarName) && hasVariable(variables, yVarName) && hasVariable(variables, zVarName)){
 	stringstream description;
@@ -570,7 +570,7 @@ int vtkLFMReader::RequestData(vtkInformation* request,
     ////////////////////////////////////////////////////////////////////////////
 
     // Density scalar
-    ssVarName << "rho_" << fluidNumber << "_";
+    ssVarName << "rho_." << fluidNumber;
     varName = ssVarName.str();
     if (this->CellArrayStatus[describeVariable[varName]]){
       vtkDebugMacro(<< describeVariable[varName] << " Selected");
@@ -587,7 +587,7 @@ int vtkLFMReader::RequestData(vtkInformation* request,
 
     // Density scalar
     ssVarName.str(string());
-    ssVarName << "c_" << fluidNumber << "_";
+    ssVarName << "c_." << fluidNumber;
     varName = ssVarName.str();
     if (this->CellArrayStatus[describeVariable[varName]]){
       vtkDebugMacro(<< describeVariable[varName] << " Selected");
@@ -605,13 +605,13 @@ int vtkLFMReader::RequestData(vtkInformation* request,
     ////////////////////////////////////////////////////////////////////////////
     // Velocity Vector
     ssVarName.str(string());
-    ssVarName << "vx_" << fluidNumber << "_";
+    ssVarName << "vx_." << fluidNumber;
     string xVarName = ssVarName.str();
     ssVarName.str(string());
-    ssVarName << "vy_" << fluidNumber << "_";
+    ssVarName << "vy_." << fluidNumber;
     string yVarName = ssVarName.str();
     ssVarName.str(string());
-    ssVarName << "vz_" << fluidNumber << "_";
+    ssVarName << "vz_." << fluidNumber;
     string zVarName = ssVarName.str();
     if(this->CellArrayStatus[describeVariable[xVarName]]){
       vtkDebugMacro(<< describeVariable[xVarName] << " Selected");
