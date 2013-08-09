@@ -2,7 +2,7 @@
 
 add_external_project(
     ghost
-    DEPENDS shared
+    DEPENDS shared boost
 
     CMAKE_ARGS
         -DGHOST_MASTER_BUILD:BOOL=true
