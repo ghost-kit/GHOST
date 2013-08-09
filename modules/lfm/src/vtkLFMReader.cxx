@@ -166,7 +166,7 @@ int vtkLFMReader::RequestInformation (vtkInformation* request,
       stringstream ssVarName;
       string varName;
 
-      ssVarName << "rho_" << fluidNumber << "_";
+      ssVarName << "rho_." << fluidNumber;
       varName = ssVarName.str();
       if (hasVariable(variables, varName)){
 	stringstream description;
@@ -175,7 +175,7 @@ int vtkLFMReader::RequestInformation (vtkInformation* request,
       }
       
       ssVarName.str(string());
-      ssVarName << "c_" << fluidNumber << "_";
+      ssVarName << "c_." << fluidNumber;
       varName = ssVarName.str();
       if (hasVariable(variables, varName)){
 	stringstream description;
@@ -184,13 +184,13 @@ int vtkLFMReader::RequestInformation (vtkInformation* request,
       }
 
       ssVarName.str(string());
-      ssVarName << "vx_" << fluidNumber << "_";
+      ssVarName << "vx_." << fluidNumber;
       string xVarName = ssVarName.str();
       ssVarName.str(string());
-      ssVarName << "vy_" << fluidNumber << "_";
+      ssVarName << "vy_." << fluidNumber;
       string yVarName = ssVarName.str();
       ssVarName.str(string());
-      ssVarName << "vz_" << fluidNumber << "_";
+      ssVarName << "vz_." << fluidNumber;
       string zVarName = ssVarName.str();
       if (hasVariable(variables, xVarName) && hasVariable(variables, yVarName) && hasVariable(variables, zVarName)){
 	stringstream description;
@@ -570,11 +570,12 @@ int vtkLFMReader::RequestData(vtkInformation* request,
     ////////////////////////////////////////////////////////////////////////////
 
     // Density scalar
-    ssVarName << "rho_" << fluidNumber << "_";
+    ssVarName << "rho_." << fluidNumber;
     varName = ssVarName.str();
     if (this->CellArrayStatus[describeVariable[varName]]){
       vtkDebugMacro(<< describeVariable[varName] << " Selected");
       float *rho = new float [nPoints];
+      io->readVariable(varName, "", lfmGridInfo, rho);
       vtkFloatArray *multifluid_rho = NULL;
       multifluid_rho = point2CellCenteredScalar(nip1,njp1,nkp1,rho);
       multifluid_rho->SetName(describeVariable[varName].c_str());
@@ -586,11 +587,12 @@ int vtkLFMReader::RequestData(vtkInformation* request,
 
     // Density scalar
     ssVarName.str(string());
-    ssVarName << "c_" << fluidNumber << "_";
+    ssVarName << "c_." << fluidNumber;
     varName = ssVarName.str();
     if (this->CellArrayStatus[describeVariable[varName]]){
       vtkDebugMacro(<< describeVariable[varName] << " Selected");
       float *c = new float [nPoints];
+      io->readVariable(varName, "", lfmGridInfo, c);
       vtkFloatArray *multifluid_c = NULL;
       multifluid_c = point2CellCenteredScalar(nip1,njp1,nkp1,c);
       multifluid_c->SetName(describeVariable[varName].c_str());
@@ -603,13 +605,13 @@ int vtkLFMReader::RequestData(vtkInformation* request,
     ////////////////////////////////////////////////////////////////////////////
     // Velocity Vector
     ssVarName.str(string());
-    ssVarName << "vx_" << fluidNumber << "_";
+    ssVarName << "vx_." << fluidNumber;
     string xVarName = ssVarName.str();
     ssVarName.str(string());
-    ssVarName << "vy_" << fluidNumber << "_";
+    ssVarName << "vy_." << fluidNumber;
     string yVarName = ssVarName.str();
     ssVarName.str(string());
-    ssVarName << "vz_" << fluidNumber << "_";
+    ssVarName << "vz_." << fluidNumber;
     string zVarName = ssVarName.str();
     if(this->CellArrayStatus[describeVariable[xVarName]]){
       vtkDebugMacro(<< describeVariable[xVarName] << " Selected");

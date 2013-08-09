@@ -133,6 +133,7 @@ endif()
 ###########
 # cxxtest #
 ########################################################################
+<<<<<<< HEAD
     set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${PROJECT_SOURCE_DIR}/cxxtest)
     find_package(CxxTest)
     if(CXXTEST_FOUND)
@@ -147,3 +148,20 @@ endif()
     else()
         message ( STATUS "Could NOT find CxxTest - unit testing not available" )
     endif()
+=======
+set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${PROJECT_SOURCE_DIR}/../../Utilities/cxxtest)
+find_package(CxxTest)
+if(CXXTEST_FOUND)
+    message(STATUS "cxxtest Found!")
+    set(CXXTEST_USE_PYTHON TRUE)
+    include_directories(${CXXTEST_INCLUDE_DIR})
+    enable_testing()
+    CXXTEST_ADD_TEST(testErrorQueue testErrorQueue.C "${PROJECT_SOURCE_DIR}/testErrorQueue.cxxTest")
+    ADD_LIBRARY(test_ErrorQueue ErrorQueue.h ErrorQueue.C)
+    TARGET_LINK_LIBRARIES(testErrorQueue test_ErrorQueue)
+    CXXTEST_ADD_TEST(testNoppNompi testNoppNompi.C "${PROJECT_SOURCE_DIR}/testNoppNompi.cxxTest")
+    target_link_libraries(testNoppNompi io ${IO_LIBRARIES} )
+else ()
+    message ( STATUS "Could NOT find CxxTest - unit testing not available" )
+endif ()
+>>>>>>> master

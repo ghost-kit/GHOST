@@ -15,8 +15,10 @@ add_library(
 
 INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR})
 
+set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${PROJECT_SOURCE_DIR}/../../Utilities/cxxtest)
 find_package(CxxTest)
 if(CXXTEST_FOUND)
+  message(STATUS "cxxtest Found!")
   set(CXXTEST_USE_PYTHON TRUE)
   include_directories(${CXXTEST_INCLUDE_DIR})
   enable_testing()
