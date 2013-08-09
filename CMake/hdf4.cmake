@@ -7,8 +7,9 @@ add_external_project(
         --prefix=<INSTALL_DIR>
         --enable-static
         --enable-production
-        --with-szlib
-        --with-jpeg
-        --with-zlib
+        --disable-fortran
+        --with-szlib=${install_location}/lib
+        --with-jpeg=${install_location}/lib
+        --with-zlib=${install_location}/lib
 
 )

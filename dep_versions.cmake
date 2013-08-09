@@ -39,14 +39,10 @@ add_revision(hdf4
     URL "http://www.hdfgroup.org/ftp/HDF/HDF_Current/src/hdf-4.2.9.tar.gz"
     URL_MD5 b49f1fd65e4857c6f6d7da151b96f32a)
 
-if(UNIX)
-    add_revision(jpeg
-        SOURCE_DIR ${CMAKE_SOURCE_DIR}/depends/jpeg6b)
-else()
-    add_revision(jpeg
+
+add_revision(jpeg
         URL "http://www.hdfgroup.org/ftp/lib-external/jpeg/src/jpegsrc.v6b.tar.gz"
         URL_MD5 83992a9466af7536da30efe6b51d4064)
-endif()
 
 add_revision(cdf
     URL "http://cdaweb.gsfc.nasa.gov/pub/software/cdf/dist/cdf34_1/unix/cdf34_1-dist-all.tar.gz"
