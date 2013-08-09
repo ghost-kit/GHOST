@@ -575,6 +575,7 @@ int vtkLFMReader::RequestData(vtkInformation* request,
     if (this->CellArrayStatus[describeVariable[varName]]){
       vtkDebugMacro(<< describeVariable[varName] << " Selected");
       float *rho = new float [nPoints];
+      io->readVariable(varName, "", lfmGridInfo, rho);
       vtkFloatArray *multifluid_rho = NULL;
       multifluid_rho = point2CellCenteredScalar(nip1,njp1,nkp1,rho);
       multifluid_rho->SetName(describeVariable[varName].c_str());
@@ -591,6 +592,7 @@ int vtkLFMReader::RequestData(vtkInformation* request,
     if (this->CellArrayStatus[describeVariable[varName]]){
       vtkDebugMacro(<< describeVariable[varName] << " Selected");
       float *c = new float [nPoints];
+      io->readVariable(varName, "", lfmGridInfo, c);
       vtkFloatArray *multifluid_c = NULL;
       multifluid_c = point2CellCenteredScalar(nip1,njp1,nkp1,c);
       multifluid_c->SetName(describeVariable[varName].c_str());
