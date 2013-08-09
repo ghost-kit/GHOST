@@ -52,4 +52,4 @@ add_revision(shared
     SOURCE_DIR ${CMAKE_SOURCE_DIR}/shared)
 
 add_revision(ghost
-    SOURCE_DIR ${CMAKE_SOURCE_DIR}/modules)
+    SOURCE_DIR ${CMAKE_SOURCE_DIR}/ghost-kit)
