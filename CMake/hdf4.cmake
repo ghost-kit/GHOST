@@ -8,8 +8,8 @@ add_external_project(
         --enable-static
         --enable-production
         --disable-fortran
-        --with-szlib=${install_location}/lib
-        --with-jpeg=${install_location}/lib
-        --with-zlib=${install_location}/lib
+        --with-szlib=${install_location}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}sz${CMAKE_STATIC_LIBRARY_SUFFIX}
+        --with-jpeg=${install_location}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}jpeg${CMAKE_STATIC_LIBRARY_SUFFIX}
+        --with-zlib=${install_location}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}z${CMAKE_STATIC_LIBRARY_SUFFIX}
 
 )

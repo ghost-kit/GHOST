@@ -5,9 +5,10 @@ project(GHOST)
 if(JOSH_MURPHY)
     if(APPLE)
         set(CMAKE_OSX_DEPLOYMENT_TARGET "10.6")
-        set(CMAKE_OSX_SYSROOT "/Applications/Xcode-4.3.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.6.sdk")
-        #set(ParaView_DIR /Users/jjm390/Developer/ParaView/build401/paraview/src/paraview-build)
-	set(ParaView_DIR /Volumes/Data/Development/ParaView/superbuild/paraview/src/paraview-build)	
+        set(CMAKE_OSX_SYSROOT "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.6.sdk")
+        set(ParaView_DIR /Users/jjm390/Developer/ParaView/build401/paraview/src/paraview-build)
+        #set(ParaView_DIR /Volumes/Data/Development/ParaView/superbuild/paraview/src/paraview-build)
+
      elseif(UNIX)
         set(ParaView_DIR /home/jjm390/Developer/ParaView/build401/paraview/src/paraview-build)
     endif()
@@ -24,6 +25,7 @@ endif()
 ###########################################################################################################
 ## This file is the master build file for the GHOST ParaView plugin.  It is partially derived from the   ##
 ## ParaViewSuperbuild CMakeLists.txt file distributed in the ParaViewSuperbuild package.                 ##
+## See licence file in licence subdirectory								 ##
 ###########################################################################################################
 
 
@@ -181,15 +183,9 @@ if (WIN32)
     find_program(NMAKE_PATH nmake)
     mark_as_advanced(DEVENV_PATH NMAKE_PATH)
   endif()
-  # Freetype uses its own build system on win32...
-  find_program(FTJAM_EXECUTABLE jam)
-  mark_as_advanced(FTJAM_EXECUTABLE)
-  if (freetype_ENABLED)
-    if (NOT FTJAM_EXECUTABLE)
-      message(FATAL_ERROR "FreeType's 'jam' build tool not found! Download it from http://sourceforge.net/projects/freetype/files/ftjam/2.5.2/ and set FTJAM_EXECUTABLE appropriately.")
-    endif()
-  endif()
+
 endif()
+
 ###-------------------------------------------------------------------------------------------------------
 include(ParaViewModules)
 include(dep_versions)
