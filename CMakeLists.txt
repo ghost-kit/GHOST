@@ -181,14 +181,6 @@ if (WIN32)
     find_program(NMAKE_PATH nmake)
     mark_as_advanced(DEVENV_PATH NMAKE_PATH)
   endif()
-  # Freetype uses its own build system on win32...
-  find_program(FTJAM_EXECUTABLE jam)
-  mark_as_advanced(FTJAM_EXECUTABLE)
-  if (freetype_ENABLED)
-    if (NOT FTJAM_EXECUTABLE)
-      message(FATAL_ERROR "FreeType's 'jam' build tool not found! Download it from http://sourceforge.net/projects/freetype/files/ftjam/2.5.2/ and set FTJAM_EXECUTABLE appropriately.")
-    endif()
-  endif()
 endif()
 ###-------------------------------------------------------------------------------------------------------
 include(ParaViewModules)
@@ -216,6 +208,9 @@ include(hdf5)
 include(cdf)
 include(shared)
 include(ghost)
+
+#turn on ghost
+set(ENABLE_ghost true)
 
 process_dependencies()
 
