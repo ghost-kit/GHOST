@@ -19,6 +19,7 @@ execute_process(COMMAND ${CMAKE_COMMAND} -E copy ${BINARY_DIR}/lib/${SHARED_LIBR
 
 #This is hacked for MacD108... not sure why it all works on other machines, but not this one...
 if (APPLE)
+    message("FIXING UP THE PLUGIN")
   execute_process(
       COMMAND ${PV_SUPERBUILD_LIST_DIR}/apple/fixup_plugin.py
             # The directory containing the plugin dylibs or the plugin itself.
@@ -35,8 +36,9 @@ if (APPLE)
             "libhdf5.7.3.0.dylib=@executable_path/../Libraries/libhdf5.1.8.9.dylib"
             "libhdf5_hl.7.3.0.dylib=@executable_path/../Libraries/libhdf5.1.8.9.dylib"
             )
+    message("FIXUP THEORETICALLY COMPLETE")
 endif()
 
 execute_process(
-  COMMAND ${CMAKE_COMMAND} -E tar cvfz ${bundle_name} ${PROJECT_NAME}
+  COMMAND ${CMAKE_COMMAND} -E tar cvzf ${bundle_name} ${PROJECT_NAME}
   WORKING_DIRECTORY ${TMP_DIR})

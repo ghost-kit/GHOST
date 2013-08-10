@@ -182,7 +182,8 @@ target_link_libraries(GhostKit ${GHOST_LIBS} ${GHOST_LIBS})
 # KitWare release of ParaView for Mac OS-X.  Requires SuperBuild with
 # GIT_TAG set accordingly in versions.cmake.
 add_custom_target(dist
-    COMMAND ${CMAKE_COMMAND}  -DBINARY_DIR:PATH=${CMAKE_CURRENT_BINARY_DIR}
+    COMMAND ${CMAKE_COMMAND}  -E make_directory ${CMAKE_INSTALL_PREFIX}/release &&
+            ${CMAKE_COMMAND}  -DBINARY_DIR:PATH=${CMAKE_CURRENT_BINARY_DIR}
                               -DPV_SUPERBUILD_LIST_DIR:PATH=${GHOST_PV_CMAKE_DIR}
                               -DPARAVIEW_BINARY_DIR:PATH=${ParaView_DIR}
                               -DQT_LIBRARY_DIR:PATH=${QT_LIBRARY_DIR}
@@ -190,7 +191,8 @@ add_custom_target(dist
                               -DPROJECT_NAME:STRING=${CMAKE_PROJECT_NAME}
                               -DTARGET_NAME:STRING="GhostKit"
                               -Dbundle_name:STRING=${CMAKE_INSTALL_PREFIX}/release/ghost_plugin.tgz
-                              -P ${CMAKE_CURRENT_LIST_DIR}/install_ghost_mac.cmake
+                              -P ${CMAKE_CURRENT_LIST_DIR}/install_ghost_mac.cmake &&
+            ${CMAKE_COMMAND}  -E copy ${CMAKE_CURRENT_BINARY_DIR}/lib/* ${CMAKE_INSTALL_PREFIX}/release/
 )
 
 
