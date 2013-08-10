@@ -183,7 +183,6 @@ if (WIN32)
     find_program(NMAKE_PATH nmake)
     mark_as_advanced(DEVENV_PATH NMAKE_PATH)
   endif()
-
 endif()
 
 ###-------------------------------------------------------------------------------------------------------
@@ -212,6 +211,9 @@ include(hdf5)
 include(cdf)
 include(shared)
 include(ghost)
+
+#turn on ghost
+set(ENABLE_ghost true)
 
 process_dependencies()
 
