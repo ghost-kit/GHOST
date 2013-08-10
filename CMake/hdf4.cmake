@@ -3,13 +3,16 @@ add_external_project(
     DEPENDS jpeg zlib szip
 
     CONFIGURE_COMMAND
+
         <SOURCE_DIR>/configure
+        CFLAGS=-I${install_location}/include
+        CXXFLAGS=-I${install_location}/include
+        LDFLAGS=-L${install_location}/lib
         --prefix=<INSTALL_DIR>
+
+        --with-sysroot=${CMAKE_OSX_SYSROOT}
         --enable-static
         --enable-production
         --disable-fortran
-        --with-szlib=${install_location}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}sz${CMAKE_STATIC_LIBRARY_SUFFIX}
-        --with-jpeg=${install_location}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}jpeg${CMAKE_STATIC_LIBRARY_SUFFIX}
-        --with-zlib=${install_location}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}z${CMAKE_STATIC_LIBRARY_SUFFIX}
-
-)
+        --with-szlib
+      )

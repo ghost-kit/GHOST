@@ -19,6 +19,3 @@ add_external_project_step(patch_zlib_cmakelists
 DEPENDEES update # do after update
 DEPENDERS patch  # do before patch
 )
-
-add_external_project_step(remove_shared_libs
-    COMMAND ${CMAKE_COMMAND} -E remove -f ${install_location}/lib/libz.so*)
