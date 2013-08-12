@@ -142,3 +142,11 @@ ADD_PARAVIEW_PLUGIN(GhostKit                ${GHOST_VERSION_FULL}
 
 
 target_link_libraries(GhostKit ${LIBS})
+
+# call fixup_plugin.py for APPLE library locations.
+add_custom_target(dist
+    COMMAND ${CMAKE_COMMAND}  -DLIB_DIR:PATH=${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}
+                              -DPARAVIEW_BINARY_DIR:PATH=${ParaView_DIR}
+			      -DQT_LIBRARY_DIR:PATH=${QT_LIBRARY_DIR}
+                              -P ${CMAKE_CURRENT_LIST_DIR}/install_GhostKit.cmake
+)

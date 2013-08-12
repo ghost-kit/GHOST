@@ -56,14 +56,3 @@ Target_LINK_LIBRARIES(vtkLFMReader
   ${SHARED_LIBRARIES}
 #  vtkhdf5
 )
-
-
-add_custom_target(dist
-    COMMAND ${CMAKE_COMMAND}  -DBINARY_DIR:PATH=${CMAKE_CURRENT_BINARY_DIR}
-                              -DPV_SUPERBUILD_LIST_DIR:PATH=${ParaView_SuperBuild_DIR}/Projects
-                              -DPARAVIEW_BINARY_DIR:PATH=${ParaView_DIR}
- 			      -DQT_LIBRARY_DIR:PATH=${QT_LIBRARY_DIR}
-                              -DTMP_DIR:PATH=${CMAKE_CURRENT_BINARY_DIR}
-                              -Dbundle_name:STRING=${CMAKE_CURRENT_BINARY_DIR}/vtkLFMReader.tgz
-                              -P ${CMAKE_CURRENT_LIST_DIR}/install_vtkLFMReader.cmake
-)
