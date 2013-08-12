@@ -690,24 +690,31 @@ void vtkLFMReader::SetPointArrayStatus(const char* PointArray, int status)
 //----------------------------------------------------------------
 void vtkLFMReader::addScalarInformation(const std::string &scalarName, const std::string &scalarDescription)
 {
-  this->describeVariable[scalarName] = scalarDescription;
+  // only add unique keys (dont add duplicate entries)
+  if (this->CellArrayStatus.count( scalarDescription ) == 0){
   
-  this->CellArrayName.push_back(scalarDescription);
-  this->CellArrayStatus[scalarDescription] = 1;
-  vtkDebugMacro(<< scalarName << ": " << scalarDescription);
+    this->describeVariable[scalarName] = scalarDescription;
+
+    this->CellArrayName.push_back(scalarDescription);
+    this->CellArrayStatus[scalarDescription] = 1;
+    vtkDebugMacro(<< scalarName << ": " << scalarDescription);
+  }
 }
 
 //----------------------------------------------------------------
 void vtkLFMReader::addVectorInformation(const std::string &x, const std::string &y, const std::string &z,
 					const std::string &vectorDescription)
 {
-  this->describeVariable[x] = vectorDescription;
-  this->describeVariable[y] = vectorDescription;
-  this->describeVariable[z] = vectorDescription;
-  
-  this->CellArrayName.push_back(vectorDescription);
-  this->CellArrayStatus[vectorDescription] = 1;
-  vtkDebugMacro(<< x << "," << y << "," << z << ": " << vectorDescription);
+  // only add unique keys (dont add duplicate entries)
+  if (this->CellArrayStatus.count( vectorDescription ) == 0){
+    this->describeVariable[x] = vectorDescription;
+    this->describeVariable[y] = vectorDescription;
+    this->describeVariable[z] = vectorDescription;
+
+    this->CellArrayName.push_back(vectorDescription);
+    this->CellArrayStatus[vectorDescription] = 1;
+    vtkDebugMacro(<< x << "," << y << "," << z << ": " << vectorDescription);
+  }
 }
 //----------------------------------------------------------------
 void vtkLFMReader::PrintSelf(ostream &os, vtkIndent indent)
