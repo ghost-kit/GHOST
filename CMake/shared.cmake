@@ -5,9 +5,9 @@ add_external_project(
     DEPENDS hdf4 hdf5 cdf
 
     CMAKE_ARGS
-        -DSHARED_BUILD_IO:BOOL=true
-        -DSHARED_BUILD_DATETIME:BOOL=true
-        -DSHARED_BUILD_CXFORM:BOOL=true
-        -DUSE_MASTER_BUILD:BOOL=true
+        -DSHARED_BUILD_IO=true
+        -DSHARED_BUILD_DATETIME=true
+        -DSHARED_BUILD_CXFORM=true
+        -DUSE_MASTER_BUILD=true
 
 )

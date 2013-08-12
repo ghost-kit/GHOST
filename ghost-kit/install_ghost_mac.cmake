@@ -17,7 +17,6 @@ execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${TMP_DIR}/${PROJECT_
 execute_process(COMMAND ${CMAKE_COMMAND} -E copy ${BINARY_DIR}/lib/${SHARED_LIBRARY_PREFIX}${TARGET_NAME}${SHARED_LIBRARY_SUFFIX} ${TMP_DIR}/${PROJECT_NAME})
 
 
-#This is hacked for MacD108... not sure why it all works on other machines, but not this one...
 if (APPLE)
     message("FIXING UP THE PLUGIN")
   execute_process(
@@ -26,11 +25,11 @@ if (APPLE)
             ${TMP_DIR}/${PROJECT_NAME}/${SHARED_LIBRARY_PREFIX}${TARGET_NAME}${SHARED_LIBRARY_SUFFIX}
             # names to replace (in order)
             "${PARAVIEW_BINARY_DIR}/lib/=@executable_path/../Libraries/"
-            "/Volumes/Data/Development/SwFt/SuperBuild/paraview/src/paraview-build/lib/libavformat.dylib=@executable_path/../Libraries/libavformat.52.64.2.dylib"
-            "/Volumes/Data/Development/SwFt/SuperBuild/paraview/src/paraview-build/lib/libavcodec.dylib=@executable_path/../Libraries/libavcodec.52.72.2.dylib"
-            "/Volumes/Data/Development/SwFt/SuperBuild/paraview/src/paraview-build/lib/libavutil.dylib=@executable_path/../Libraries/libavutil.50.15.1.dylib"
-            "/Volumes/Data/Development/SwFt/SuperBuild/paraview/src/paraview-build/lib/libswscale.dylib=@executable_path/../Libraries/libswscale.0.11.0.dylib"
-            "/Volumes/Data/Development/SwFt/SuperBuild/paraview/src/paraview-build/lib/=@executable_path/../Libraries/"
+            "${PARAVIEW_BINARY_DIR}/lib/libavformat.dylib=@executable_path/../Libraries/libavformat.52.64.2.dylib"
+            "${PARAVIEW_BINARY_DIR}/lib/libavcodec.dylib=@executable_path/../Libraries/libavcodec.52.72.2.dylib"
+            "${PARAVIEW_BINARY_DIR}/lib/libavutil.dylib=@executable_path/../Libraries/libavutil.50.15.1.dylib"
+            "${PARAVIEW_BINARY_DIR}/lib/libswscale.dylib=@executable_path/../Libraries/libswscale.0.11.0.dylib"
+            "${PARAVIEW_BINARY_DIR}/lib/=@executable_path/../Libraries/"
             "${QT_LIBRARY_DIR}/Qt=@executable_path/../Frameworks/Qt"
             "${QT_LIBRARY_DIR}/=@executable_path/../Libraries/"
             "libhdf5.7.3.0.dylib=@executable_path/../Libraries/libhdf5.1.8.9.dylib"

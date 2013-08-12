@@ -195,9 +195,12 @@ add_custom_target(dist
             ${CMAKE_COMMAND}  -E copy ${CMAKE_CURRENT_BINARY_DIR}/lib/* ${CMAKE_INSTALL_PREFIX}/release/
 )
 
+if(UNIX AND NOT APPLE)
 
-INSTALL(TARGETS GhostKit
-        RUNTIME DESTINATION bin
-        LIBRARY DESTINATION release
-        ARCHIVE DESTINATION release
-)
+    INSTALL(TARGETS GhostKit
+            RUNTIME DESTINATION bin
+            LIBRARY DESTINATION release
+            ARCHIVE DESTINATION release
+    )
+
+endif()

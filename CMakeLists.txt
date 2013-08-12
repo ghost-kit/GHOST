@@ -5,18 +5,13 @@ project(GHOST)
 if(JOSH_MURPHY)
     if(APPLE)
         set(CMAKE_OSX_DEPLOYMENT_TARGET "10.6")
-        set(CMAKE_OSX_SYSROOT "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.6.sdk")
-        set(ParaView_DIR /Users/jjm390/Developer/ParaView/build401/paraview/src/paraview-build)
-        #set(ParaView_DIR /Volumes/Data/Development/ParaView/superbuild/paraview/src/paraview-build)
+        set(CMAKE_OSX_SYSROOT "/Applications/Xcode-4.3.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.6.sdk")
+        #set(ParaView_DIR /Users/jjm390/Developer/ParaView/build401/paraview/src/paraview-build)
+        set(ParaView_DIR /Volumes/Data/Development/ParaView/superbuild/paraview/src/paraview-build)
 
      elseif(UNIX)
         set(ParaView_DIR /home/jjm390/Developer/ParaView/build401/paraview/src/paraview-build)
     endif()
-
-endif()
-
-if(QTCREATOR)
-    set(ENABLE_ghost  true)
 
 endif()
 
@@ -36,10 +31,10 @@ if(APPLE)
     endif()
 endif()
 
-set(GHOST_CMAKE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/CMake")
-set(GHOST_DEPEND_DIR "${CMAKE_CURRENT_SOURCE_DIR}/depends")
-set(GHOST_PROJECTS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/projects")
-set(GHOST_PV_CMAKE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/Utilities/ParaView")
+set(GHOST_CMAKE_DIR "${CMAKE_CURRENT_LIST_DIR}/CMake")
+set(GHOST_DEPEND_DIR "${CMAKE_CURRENT_LIST_DIR}/depends")
+set(GHOST_PROJECTS_DIR "${CMAKE_CURRENT_LIST_DIR}/projects")
+set(GHOST_PV_CMAKE_DIR "${CMAKE_CURRENT_LIST_DIR}/Utilities/ParaView")
 set(GHOST_BINARY_DIR "${GHOST_BINARY_DIR}")
 
 set(platform)
