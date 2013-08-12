@@ -553,7 +553,7 @@ int vtkLFMReader::RequestData(vtkInformation* request,
       avgEy=NULL;
       delete[] avgEz;
       avgEz=NULL;
-      cellVector_avge->SetName(describeVariable["avgEi_"].c_str());
+      cellVector_avge->SetName(describeVariable["avgEi"].c_str());
       output->GetPointData()->AddArray(cellVector_avge);
       cellVector_avge->Delete();
     }
