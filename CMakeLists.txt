@@ -211,5 +211,3 @@ include(ghost)
 set(ENABLE_ghost true)
 
 process_dependencies()
-
-
