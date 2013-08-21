@@ -226,6 +226,8 @@ int vtkLFMReader::RequestInformation (vtkInformation* request,
   // Set Time information
   /********************************************************************/
 
+  this->TimeStepValues.clear();
+
   // Currently 1 time step per file.  Append to a vector in case we want to extend this in the future.
   if (hasAttribute(attributes, "mjd")){
     // modified julian date

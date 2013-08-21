@@ -610,8 +610,13 @@ bool Hdf4::close(void)
         }
       }
 
-      if( ERRORCHECK(SDend(sdId)) )
+      if( ERRORCHECK(SDend(sdId)) ){
 	hasError = true;
+      }
+      else{
+	// Make sure we don't try and close the same dataset twice!
+	sdId = -1;
+      }
       sdId = -999;
     }
   }
