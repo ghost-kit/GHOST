@@ -13,6 +13,10 @@ if(JOSH_MURPHY)
         set(ParaView_DIR /home/jjm390/Developer/ParaView/build401/paraview/src/paraview-build)
     endif()
 
+    file(GLOB_RECURSE AllFiles *)
+    message(STATUS "${AllFiles}")
+    set(QTCREATOR true)
+
 endif()
 
 ###END DEVELOPMENT SWITCHES###
@@ -211,3 +215,9 @@ include(ghost)
 set(ENABLE_ghost true)
 
 process_dependencies()
+
+if(QTCREATOR)
+    add_library(none STATIC ${AllFiles})
+endif()
+
+

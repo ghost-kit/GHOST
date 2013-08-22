@@ -75,8 +75,6 @@ else()
 
     message(FATAL_ERROR "NON Master Build is not yet supported")
 
-    find_package(HDF4)
-    find_package(HDF5)
 
 endif()
 
