@@ -9,9 +9,12 @@ if(QTCREATOR)
 #to build the final product.
 #It is not recomended to build the final binary with this setting on.
 
-    FILE(GLOB HEADERS  "src/*.h")
-    FILE(GLOB XMLFILES "xml/*.xml")
-    set(ParaView_DIR ../../ParaView/build401/paraview/src/paraview-build)
+    set(ParaView_DIR /Volumes/Data/Development/ParaView/local/build)
+    set(INSTALL_DIR /Volumes/Data/Development/GHOST/GHOST-build/install)
+    include_directories(BEFORE ${INSTALL_DIR}/include)
+
+    link_directories( ${INSTALL_DIR}/lib)
+
 endif()
 
 ##########################################################################
@@ -25,37 +28,9 @@ if( PREFIX )
 endif( PREFIX )
 
 #convienience funciton for ME. :)
-if( BUILD_MAC )
-  message(WARNING ": Your have selected to build on Joshua Murphy's Development Mac [At LASP], so I hope that is where you are!!!")
-  message(STATUS "Changing your compilers Now!")
-  set(CMAKE_C_COMPILER /Applications/Xcode-4.3.app/Contents/Developer/usr/bin/gcc)
-  set(CMAKE_CXX_COMPILER /Applications/Xcode-4.3.app/Contents/Developer/usr/bin/g++)
-  set(CMAKE_LIBRARY_PATH /Applications/Xcode-4.3.app/Contents/Developer/usr/lib)
-  set(CMAKE_INCLUDE_PATH /Applications/Xcode-4.3.app/Contents/Developer/usr/include)
-  set(CMAKE_OSX_ARCHITECTURES x86_64)
-  set(CMAKE_OSX_DEPLOYMENT_TARGET 10.6)
-  set(CMAKE_OSX_SYSROOT /Applications/Xcode-4.3.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.6.sdk)
-  set(ParaView_DIR /Volumes/Data/Development/ParaView/superbuild/paraview/src/paraview-build)
-  set(ParaView_SuperBuild_DIR /Volumes/Data/Development/ParaView/ParaViewSuperbuild)
-  set(LIBCDF_LIBRARIES /Applications/cdf34_1-dist/lib/libcdf.a)
-  set(LIBCDF_INCLUDE_DIRS /Applications/cdf34_1-dist/include)
-  message(STATUS ": Your Compilers are now:")
-  message(STATUS "CXX: ${CMAKE_CXX_COMPILER}")
-  message(STATUS "C:   ${CMAKE_C_COMPILER}")
-  message(STATUS "You are now using the MAC OS X 10.6 SDK in Xcode-4.3")
-  message(STATUS "Thank you for using Joshua Murphy's Mac.")
-
-endif( BUILD_MAC )
 
 set( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmake/" )
 
-##shared files
-set(SHARED_BUILD_DATETIME ON CACHE INTERNAL "")
-set(SHARED_USE_FPIC ON CACHE INTERNAL "")
-add_subdirectory("${PROJECT_SOURCE_DIR}/Shared")
-
-message(STATUS "DateTime (Includes) : ${SHARED_INCLUDE_DIR}")
-message(STATUS "DateTime (Libraries): ${SHARED_LIBRARIES}")
 
 #needed for these plugins
 # At present I am specifying ${LIBCDF_INCLUDE_DIRS} and ${LIBCDF_LIBRARIES} from the cmake command line
@@ -64,12 +39,22 @@ set(Boost_USE_MULTITHREAD ON)
 find_package(Boost COMPONENTS date_time REQUIRED)
 
 ##find cdf
-set(CDF_USE_STATIC_LIBS ON)
-find_package(CDF REQUIRED)
+if(NOT QTCREATOR)
+    set(CDF_USE_STATIC_LIBS ON)
+    find_package(CDF REQUIRED)
 
-include_directories(${CDF_INCLUDES} ${Boost_INCLUDE_DIRS} ${SHARED_INCLUDE_DIR})
-set(LIBS ${LIBS} ${CDF_LIBRARIES} ${Boost_LIBRARIES} ${SHARED_LIBRARIES})
-#I am setting this from the cmake command line
+    include_directories(${CDF_INCLUDES} ${Boost_INCLUDE_DIRS} ${SHARED_INCLUDE_DIR})
+    set(LIBS ${LIBS} ${CDF_LIBRARIES} ${Boost_LIBRARIES} ${SHARED_LIBRARIES})
+else()
+
+    set(LIBS ${LIBS} ${INSTALL_DIR}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}cdf${CMAKE_STATIC_LIBRARY_SUFFIX}
+                     ${Boost_LIBRARIES}
+                     DateTime
+                     )
+
+endif()
+
+
 if(NOT ParaView_BINARY_DIR)
   find_package(ParaView REQUIRED)
   include(${PARAVIEW_USE_FILE})
@@ -80,18 +65,15 @@ include(ParaViewPlugins)
 
 #get file list
 INCLUDE_DIRECTORIES(src)
-include(CDAweb_Files.cmake)
+include(./CDAweb_Files.cmake)
 
 #plugin (Filter for CDAweb)
 ADD_PARAVIEW_PLUGIN(CDAWebTK "1.0.0.beta1"
-        SERVER_MANAGER_XML ${SM_XML}
-        GUI_INTERFACES ${PROP_ifaces}
-        SERVER_MANAGER_SOURCES ${PLUGIN_SM_src}
-        SOURCES ${PLUGIN_src}
-                ${QT_Auto_src}
-                ${PROP_src}
-                ${HEADERS}      #IF QTCREATOR is active, this shows all header files in project window
-                ${XMLFILES}     #IF QTCREATOR is active, this shows all XML files in project window
+        SERVER_MANAGER_XML ${CDAWebTK_SM_XML}
+        GUI_INTERFACES ${CDAWebTK_PROP_IFACES}
+        SERVER_MANAGER_SOURCES ${CDAWebTK_SM_SRC}
+        SOURCES ${CDAWebTK_SRC}
+
                 )
 
 target_link_libraries(CDAWebTK ${LIBS})
