@@ -40,6 +40,23 @@
       <string>Data Selection</string>
      </property>
      <layout class="QGridLayout" name="gridLayout_2">
+      <item row="0" column="0">
+       <widget class="QLabel" name="startTime_Label">
+        <property name="text">
+         <string>Start Time:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="2">
+       <widget class="QDateTimeEdit" name="endTime">
+        <property name="displayFormat">
+         <string>yyyy-MM-dd  hh:mm:ss UT</string>
+        </property>
+        <property name="calendarPopup">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
       <item row="2" column="0">
        <widget class="QLabel" name="Group_Label">
         <property name="maximumSize">
@@ -121,23 +138,6 @@
         </property>
        </widget>
       </item>
-      <item row="1" column="2">
-       <widget class="QDateTimeEdit" name="endTime">
-        <property name="displayFormat">
-         <string>yyyy-MM-dd  hh:mm:ss UT</string>
-        </property>
-        <property name="calendarPopup">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="0">
-       <widget class="QLabel" name="startTime_Label">
-        <property name="text">
-         <string>Start Time:</string>
-        </property>
-       </widget>
-      </item>
       <item row="1" column="0">
        <widget class="QLabel" name="endTime_Label">
         <property name="text">
@@ -169,27 +169,8 @@
         </property>
        </widget>
       </item>
-      <item row="4" column="2">
-       <widget class="pqTreeView" name="Instruments">
-        <property name="minimumSize">
-         <size>
-          <width>265</width>
-          <height>165</height>
-         </size>
-        </property>
-        <property name="lineWidth">
-         <number>0</number>
-        </property>
-        <property name="alternatingRowColors">
-         <bool>true</bool>
-        </property>
-        <property name="selectionBehavior">
-         <enum>QAbstractItemView::SelectRows</enum>
-        </property>
-       </widget>
-      </item>
       <item row="5" column="2">
-       <widget class="pqTreeView" name="DataSet">
+       <widget class="pqTreeWidget" name="DataSet">
         <property name="minimumSize">
          <size>
           <width>265</width>
@@ -220,10 +201,15 @@
         <property name="wordWrap">
          <bool>false</bool>
         </property>
+        <column>
+         <property name="text">
+          <string>Available Data Sets</string>
+         </property>
+        </column>
        </widget>
       </item>
       <item row="7" column="2">
-       <widget class="pqTreeView" name="Variables">
+       <widget class="pqTreeWidget" name="Variables">
         <property name="minimumSize">
          <size>
           <width>265</width>
@@ -242,7 +228,15 @@
         <property name="animated">
          <bool>true</bool>
         </property>
+        <column>
+         <property name="text">
+          <string>Variables Available</string>
+         </property>
+        </column>
        </widget>
+      </item>
+      <item row="4" column="2">
+       <widget class="pqSelectionInspectorPanel" name="Instruments" native="true"/>
       </item>
      </layout>
      <zorder>Group</zorder>
@@ -252,22 +246,28 @@
      <zorder>Instruments_Label</zorder>
      <zorder>DataSet_Label</zorder>
      <zorder>DataSet</zorder>
-     <zorder>Instruments</zorder>
      <zorder>Variables_Label</zorder>
      <zorder>Variables</zorder>
      <zorder>endTime</zorder>
      <zorder>startTime_Label</zorder>
      <zorder>endTime_Label</zorder>
      <zorder>startTime</zorder>
+     <zorder>Instruments</zorder>
     </widget>
    </item>
   </layout>
  </widget>
  <customwidgets>
   <customwidget>
-   <class>pqTreeView</class>
-   <extends>QTreeView</extends>
-   <header location="global">pqTreeView.h</header>
+   <class>pqTreeWidget</class>
+   <extends>QTreeWidget</extends>
+   <header location="global">pqTreeWidget.h</header>
+  </customwidget>
+  <customwidget>
+   <class>pqSelectionInspectorPanel</class>
+   <extends>QWidget</extends>
+   <header location="global">pqSelectionInspectorPanel.h</header>
+   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources/>

@@ -8,6 +8,10 @@
 
 #include "DateTime.h"
 #include "pqPropertiesPanel.h"
+#include "pqTreeWidgetItem.h"
+#include "pqTreeWidgetItemObject.h"
+#include "pqSelectionInspectorWidget.h"
+#include "pqTreeWidget.h"
 #include "filterNetworkAccessModule.h"
 #include <QListWidgetItem>
 #include <vtkSMProxy.h>
@@ -438,19 +442,9 @@ void ScInfoPropWidget::selectedObservatory(QString selection)
     this->getInstrumentList(this->startMJD, this->endMJD);
 
     ui->Variables->setDisabled(true);
+    ui->DataSet->setDisabled(true);
 
-//    ui->Instruments->setRowCount(this->InstrumentList.size());
-//    ui->Instruments->setColumnCount(2);
-
-    ui->Instruments->setWordWrap(false);
-    QTableWidgetItem *column1 = new QTableWidgetItem();
-    QTableWidgetItem *column2 = new QTableWidgetItem();
-
-    column1->setText( "Instrument");
-    column2->setText( "Description");
-
-//    ui->Instruments->setHorizontalHeaderItem(0, column1);
-//    ui->Instruments->setHorizontalHeaderItem(1, column2);
+//    ui->Instruments->
 
     bool empty=true;
 
@@ -458,13 +452,17 @@ void ScInfoPropWidget::selectedObservatory(QString selection)
     {
         std::cout << "Adding Instruments..." << std::endl;
 
-        QTableWidgetItem *newItem = new QTableWidgetItem();
-        QTableWidgetItem *newItem2 = new QTableWidgetItem();
+        pqSelectionInspectorWidget *newItem = new pqSelectionInspectorWidget();
+//        pqTreeWidgetItemObject *newItem2 = new pqTreeWidgetItemObject(ui->Instruments);
 
-        newItem->setText( this->InstrumentList.keys()[x]);
-        newItem2->setText( this->InstrumentList.values()[x]);
+//        newItem->setText(0, this->InstrumentList.keys()[x]);
+//        newItem2->setText(0, this->InstrumentList.values()[x]);
 
-        newItem->setTextColor(QColor("Dark Blue"));
+
+//        newItem->setTextColor(0,QColor("Dark Blue"));
+//        newItem->addChild(newItem2);
+
+//        ui->Instruments->addTopLevelItem(newItem);
 
 //        ui->Instruments->setItem(x,0,newItem);
 //        ui->Instruments->setItem(x,1,newItem2);
