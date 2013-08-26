@@ -5,12 +5,12 @@
 
 #include "ScInfoPropWidget.h"
 #include "ui_ScInfoPropWidget.h"
-
 #include "DateTime.h"
 #include "pqPropertiesPanel.h"
 #include "pqTreeWidgetItem.h"
 #include "pqTreeWidgetItemObject.h"
 #include "pqSelectionInspectorWidget.h"
+#include "pqArrayListDomain.h"
 #include "pqTreeWidget.h"
 #include "filterNetworkAccessModule.h"
 #include <QListWidgetItem>
@@ -109,8 +109,8 @@ ScInfoPropWidget::ScInfoPropWidget(vtkSMProxy *smproxy, vtkSMProperty *smpropert
     connect(ui->Observatory, SIGNAL(activated(QString)), this, SLOT(selectedObservatory(QString)));
 
     /** Instrument Connections */
+//    connect(ui->Instruments, SIGNAL(itemActivated(QTreeWidgetItem*,int)), this, SLOT(instrumentSelectionChanged(QTreeWidgetItem*,int)));
     connect(ui->Instruments, SIGNAL(itemSelectionChanged()), this, SLOT(instrumentSelectionChanged()));
-    connect(this, SIGNAL(recheckInstrumentSelections()), this, SLOT(instrumentSelectionChanged()));
 
     /** Data Selection Changed */
     connect(ui->DataSet, SIGNAL(itemSelectionChanged()), this, SLOT(dataGroupSelectionChanged()));
@@ -137,132 +137,132 @@ void ScInfoPropWidget::apply()
 
     std::cout << "APPLY CLICKED" << std::endl;
 
-//    //build a list of elements
-//    QList<QTreeWidgetItem *> selectedElements = ui->DataSet->selectedItems();
-//    QList<QTreeWidgetItem *>::Iterator iter;
+    //build a list of elements
+    QList<QTreeWidgetItem *> selectedElements = ui->DataSet->selectedItems();
+    QList<QTreeWidgetItem *>::Iterator iter;
 
-//    QMap<QString, QStringList> DataMap;
+    QMap<QString, QStringList> DataMap;
 
-//    //Get Instruments and Keys
-//    for(iter = selectedElements.begin(); iter != selectedElements.end(); ++iter)
-//    {
-//        QString Instrument;
+    //Get Instruments and Keys
+    for(iter = selectedElements.begin(); iter != selectedElements.end(); ++iter)
+    {
+        QString Instrument;
 
-//        //Make sure we only get the Elements with Parents (i.e. non-insturment slecetions)
-//        if((*iter)->parent())
-//        {
-//            Instrument = (*iter)->parent()->text(0);
-//            DataMap[Instrument].push_back((*iter)->text(1));
-//        }
-//    }
-
-
-
-//    //get the list of variables
-//    QList<QTreeWidgetItem *> selectedVariables = ui->Variables->selectedItems();
-
-//    QMap<QString,QStringList> VariableMap;
-
-//    for(iter = selectedVariables.begin(); iter != selectedVariables.end(); ++iter)
-//    {
-
-//        QMap<QString, QString> DataSet;
-//        QString Data;
-
-//        if((*iter)->parent())
-//        {
-//            Data = (*iter)->parent()->text(0);
-//            Data = this->DataList[(*iter)->parent()->text(1)].key(Data);
-//            VariableMap[Data].push_back(this->VariableList[(*iter)->parent()->text(0)].key((*iter)->text(0)));
-
-////            std::cout << "DataSet: " << Data.toAscii().data() << std::endl;
-////            std::cout << "Variable: " << VariableMap[Data].back().toAscii().data() << std::endl;
-////            std::cout << "==========" << std::endl;
-//        }
-//    }
+        //Make sure we only get the Elements with Parents (i.e. non-insturment slecetions)
+        if((*iter)->parent())
+        {
+            Instrument = (*iter)->parent()->text(0);
+            DataMap[Instrument].push_back((*iter)->text(1));
+        }
+    }
 
 
-//    //Create the needed string
-//    //  Insturments separated by ;
-//    //  Data sets separated by ,
-//    QString DataString;
 
-//    QStringList keys = DataMap.keys();
-//    QList<QStringList> values = DataMap.values();
+    //get the list of variables
+    QList<QTreeWidgetItem *> selectedVariables = ui->Variables->selectedItems();
 
-//    for(int x = 0; x < keys.size(); x++)
-//    {
-//        if(x != 0)
-//        {
-//            DataString = DataString + ";";
-//        }
+    QMap<QString,QStringList> VariableMap;
 
-//        DataString = DataString + keys[x] + ":";
+    for(iter = selectedVariables.begin(); iter != selectedVariables.end(); ++iter)
+    {
 
-//        for(int y = 0; y < values[x].size(); y++)
-//        {
-//            if(y != 0)
-//            {
-//                DataString = DataString + "," ;
-//            }
+        QMap<QString, QString> DataSet;
+        QString Data;
 
-//            DataString = DataString + values[x][y] + "~" ;
+        if((*iter)->parent())
+        {
+            Data = (*iter)->parent()->text(0);
+            Data = this->DataList[(*iter)->parent()->text(1)].key(Data);
+            VariableMap[Data].push_back(this->VariableList[(*iter)->parent()->text(0)].key((*iter)->text(0)));
 
-//            for(int g = 0; g < VariableMap[values[x][y]].size(); g++)
-//            {
-//                if(g != 0)
-//                {
-//                    DataString = DataString + "|";
-//                }
-
-//                DataString = DataString + VariableMap[values[x][y]][g];
-//            }
-//        }
-
-//    }
-
-//    std::cerr << "CodeString: " << DataString.toAscii().data() << std::endl;
-
-//    this->svp->SetElement(0, this->currentGroup.toAscii().data());
-//    this->svp->SetElement(1, this->currentObservatory.toAscii().data());
-//    this->svp->SetElement(2, DataString.toAscii().data());
-
-//    if(this->smProxy->GetProperty("TimeRange"))
-//    {
-//        //set date and time
-//        QDateTime start = ui->startTime->dateTime();
-
-//        DateTime startDT;
-//        startDT.setYear(start.date().year());
-//        startDT.setMonth(start.date().month());
-//        startDT.setDay(start.date().day());
-
-//        startDT.setHours(start.time().hour());
-//        startDT.setMinutes(start.time().minute());
-//        startDT.setSeconds(start.time().second());
-
-//        QDateTime end = ui->endTime->dateTime();
-
-//        DateTime endDT;
-//        endDT.setYear(end.date().year());
-//        endDT.setMonth(end.date().month());
-//        endDT.setDay(end.date().day());
-
-//        endDT.setHours(end.time().hour());
-//        endDT.setMinutes(end.time().minute());
-//        endDT.setSeconds(end.time().second());
-
-//        std::cout << "Set Start DateTime to: " << startDT.getDateTimeString() << std::endl;
-//        std::cout << "Set End DateTime to: " << endDT.getDateTimeString() << std::endl;
+//            std::cout << "DataSet: " << Data.toAscii().data() << std::endl;
+//            std::cout << "Variable: " << VariableMap[Data].back().toAscii().data() << std::endl;
+//            std::cout << "==========" << std::endl;
+        }
+    }
 
 
-//        vtkSMDoubleVectorProperty *timeRange =  vtkSMDoubleVectorProperty::SafeDownCast(this->smProxy->GetProperty("TimeRange"));
-//        timeRange->SetElement(0,startDT.getMJD());
-//        timeRange->SetElement(1,endDT.getMJD());
-//    }
+    //Create the needed string
+    //  Insturments separated by ;
+    //  Data sets separated by ,
+    QString DataString;
 
-//    //apply the upstream parameters
-//    Superclass::apply();
+    QStringList keys = DataMap.keys();
+    QList<QStringList> values = DataMap.values();
+
+    for(int x = 0; x < keys.size(); x++)
+    {
+        if(x != 0)
+        {
+            DataString = DataString + ";";
+        }
+
+        DataString = DataString + keys[x] + ":";
+
+        for(int y = 0; y < values[x].size(); y++)
+        {
+            if(y != 0)
+            {
+                DataString = DataString + "," ;
+            }
+
+            DataString = DataString + values[x][y] + "~" ;
+
+            for(int g = 0; g < VariableMap[values[x][y]].size(); g++)
+            {
+                if(g != 0)
+                {
+                    DataString = DataString + "|";
+                }
+
+                DataString = DataString + VariableMap[values[x][y]][g];
+            }
+        }
+
+    }
+
+    std::cerr << "CodeString: " << DataString.toAscii().data() << std::endl;
+
+    this->svp->SetElement(0, this->currentGroup.toAscii().data());
+    this->svp->SetElement(1, this->currentObservatory.toAscii().data());
+    this->svp->SetElement(2, DataString.toAscii().data());
+
+    if(this->smProxy->GetProperty("TimeRange"))
+    {
+        //set date and time
+        QDateTime start = ui->startTime->dateTime();
+
+        DateTime startDT;
+        startDT.setYear(start.date().year());
+        startDT.setMonth(start.date().month());
+        startDT.setDay(start.date().day());
+
+        startDT.setHours(start.time().hour());
+        startDT.setMinutes(start.time().minute());
+        startDT.setSeconds(start.time().second());
+
+        QDateTime end = ui->endTime->dateTime();
+
+        DateTime endDT;
+        endDT.setYear(end.date().year());
+        endDT.setMonth(end.date().month());
+        endDT.setDay(end.date().day());
+
+        endDT.setHours(end.time().hour());
+        endDT.setMinutes(end.time().minute());
+        endDT.setSeconds(end.time().second());
+
+        std::cout << "Set Start DateTime to: " << startDT.getDateTimeString() << std::endl;
+        std::cout << "Set End DateTime to: " << endDT.getDateTimeString() << std::endl;
+
+
+        vtkSMDoubleVectorProperty *timeRange =  vtkSMDoubleVectorProperty::SafeDownCast(this->smProxy->GetProperty("TimeRange"));
+        timeRange->SetElement(0,startDT.getMJD());
+        timeRange->SetElement(1,endDT.getMJD());
+    }
+
+    //apply the upstream parameters
+    Superclass::apply();
 
 }
 
@@ -443,29 +443,23 @@ void ScInfoPropWidget::selectedObservatory(QString selection)
 
     ui->Variables->setDisabled(true);
     ui->DataSet->setDisabled(true);
+    ui->Instruments->clear();
+    ui->Instruments->setRootIsDecorated(false);
 
-//    ui->Instruments->
-
-    bool empty=true;
 
     for(int x = 0; x < this->InstrumentList.size(); x++)
     {
         std::cout << "Adding Instruments..." << std::endl;
 
-        pqSelectionInspectorWidget *newItem = new pqSelectionInspectorWidget();
-//        pqTreeWidgetItemObject *newItem2 = new pqTreeWidgetItemObject(ui->Instruments);
+        QStringList argument; argument.push_back(this->InstrumentList.keys()[x]);
+        pqTreeWidgetItemObject *newItem = new pqTreeWidgetItemObject(ui->Instruments, argument);
 
-//        newItem->setText(0, this->InstrumentList.keys()[x]);
-//        newItem2->setText(0, this->InstrumentList.values()[x]);
+        newItem->setTextColor(0,QColor("Dark Blue"));
+        newItem->setCheckState(0,Qt::Unchecked);
+
+        ui->Instruments->addTopLevelItem(newItem);
 
 
-//        newItem->setTextColor(0,QColor("Dark Blue"));
-//        newItem->addChild(newItem2);
-
-//        ui->Instruments->addTopLevelItem(newItem);
-
-//        ui->Instruments->setItem(x,0,newItem);
-//        ui->Instruments->setItem(x,1,newItem2);
     }
 
 
@@ -544,7 +538,7 @@ void ScInfoPropWidget::setupDataSets()
     {
         filterNetworkList *item = (*iter);
 
-//        QList<QTreeWidgetItem*> treelist;
+        QList<QTreeWidgetItem*> treelist;
         QMap<QString, QString> temp;
 
         QString obsGroup;
@@ -564,42 +558,42 @@ void ScInfoPropWidget::setupDataSets()
             DateTime startDT = textToDateTime(start);
             DateTime endDT = textToDateTime(end);
 
-//            QTreeWidgetItem * child = new QTreeWidgetItem();
+            QTreeWidgetItem * child = new QTreeWidgetItem();
 
             if(startDT <= this->startMJD && endDT >= this->endMJD)
             {
                 temp.insert(id,label);
 
-//                child->setText(0,label);
-//                child->setText(1,id);
-//                child->setToolTip(0,"Data for " + label + " is available for dates " + QString::fromStdString(startDT.getDateTimeString()) + " to " + QString::fromStdString(endDT.getDateTimeString()) + "." );
+                child->setText(0,label);
+                child->setText(1,id);
+                child->setToolTip(0,"Data for " + label + " is available for dates " + QString::fromStdString(startDT.getDateTimeString()) + " to " + QString::fromStdString(endDT.getDateTimeString()) + "." );
 
             }
             else
             {
-//                child->setText(0,label +": No Data for your Time Range");
-//                child->setText(1,"N/A");
-//                child->setToolTip(0, "The dataset " + label + " only has data for the time span " + QString::fromStdString(startDT.getDateTimeString()) + " to " + QString::fromStdString(endDT.getDateTimeString()) + ". Please select a different Data Set");
-//                child->setDisabled(true);
+                child->setText(0,label +": No Data for your Time Range");
+                child->setText(1,"N/A");
+                child->setToolTip(0, "The dataset " + label + " only has data for the time span " + QString::fromStdString(startDT.getDateTimeString()) + " to " + QString::fromStdString(endDT.getDateTimeString()) + ". Please select a different Data Set");
+                child->setDisabled(true);
 
 
             }
 
-//            treelist.push_back(child);
+            treelist.push_back(child);
 
         }
 
         List.insert(obsGroup, temp);
 
-//        QTreeWidgetItem *newItem = new QTreeWidgetItem();
-//        newItem->setText(0,obsGroup);
-//        newItem->setText(1,obsGroup);
-//        newItem->setTextColor(0, QColor("dark blue"));
-//        newItem->addChildren(treelist);
+        QTreeWidgetItem *newItem = new QTreeWidgetItem();
+        newItem->setText(0,obsGroup);
+        newItem->setText(1,obsGroup);
+        newItem->setTextColor(0, QColor("dark blue"));
+        newItem->addChildren(treelist);
 
-//        ui->DataSet->setColumnCount(2);
-//        ui->DataSet->hideColumn(1);
-//        ui->DataSet->addTopLevelItem(newItem);
+        ui->DataSet->setColumnCount(2);
+        ui->DataSet->hideColumn(1);
+        ui->DataSet->addTopLevelItem(newItem);
         ui->DataSet->setEnabled(true);
         ui->DataSet->expandAll();
 
@@ -627,7 +621,7 @@ void ScInfoPropWidget::setupVariableSets()
 
         QList<filterNetworkList *> item = (*iter);
 
-//        QList<QTreeWidgetItem*> treelist;
+        QList<QTreeWidgetItem*> treelist;
         QMap<QString, QString> temp;
 
         QStringList DataSet = keys[count].split("\t");
@@ -646,11 +640,11 @@ void ScInfoPropWidget::setupVariableSets()
 
                 temp.insert(Name, Desc);
 
-//                QTreeWidgetItem * child = new QTreeWidgetItem();
-//                child->setText(0, Desc);
-//                child->setText(1, Name);
+                QTreeWidgetItem * child = new QTreeWidgetItem();
+                child->setText(0, Desc);
+                child->setText(1, Name);
 
-//                treelist.push_back(child);
+                treelist.push_back(child);
 
             }
             List.insert(DataSet[1], temp);
@@ -658,15 +652,15 @@ void ScInfoPropWidget::setupVariableSets()
 
         count ++;
 
-//        QTreeWidgetItem *newItem = new QTreeWidgetItem();
-//        newItem->setText(0,DataSet[1]);     //this is the DataSet
-//        newItem->setText(1, DataSet[0]);    //this is the Instrument
-//        newItem->setTextColor(0, QColor("dark blue"));
-//        newItem->addChildren(treelist);
+        QTreeWidgetItem *newItem = new QTreeWidgetItem();
+        newItem->setText(0,DataSet[1]);     //this is the DataSet
+        newItem->setText(1, DataSet[0]);    //this is the Instrument
+        newItem->setTextColor(0, QColor("dark blue"));
+        newItem->addChildren(treelist);
 
-//        ui->Variables->setColumnCount(2);
-//        ui->Variables->hideColumn(1);
-//        ui->Variables->addTopLevelItem(newItem);
+        ui->Variables->setColumnCount(2);
+        ui->Variables->hideColumn(1);
+        ui->Variables->addTopLevelItem(newItem);
         ui->Variables->setEnabled(true);
         ui->Variables->expandAll();
 
@@ -713,56 +707,16 @@ DateTime ScInfoPropWidget::textToDateTime(QString dateString)
 //==================================================================
 void ScInfoPropWidget::instrumentSelectionChanged()
 {
-    //get the lock and process, or mark as future request
-    if(this->InstrumentLock.testAndSetAcquire(0,1))
+
+    std::cout << "Property Widget Has Changed " << std::endl;
+
+    QList<QTreeWidgetItem *> selected = ui->Instruments->selectedItems();
+
+    for (int x=0; x < selected.size(); x++)
     {
-        //get all selected items... we will strip out columns other than 0 later..
-//        QList<QTableWidgetItem*> instruments = ui->Instruments->selectedItems();
-        QStringList dataSet;
-
-        //verify that the instruments list is no empty before processing.
-//        if(!instruments.isEmpty())
-//        {
-//            //create a list of items
-//            QList<QTableWidgetItem*>::iterator iter;
-//            for(iter = instruments.begin(); iter != instruments.end(); ++iter)
-//            {
-//                QString item = (*iter)->text();
-
-                //make sure we only get the info from column 0
-//                if(ui->Instruments->column((*iter)) == 0)
-//                {
-//                    //add to the data list
-//                    dataSet.push_back(item);
-//                }
-//            }
-
-//            //retrieve all of the data information
-//            getAllDataSetInfo(dataSet);
-//        }
-
-        //setup the next selection box.
-        this->setupDataSets();
-
-        //release lock.
-        this->InstrumentLock.deref();
-
-        //see if requests came in while we were locked.
-        connect(this, SIGNAL(completedInstrumentProcessing()), this, SLOT(processDeniedInstrumentRequests()));
-
-        if(this->InstruemntSelectionsDenied.testAndSetAcquire(1,1))
-        {
-            //requests pending, so process them.
-            emit this->completedInstrumentProcessing();
-        }
+        std::cout << "Item: " << selected[x]->text(0).toStdString() << std::endl;
     }
-    else
-    {
-        //Lock was not aquired, thus request is being processed.  since we only really need to
-        // process the last request, we will just set this counter to 1, regardless of how many
-        // requests are made.
-        this->InstruemntSelectionsDenied.testAndSetAcquire(0,1);
-    }
+
 }
 
 
@@ -770,45 +724,45 @@ void ScInfoPropWidget::instrumentSelectionChanged()
 void ScInfoPropWidget::dataGroupSelectionChanged()
 {
 
-//    if(this->DataLock.testAndSetAcquire(0,1))
-//    {
+    if(this->DataLock.testAndSetAcquire(0,1))
+    {
 
-//        QList<QTreeWidgetItem*> dataSets = ui->DataSet->selectedItems();
+        QList<QTreeWidgetItem*> dataSets = ui->DataSet->selectedItems();
 
-//        QMap<QString, QStringList> DataMap;
+        QMap<QString, QStringList> DataMap;
 
-//        if(!dataSets.isEmpty())
-//        {
-//            //create a list of items
-//            QList<QTreeWidgetItem*>::iterator iter;
-//            for(iter = dataSets.begin(); iter != dataSets.end(); ++iter)
-//            {
-//                QString Instrument;
+        if(!dataSets.isEmpty())
+        {
+            //create a list of items
+            QList<QTreeWidgetItem*>::iterator iter;
+            for(iter = dataSets.begin(); iter != dataSets.end(); ++iter)
+            {
+                QString Instrument;
 
-//                //Make sure we only get the Elements with Parents (i.e. non-insturment slecetions)
-//                if((*iter)->parent())
-//                {
-//                    Instrument = (*iter)->parent()->text(0);
-//                    DataMap[Instrument].push_back((*iter)->text(1));
-//                }
-//            }
-//            getAllVariableSetInfo(DataMap);
-//        }
+                //Make sure we only get the Elements with Parents (i.e. non-insturment slecetions)
+                if((*iter)->parent())
+                {
+                    Instrument = (*iter)->parent()->text(0);
+                    DataMap[Instrument].push_back((*iter)->text(1));
+                }
+            }
+            getAllVariableSetInfo(DataMap);
+        }
 
-//        this->setupVariableSets();
-//        this->DataLock.deref();
+        this->setupVariableSets();
+        this->DataLock.deref();
 
-//        connect(this, SIGNAL(completedDataProcessing()), this, SLOT(processDeniedDataRequests()));
+        connect(this, SIGNAL(completedDataProcessing()), this, SLOT(processDeniedDataRequests()));
 
-//        if(this->DataSelectionDenied.testAndSetAcquire(1,1))
-//        {
-//            emit this->completedDataProcessing();
-//        }
-//    }
-//    else
-//    {
-//        this->DataSelectionDenied.testAndSetAcquire(0,1);
-//    }
+        if(this->DataSelectionDenied.testAndSetAcquire(1,1))
+        {
+            emit this->completedDataProcessing();
+        }
+    }
+    else
+    {
+        this->DataSelectionDenied.testAndSetAcquire(0,1);
+    }
 
 }
 
@@ -868,7 +822,6 @@ void ScInfoPropWidget::timeRangeChanged()
     this->startMJD = startDT.getMJD();
     this->endMJD = endDT.getMJD();
 
-    this->instrumentSelectionChanged();
 
 }
 

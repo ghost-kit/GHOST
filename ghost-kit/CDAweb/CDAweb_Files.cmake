@@ -15,6 +15,7 @@ QT4_WRAP_CPP(
         ${CDAWebTK_SOURCE_DIR}/src/vtkSpaceCraftInfo.h
         ${CDAWebTK_SOURCE_DIR}/src/pathSelector.h
         ${CDAWebTK_SOURCE_DIR}/src/newFileChooserWidget.h
+        ${CDAWebTK_SOURCE_DIR}/src/CDAWebDataSelectorWidget.h
     )
 
 # Wrap UI
@@ -23,6 +24,8 @@ QT4_WRAP_UI(
         ${CDAWebTK_SOURCE_DIR}/ui/ScInfoPropWidget.ui
         ${CDAWebTK_SOURCE_DIR}/ui/status.ui
         ${CDAWebTK_SOURCE_DIR}/ui/pathSelector.ui
+        ${CDAWebTK_SOURCE_DIR}/ui/CDAWebDataSelectorWidget.ui
+
     )
 
 # Property Widgets
@@ -71,6 +74,7 @@ set(CDAWebTK_SRC
         ${CDAWebTK_SOURCE_DIR}/src/omitBDHandler.cxx
         ${CDAWebTK_SOURCE_DIR}/src/pathSelector.cxx
         ${CDAWebTK_SOURCE_DIR}/src/newFileChooserWidget.cxx
+        ${CDAWebTK_SOURCE_DIR}/src/CDAWebDataSelectorWidget.cxx
         ${CDAWebTK_PROP_SRC}
         ${CDAWebTK_MOC_BUILT_SOURCES}
         ${CDAWebTK_UI_BUILT_SOURCES}

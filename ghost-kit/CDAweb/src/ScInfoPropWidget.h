@@ -6,6 +6,7 @@
 
 #include <QWidget>
 #include <QListWidgetItem>
+#include <QTreeWidgetItem>
 
 #include <vtkSMProxy.h>
 #include <vtkSMProperty.h>
