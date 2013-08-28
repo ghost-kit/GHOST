@@ -2,6 +2,7 @@
 #define SCINFOPROPWIDGET_H
 
 #include "pqPropertyWidget.h"
+#include "pqOutputPort.h"
 #include "filterNetworkAccessModule.h"
 
 #include <QWidget>
@@ -11,6 +12,8 @@
 #include <vtkSMProxy.h>
 #include <vtkSMProperty.h>
 #include <vtkSMStringVectorProperty.h>
+#include <vtkDataArraySelection.h>
+
 
 #include <QReadWriteLock>
 #include <QTableWidgetItem>
@@ -40,6 +43,15 @@ protected:
     //Time Settings
     double startMJD;
     double endMJD;
+
+    //Data Selection Array Handlers
+    vtkDataArraySelection *GroupSelectionTracker;
+    vtkDataArraySelection *ObservatorySelectionTracker;
+    vtkDataArraySelection *InstrumentSelectionTracker;
+    QMap<QString, vtkDataArraySelection *> DataSetSelectionTracker;
+    QMap<QString, vtkDataArraySelection *> VariablesSelectionTracker;
+
+
 
     //Cached Objects
     filterNetworkList *currentGroupObjects;
@@ -107,7 +119,7 @@ protected:
     bool getInstrumentList(double startTimes, double endTime);
     bool getDataSetsList();
 
-    void getAllDataSetInfo(QStringList dataSets);
+    void getAllDataSetInfo();
     void getAllVariableSetInfo(QMap<QString, QStringList> DataSetList);
 
     void setupDataSets();
@@ -123,7 +135,7 @@ private slots:
     void selectedGroup(QString selection);
     void selectedObservatory(QString selection);
 
-    void instrumentSelectionChanged();
+    void instrumentSelectionChanged(QTreeWidgetItem*,int);
     void dataGroupSelectionChanged();
 
     void processDeniedInstrumentRequests();

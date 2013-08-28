@@ -8,9 +8,13 @@
 #include "DateTime.h"
 #include "pqPropertiesPanel.h"
 #include "pqTreeWidgetItem.h"
+#include "pqTreeWidgetSelectionHelper.h"
+#include "pqTreeWidgetCheckHelper.h"
 #include "pqTreeWidgetItemObject.h"
 #include "pqSelectionInspectorWidget.h"
+#include "pqSelectionManager.h"
 #include "pqArrayListDomain.h"
+#include "pqApplicationCore.h"
 #include "pqTreeWidget.h"
 #include "filterNetworkAccessModule.h"
 #include <QListWidgetItem>
@@ -94,6 +98,12 @@ ScInfoPropWidget::ScInfoPropWidget(vtkSMProxy *smproxy, vtkSMProperty *smpropert
     //Load the group list
     this->loadGroupListToGUI();
 
+    //Initialize trackers
+    this->GroupSelectionTracker         = vtkDataArraySelection::New();
+    this->ObservatorySelectionTracker   = vtkDataArraySelection::New();
+    this->InstrumentSelectionTracker    = vtkDataArraySelection::New();
+
+
     //connect signals to slots
 
     /** Time Connections */
@@ -109,8 +119,7 @@ ScInfoPropWidget::ScInfoPropWidget(vtkSMProxy *smproxy, vtkSMProperty *smpropert
     connect(ui->Observatory, SIGNAL(activated(QString)), this, SLOT(selectedObservatory(QString)));
 
     /** Instrument Connections */
-//    connect(ui->Instruments, SIGNAL(itemActivated(QTreeWidgetItem*,int)), this, SLOT(instrumentSelectionChanged(QTreeWidgetItem*,int)));
-    connect(ui->Instruments, SIGNAL(itemSelectionChanged()), this, SLOT(instrumentSelectionChanged()));
+    this->connect(ui->Instruments, SIGNAL(itemChanged(QTreeWidgetItem*,int)), SLOT(instrumentSelectionChanged(QTreeWidgetItem*,int)));
 
     /** Data Selection Changed */
     connect(ui->DataSet, SIGNAL(itemSelectionChanged()), this, SLOT(dataGroupSelectionChanged()));
@@ -427,11 +436,18 @@ void ScInfoPropWidget::selectedGroup(QString selection)
 //process Observatories
 void ScInfoPropWidget::selectedObservatory(QString selection)
 {
-    std::cout << "Observatory Selected: " << selection.toAscii().data() << std::endl;
 
+    //clear the Instrument Tracker
+    this->InstrumentSelectionTracker->RemoveAllArrays();
+
+    //clear DataSet and Variables TODO: Check to see if we need to delete the vtkDataSetSelection objects first.
+    this->DataSetSelectionTracker.clear();
+    this->VariablesSelectionTracker.clear();
+
+    //set the observatory selection information
     this->currentObservatory = selection;
-    //this->currentInstrumentObjects->clear();
 
+    //create network access module
     filterNetworkAccessModule SCInstrumentManager;
 
     //get data for next item
@@ -441,56 +457,86 @@ void ScInfoPropWidget::selectedObservatory(QString selection)
     //get the required list
     this->getInstrumentList(this->startMJD, this->endMJD);
 
+    //configure the gui for display
     ui->Variables->setDisabled(true);
     ui->DataSet->setDisabled(true);
     ui->Instruments->clear();
     ui->Instruments->setRootIsDecorated(false);
+    ui->Instruments->setColumnCount(2);
 
+    // create tree widget selection helper
+    new pqTreeWidgetCheckHelper(ui->Instruments, 0, NULL);
 
+    QStringList InstrumentNames = this->InstrumentList.keys();
+    QStringList InstrumentDesc  = this->InstrumentList.values();
+
+    // populate the tree
     for(int x = 0; x < this->InstrumentList.size(); x++)
     {
-        std::cout << "Adding Instruments..." << std::endl;
 
-        QStringList argument; argument.push_back(this->InstrumentList.keys()[x]);
-        pqTreeWidgetItemObject *newItem = new pqTreeWidgetItemObject(ui->Instruments, argument);
+        //lets not get instruments with no descriptiong
+        //  This descision can easily be reversed
+        if(InstrumentDesc[x] != "")
+        {
 
-        newItem->setTextColor(0,QColor("Dark Blue"));
-        newItem->setCheckState(0,Qt::Unchecked);
+            //populate the tracker
+            this->InstrumentSelectionTracker->AddArray(InstrumentNames[x].toAscii().data());
+            this->InstrumentSelectionTracker->DisableArray(InstrumentNames[x].toAscii().data());
 
-        ui->Instruments->addTopLevelItem(newItem);
+            //add new tracker to the DataSet map
+            this->DataSetSelectionTracker[InstrumentNames[x]] = vtkDataArraySelection::New();
 
+            /**** THE BELOW NEEDS TO BE MOVED TO A NEW METHOD FOR POPULATING TREE LISTS ****/
+            /**** vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv ****/
 
+            //populate the GUI tree items
+            pqTreeWidgetItem *newItem = new pqTreeWidgetItem();
+
+            newItem->setText(0,InstrumentNames[x] );
+            newItem->setText(1,InstrumentDesc[x] );
+            newItem->setTextColor(0,QColor("Dark Blue"));
+            newItem->setCheckState(0,Qt::Unchecked);
+
+            //place in the GUI
+            ui->Instruments->addTopLevelItem(newItem);
+
+            /**** ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ ****/
+            /**** END NEED TO BE MOVED ****/
+
+        }
     }
 
-
+    //set the remaining tree lists...  TODO: this will need to be rethought a bit.
     ui->Instruments->setEnabled(true);
-
     ui->DataSet->setDisabled(true);
 }
 
 
 //==================================================================
 //Instrument Selection has Changed
-void ScInfoPropWidget::getAllDataSetInfo(QStringList dataSets)
+void ScInfoPropWidget::getAllDataSetInfo()
 {
 
     this->currentDataGroupObjects.clear();
 
     QSet<filterNetworkList *> newDataObjectGroup;
 
-    QStringList::Iterator iter2;
-    for(iter2 = dataSets.begin(); iter2 != dataSets.end(); ++iter2)
+    //process the requested tracker
+    for(int x = 0; x < this->InstrumentSelectionTracker->GetNumberOfArrays(); x++)
     {
-        QString item = (*iter2);
+        std::cout << "Processing " << this->InstrumentSelectionTracker->GetArrayName(x) << std::endl;
+
+        //if the item is not enabled, skip
+        if(!this->InstrumentSelectionTracker->ArrayIsEnabled(this->InstrumentSelectionTracker->GetArrayName(x))) continue;
+
+        //process the list
+        QString item = this->InstrumentSelectionTracker->GetArrayName(x);
 
         filterNetworkAccessModule SCDataSetListManager;
         this->getSciDataGroup(SCDataSetListManager, item);
         newDataObjectGroup.insert(SCDataSetListManager.getFinalOjects());
-    }
 
-    //this is the poor mans way of defeating the race condition...
-    //still need to fix out of order access when copying...
-    this->currentDataGroupObjects = newDataObjectGroup;
+    }
 
 }
 
@@ -705,19 +751,41 @@ DateTime ScInfoPropWidget::textToDateTime(QString dateString)
 }
 
 //==================================================================
-void ScInfoPropWidget::instrumentSelectionChanged()
+void ScInfoPropWidget::instrumentSelectionChanged(QTreeWidgetItem* item, int status)
 {
 
-    std::cout << "Property Widget Has Changed " << std::endl;
-
-    QList<QTreeWidgetItem *> selected = ui->Instruments->selectedItems();
-
-    for (int x=0; x < selected.size(); x++)
+    //process the selection change
+    if(this->InstrumentSelectionTracker->ArrayIsEnabled(item->text(0).toAscii().data()))
     {
-        std::cout << "Item: " << selected[x]->text(0).toStdString() << std::endl;
+        this->InstrumentSelectionTracker->DisableArray(item->text(0).toAscii().data());
+    }
+    else
+    {
+        this->InstrumentSelectionTracker->EnableArray(item->text(0).toAscii().data());
     }
 
+
+#ifdef DEBUG
+    std::cout << "Arrays in Instrument List:" << std::endl;
+    for(int x = 0; x < this->InstrumentSelectionTracker->GetNumberOfArrays(); x++)
+    {
+        std::cout << "Name: " << this->InstrumentSelectionTracker->GetArrayName(x)
+                  << " Status: " << ((this->InstrumentSelectionTracker->ArrayIsEnabled(this->InstrumentSelectionTracker->GetArrayName(x))) ? ("Enabled") : ("Disabled")) << std::endl;
+
+    }
+
+#endif
+
+    //populate the next tree (Data Sets)
+    this->getAllDataSetInfo();
+
+    //process the DataSet List
+
+
+
+
 }
+
 
 
 //==================================================================
