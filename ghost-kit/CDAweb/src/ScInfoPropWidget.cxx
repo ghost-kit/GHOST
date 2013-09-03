@@ -585,12 +585,12 @@ void ScInfoPropWidget::configureDataSetsGUI()
 
     std::cout << "Processing the List for GUI" << std::endl;
 
-    for(int x = 0; x < this->InstrumentDataSetInfoCacheStatus->GetNumberOfArrays(); x ++)
+    for(int x = 0; x < this->InstrumentSelectionTracker->GetNumberOfArrays(); x ++)
     {
-        QString NameOfArray = QString(InstrumentDataSetInfoCacheStatus->GetArrayName(x));
+        QString NameOfArray = QString(InstrumentSelectionTracker->GetArrayName(x));
 
         //skip if not enabled
-        if(!this->InstrumentDataSetInfoCacheStatus->ArrayIsEnabled(NameOfArray.toAscii().data())) continue;
+        if(!this->InstrumentSelectionTracker->ArrayIsEnabled(NameOfArray.toAscii().data())) continue;
 
         //process the enabled arrays
         std::cout << "Processing GUI for Instrument: " << NameOfArray.toStdString() << std::endl;
