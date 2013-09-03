@@ -99,9 +99,11 @@ ScInfoPropWidget::ScInfoPropWidget(vtkSMProxy *smproxy, vtkSMProperty *smpropert
     this->loadGroupListToGUI();
 
     //Initialize trackers
-    this->GroupSelectionTracker         = vtkDataArraySelection::New();
-    this->ObservatorySelectionTracker   = vtkDataArraySelection::New();
-    this->InstrumentSelectionTracker    = vtkDataArraySelection::New();
+    this->GroupSelectionTracker             = vtkDataArraySelection::New();
+    this->ObservatorySelectionTracker       = vtkDataArraySelection::New();
+    this->InstrumentSelectionTracker        = vtkDataArraySelection::New();
+    this->InstrumentDataSetInfoCacheStatus  = vtkDataArraySelection::New();
+
 
 
     //connect signals to slots
@@ -483,8 +485,12 @@ void ScInfoPropWidget::selectedObservatory(QString selection)
             this->InstrumentSelectionTracker->AddArray(InstrumentNames[x].toAscii().data());
             this->InstrumentSelectionTracker->DisableArray(InstrumentNames[x].toAscii().data());
 
+            this->InstrumentDataSetInfoCacheStatus->AddArray(InstrumentNames[x].toAscii().data());
+            this->InstrumentDataSetInfoCacheStatus->DisableArray(InstrumentNames[x].toAscii().data());
+
             //add new tracker to the DataSet map
             this->DataSetSelectionTracker[InstrumentNames[x]] = vtkDataArraySelection::New();
+            this->DataSetVariableInfoCacheStatus[InstrumentNames[x]] = vtkDataArraySelection::New();
 
             /**** THE BELOW NEEDS TO BE MOVED TO A NEW METHOD FOR POPULATING TREE LISTS ****/
             /**** vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv ****/
@@ -517,26 +523,29 @@ void ScInfoPropWidget::selectedObservatory(QString selection)
 void ScInfoPropWidget::getAllDataSetInfo()
 {
 
-    this->currentDataGroupObjects.clear();
-
-    QSet<filterNetworkList *> newDataObjectGroup;
-
-    //process the requested tracker
-    for(int x = 0; x < this->InstrumentSelectionTracker->GetNumberOfArrays(); x++)
+    for(int x = 0; x < this->InstrumentSelectionTracker->GetNumberOfArrays(); x ++)
     {
-        std::cout << "Processing " << this->InstrumentSelectionTracker->GetArrayName(x) << std::endl;
+        //get name of current array
+        QString NameOfArray = QString(this->InstrumentSelectionTracker->GetArrayName(x));
 
-        //if the item is not enabled, skip
-        if(!this->InstrumentSelectionTracker->ArrayIsEnabled(this->InstrumentSelectionTracker->GetArrayName(x))) continue;
+        //check to see if the data is selected
+        if(!this->InstrumentSelectionTracker->ArrayIsEnabled(NameOfArray.toAscii().data())) continue;
 
-        //process the list
-        QString item = this->InstrumentSelectionTracker->GetArrayName(x);
+        std::cout << "Processing " << NameOfArray.toStdString() << std::endl;
 
+        //if the data is already in the cache, we don't need to download it
+        if(this->InstrumentDataSetInfoCacheStatus->ArrayIsEnabled(NameOfArray.toAscii().data())) continue;
+
+        std::cout << "Downloading Data for " << NameOfArray.toStdString() << std::endl;
+
+        //Download the data
         filterNetworkAccessModule SCDataSetListManager;
-        this->getSciDataGroup(SCDataSetListManager, item);
-        newDataObjectGroup.insert(SCDataSetListManager.getFinalOjects());
+        this->getSciDataGroup(SCDataSetListManager, NameOfArray);
+        this->InstrumentDataSetInfoCache[NameOfArray] = SCDataSetListManager.getFinalOjects();
+        this->InstrumentDataSetInfoCacheStatus->EnableArray(NameOfArray.toAscii().data());
 
     }
+
 
 }
 
@@ -571,81 +580,98 @@ void ScInfoPropWidget::getAllVariableSetInfo(QMap<QString, QStringList> DataSetL
 }
 
 //==================================================================
-void ScInfoPropWidget::setupDataSets()
+void ScInfoPropWidget::configureDataSetsGUI()
 {
 
-    QSet<filterNetworkList *>::Iterator iter;
+    std::cout << "Processing the List for GUI" << std::endl;
 
-    this->DataList.clear();
-
-    QMap<QString, QMap<QString , QString> > List;
-
-    for(iter=this->currentDataGroupObjects.begin(); iter != this->currentDataGroupObjects.end(); ++iter)
+    for(int x = 0; x < this->InstrumentDataSetInfoCacheStatus->GetNumberOfArrays(); x ++)
     {
-        filterNetworkList *item = (*iter);
+        QString NameOfArray = QString(InstrumentDataSetInfoCacheStatus->GetArrayName(x));
 
-        QList<QTreeWidgetItem*> treelist;
-        QMap<QString, QString> temp;
+        //skip if not enabled
+        if(!this->InstrumentDataSetInfoCacheStatus->ArrayIsEnabled(NameOfArray.toAscii().data())) continue;
 
-        QString obsGroup;
-
-        for(int x = 0; x < item->size(); x++)
-        {
-            filterNetworkObject *currentMap = item->operator [](x);
-
-            QString label = currentMap->operator []("Label");
-            QString id = currentMap->operator []("Id");
-            obsGroup = currentMap->operator[]("Instrument");
-
-            QString start = currentMap->operator []("Start");
-            QString end  = currentMap->operator []("End");
-
-            //convert time string into DateTime
-            DateTime startDT = textToDateTime(start);
-            DateTime endDT = textToDateTime(end);
-
-            QTreeWidgetItem * child = new QTreeWidgetItem();
-
-            if(startDT <= this->startMJD && endDT >= this->endMJD)
-            {
-                temp.insert(id,label);
-
-                child->setText(0,label);
-                child->setText(1,id);
-                child->setToolTip(0,"Data for " + label + " is available for dates " + QString::fromStdString(startDT.getDateTimeString()) + " to " + QString::fromStdString(endDT.getDateTimeString()) + "." );
-
-            }
-            else
-            {
-                child->setText(0,label +": No Data for your Time Range");
-                child->setText(1,"N/A");
-                child->setToolTip(0, "The dataset " + label + " only has data for the time span " + QString::fromStdString(startDT.getDateTimeString()) + " to " + QString::fromStdString(endDT.getDateTimeString()) + ". Please select a different Data Set");
-                child->setDisabled(true);
+        //process the enabled arrays
+        std::cout << "Processing GUI for Instrument: " << NameOfArray.toStdString() << std::endl;
 
 
-            }
 
-            treelist.push_back(child);
-
-        }
-
-        List.insert(obsGroup, temp);
-
-        QTreeWidgetItem *newItem = new QTreeWidgetItem();
-        newItem->setText(0,obsGroup);
-        newItem->setText(1,obsGroup);
-        newItem->setTextColor(0, QColor("dark blue"));
-        newItem->addChildren(treelist);
-
-        ui->DataSet->setColumnCount(2);
-        ui->DataSet->hideColumn(1);
-        ui->DataSet->addTopLevelItem(newItem);
-        ui->DataSet->setEnabled(true);
-        ui->DataSet->expandAll();
 
     }
 
-    this->DataList = List;
+//    QSet<filterNetworkList *>::Iterator iter;
+
+//    this->DataList.clear();
+
+//    QMap<QString, QMap<QString , QString> > List;
+
+//    for(iter=this->currentDataGroupObjects.begin(); iter != this->currentDataGroupObjects.end(); ++iter)
+//    {
+//        filterNetworkList *item = (*iter);
+
+//        QList<QTreeWidgetItem*> treelist;
+//        QMap<QString, QString> temp;
+
+//        QString obsGroup;
+
+//        for(int x = 0; x < item->size(); x++)
+//        {
+//            filterNetworkObject *currentMap = item->operator [](x);
+
+//            QString label = currentMap->operator []("Label");
+//            QString id = currentMap->operator []("Id");
+//            obsGroup = currentMap->operator[]("Instrument");
+
+//            QString start = currentMap->operator []("Start");
+//            QString end  = currentMap->operator []("End");
+
+//            //convert time string into DateTime
+//            DateTime startDT = textToDateTime(start);
+//            DateTime endDT = textToDateTime(end);
+
+//            QTreeWidgetItem * child = new QTreeWidgetItem();
+
+//            if(startDT <= this->startMJD && endDT >= this->endMJD)
+//            {
+//                temp.insert(id,label);
+
+//                child->setText(0,label);
+//                child->setText(1,id);
+//                child->setToolTip(0,"Data for " + label + " is available for dates " + QString::fromStdString(startDT.getDateTimeString()) + " to " + QString::fromStdString(endDT.getDateTimeString()) + "." );
+
+//            }
+//            else
+//            {
+//                child->setText(0,label +": No Data for your Time Range");
+//                child->setText(1,"N/A");
+//                child->setToolTip(0, "The dataset " + label + " only has data for the time span " + QString::fromStdString(startDT.getDateTimeString()) + " to " + QString::fromStdString(endDT.getDateTimeString()) + ". Please select a different Data Set");
+//                child->setDisabled(true);
+
+
+//            }
+
+//            treelist.push_back(child);
+
+//        }
+
+//        List.insert(obsGroup, temp);
+
+//        QTreeWidgetItem *newItem = new QTreeWidgetItem();
+//        newItem->setText(0,obsGroup);
+//        newItem->setText(1,obsGroup);
+//        newItem->setTextColor(0, QColor("dark blue"));
+//        newItem->addChildren(treelist);
+
+//        ui->DataSet->setColumnCount(2);
+//        ui->DataSet->hideColumn(1);
+//        ui->DataSet->addTopLevelItem(newItem);
+//        ui->DataSet->setEnabled(true);
+//        ui->DataSet->expandAll();
+
+//    }
+
+//    this->DataList = List;
 }
 
 //==================================================================
@@ -778,8 +804,8 @@ void ScInfoPropWidget::instrumentSelectionChanged(QTreeWidgetItem* item, int sta
 
     //populate the next tree (Data Sets)
     this->getAllDataSetInfo();
+    this->configureDataSetsGUI();
 
-    //process the DataSet List
 
 
 

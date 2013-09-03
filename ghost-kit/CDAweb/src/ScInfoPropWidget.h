@@ -45,19 +45,32 @@ protected:
     double endMJD;
 
     //Data Selection Array Handlers
-    vtkDataArraySelection *GroupSelectionTracker;
-    vtkDataArraySelection *ObservatorySelectionTracker;
-    vtkDataArraySelection *InstrumentSelectionTracker;
-    QMap<QString, vtkDataArraySelection *> DataSetSelectionTracker;
-    QMap<QString, vtkDataArraySelection *> VariablesSelectionTracker;
 
+    //group selection handlers
+    vtkDataArraySelection *GroupSelectionTracker;
+
+    //observatory selection handlers
+    vtkDataArraySelection *ObservatorySelectionTracker;
+
+    //instrument selection handlers
+    vtkDataArraySelection *InstrumentSelectionTracker;
+    vtkDataArraySelection *InstrumentDataSetInfoCacheStatus;
+    QMap<QString, filterNetworkList *> InstrumentDataSetInfoCache;
+
+    //Data Set Selection handlers
+    QMap<QString, vtkDataArraySelection *> DataSetSelectionTracker;
+    QMap<QString, vtkDataArraySelection *> DataSetVariableInfoCacheStatus;
+    QMap<QString, QMap<QString, filterNetworkList *> > DataSetVariableInfoCache;
+
+    //Variable Selection Trackers
+    QMap<QString, vtkDataArraySelection *> VariablesSelectionTracker;
 
 
     //Cached Objects
     filterNetworkList *currentGroupObjects;
     filterNetworkList *currentInstrumentObjects;
     filterNetworkList *currentObservatoryObjects;
-    QSet<filterNetworkList *> currentDataGroupObjects;
+//    QSet<filterNetworkList *> currentDataGroupObjects;
     QMap<QString, QList<filterNetworkList *> > currentVariablesObjects;
 
     //listings
@@ -122,7 +135,7 @@ protected:
     void getAllDataSetInfo();
     void getAllVariableSetInfo(QMap<QString, QStringList> DataSetList);
 
-    void setupDataSets();
+    void configureDataSetsGUI();
     void setupVariableSets();
 
     DateTime textToDateTime(QString dateString);

@@ -280,7 +280,7 @@
         </column>
         <column>
          <property name="text">
-          <string>Description</string>
+          <string>Instrument Description</string>
          </property>
         </column>
        </widget>
