@@ -4,6 +4,7 @@
 #include "pqPropertyWidget.h"
 #include "pqOutputPort.h"
 #include "filterNetworkAccessModule.h"
+#include "DateTime.h"
 
 #include <QWidget>
 #include <QListWidgetItem>
@@ -18,6 +19,17 @@
 #include <QReadWriteLock>
 #include <QTableWidgetItem>
 #include "DateTime.h"
+
+class DataSetInfo {
+public:
+    QString Name;
+    QString LongName;
+    QString ID;
+    QString ObsGroup;
+    QString Instrument;
+    DateTime StartTime;
+    DateTime EndTime;
+};
 
 namespace Ui {
 class ScInfoPropWidget;
@@ -58,6 +70,7 @@ protected:
     QMap<QString, filterNetworkList *> InstrumentDataSetInfoCache;
 
     //Data Set Selection handlers
+    QMap<QString, QList<DataSetInfo> > DataSetInformation;
     QMap<QString, vtkDataArraySelection *> DataSetSelectionTracker;
     QMap<QString, vtkDataArraySelection *> DataSetVariableInfoCacheStatus;
     QMap<QString, QMap<QString, filterNetworkList *> > DataSetVariableInfoCache;
@@ -66,11 +79,15 @@ protected:
     QMap<QString, vtkDataArraySelection *> VariablesSelectionTracker;
 
 
+
+
+
+
+
     //Cached Objects
     filterNetworkList *currentGroupObjects;
     filterNetworkList *currentInstrumentObjects;
     filterNetworkList *currentObservatoryObjects;
-//    QSet<filterNetworkList *> currentDataGroupObjects;
     QMap<QString, QList<filterNetworkList *> > currentVariablesObjects;
 
     //listings
@@ -135,7 +152,8 @@ protected:
     void getAllDataSetInfo();
     void getAllVariableSetInfo(QMap<QString, QStringList> DataSetList);
 
-    void configureDataSetsGUI();
+    void extractDataSetInfo();
+    void buildDataSetGUIObjects();
     void setupVariableSets();
 
     DateTime textToDateTime(QString dateString);
@@ -146,10 +164,10 @@ private:
 
 private slots:
     void selectedGroup(QString selection);
-    void selectedObservatory(QString selection);
+    void observatorySelectionChanged(QString selection);
 
     void instrumentSelectionChanged(QTreeWidgetItem*,int);
-    void dataGroupSelectionChanged();
+    void dataSetSelectionChanged(QTreeWidgetItem*, int);
 
     void processDeniedInstrumentRequests();
     void processDeniedDataRequests();
