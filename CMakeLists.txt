@@ -5,9 +5,11 @@ project(GHOST)
 if(JOSH_MURPHY)
     if(APPLE)
         set(CMAKE_OSX_DEPLOYMENT_TARGET "10.6")
-        set(CMAKE_OSX_SYSROOT "/Applications/Xcode-4.3.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.6.sdk")
+        set(CMAKE_OSX_SYSROOT "/Applications/Xcode-433.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.6.sdk")
         #set(ParaView_DIR /Users/jjm390/Developer/ParaView/build401/paraview/src/paraview-build)
-        set(ParaView_DIR /Volumes/Data/Development/ParaView/superbuild/paraview/src/paraview-build)
+        #set(ParaView_DIR /Volumes/Data/Development/ParaView/superbuild/paraview/src/paraview-build)
+        set(ParaView_DIR /Users/jjm390/Developer/ParaView/superbuild/paraview/src/paraview-build)
+
 
      elseif(UNIX)
         set(ParaView_DIR /home/jjm390/Developer/ParaView/build401/paraview/src/paraview-build)
@@ -217,7 +219,7 @@ set(ENABLE_ghost true)
 process_dependencies()
 
 if(QTCREATOR)
-    add_library(none STATIC ${AllFiles})
+    #add_library(none STATIC ${AllFiles})
 endif()
 
 
