@@ -9,12 +9,17 @@ if(QTCREATOR)
 #to build the final product.
 #It is not recomended to build the final binary with this setting on.
 
-    set(ParaView_DIR /Users/jjm390/Developer/ParaView/build)
-    set(INSTALL_DIR /Users/jjm390/Developer/install)
+#    set(ParaView_DIR /Users/jjm390/Developer/ParaView/build)
+#    set(INSTALL_DIR /Users/jjm390/Developer/install)
+
+    set(ParaView_DIR /Volumes/Data/Development/ParaView/local/build)
+    set(INSTALL_DIR /Users/jomu9721/Data/Development/GHOST/GHOST-build/install)
     include_directories(BEFORE ${INSTALL_DIR}/include)
     link_directories( ${INSTALL_DIR}/lib)
-    set(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} /Users/jjm390/Developer/install/lib)
-    include_directories(BEFORE /Users/jjm390/Developer/install/include)
+#    set(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} /Users/jjm390/Developer/install/lib)
+#    include_directories(BEFORE /Users/jjm390/Developer/install/include)
+    set(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} /Users/jomu9721/Data/Development/GHOST/GHOST-build/install/lib)
+    include_directories(BEFORE /Users/jomu9721/Data/Development/GHOST/GHOST-build/install/include)
 
 endif()
 

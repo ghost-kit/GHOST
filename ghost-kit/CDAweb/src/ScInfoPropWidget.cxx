@@ -554,33 +554,33 @@ void ScInfoPropWidget::getAllDataSetInfo()
 }
 
 //==================================================================
-void ScInfoPropWidget::getAllVariableSetInfo(QMap<QString, QStringList> DataSetList)
+void ScInfoPropWidget::getAllVariableSetInfo()
 {
-    int count = 0;
+//    int count = 0;
 
-    QMap<QString, QList<filterNetworkList *> > newVariableObjectGroup;
+//    QMap<QString, QList<filterNetworkList *> > newVariableObjectGroup;
 
-    QMap<QString, QStringList>::Iterator iter;
-    for(iter = DataSetList.begin(); iter != DataSetList.end(); ++iter)
-    {
-        QStringList Instrument = DataSetList.keys();
-        QList<QStringList> DataSets = DataSetList.values();
+//    QMap<QString, QStringList>::Iterator iter;
+//    for(iter = DataSetList.begin(); iter != DataSetList.end(); ++iter)
+//    {
+//        QStringList Instrument = DataSetList.keys();
+//        QList<QStringList> DataSets = DataSetList.values();
 
-        for(int i = 0; i < DataSets[count].size(); i++)
-        {
-            //Configure the Needs for Variables Selection List
-            filterNetworkAccessModule SCVariableListManager;
-            this->getSciVariables(SCVariableListManager, DataSets[count][i]);
+//        for(int i = 0; i < DataSets[count].size(); i++)
+//        {
+//            //Configure the Needs for Variables Selection List
+//            filterNetworkAccessModule SCVariableListManager;
+//            this->getSciVariables(SCVariableListManager, DataSets[count][i]);
 
-            QString DataName = this->DataList[Instrument[count]][DataSets[count][i]];
+//            QString DataName = this->DataList[Instrument[count]][DataSets[count][i]];
 
-            newVariableObjectGroup[Instrument[count] + "\t" + DataName].append(SCVariableListManager.getFinalOjects());
-        }
-        count ++;
-    }
-    //this is the poor mans way of defeating the race condition...
-    //still need to fix out of order access when copying...
-    this->currentVariablesObjects = newVariableObjectGroup;
+//            newVariableObjectGroup[Instrument[count] + "\t" + DataName].append(SCVariableListManager.getFinalOjects());
+//        }
+//        count ++;
+//    }
+//    //this is the poor mans way of defeating the race condition...
+//    //still need to fix out of order access when copying...
+//    this->currentVariablesObjects = newVariableObjectGroup;
 }
 
 //==================================================================
@@ -662,7 +662,8 @@ void ScInfoPropWidget::buildDataSetGUIObjects()
 
         //create the head object
         pqTreeWidgetItem *head = new pqTreeWidgetItem;
-        head->setText(0,Keys[x]);
+        QString headText = QString(Keys[x]);
+        head->setText(0,headText);
 
         //add childeren
         for(int y = 0; y < this->DataSetInformation[Keys[x]].size(); y ++)
@@ -681,7 +682,16 @@ void ScInfoPropWidget::buildDataSetGUIObjects()
             pqTreeWidgetItem *child = new pqTreeWidgetItem;
             child->setText(0, ID);
             child->setText(1, Name);
-            child->setCheckState(0, Qt::Unchecked);
+            if(this->DataSetSelectionTracker[Inst]->ArrayIsEnabled(ID.toAscii().data()))
+            {
+                std::cout << "Value is active" << std::endl;
+                child->setCheckState(0, Qt::Checked);
+            }
+            else
+            {
+                std::cout << "Value is inactive" << std::endl;
+                child->setCheckState(0, Qt::Unchecked);
+            }
             child->setTextColor(0, QColor("Dark Blue"));
 
             //add the child to the head
@@ -700,7 +710,7 @@ void ScInfoPropWidget::buildDataSetGUIObjects()
 
 
 //==================================================================
-void ScInfoPropWidget::setupVariableSets()
+void ScInfoPropWidget::extractVariableInfo()
 {
     QMap<QString, QList<filterNetworkList *> >::Iterator iter;
     QList<filterNetworkList *>::Iterator iter2;
@@ -767,6 +777,11 @@ void ScInfoPropWidget::setupVariableSets()
 }
 
 //==================================================================
+void ScInfoPropWidget::buildVariableGUIObjects()
+{
+}
+
+//==================================================================
 DateTime ScInfoPropWidget::textToDateTime(QString dateString)
 {
     DateTime retVal;
@@ -808,7 +823,9 @@ void ScInfoPropWidget::instrumentSelectionChanged(QTreeWidgetItem* item, int sta
     //process the selection change
     if(this->InstrumentSelectionTracker->ArrayIsEnabled(item->text(0).toAscii().data()))
     {
+        //we need to mark the item (and its childeren!) disabled.
         this->InstrumentSelectionTracker->DisableArray(item->text(0).toAscii().data());
+        this->DataSetSelectionTracker[item->text(0)]->DisableAllArrays();
     }
     else
     {
@@ -833,17 +850,48 @@ void ScInfoPropWidget::instrumentSelectionChanged(QTreeWidgetItem* item, int sta
     this->buildDataSetGUIObjects();
 
 
-
-
 }
 
 
 
 //==================================================================
-void ScInfoPropWidget::dataSetSelectionChanged(QTreeWidgetItem *, int)
+void ScInfoPropWidget::dataSetSelectionChanged(QTreeWidgetItem *item, int)
 {
 
     std::cout << "Data Set Selection Has Changed" << std::endl;
+
+    QString Instrument = item->parent()->text(0);
+
+    std::cout << "Instrument: " << Instrument.toStdString() << std::endl;
+    std::cout << "Item:       " << item->text(0).toStdString() << std::endl;
+
+    //process the selection change
+    if(this->DataSetSelectionTracker[Instrument]->ArrayIsEnabled(item->text(0).toAscii().data()))
+    {
+        this->DataSetSelectionTracker[Instrument]->DisableArray(item->text(0).toAscii().data());
+    }
+    else
+    {
+        this->DataSetSelectionTracker[Instrument]->EnableArray(item->text(0).toAscii().data());
+    }
+
+#ifdef DEBUG
+    std::cout << "Arrays in DataSet List:" << std::endl;
+    for(int x = 0; x < this->DataSetSelectionTracker[Instrument]->GetNumberOfArrays(); x++)
+    {
+        std::cout << "Name: " << this->DataSetSelectionTracker[Instrument]->GetArrayName(x)
+                  << " Instrument: " << Instrument.toStdString() << "status: " << ((this->DataSetSelectionTracker[Instrument]->ArrayIsEnabled(this->DataSetSelectionTracker[Instrument]->GetArrayName(x))) ? ("Enabled") : ("Disabled")) << std::endl;
+
+    }
+#endif
+
+    //Populate the next tree (Variables)
+    this->getAllVariableSetInfo();
+    this->extractVariableInfo();
+    this->buildVariableGUIObjects();
+
+}
+
 //    if(this->DataLock.testAndSetAcquire(0,1))
 //    {
 
@@ -884,7 +932,7 @@ void ScInfoPropWidget::dataSetSelectionChanged(QTreeWidgetItem *, int)
 //        this->DataSelectionDenied.testAndSetAcquire(0,1);
 //    }
 
-}
+
 
 //==================================================================
 void ScInfoPropWidget::processDeniedInstrumentRequests()
@@ -910,6 +958,7 @@ void ScInfoPropWidget::processDeniedDataRequests()
     }
 
 }
+
 
 //==================================================================
 void ScInfoPropWidget::timeRangeChanged()

@@ -95,7 +95,7 @@ protected:
     QStringList ObservatoryList;
 
     //maps
-    QMultiMap<QString , QString> InstrumentList;
+    QMap<QString , QString> InstrumentList;
     QMap<QString, QMap<QString , QString> > DataList;
     QMap<QString, QMap<QString, QString> > VariableList;
     QStringList DataSetRetrunList;
@@ -150,11 +150,13 @@ protected:
     bool getDataSetsList();
 
     void getAllDataSetInfo();
-    void getAllVariableSetInfo(QMap<QString, QStringList> DataSetList);
+    void getAllVariableSetInfo();
 
     void extractDataSetInfo();
     void buildDataSetGUIObjects();
-    void setupVariableSets();
+
+    void extractVariableInfo();
+    void buildVariableGUIObjects();
 
     DateTime textToDateTime(QString dateString);
 
@@ -167,7 +169,7 @@ private slots:
     void observatorySelectionChanged(QString selection);
 
     void instrumentSelectionChanged(QTreeWidgetItem*,int);
-    void dataSetSelectionChanged(QTreeWidgetItem*, int);
+    void dataSetSelectionChanged(QTreeWidgetItem*item, int);
 
     void processDeniedInstrumentRequests();
     void processDeniedDataRequests();
