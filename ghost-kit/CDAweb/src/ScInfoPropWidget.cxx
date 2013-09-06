@@ -155,129 +155,129 @@ void ScInfoPropWidget::apply()
 
     std::cout << "APPLY CLICKED" << std::endl;
 
-    //build a list of elements
-    QList<QTreeWidgetItem *> selectedElements = ui->DataSet->selectedItems();
-    QList<QTreeWidgetItem *>::Iterator iter;
+//    //build a list of elements
+//    QList<QTreeWidgetItem *> selectedElements = ui->DataSet->selectedItems();
+//    QList<QTreeWidgetItem *>::Iterator iter;
 
-    QMap<QString, QStringList> DataMap;
+//    QMap<QString, QStringList> DataMap;
 
-    //Get Instruments and Keys
-    for(iter = selectedElements.begin(); iter != selectedElements.end(); ++iter)
-    {
-        QString Instrument;
+//    //Get Instruments and Keys
+//    for(iter = selectedElements.begin(); iter != selectedElements.end(); ++iter)
+//    {
+//        QString Instrument;
 
-        //Make sure we only get the Elements with Parents (i.e. non-insturment slecetions)
-        if((*iter)->parent())
-        {
-            Instrument = (*iter)->parent()->text(0);
-            DataMap[Instrument].push_back((*iter)->text(1));
-        }
-    }
-
-
-
-    //get the list of variables
-    QList<QTreeWidgetItem *> selectedVariables = ui->Variables->selectedItems();
-
-    QMap<QString,QStringList> VariableMap;
-
-    for(iter = selectedVariables.begin(); iter != selectedVariables.end(); ++iter)
-    {
-
-        QMap<QString, QString> DataSet;
-        QString Data;
-
-        if((*iter)->parent())
-        {
-            Data = (*iter)->parent()->text(0);
-            Data = this->DataList[(*iter)->parent()->text(1)].key(Data);
-            VariableMap[Data].push_back(this->VariableList[(*iter)->parent()->text(0)].key((*iter)->text(0)));
-
-            //            std::cout << "DataSet: " << Data.toAscii().data() << std::endl;
-            //            std::cout << "Variable: " << VariableMap[Data].back().toAscii().data() << std::endl;
-            //            std::cout << "==========" << std::endl;
-        }
-    }
+//        //Make sure we only get the Elements with Parents (i.e. non-insturment slecetions)
+//        if((*iter)->parent())
+//        {
+//            Instrument = (*iter)->parent()->text(0);
+//            DataMap[Instrument].push_back((*iter)->text(1));
+//        }
+//    }
 
 
-    //Create the needed string
-    //  Insturments separated by ;
-    //  Data sets separated by ,
-    QString DataString;
 
-    QStringList keys = DataMap.keys();
-    QList<QStringList> values = DataMap.values();
+//    //get the list of variables
+//    QList<QTreeWidgetItem *> selectedVariables = ui->Variables->selectedItems();
 
-    for(int x = 0; x < keys.size(); x++)
-    {
-        if(x != 0)
-        {
-            DataString = DataString + ";";
-        }
+//    QMap<QString,QStringList> VariableMap;
 
-        DataString = DataString + keys[x] + ":";
+//    for(iter = selectedVariables.begin(); iter != selectedVariables.end(); ++iter)
+//    {
 
-        for(int y = 0; y < values[x].size(); y++)
-        {
-            if(y != 0)
-            {
-                DataString = DataString + "," ;
-            }
+//        QMap<QString, QString> DataSet;
+//        QString Data;
 
-            DataString = DataString + values[x][y] + "~" ;
+//        if((*iter)->parent())
+//        {
+//            Data = (*iter)->parent()->text(0);
+//            Data = this->DataList[(*iter)->parent()->text(1)].key(Data);
+//            VariableMap[Data].push_back(this->VariableList[(*iter)->parent()->text(0)].key((*iter)->text(0)));
 
-            for(int g = 0; g < VariableMap[values[x][y]].size(); g++)
-            {
-                if(g != 0)
-                {
-                    DataString = DataString + "|";
-                }
-
-                DataString = DataString + VariableMap[values[x][y]][g];
-            }
-        }
-
-    }
-
-    std::cerr << "CodeString: " << DataString.toAscii().data() << std::endl;
-
-    this->svp->SetElement(0, this->currentGroup.toAscii().data());
-    this->svp->SetElement(1, this->currentObservatory.toAscii().data());
-    this->svp->SetElement(2, DataString.toAscii().data());
-
-    if(this->smProxy->GetProperty("TimeRange"))
-    {
-        //set date and time
-        QDateTime start = ui->startTime->dateTime();
-
-        DateTime startDT;
-        startDT.setYear(start.date().year());
-        startDT.setMonth(start.date().month());
-        startDT.setDay(start.date().day());
-
-        startDT.setHours(start.time().hour());
-        startDT.setMinutes(start.time().minute());
-        startDT.setSeconds(start.time().second());
-
-        QDateTime end = ui->endTime->dateTime();
-
-        DateTime endDT;
-        endDT.setYear(end.date().year());
-        endDT.setMonth(end.date().month());
-        endDT.setDay(end.date().day());
-
-        endDT.setHours(end.time().hour());
-        endDT.setMinutes(end.time().minute());
-        endDT.setSeconds(end.time().second());
-
-        std::cout << "Set Start DateTime to: " << startDT.getDateTimeString() << std::endl;
-        std::cout << "Set End DateTime to: " << endDT.getDateTimeString() << std::endl;
+//            //            std::cout << "DataSet: " << Data.toAscii().data() << std::endl;
+//            //            std::cout << "Variable: " << VariableMap[Data].back().toAscii().data() << std::endl;
+//            //            std::cout << "==========" << std::endl;
+//        }
+//    }
 
 
-        vtkSMDoubleVectorProperty *timeRange =  vtkSMDoubleVectorProperty::SafeDownCast(this->smProxy->GetProperty("TimeRange"));
-        timeRange->SetElement(0,startDT.getMJD());
-        timeRange->SetElement(1,endDT.getMJD());
-    }
+//    //Create the needed string
+//    //  Insturments separated by ;
+//    //  Data sets separated by ,
+//    QString DataString;
+
+//    QStringList keys = DataMap.keys();
+//    QList<QStringList> values = DataMap.values();
+
+//    for(int x = 0; x < keys.size(); x++)
+//    {
+//        if(x != 0)
+//        {
+//            DataString = DataString + ";";
+//        }
+
+//        DataString = DataString + keys[x] + ":";
+
+//        for(int y = 0; y < values[x].size(); y++)
+//        {
+//            if(y != 0)
+//            {
+//                DataString = DataString + "," ;
+//            }
+
+//            DataString = DataString + values[x][y] + "~" ;
+
+//            for(int g = 0; g < VariableMap[values[x][y]].size(); g++)
+//            {
+//                if(g != 0)
+//                {
+//                    DataString = DataString + "|";
+//                }
+
+//                DataString = DataString + VariableMap[values[x][y]][g];
+//            }
+//        }
+
+//    }
+
+//    std::cerr << "CodeString: " << DataString.toAscii().data() << std::endl;
+
+//    this->svp->SetElement(0, this->currentGroup.toAscii().data());
+//    this->svp->SetElement(1, this->currentObservatory.toAscii().data());
+//    this->svp->SetElement(2, DataString.toAscii().data());
+
+//    if(this->smProxy->GetProperty("TimeRange"))
+//    {
+//        //set date and time
+//        QDateTime start = ui->startTime->dateTime();
+
+//        DateTime startDT;
+//        startDT.setYear(start.date().year());
+//        startDT.setMonth(start.date().month());
+//        startDT.setDay(start.date().day());
+
+//        startDT.setHours(start.time().hour());
+//        startDT.setMinutes(start.time().minute());
+//        startDT.setSeconds(start.time().second());
+
+//        QDateTime end = ui->endTime->dateTime();
+
+//        DateTime endDT;
+//        endDT.setYear(end.date().year());
+//        endDT.setMonth(end.date().month());
+//        endDT.setDay(end.date().day());
+
+//        endDT.setHours(end.time().hour());
+//        endDT.setMinutes(end.time().minute());
+//        endDT.setSeconds(end.time().second());
+
+//        std::cout << "Set Start DateTime to: " << startDT.getDateTimeString() << std::endl;
+//        std::cout << "Set End DateTime to: " << endDT.getDateTimeString() << std::endl;
+
+
+//        vtkSMDoubleVectorProperty *timeRange =  vtkSMDoubleVectorProperty::SafeDownCast(this->smProxy->GetProperty("TimeRange"));
+//        timeRange->SetElement(0,startDT.getMJD());
+//        timeRange->SetElement(1,endDT.getMJD());
+//    }
 
     //apply the upstream parameters
     Superclass::apply();
@@ -590,12 +590,9 @@ void ScInfoPropWidget::getAllVariableSetInfo()
                 //Cache the Data
                 this->DataSetVariableInfoCache[InstrumentName][DataSetName] = SCVariableListManager.getFinalOjects();
                 this->DataSetVariableInfoCacheStatus[InstrumentName]->EnableArray(DataSetName.toAscii().data());
-
             }
-
         }
     }
-
 }
 
 //==================================================================
@@ -650,11 +647,8 @@ void ScInfoPropWidget::extractDataSetInfo()
 
             //Add the object to the DataSetInformation tracker
             this->DataSetInformation[NameOfArray].push_back(newInfoObject);
-
         }
-
     }
-
 }
 
 //==================================================================
@@ -749,62 +743,62 @@ void ScInfoPropWidget::extractVariableInfo()
     int count = 0;
 
     //    ui->Variables->clear();
-    this->VariableList.clear();
+//    this->VariableList.clear();
 
     QMap<QString, QMap<QString, QString> > List;
 
-    for(iter=this->currentVariablesObjects.begin(); iter != this->currentVariablesObjects.end(); ++iter)
-    {
-        QStringList keys = this->currentVariablesObjects.keys();
+//    for(iter=this->currentVariablesObjects.begin(); iter != this->currentVariablesObjects.end(); ++iter)
+//    {
+//        QStringList keys = this->currentVariablesObjects.keys();
 
-        QList<filterNetworkList *> item = (*iter);
+//        QList<filterNetworkList *> item = (*iter);
 
-        QList<QTreeWidgetItem*> treelist;
-        QMap<QString, QString> temp;
+//        QList<QTreeWidgetItem*> treelist;
+//        QMap<QString, QString> temp;
 
-        QStringList DataSet = keys[count].split("\t");
+//        QStringList DataSet = keys[count].split("\t");
 
 
-        for(iter2= item.begin(); iter2 != item.end(); ++iter2)
-        {
-            filterNetworkList *item2 = (*iter2);
+//        for(iter2= item.begin(); iter2 != item.end(); ++iter2)
+//        {
+//            filterNetworkList *item2 = (*iter2);
 
-            for(int x = 0; x < item2->size(); x++)
-            {
-                filterNetworkObject *currentMap = item2->operator [](x);
+//            for(int x = 0; x < item2->size(); x++)
+//            {
+//                filterNetworkObject *currentMap = item2->operator [](x);
 
-                QString Name = currentMap->operator []("Name");
-                QString Desc = currentMap->operator []("LongDescription");
+//                QString Name = currentMap->operator []("Name");
+//                QString Desc = currentMap->operator []("LongDescription");
 
-                temp.insert(Name, Desc);
+//                temp.insert(Name, Desc);
 
-                QTreeWidgetItem * child = new QTreeWidgetItem();
-                child->setText(0, Desc);
-                child->setText(1, Name);
+//                QTreeWidgetItem * child = new QTreeWidgetItem();
+//                child->setText(0, Desc);
+//                child->setText(1, Name);
 
-                treelist.push_back(child);
+//                treelist.push_back(child);
 
-            }
-            List.insert(DataSet[1], temp);
-        }
+//            }
+//            List.insert(DataSet[1], temp);
+//        }
 
-        count ++;
+//        count ++;
 
-        QTreeWidgetItem *newItem = new QTreeWidgetItem();
-        newItem->setText(0,DataSet[1]);     //this is the DataSet
-        newItem->setText(1, DataSet[0]);    //this is the Instrument
-        newItem->setTextColor(0, QColor("dark blue"));
-        newItem->addChildren(treelist);
+//        QTreeWidgetItem *newItem = new QTreeWidgetItem();
+//        newItem->setText(0,DataSet[1]);     //this is the DataSet
+//        newItem->setText(1, DataSet[0]);    //this is the Instrument
+//        newItem->setTextColor(0, QColor("dark blue"));
+//        newItem->addChildren(treelist);
 
-        ui->Variables->setColumnCount(2);
-        ui->Variables->hideColumn(1);
-        ui->Variables->addTopLevelItem(newItem);
-        ui->Variables->setEnabled(true);
-        ui->Variables->expandAll();
+//        ui->Variables->setColumnCount(2);
+//        ui->Variables->hideColumn(1);
+//        ui->Variables->addTopLevelItem(newItem);
+//        ui->Variables->setEnabled(true);
+//        ui->Variables->expandAll();
 
-    }
+//    }
 
-    this->VariableList = List;
+//    this->VariableList = List;
 }
 
 //==================================================================

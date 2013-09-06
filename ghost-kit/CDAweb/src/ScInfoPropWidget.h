@@ -88,7 +88,6 @@ protected:
     filterNetworkList *currentGroupObjects;
     filterNetworkList *currentInstrumentObjects;
     filterNetworkList *currentObservatoryObjects;
-    QMap<QString, QList<filterNetworkList *> > currentVariablesObjects;
 
     //listings
     QStringList ObsGroupList;
@@ -96,8 +95,6 @@ protected:
 
     //maps
     QMap<QString , QString> InstrumentList;
-    QMap<QString, QMap<QString , QString> > DataList;
-    QMap<QString, QMap<QString, QString> > VariableList;
     QStringList DataSetRetrunList;
 
     //current target
