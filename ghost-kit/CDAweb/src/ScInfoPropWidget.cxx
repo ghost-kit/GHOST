@@ -673,10 +673,12 @@ void ScInfoPropWidget::buildDataSetGUIObjects()
             QString ID   = this->DataSetInformation[Keys[x]][y].ID;
             QString Inst = Keys[x];
 
+            DateTime startDT = this->DataSetInformation[Keys[x]][y].StartTime;
+            DateTime endDT   = this->DataSetInformation[Keys[x]][y].EndTime;
+
             std::cout << "Name: " << Name.toStdString() << std::endl;
             std::cout << "ID:   " << ID.toStdString() << std::endl;
             std::cout << "Instrument: " << Inst.toStdString() << std::endl;
-            std::cout << "==="    << std::endl;
 
             //create the child item
             pqTreeWidgetItem *child = new pqTreeWidgetItem;
@@ -695,7 +697,21 @@ void ScInfoPropWidget::buildDataSetGUIObjects()
             child->setTextColor(0, QColor("Dark Blue"));
 
             //add the child to the head
-            head->addChild(child);
+             if(startDT <= this->startMJD && endDT >= this->endMJD)
+             {
+                 QString tooltip = QString("Data for " + ID + " is available for dates " + QString::fromStdString(startDT.getDateTimeString()) + " to " + QString::fromStdString(endDT.getDateTimeString()) + "." );
+                 child->setToolTip(0, tooltip);
+             }
+             else
+             {
+                 QString tooltip = QString("Data for " + ID + " is ONLY available for dates " + QString::fromStdString(startDT.getDateTimeString()) + " to " + QString::fromStdString(endDT.getDateTimeString()) + ". Data for the requested time is not available." );
+                 child->setToolTip(0, tooltip);
+                 child->setToolTip(1,tooltip);
+                 child->setDisabled(true);
+             }
+             head->addChild(child);
+
+            std::cout << "==="    << std::endl;
 
         }
 
