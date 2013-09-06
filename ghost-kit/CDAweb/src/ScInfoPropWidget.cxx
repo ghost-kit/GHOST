@@ -545,6 +545,8 @@ void ScInfoPropWidget::getAllDataSetInfo()
         //Download the data
         filterNetworkAccessModule SCDataSetListManager;
         this->getSciDataGroup(SCDataSetListManager, NameOfArray);
+
+        //Cache the Data
         this->InstrumentDataSetInfoCache[NameOfArray] = SCDataSetListManager.getFinalOjects();
         this->InstrumentDataSetInfoCacheStatus->EnableArray(NameOfArray.toAscii().data());
 
@@ -556,31 +558,44 @@ void ScInfoPropWidget::getAllDataSetInfo()
 //==================================================================
 void ScInfoPropWidget::getAllVariableSetInfo()
 {
-//    int count = 0;
+    //get the keys that exist
+    QStringList Instruments = this->DataSetSelectionTracker.keys();
+    for(int x =0; x < Instruments.size(); x++)
+    {
+        if(this->InstrumentSelectionTracker->ArrayIsEnabled(Instruments[x].toAscii().data()))
+        {
+            std::cout << "Processing Instrument " << Instruments[x].toStdString() << std::endl;
+            //get keys of data sets
+            int numberArrays = this->DataSetSelectionTracker[Instruments[x]]->GetNumberOfArrays();
 
-//    QMap<QString, QList<filterNetworkList *> > newVariableObjectGroup;
+            for(int y =0; y < numberArrays; y++)
+            {
 
-//    QMap<QString, QStringList>::Iterator iter;
-//    for(iter = DataSetList.begin(); iter != DataSetList.end(); ++iter)
-//    {
-//        QStringList Instrument = DataSetList.keys();
-//        QList<QStringList> DataSets = DataSetList.values();
+                //get information on the Variables in DataSets
+                QString InstrumentName = Instruments[x];
+                QString DataSetName    = DataSetSelectionTracker[Instruments[x]]->GetArrayName(y);
 
-//        for(int i = 0; i < DataSets[count].size(); i++)
-//        {
-//            //Configure the Needs for Variables Selection List
-//            filterNetworkAccessModule SCVariableListManager;
-//            this->getSciVariables(SCVariableListManager, DataSets[count][i]);
+                //check to see if the data is selected
+                if(!this->DataSetSelectionTracker[Instruments[x]]->ArrayIsEnabled(DataSetName.toAscii().data())) continue;
 
-//            QString DataName = this->DataList[Instrument[count]][DataSets[count][i]];
+                std::cout << "Processing DataSet " << DataSetName.toStdString() << std::endl;
 
-//            newVariableObjectGroup[Instrument[count] + "\t" + DataName].append(SCVariableListManager.getFinalOjects());
-//        }
-//        count ++;
-//    }
-//    //this is the poor mans way of defeating the race condition...
-//    //still need to fix out of order access when copying...
-//    this->currentVariablesObjects = newVariableObjectGroup;
+                //if the data is already in the cache, we don't need to download it
+                if(this->DataSetVariableInfoCacheStatus[InstrumentName]->ArrayIsEnabled(DataSetName.toAscii().data())) continue;
+
+                //Download the Data
+                filterNetworkAccessModule SCVariableListManager;
+                this->getSciVariables(SCVariableListManager, DataSetName);
+
+                //Cache the Data
+                this->DataSetVariableInfoCache[InstrumentName][DataSetName] = SCVariableListManager.getFinalOjects();
+                this->DataSetVariableInfoCacheStatus[InstrumentName]->EnableArray(DataSetName.toAscii().data());
+
+            }
+
+        }
+    }
+
 }
 
 //==================================================================
