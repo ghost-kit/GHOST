@@ -113,6 +113,10 @@ ScInfoPropWidget::ScInfoPropWidget(vtkSMProxy *smproxy, vtkSMProperty *smpropert
     this->InstrumentDataSetInfoCacheStatus  = vtkDataArraySelection::New();
 
 
+    //all variable setup
+    this->getAllVars = true;
+    ui->allVariables->setChecked(true);
+
 
     //connect signals to slots
 
@@ -128,16 +132,20 @@ ScInfoPropWidget::ScInfoPropWidget(vtkSMProxy *smproxy, vtkSMProperty *smpropert
     /** Observatory Connections */
     connect(ui->Observatory, SIGNAL(activated(QString)), this, SLOT(observatorySelectionChanged(QString)));
 
-    /** Instrument Connections */
+    /** Instrument Connections/Links */
     this->connect(ui->Instruments, SIGNAL(itemChanged(QTreeWidgetItem*,int)), SLOT(instrumentSelectionChanged(QTreeWidgetItem*,int)));
+    this->addPropertyLink(ui->Instruments, smproxy->GetPropertyName(smproperty), SIGNAL(itemChanged(QTreeWidgetItem*,int)), this->svp);
 
-    /** Data Selection Changed */
+
+    /** Data Selection Connections/Links */
     connect(ui->DataSet, SIGNAL(itemChanged(QTreeWidgetItem*,int)), this, SLOT(dataSetSelectionChanged(QTreeWidgetItem*,int)));
+    this->addPropertyLink(ui->DataSet, smproxy->GetPropertyName(smproperty), SIGNAL(itemChanged(QTreeWidgetItem*,int)), this->svp);
 
-    /** Property Links to trigger Apply button active */
-    this->addPropertyLink(ui->Variables, smproxy->GetPropertyName(smproperty), SIGNAL(itemSelectionChanged()), this->svp);
-    this->addPropertyLink(ui->startTime, smproxy->GetPropertyName(smproperty), SIGNAL(editingFinished()), this->svp);
-    this->addPropertyLink(ui->endTime, smproxy->GetPropertyName(smproperty), SIGNAL(editingFinished()), this->svp);
+
+    /** Variable connections/links*/
+    this->connect(ui->Variables, SIGNAL(itemChanged(QTreeWidgetItem*,int)), this, SLOT(variableSelectionChanged(QTreeWidgetItem*,int)));
+    this->connect(ui->allVariables, SIGNAL(clicked(bool)), this, SLOT(useAllVariables(bool)));
+    this->addPropertyLink(ui->Variables, smproxy->GetPropertyName(smproperty), SIGNAL(itemChanged(QTreeWidgetItem*,int)), this->svp);
 
 }
 
@@ -402,7 +410,6 @@ bool ScInfoPropWidget::loadGroupListToGUI()
     ui->Observatory->setDisabled(true);
     ui->Instruments->setDisabled(true);
     ui->DataSet->setDisabled(true);
-    ui->Variables->setDisabled(true);
 
     return true;
 }
@@ -600,7 +607,7 @@ void ScInfoPropWidget::extractDataSetInfo()
 {
     //This method extracts needed information from the XML
 
-    std::cout << "Processing the List for GUI" << std::endl;
+    std::cout << "Processing the Data Set List for GUI" << std::endl;
 
     for(int x = 0; x < this->InstrumentSelectionTracker->GetNumberOfArrays(); x ++)
     {
@@ -672,7 +679,11 @@ void ScInfoPropWidget::buildDataSetGUIObjects()
         //create the head object
         pqTreeWidgetItem *head = new pqTreeWidgetItem;
         QString headText = QString(Keys[x]);
+        QString headText2 = this->InstrumentList[headText];
         head->setText(0,headText);
+        head->setText(1, headText2);
+        head->setTextColor(1, QColor("Dark Red"));
+
 
         //add childeren
         for(int y = 0; y < this->DataSetInformation[Keys[x]].size(); y ++)
@@ -688,6 +699,10 @@ void ScInfoPropWidget::buildDataSetGUIObjects()
             std::cout << "Name: " << Name.toStdString() << std::endl;
             std::cout << "ID:   " << ID.toStdString() << std::endl;
             std::cout << "Instrument: " << Inst.toStdString() << std::endl;
+
+            //make the trackers for variables
+            this->VariablesSelectionTracker[Inst][ID] = vtkDataArraySelection::New();
+
 
             //create the child item
             pqTreeWidgetItem *child = new pqTreeWidgetItem;
@@ -737,73 +752,160 @@ void ScInfoPropWidget::buildDataSetGUIObjects()
 //==================================================================
 void ScInfoPropWidget::extractVariableInfo()
 {
-    QMap<QString, QList<filterNetworkList *> >::Iterator iter;
-    QList<filterNetworkList *>::Iterator iter2;
 
-    int count = 0;
+    //Extracting  Information needed for gui
+    std::cout << "Processing Variable List" << std::endl;
 
-    //    ui->Variables->clear();
-//    this->VariableList.clear();
+    QStringList Instruments = this->DataSetSelectionTracker.keys();
 
-    QMap<QString, QMap<QString, QString> > List;
+    //cycle through Instruments
+    for(int x = 0; x < this->DataSetSelectionTracker.size(); x++)
+    {
+        //if the instrument isn't selected, skip it. This is a just-in-case call
+        if(!this->InstrumentSelectionTracker->ArrayIsEnabled(Instruments[x].toAscii().data())) continue;
 
-//    for(iter=this->currentVariablesObjects.begin(); iter != this->currentVariablesObjects.end(); ++iter)
-//    {
-//        QStringList keys = this->currentVariablesObjects.keys();
+        //cycle through the datasets within the instrument
+        for(int y =0; y < this->DataSetSelectionTracker[Instruments[x]]->GetNumberOfArrays();  y++)
+        {
 
-//        QList<filterNetworkList *> item = (*iter);
+            //get the current data-set name
+            QString currentDataSet = this->DataSetSelectionTracker[Instruments[x]]->GetArrayName(y);
 
-//        QList<QTreeWidgetItem*> treelist;
-//        QMap<QString, QString> temp;
+            //check to see if the data-set is selected. if not skip.
+            if(!this->DataSetSelectionTracker[Instruments[x]]->ArrayIsEnabled(currentDataSet.toAscii().data())) continue;
 
-//        QStringList DataSet = keys[count].split("\t");
+            //Now that we know we are dealing with the correct data sets, lets process it.
+            filterNetworkList *item = this->DataSetVariableInfoCache[Instruments[x]][currentDataSet];
 
+            if(!item)
+            {
+                std::cerr << "ERROR: Invalid Pointer" << std::endl;
+                break;
+            }
 
-//        for(iter2= item.begin(); iter2 != item.end(); ++iter2)
-//        {
-//            filterNetworkList *item2 = (*iter2);
+            //skip processing if we have already processed it.
+            if(this->VariableSetInformation[Instruments[x]][currentDataSet].size() > 0) continue;
 
-//            for(int x = 0; x < item2->size(); x++)
-//            {
-//                filterNetworkObject *currentMap = item2->operator [](x);
+            //process the data
+            for(int z = 0; z < item->size(); z++)
+            {
+                filterNetworkObject *currentMap = item->operator [](z);
+                DataSetInfo newInfoObject;
 
-//                QString Name = currentMap->operator []("Name");
-//                QString Desc = currentMap->operator []("LongDescription");
+                //extract the needed information and place in DataSetInfo Object
+                newInfoObject.Name = currentMap->operator []("LongDescription");
+                newInfoObject.ID   = currentMap->operator []("Name");
 
-//                temp.insert(Name, Desc);
+                //Add to the list
+                this->VariableSetInformation[Instruments[x]][currentDataSet].push_back(newInfoObject);
 
-//                QTreeWidgetItem * child = new QTreeWidgetItem();
-//                child->setText(0, Desc);
-//                child->setText(1, Name);
-
-//                treelist.push_back(child);
-
-//            }
-//            List.insert(DataSet[1], temp);
-//        }
-
-//        count ++;
-
-//        QTreeWidgetItem *newItem = new QTreeWidgetItem();
-//        newItem->setText(0,DataSet[1]);     //this is the DataSet
-//        newItem->setText(1, DataSet[0]);    //this is the Instrument
-//        newItem->setTextColor(0, QColor("dark blue"));
-//        newItem->addChildren(treelist);
-
-//        ui->Variables->setColumnCount(2);
-//        ui->Variables->hideColumn(1);
-//        ui->Variables->addTopLevelItem(newItem);
-//        ui->Variables->setEnabled(true);
-//        ui->Variables->expandAll();
-
-//    }
-
-//    this->VariableList = List;
+                std::cout << "Adding Variable: " << newInfoObject.Name.toStdString() << " for DataSet: " << currentDataSet.toStdString() << " for Instrument: " << Instruments[x].toStdString() << std::endl;
+            }
+        }
+    }
 }
 
 //==================================================================
 void ScInfoPropWidget::buildVariableGUIObjects()
 {
+    //Build Variable GUI objects
+    std::cout << "Building Variable GUI Objects" << std::endl;
+
+    //get Instrument Names:
+    QStringList Instrument = this->DataSetSelectionTracker.keys();
+
+    //clear out old data
+    ui->Variables->clear();
+
+    std::cout << "Variables GUI Cleared" << std::endl << std::flush;
+
+    //build new items
+    for(int x = 0; x < this->DataSetSelectionTracker.size(); x++)
+    {
+        //skip if not activated
+        if(!this->InstrumentSelectionTracker->ArrayIsEnabled(Instrument[x].toAscii().data())) continue;
+
+        //set up Instrument Head
+        pqTreeWidgetItem *IHead = new pqTreeWidgetItem;
+        IHead->setText(0, Instrument[x]);
+
+        //flag for displaying IHead
+        int IHeadActiveFlag = 0;
+
+        //process Data Sets
+        for(int y = 0; y < this->DataSetSelectionTracker[Instrument[x]]->GetNumberOfArrays(); y++)
+        {
+            //get current Data Set
+            QString currentDataSet = this->DataSetSelectionTracker[Instrument[x]]->GetArrayName(y);
+            std::cout << "Got Array Name" << std::endl << std::flush;
+
+            //skip if not activated
+            if(!this->DataSetSelectionTracker[Instrument[x]]->ArrayIsEnabled(currentDataSet.toAscii().data())) continue;
+
+            //create DataSet Head
+            pqTreeWidgetItem *DSHead = new pqTreeWidgetItem;
+            DSHead->setText(0, currentDataSet);
+
+
+            //Process the Varables List
+            for(int z = 0; z < this->VariableSetInformation[Instrument[x]][currentDataSet].size(); z++)
+            {
+                std::cout << "\nProcessing index " << z << " of " << this->VariableSetInformation[Instrument[x]][currentDataSet].size() - 1 << std::endl << std::flush;
+                //populate array selectors
+                QString Name = this->VariableSetInformation[Instrument[x]][currentDataSet][z].Name;
+                QString ID   = this->VariableSetInformation[Instrument[x]][currentDataSet][z].ID;
+
+                std::cout << "Variable:   " << Name.toStdString() << std::endl;
+                std::cout << "ID:         " << ID.toStdString() << std::endl;
+                std::cout << "Instrument: " << Instrument[x].toStdString() << std::endl;
+                std::cout << "DataSet:    " << currentDataSet.toStdString() << std::endl;
+
+                //create the child item
+                pqTreeWidgetItem *var = new pqTreeWidgetItem;
+                var->setText(0, ID);
+                var->setText(1, Name);
+
+                std::cout << "Created Variable Object for " << Name.toStdString() << std::endl << std::flush;
+
+                //need a set flag to know if the base object should be displayed.
+
+
+                if(this->VariablesSelectionTracker[Instrument[x]][currentDataSet]->ArrayIsEnabled(ID.toAscii().data()))
+                {
+                    std::cout << "Object is Enabled" << std::endl << std::flush;
+                    var->setCheckState(0, Qt::Checked);
+                }
+                else
+                {
+                    std::cout << "Object is Disabled" << std::endl << std::flush;
+                    var->setCheckState(0, Qt::Unchecked);
+                }
+                var->setTextColor(0, QColor("Dark Blue"));
+
+                std::cout << "Color set to Blue" << std::endl << std::flush;
+
+                //add var to DataSet
+                DSHead->addChild(var);
+                std::cout << "Added to DataSet Head" << std::endl << std::flush;
+
+                //incriment IHead flag
+                IHeadActiveFlag ++;
+
+            }
+
+            //add DSHead to Instrument
+            IHead->addChild(DSHead);
+            std::cout << "Added to Instrument Head" << std::endl << std::flush;
+        }
+
+        //Add item to the GUI if active
+        if(IHeadActiveFlag)
+        {
+            ui->Variables->addTopLevelItem(IHead);
+            std::cout << "Added to GUI" << std::endl << std::flush;
+        }
+    }
+
 }
 
 //==================================================================
@@ -894,6 +996,9 @@ void ScInfoPropWidget::dataSetSelectionChanged(QTreeWidgetItem *item, int)
     if(this->DataSetSelectionTracker[Instrument]->ArrayIsEnabled(item->text(0).toAscii().data()))
     {
         this->DataSetSelectionTracker[Instrument]->DisableArray(item->text(0).toAscii().data());
+
+        //clear the selections for this item in Variables
+        this->VariablesSelectionTracker[Instrument][QString(item->text(0))]->DisableAllArrays();
     }
     else
     {
@@ -917,47 +1022,57 @@ void ScInfoPropWidget::dataSetSelectionChanged(QTreeWidgetItem *item, int)
 
 }
 
-//    if(this->DataLock.testAndSetAcquire(0,1))
-//    {
+//==================================================================
+void ScInfoPropWidget::variableSelectionChanged(QTreeWidgetItem *item, int)
+{
 
-//        QList<QTreeWidgetItem*> dataSets = ui->DataSet->selectedItems();
+    std::cout << "Variable Selection Has Changed" << std::endl;
 
-//        QMap<QString, QStringList> DataMap;
+    QTreeWidgetItem *DSet = item->parent();
+    QTreeWidgetItem *Inst = DSet->parent();
 
-//        if(!dataSets.isEmpty())
-//        {
-//            //create a list of items
-//            QList<QTreeWidgetItem*>::iterator iter;
-//            for(iter = dataSets.begin(); iter != dataSets.end(); ++iter)
-//            {
-//                QString Instrument;
-
-//                //Make sure we only get the Elements with Parents (i.e. non-insturment slecetions)
-//                if((*iter)->parent())
-//                {
-//                    Instrument = (*iter)->parent()->text(0);
-//                    DataMap[Instrument].push_back((*iter)->text(1));
-//                }
-//            }
-//            getAllVariableSetInfo(DataMap);
-//        }
-
-//        this->setupVariableSets();
-//        this->DataLock.deref();
-
-//        connect(this, SIGNAL(completedDataProcessing()), this, SLOT(processDeniedDataRequests()));
-
-//        if(this->DataSelectionDenied.testAndSetAcquire(1,1))
-//        {
-//            emit this->completedDataProcessing();
-//        }
-//    }
-//    else
-//    {
-//        this->DataSelectionDenied.testAndSetAcquire(0,1);
-//    }
+    QString DataSet = DSet->text(0);
+    QString Instrument = Inst->text(0);
 
 
+    //process the selection change
+    if(this->VariablesSelectionTracker[Instrument][DataSet]->ArrayIsEnabled(item->text(0).toAscii().data()))
+    {
+        this->VariablesSelectionTracker[Instrument][DataSet]->DisableArray(item->text(0).toAscii().data());
+    }
+    else
+    {
+        this->VariablesSelectionTracker[Instrument][DataSet]->EnableArray(item->text(0).toAscii().data());
+    }
+
+
+//#ifdef DEBUG
+    std::cout << "Arrays in Variable List for [" << Instrument.toStdString() << "][" << DataSet.toStdString() << "]: " << std::endl;
+    for(int x = 0; x < this->VariablesSelectionTracker[Instrument][DataSet]->GetNumberOfArrays(); x++)
+    {
+        std::cout << "Name: " << this->VariablesSelectionTracker[Instrument][DataSet]->GetArrayName(x)
+                  << " Status: " << ((this->VariablesSelectionTracker[Instrument][DataSet]->ArrayIsEnabled(this->VariablesSelectionTracker[Instrument][DataSet]->GetArrayName(x))) ? ("Enabled") : ("Disabled")) << std::endl;
+
+    }
+
+//#endif
+
+}
+
+//==================================================================
+void ScInfoPropWidget::useAllVariables(bool state)
+{
+    if(!state)
+    {
+        ui->Variables->setEnabled(true);
+        this->getAllVars = true;
+    }
+    else
+    {
+        ui->Variables->setDisabled(true);
+        this->getAllVars = false;
+    }
+}
 
 //==================================================================
 void ScInfoPropWidget::processDeniedInstrumentRequests()

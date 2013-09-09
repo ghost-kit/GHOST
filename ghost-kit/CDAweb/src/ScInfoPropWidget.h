@@ -76,9 +76,9 @@ protected:
     QMap<QString, QMap<QString, filterNetworkList *> > DataSetVariableInfoCache;
 
     //Variable Selection Trackers
-    QMap<QString, vtkDataArraySelection *> VariablesSelectionTracker;
-
-
+    QMap<QString, QMap<QString, QList<DataSetInfo> > > VariableSetInformation;
+    QMap<QString, QMap<QString, vtkDataArraySelection *> > VariablesSelectionTracker;
+    bool getAllVars;
 
 
 
@@ -167,6 +167,9 @@ private slots:
 
     void instrumentSelectionChanged(QTreeWidgetItem*,int);
     void dataSetSelectionChanged(QTreeWidgetItem*item, int);
+    void variableSelectionChanged(QTreeWidgetItem*item, int);
+
+    void useAllVariables(bool state);
 
     void processDeniedInstrumentRequests();
     void processDeniedDataRequests();
