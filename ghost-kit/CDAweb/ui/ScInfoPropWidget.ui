@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>484</width>
-    <height>795</height>
+    <height>836</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -257,7 +257,7 @@
       <item row="3" column="2">
        <widget class="QComboBox" name="Observatory">
         <property name="enabled">
-         <bool>false</bool>
+         <bool>true</bool>
         </property>
         <property name="minimumSize">
          <size>
@@ -336,6 +336,13 @@
         </property>
        </widget>
       </item>
+      <item row="8" column="0">
+       <widget class="QLabel" name="allVariables_Label">
+        <property name="text">
+         <string>Variables</string>
+        </property>
+       </widget>
+      </item>
      </layout>
      <zorder>Group</zorder>
      <zorder>Observatory</zorder>
@@ -353,6 +360,7 @@
      <zorder>Instruments</zorder>
      <zorder>line</zorder>
      <zorder>allVariables</zorder>
+     <zorder>allVariables_Label</zorder>
     </widget>
    </item>
   </layout>

@@ -69,23 +69,10 @@ ScInfoPropWidget::ScInfoPropWidget(vtkSMProxy *smproxy, vtkSMProperty *smpropert
     this->getInventory=QString("inventory");
 
 
-    //Setup the UI
-    this->dataColumn1 = new QTableWidgetItem("Instrument");
-    this->dataColumn2 = new QTableWidgetItem("Description");
-
     ui->setupUi(this);
     ui->gridLayout->setMargin(pqPropertiesPanel::suggestedMargin());
     ui->gridLayout->setHorizontalSpacing(pqPropertiesPanel::suggestedHorizontalSpacing());
     ui->gridLayout->setVerticalSpacing(pqPropertiesPanel::suggestedVerticalSpacing());
-
-    ui->Observatory->setDisabled(true);
-    ui->Instruments->setDisabled(true);
-    // create tree widget selection helper
-//    new pqTreeWidgetSelectionHelper(ui->Instruments);
-
-    ui->DataSet->setDisabled(true);
-    // create tree widget selection helper
-//    new pqTreeWidgetSelectionHelper(ui->DataSet);
 
     if(!smproxy->GetProperty("TimeRange"))
     {
@@ -116,7 +103,8 @@ ScInfoPropWidget::ScInfoPropWidget(vtkSMProxy *smproxy, vtkSMProperty *smpropert
     //all variable setup
     this->getAllVars = true;
     ui->allVariables->setChecked(true);
-
+    ui->Variables->setVisible(false);
+    ui->Variables_Label->setVisible(false);
 
     //connect signals to slots
 
@@ -127,7 +115,7 @@ ScInfoPropWidget::ScInfoPropWidget(vtkSMProxy *smproxy, vtkSMProperty *smpropert
     connect(ui->endTime, SIGNAL(editingFinished()), this, SLOT(endTimeChanged()));
 
     /** Group Connections */
-    connect(ui->Group, SIGNAL(activated(QString)), this, SLOT(selectedGroup(QString)));
+    connect(ui->Group, SIGNAL(activated(QString)), this, SLOT(groupSelectedChanged(QString)));
 
     /** Observatory Connections */
     connect(ui->Observatory, SIGNAL(activated(QString)), this, SLOT(observatorySelectionChanged(QString)));
@@ -163,129 +151,105 @@ void ScInfoPropWidget::apply()
 
     std::cout << "APPLY CLICKED" << std::endl;
 
-//    //build a list of elements
-//    QList<QTreeWidgetItem *> selectedElements = ui->DataSet->selectedItems();
-//    QList<QTreeWidgetItem *>::Iterator iter;
+    QStringList Instruments = this->DataSetSelectionTracker.keys();
 
-//    QMap<QString, QStringList> DataMap;
+    QString CodeString;
 
-//    //Get Instruments and Keys
-//    for(iter = selectedElements.begin(); iter != selectedElements.end(); ++iter)
-//    {
-//        QString Instrument;
+    for(int x = 0; x < this->InstrumentSelectionTracker->GetNumberOfArrays(); x ++)
+    {
+        //these are the instruments
+        QString currentInstrument = Instruments[x];
 
-//        //Make sure we only get the Elements with Parents (i.e. non-insturment slecetions)
-//        if((*iter)->parent())
-//        {
-//            Instrument = (*iter)->parent()->text(0);
-//            DataMap[Instrument].push_back((*iter)->text(1));
-//        }
-//    }
+        //if the current instrument is not enabled, skip
+        if(!this->InstrumentSelectionTracker->ArrayIsEnabled(currentInstrument.toAscii().data())) continue;
 
+        //build the instrument portion of the string
+        if(x != 0)
+        {
+            CodeString = CodeString + ";";
+        }
 
+        //put in the current Instrument
+        CodeString = CodeString + currentInstrument + ":";
 
-//    //get the list of variables
-//    QList<QTreeWidgetItem *> selectedVariables = ui->Variables->selectedItems();
+        //Process the DataSets
+        for(int y = 0; y < this->DataSetSelectionTracker[currentInstrument]->GetNumberOfArrays(); y++)
+        {
+            //these are the data sets
+            QString currentDataSet = this->DataSetSelectionTracker[currentInstrument]->GetArrayName(y);
 
-//    QMap<QString,QStringList> VariableMap;
+            //if the current data set is NOT enabled, skip
+            if(!this->DataSetSelectionTracker[currentInstrument]->ArrayIsEnabled(currentDataSet.toAscii().data())) continue;
 
-//    for(iter = selectedVariables.begin(); iter != selectedVariables.end(); ++iter)
-//    {
+            //Add the current Data Set
+            if(y != 0)
+            {
+                CodeString = CodeString + ",";
+            }
 
-//        QMap<QString, QString> DataSet;
-//        QString Data;
+            CodeString = CodeString + currentDataSet + "~";
 
-//        if((*iter)->parent())
-//        {
-//            Data = (*iter)->parent()->text(0);
-//            Data = this->DataList[(*iter)->parent()->text(1)].key(Data);
-//            VariableMap[Data].push_back(this->VariableList[(*iter)->parent()->text(0)].key((*iter)->text(0)));
+            for(int z = 0; z < this->VariablesSelectionTracker[currentInstrument][currentDataSet]->GetNumberOfArrays(); z++)
+            {
+                //these are the actual variables
+                QString VarName = this->VariablesSelectionTracker[currentInstrument][currentDataSet]->GetArrayName(z);
 
-//            //            std::cout << "DataSet: " << Data.toAscii().data() << std::endl;
-//            //            std::cout << "Variable: " << VariableMap[Data].back().toAscii().data() << std::endl;
-//            //            std::cout << "==========" << std::endl;
-//        }
-//    }
+                //if var not active, skip
+                if(!this->VariablesSelectionTracker[currentInstrument][currentDataSet]->ArrayIsEnabled(VarName.toAscii().data())) continue;
 
+                //add variables
+                if(z != 0)
+                {
+                    CodeString = CodeString + "|";
+                }
 
-//    //Create the needed string
-//    //  Insturments separated by ;
-//    //  Data sets separated by ,
-//    QString DataString;
+                CodeString = CodeString + VarName;
 
-//    QStringList keys = DataMap.keys();
-//    QList<QStringList> values = DataMap.values();
+            }
+        }
+    }
 
-//    for(int x = 0; x < keys.size(); x++)
-//    {
-//        if(x != 0)
-//        {
-//            DataString = DataString + ";";
-//        }
+    std::cerr << "Code String: " << CodeString.toStdString() << std::endl;
 
-//        DataString = DataString + keys[x] + ":";
+    //Add relevent information to ParaView Property
+    this->svp->SetElement(0, this->currentGroup.toAscii().data());
+    this->svp->SetElement(1, this->currentObservatory.toAscii().data());
+    this->svp->SetElement(2, CodeString.toAscii().data());
 
-//        for(int y = 0; y < values[x].size(); y++)
-//        {
-//            if(y != 0)
-//            {
-//                DataString = DataString + "," ;
-//            }
+    //Time Range Stuff...
+    if(this->smProxy->GetProperty("TimeRange"))
+    {
+        //set date and time
+        QDateTime start = ui->startTime->dateTime();
 
-//            DataString = DataString + values[x][y] + "~" ;
+        DateTime startDT;
+        startDT.setYear(start.date().year());
+        startDT.setMonth(start.date().month());
+        startDT.setDay(start.date().day());
 
-//            for(int g = 0; g < VariableMap[values[x][y]].size(); g++)
-//            {
-//                if(g != 0)
-//                {
-//                    DataString = DataString + "|";
-//                }
+        startDT.setHours(start.time().hour());
+        startDT.setMinutes(start.time().minute());
+        startDT.setSeconds(start.time().second());
 
-//                DataString = DataString + VariableMap[values[x][y]][g];
-//            }
-//        }
+        QDateTime end = ui->endTime->dateTime();
 
-//    }
+        DateTime endDT;
+        endDT.setYear(end.date().year());
+        endDT.setMonth(end.date().month());
+        endDT.setDay(end.date().day());
 
-//    std::cerr << "CodeString: " << DataString.toAscii().data() << std::endl;
+        endDT.setHours(end.time().hour());
+        endDT.setMinutes(end.time().minute());
+        endDT.setSeconds(end.time().second());
 
-//    this->svp->SetElement(0, this->currentGroup.toAscii().data());
-//    this->svp->SetElement(1, this->currentObservatory.toAscii().data());
-//    this->svp->SetElement(2, DataString.toAscii().data());
-
-//    if(this->smProxy->GetProperty("TimeRange"))
-//    {
-//        //set date and time
-//        QDateTime start = ui->startTime->dateTime();
-
-//        DateTime startDT;
-//        startDT.setYear(start.date().year());
-//        startDT.setMonth(start.date().month());
-//        startDT.setDay(start.date().day());
-
-//        startDT.setHours(start.time().hour());
-//        startDT.setMinutes(start.time().minute());
-//        startDT.setSeconds(start.time().second());
-
-//        QDateTime end = ui->endTime->dateTime();
-
-//        DateTime endDT;
-//        endDT.setYear(end.date().year());
-//        endDT.setMonth(end.date().month());
-//        endDT.setDay(end.date().day());
-
-//        endDT.setHours(end.time().hour());
-//        endDT.setMinutes(end.time().minute());
-//        endDT.setSeconds(end.time().second());
-
-//        std::cout << "Set Start DateTime to: " << startDT.getDateTimeString() << std::endl;
-//        std::cout << "Set End DateTime to: " << endDT.getDateTimeString() << std::endl;
+        std::cout << "Set Start DateTime to: " << startDT.getDateTimeString() << std::endl;
+        std::cout << "Set End DateTime to: " << endDT.getDateTimeString() << std::endl;
 
 
-//        vtkSMDoubleVectorProperty *timeRange =  vtkSMDoubleVectorProperty::SafeDownCast(this->smProxy->GetProperty("TimeRange"));
-//        timeRange->SetElement(0,startDT.getMJD());
-//        timeRange->SetElement(1,endDT.getMJD());
-//    }
+        vtkSMDoubleVectorProperty *timeRange =  vtkSMDoubleVectorProperty::SafeDownCast(this->smProxy->GetProperty("TimeRange"));
+        timeRange->SetElement(0,startDT.getMJD());
+        timeRange->SetElement(1,endDT.getMJD());
+    }
 
     //apply the upstream parameters
     Superclass::apply();
@@ -369,12 +333,6 @@ bool ScInfoPropWidget::getGroupsList()
     return true;
 }
 
-//==================================================================
-bool ScInfoPropWidget::getDataSetsList()
-{
-
-    return true;
-}
 
 //==================================================================
 //parse Observatory List
@@ -407,16 +365,14 @@ bool ScInfoPropWidget::loadGroupListToGUI()
     ui->Group->addItem("--- Select Group ---");
     ui->Group->addItems(this->ObsGroupList);
 
-    ui->Observatory->setDisabled(true);
-    ui->Instruments->setDisabled(true);
-    ui->DataSet->setDisabled(true);
+
 
     return true;
 }
 
 //==================================================================
 //process the change in selection on the selection box
-void ScInfoPropWidget::selectedGroup(QString selection)
+void ScInfoPropWidget::groupSelectedChanged(QString selection)
 {
     std::cout << "Group Selected: " << selection.toAscii().data() << std::endl;
 
@@ -429,23 +385,16 @@ void ScInfoPropWidget::selectedGroup(QString selection)
         ui->Observatory->clear();
         ui->Observatory->addItem("--- Select Observatory ---");
         ui->Observatory->addItems(this->ObservatoryList);
-        ui->Observatory->setEnabled(true);
     }
     else
     {
         ui->Observatory->clear();
-        ui->Observatory->setDisabled(true);
     }
 
-    //clear downstream elements
-    this->currentInstrument = "";
+    ui->Instruments->clear();
+    ui->Variables->clear();
+    ui->DataSet->clear();
 
-
-
-    ui->Instruments->setDisabled(true);
-    ui->DataSet->setDisabled(true);
-
-    this->currentDataSet = "";
 }
 
 //==================================================================
@@ -474,9 +423,9 @@ void ScInfoPropWidget::observatorySelectionChanged(QString selection)
     this->getInstrumentList(this->startMJD, this->endMJD);
 
     //configure the gui for display
-    ui->Variables->setDisabled(true);
-    ui->DataSet->setDisabled(true);
     ui->Instruments->clear();
+    ui->Variables->clear();
+    ui->DataSet->clear();
     ui->Instruments->setRootIsDecorated(false);
     ui->Instruments->setColumnCount(2);
 
@@ -523,9 +472,6 @@ void ScInfoPropWidget::observatorySelectionChanged(QString selection)
         }
     }
 
-    //set the remaining tree lists...  TODO: this will need to be rethought a bit.
-    ui->Instruments->setEnabled(true);
-    ui->DataSet->setDisabled(true);
 }
 
 
@@ -731,7 +677,8 @@ void ScInfoPropWidget::buildDataSetGUIObjects()
                  QString tooltip = QString("Data for " + ID + " is ONLY available for dates " + QString::fromStdString(startDT.getDateTimeString()) + " to " + QString::fromStdString(endDT.getDateTimeString()) + ". Data for the requested time is not available." );
                  child->setToolTip(0, tooltip);
                  child->setToolTip(1,tooltip);
-                 child->setDisabled(true);
+                 child->setTextColor(0, QColor("Gray"));
+                 child->setTextColor(1, QColor("Gray"));
              }
              head->addChild(child);
 
@@ -742,9 +689,6 @@ void ScInfoPropWidget::buildDataSetGUIObjects()
         //add the item to the GUI
         ui->DataSet->addTopLevelItem(head);
     }
-
-    //enable the ui
-    ui->DataSet->setDisabled(false);
 
 }
 
@@ -827,7 +771,10 @@ void ScInfoPropWidget::buildVariableGUIObjects()
 
         //set up Instrument Head
         pqTreeWidgetItem *IHead = new pqTreeWidgetItem;
+        QString IHead_desc = this->InstrumentList[Instrument[x]];
         IHead->setText(0, Instrument[x]);
+        IHead->setText(1, IHead_desc);
+        IHead->setTextColor(1, QColor("Dark Green"));
 
         //flag for displaying IHead
         int IHeadActiveFlag = 0;
@@ -844,7 +791,10 @@ void ScInfoPropWidget::buildVariableGUIObjects()
 
             //create DataSet Head
             pqTreeWidgetItem *DSHead = new pqTreeWidgetItem;
+            DataSetInfo currentDataInfo = this->DataSetInformation[Instrument[x]][y];
             DSHead->setText(0, currentDataSet);
+            DSHead->setText(1, currentDataInfo.Name);
+            DSHead->setTextColor(1, QColor("Dark Red"));
 
 
             //Process the Varables List
@@ -1046,7 +996,7 @@ void ScInfoPropWidget::variableSelectionChanged(QTreeWidgetItem *item, int)
     }
 
 
-//#ifdef DEBUG
+#ifdef DEBUG
     std::cout << "Arrays in Variable List for [" << Instrument.toStdString() << "][" << DataSet.toStdString() << "]: " << std::endl;
     for(int x = 0; x < this->VariablesSelectionTracker[Instrument][DataSet]->GetNumberOfArrays(); x++)
     {
@@ -1055,7 +1005,7 @@ void ScInfoPropWidget::variableSelectionChanged(QTreeWidgetItem *item, int)
 
     }
 
-//#endif
+#endif
 
 }
 
@@ -1064,39 +1014,18 @@ void ScInfoPropWidget::useAllVariables(bool state)
 {
     if(!state)
     {
-        ui->Variables->setEnabled(true);
+        ui->Variables->setVisible(true);
+        ui->Variables_Label->setVisible(true);
+        ui->allVariables_Label->setVisible(false);
         this->getAllVars = true;
     }
     else
     {
-        ui->Variables->setDisabled(true);
+        ui->Variables->setVisible(false);
+        ui->Variables_Label->setVisible(false);
+        ui->allVariables_Label->setVisible(true);
         this->getAllVars = false;
     }
-}
-
-//==================================================================
-void ScInfoPropWidget::processDeniedInstrumentRequests()
-{
-
-    if(this->InstruemntSelectionsDenied.testAndSetAcquire(1,0))
-    {
-        emit this->recheckInstrumentSelections();
-    }
-
-}
-
-//==================================================================
-void ScInfoPropWidget::processDeniedDataRequests()
-{
-
-
-    if(this->DataSelectionDenied.testAndSetAcquire(1,0))
-    {
-        std::cout << "Retrying requests" << std::endl;
-
-        emit this->recheckDataSetSelction();
-    }
-
 }
 
 

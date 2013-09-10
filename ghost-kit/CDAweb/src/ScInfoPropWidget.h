@@ -95,14 +95,11 @@ protected:
 
     //maps
     QMap<QString , QString> InstrumentList;
-    QStringList DataSetRetrunList;
 
     //current target
     QString currentGroup;
     QString currentObservatory;
-    QString currentInstrument;
-    QString currentDataSet;
-    QMap <QString, QStringList> currentDataGroups;
+
 
     // URL Information
     QString baseURL;
@@ -116,22 +113,6 @@ protected:
     QString getDataGroups;
     QString getVariables;
 
-    //instrument Selection
-    QList<QListWidgetItem*> selectedInstruments;
-
-    //data selection
-    QList<QListWidgetItem*> selectedData;
-    QAtomicInt InstrumentLock;
-    QAtomicInt DataLock;
-
-    QAtomicInt ReprocessLock;
-
-    QAtomicInt InstruemntSelectionsDenied;
-    QAtomicInt DataSelectionDenied;
-
-    QTableWidgetItem *dataColumn1;
-    QTableWidgetItem *dataColumn2;
-
 
     //handlers
     bool getSCList(filterNetworkAccessModule &manager);
@@ -144,7 +125,6 @@ protected:
     bool loadGroupListToGUI();
 
     bool getInstrumentList(double startTimes, double endTime);
-    bool getDataSetsList();
 
     void getAllDataSetInfo();
     void getAllVariableSetInfo();
@@ -162,7 +142,7 @@ private:
     Ui::ScInfoPropWidget *ui;
 
 private slots:
-    void selectedGroup(QString selection);
+    void groupSelectedChanged(QString selection);
     void observatorySelectionChanged(QString selection);
 
     void instrumentSelectionChanged(QTreeWidgetItem*,int);
@@ -170,9 +150,6 @@ private slots:
     void variableSelectionChanged(QTreeWidgetItem*item, int);
 
     void useAllVariables(bool state);
-
-    void processDeniedInstrumentRequests();
-    void processDeniedDataRequests();
 
     void timeRangeChanged();
     void startTimeChanged();
