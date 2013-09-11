@@ -46,6 +46,8 @@ public:
 
     void apply();
 
+    void updateDataSet();
+    void updateVariables();
 protected:
     //Filter Components
     vtkSMProxy *smProxy;
