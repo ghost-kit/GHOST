@@ -10,10 +10,10 @@ if(QTCREATOR)
 #It is not recomended to build the final binary with this setting on.
 
     if(JOSH_HOME)
-        set(ParaView_DIR /Users/jjm390/Developer/ParaView/build)
-        set(INSTALL_DIR /Users/jjm390/Developer/install)
-        set(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} /Users/jjm390/Developer/install/lib)
-        include_directories(BEFORE /Users/jjm390/Developer/install/include)
+        set(ParaView_DIR /Users/jjm390/Developer/pvbuild)
+        set(INSTALL_DIR /Users/jjm390/Developer/GHOST/GHOST-build/install)
+        set(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} ${INSTALL_DIR}/lib)
+        include_directories(BEFORE ${INSTALL_DIR}/install/include)
     else()
         set(ParaView_DIR /Volumes/Data/Development/ParaView/local/build)
         set(INSTALL_DIR /Users/jomu9721/Data/Development/GHOST/GHOST-build/install)
@@ -101,3 +101,40 @@ add_custom_target(dist
                               -Dbundle_name:STRING=${PROJECT_BINARY_DIR}/CDAwebTK.tgz
                               -P ${PROJECT_LIST_DIR}/install_CDAwebTK.cmake
 )
+
+###########
+# cxxtest #
+########################################################################
+set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${PROJECT_SOURCE_DIR}/../../Utilities/cxxtest)
+find_package(CxxTest)
+if(CXXTEST_FOUND)
+    find_package(Qt4 REQUIRED)
+    include(${QT_USE_FILE})
+    message(STATUS "cxxtest Found!")
+
+    set(CDF_USE_STATIC_LIBS ON)
+    find_package(CDF REQUIRED)
+
+    set(CXXTEST_USE_PYTHON TRUE)
+    include_directories(${CXXTEST_INCLUDE_DIR})
+    enable_testing()
+
+    set(cdfDataReaderFiles
+                ${CMAKE_CURRENT_SOURCE_DIR}/src/cdfDataReader.cxx
+                ${CMAKE_CURRENT_SOURCE_DIR}/src/BadDataHandler.cxx
+                ${CMAKE_CURRENT_SOURCE_DIR}/src/timeFitHandler.cxx)
+
+    add_library(cdfReader STATIC ${cdfDataReaderFiles})
+    CXXTEST_ADD_TEST(testCDFreader TestCDFreader.C "${CMAKE_CURRENT_SOURCE_DIR}/test/TestCDFreader.cxxTest")
+    target_link_libraries(testCDFreader ${CMAKE_CURRENT_BINARY_DIR}/libcdfReader.a ${QT_LIBRARIES} ${CDF_LIBRARIES})
+
+    #move test file
+    set(DataFile "${CMAKE_CURRENT_SOURCE_DIR}/../../test/data/STA_L1_MAGB_RTN-20100101T000000Z-20100102T000000Z.cdf")
+    add_custom_command(TARGET testCDFreader PRE_BUILD
+                       COMMAND ${CMAKE_COMMAND} -E
+                       copy ${DataFile} $<TARGET_FILE_DIR:testCDFreader>)
+
+
+else()
+    message ( STATUS "Could NOT find CxxTest - unit testing not available" )
+endif()

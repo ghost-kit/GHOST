@@ -1,0 +1,43 @@
+#ifndef TESTCDFREADER_H
+#define TESTCDFREADER_H
+
+#include "cdfDataReader.h"
+#include "String"
+#include <QString>
+
+using namespace std;
+
+#define testFile "STA_L1_MAGB_RTN-20100101T000000Z-20100102T000000Z.cdf"
+
+class TestCDFreader : public CxxTest::TestSuite
+{
+public:
+
+    void testCDFopen(void)
+    {
+        //make the cdfDataReader object
+        cdfDataReader *reader = new cdfDataReader(testFile);
+
+        //check that it opened
+        //TODO: well, we need to fix this method so we know its status after opening
+
+    }
+
+    void testCDFreadZVar(void)
+    {
+        //make the cdfDataReader object
+        cdfDataReader *reader = new cdfDataReader(testFile);
+
+        //get the Z variable
+        cdfDataSet newDataSet;
+
+        newDataSet = reader->getZVariable("BFIELD");
+
+       std::cout << "Data: " << newDataSet.getName().toStdString() << std::endl;
+       std::cout << "Size: " << newDataSet.getNumberElements() << std::endl;
+
+    }
+
+};
+
+#endif // TESTCDFREADER_H
