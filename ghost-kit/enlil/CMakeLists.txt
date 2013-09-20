@@ -1,6 +1,6 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 PROJECT("ENLIL")
-set(ParaView_DIR "/home/jjm390/Developer/ParaView/build401/paraview/src/paraview-build")
+set(ParaView_DIR "/Volumes/Data/Development/ParaView/local/build")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
 
 #SET(ParaView_DIR /Volumes/Data/Development/SwFT/superbuild/paraview/src/paraview-build)

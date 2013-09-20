@@ -1,6 +1,10 @@
 #ifndef CDFREADER_H
 #define CDFREADER_H
 
+#include "CDFattribute.h"
+#include "CDFvariable.h"
+#include "CDFBadDataHandler.h"
+
 #include <QString>
 #include <QMap>
 #include <QList>
@@ -10,13 +14,11 @@
 
 namespace CDFr
 {
-    class CDFreader;
-    class CDFattribute;
-    class CDFvariable;
-}
 
-#include "CDFattribute.h"
-#include "CDFvariable.h"
+class CDFvariable;
+class CDFattribute;
+class CDFbadDataHandler;
+
 
 class CDFreader
 {
@@ -27,18 +29,18 @@ public:
 
     //data related infromation
     /* Variables */
-    QString         getVarName(int index);
-    QStringList     getVarNames();
-    int64_t         getNumberVariables();
-    CDFr::CDFvariable*    getVariable(int index);
-    CDFr::CDFvariable*    getVariable(QString name);
+    QString           getVarName(int index);
+    QStringList       getVarNames();
+    int64_t           getNumberVariables();
+    CDFvariable*      getVariable(int index);
+    CDFvariable*      getVariable(QString name);
 
     /* Global Attributes */
-    QString         getGlobalAttName(int index);
-    QStringList     getGlobalAttNames();
-    int64_t         getNumberGlobalAttributes();
-    CDFr::CDFattribute*   getGlobalAttribute(int index);
-    CDFr::CDFattribute*   getGlobalAttribute(QString name);
+    QString           getGlobalAttName(int index);
+    QStringList       getGlobalAttNames();
+    int64_t           getNumberGlobalAttributes();
+    CDFattribute*     getGlobalAttribute(int index);
+    CDFattribute*     getGlobalAttribute(QString name);
 
 
     //file related information
@@ -49,6 +51,9 @@ public:
     QVariant    getEncoding();
     QVariant    getCdfVersion();
     bool        isRowMajor();
+
+    //handlers
+    void        setBadDataHandler(CDFr::CDFbadDataHandler *handler);
 
 protected:
 
@@ -62,13 +67,17 @@ protected:
     bool        majority;
 
     //data related information
-    QMap<QString, CDFr::CDFvariable*>     Variables;
-    QMap<QString, CDFr::CDFattribute*>    Attributes;
+    QMap<QString, CDFvariable*>     Variables;
+    QMap<QString, CDFattribute*>    Attributes;
+
+    //Handlers
+    CDFr::CDFbadDataHandler*              BadDataHandler;
+
 
 private:
 
 };
-
+}
 
 
 #endif //CDFREADER_H

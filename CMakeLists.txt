@@ -21,6 +21,7 @@ if(JOSH_MURPHY)
     endif()
 
     file(GLOB_RECURSE AllFiles *)
+    file(GLOB_RECURSE cdfReader shared/CDFreader/* )
     message(STATUS "${AllFiles}")
     set(QTCREATOR true)
 
@@ -223,8 +224,11 @@ set(ENABLE_ghost true)
 
 process_dependencies()
 
+### This is a development hack for making QT Creator show the files I need. Ignore if you are not me.
 if(QTCREATOR)
-    #add_library(none STATIC ${AllFiles})
+    find_package(Qt4 REQUIRED)
+    include(${QT_USE_FILE})
+    add_library(CDFreader STATIC ${QT_LIBRARIES} ${cdfReader})
 endif()
 
 

@@ -3,6 +3,7 @@
 
 #include "CDFreader.h"
 #include "CDFattribute.h"
+#include "CDFBadDataHandler.h"
 
 #include <QString>
 #include <QStringList>
@@ -10,6 +11,13 @@
 #include <QList>
 #include <QVariant>
 
+
+
+namespace CDFr
+{
+class CDFattribute;
+class CDFbadDataHandler;
+class CDFreader;
 
 class CDFvariable
 {
@@ -19,7 +27,7 @@ public:
     ~CDFvariable();
 
     //file related information
-    CDFr::CDFreader* getParent();
+    CDFreader* getParent();
 
     //Variable related information
     QString             getVarName();
@@ -39,8 +47,8 @@ public:
     QVariant            getDataItem(int64_t index);
 
     //Attributes
-    CDFr::CDFattribute  getAttribute(int64_t index);
-    CDFr::CDFattribute  getAttirbute(QString name);
+    CDFattribute  getAttribute(int64_t index);
+    CDFattribute  getAttirbute(QString name);
 
     //index conversions
     inline int64_t      fromXYZ(int64_t x, int64_t y, int64_t z);
@@ -48,7 +56,7 @@ public:
 
 protected:
     //file related information
-    CDFr::CDFreader *parent;
+    CDFreader *parent;
 
     //Variable Related information
     QList<int64_t>  Dims;
@@ -64,12 +72,12 @@ protected:
 
     //data related info
     QMap<int64_t, QVariant> Data;               //data map[index_from_file] -> data point
-    QMap<QString, CDFr::CDFattribute*> Attributes;    //Variable attributes maped by name
+    QMap<QString, CDFattribute*> Attributes;    //Variable attributes maped by name
 
 private:
 
 
 };
-
+}
 
 #endif //CDFVARIABLE_H

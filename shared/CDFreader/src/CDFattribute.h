@@ -2,8 +2,22 @@
 #define CDFATTRIBUTE_H
 
 #include "CDFreader.h"
+#include "CDFvariable.h"
+#include "CDFBadDataHandler.h"
 
+#include <QString>
+#include <QVariant>
+#include <QList>
+
+
+
+
+namespace CDFr
+{
+
+class CDFvariable;
 class CDFreader;
+class CDFbadDataHandler;
 
 class CDFattribute
 {
@@ -39,6 +53,6 @@ protected:
     QList<QVariant>   Data;
 };
 
-
+}
 
 #endif //CDFATTRIBUTE_H
