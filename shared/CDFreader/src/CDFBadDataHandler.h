@@ -17,6 +17,7 @@ class CDFbadDataHandler
 {
 public:
     CDFbadDataHandler();
+    ~CDFbadDataHandler();
 };
 }
 

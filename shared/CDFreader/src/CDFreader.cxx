@@ -1,6 +1,5 @@
 #include "CDFreader.h"
-#include "CDFattribute.h"
-#include "CDFvariable.h"
+
 
 
 using namespace CDFr;
@@ -105,3 +104,12 @@ void CDFr::CDFreader::setBadDataHandler(CDFbadDataHandler *handler)
 {
 }
 
+//==================================================================//
+CDFr::CDFreader::CDFreader()
+{
+}
+
+//==================================================================//
+CDFr::CDFreader::~CDFreader()
+{
+}
