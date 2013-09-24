@@ -13,15 +13,21 @@ class TestCDFreader : public CxxTest::TestSuite
 {
 public:
 
-    void testCDFopen(void)
+    void testCDFreaderConstruction(void)
     {
         //make the cdfDataReader object
-        //cdfDataReader *reader = new cdfDataReader(testFile);
+        CDFr::CDFreader *reader = new CDFr::CDFreader(testFile);
 
         //check that it opened
-        //TODO: well, we need to fix this method so we know its status after opening
+        TS_TRACE("Testing Object Construction");
+        TS_ASSERT(!reader->hasError());
+
+
 
     }
+
+
+
 
 
 

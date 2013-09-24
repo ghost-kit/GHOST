@@ -4,6 +4,7 @@
 #include "CDFreader.h"
 #include "CDFvariable.h"
 #include "CDFBadDataHandler.h"
+#include "CDFerror.h"
 
 #include <QString>
 #include <QVariant>
@@ -18,6 +19,7 @@ namespace CDFr
 class CDFvariable;
 class CDFreader;
 class CDFbadDataHandler;
+class CDFerrorHandler;
 
 class CDFattribute
 {

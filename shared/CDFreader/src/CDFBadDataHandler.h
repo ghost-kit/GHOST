@@ -5,6 +5,7 @@
 #include "CDFattribute.h"
 #include "CDFvariable.h"
 #include "CDFBadDataHandler.h"
+#include "CDFerror.h"
 
 namespace CDFr
 {
@@ -12,6 +13,7 @@ namespace CDFr
 class CDFattribute;
 class CDFreader;
 class CDFvariable;
+class CDFerrorHandler;
 
 class CDFbadDataHandler
 {

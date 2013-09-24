@@ -224,11 +224,48 @@ set(ENABLE_ghost true)
 
 process_dependencies()
 
+
+##############################
 ### This is a development hack for making QT Creator show the files I need. Ignore if you are not me.
 if(QTCREATOR)
+    INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR}/install/include)
+    INCLUDE_DIRECTORIES(${CMAKE_CURRENT_LIST_DIR}/shared/CDFreader/src)
     find_package(Qt4 REQUIRED)
     include(${QT_USE_FILE})
     add_library(CDFreader STATIC ${QT_LIBRARIES} ${cdfReader})
+
+
+set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${PROJECT_SOURCE_DIR}/Utilities/cxxtest)
+find_package(CxxTest)
+if(CXXTEST_FOUND)
+    find_package(Qt4 REQUIRED)
+    include(${QT_USE_FILE})
+    message(STATUS "cxxtest Found!")
+
+    set(CDF_LIBRARIES ${CMAKE_CURRENT_BINARY_DIR}/install/lib/${CMAKE_STATIC_LIBRARY_PREFIX}cdf${CMAKE_STATIC_LIBRARY_SUFFIX})
+
+    set(CXXTEST_USE_PYTHON TRUE)
+    include_directories(${CXXTEST_INCLUDE_DIR})
+    enable_testing()
+
+    CXXTEST_ADD_TEST(testCDFreader TestCDFreader.C "${CMAKE_CURRENT_SOURCE_DIR}/shared/CDFreader/test/TestCDFreader.cxxTest")
+    target_link_libraries(testCDFreader CDFreader ${QT_LIBRARIES} ${CDF_LIBRARIES})
+
+    #move test file
+    set(DataFile "${CMAKE_CURRENT_SOURCE_DIR}/test/data/STA_L1_MAGB_RTN-20100101T000000Z-20100102T000000Z.cdf")
+    add_custom_command(TARGET testCDFreader PRE_BUILD
+                       COMMAND ${CMAKE_COMMAND} -E
+                       copy ${DataFile} $<TARGET_FILE_DIR:testCDFreader>)
+
+
+    add_executable(generateStatusText ${CMAKE_CURRENT_SOURCE_DIR}/shared/CDFreader/test/generateStatusCodes.cxx)
+    target_link_libraries(generateStatusText CDFreader ${QT_LIBRARIES} ${CDF_LIBRARIES})
+
+else()
+    message ( STATUS "Could NOT find CxxTest - unit testing not available" )
 endif()
 
+endif()
+
+#############################
 

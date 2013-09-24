@@ -4,6 +4,7 @@
 #include "CDFreader.h"
 #include "CDFattribute.h"
 #include "CDFBadDataHandler.h"
+#include "CDFerror.h"
 
 #include <QString>
 #include <QStringList>
@@ -18,6 +19,7 @@ namespace CDFr
 class CDFattribute;
 class CDFbadDataHandler;
 class CDFreader;
+class CDFerrorHandler;
 
 class CDFvariable
 {
@@ -47,8 +49,8 @@ public:
     QVariant            getDataItem(int64_t index);
 
     //Attributes
-    CDFattribute  getAttribute(int64_t index);
-    CDFattribute  getAttirbute(QString name);
+    CDFattribute *getAttribute(int64_t index);
+    CDFattribute *getAttirbute(QString name);
 
     //index conversions
     inline int64_t      fromXYZ(int64_t x, int64_t y, int64_t z);
@@ -75,7 +77,7 @@ protected:
     QMap<QString, CDFattribute*> Attributes;    //Variable attributes maped by name
 
 private:
-
+    bool errorState;
 
 };
 }

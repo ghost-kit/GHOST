@@ -4,6 +4,7 @@
 #include "CDFattribute.h"
 #include "CDFvariable.h"
 #include "CDFBadDataHandler.h"
+#include "CDFerror.h"
 
 #include <QString>
 #include <QMap>
@@ -18,13 +19,14 @@ namespace CDFr
 class CDFvariable;
 class CDFattribute;
 class CDFbadDataHandler;
+class CDFerrorHandler;
 
 
 class CDFreader
 {
 public:
     //creator/destructor
-    CDFreader();
+    CDFreader(QString FileName);
     ~CDFreader();
 
     //data related infromation
@@ -55,6 +57,10 @@ public:
     //handlers
     void        setBadDataHandler(CDFr::CDFbadDataHandler *handler);
 
+    //error handling
+    bool    hasError();         //if there is an error or not
+    QString getErrorString();   //returns the error string for the current error
+
 protected:
 
     //File Related information
@@ -71,10 +77,12 @@ protected:
     QMap<QString, CDFattribute*>    Attributes;
 
     //Handlers
-    CDFr::CDFbadDataHandler*              BadDataHandler;
+    CDFr::CDFbadDataHandler*        BadDataHandler;
 
 
 private:
+    CDFr::CDFerrorHandler*   errorTracker;
+
 
 };
 }
