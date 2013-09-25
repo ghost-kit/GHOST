@@ -4,6 +4,8 @@
 #include "CDFreader.h"
 #include "String"
 #include <QString>
+#include "CDFglobalDefs.h"
+
 
 using namespace std;
 
@@ -21,6 +23,16 @@ public:
         //check that it opened
         TS_TRACE("Testing Object Construction");
         TS_ASSERT(!reader->hasError());
+
+        //check that the loaded data is correct...
+        TS_ASSERT_EQUALS(reader->getFormat(), CDFr_SINGLE_FILE);
+        TS_ASSERT_EQUALS(reader->getEncoding(), CDFr_NETWORK_ENCODING);
+        TS_ASSERT_EQUALS(reader->getNumberVariables(), 5);
+        TS_ASSERT_EQUALS(reader->getNumberGlobalAttributes(), 22);
+        TS_ASSERT_EQUALS(reader->getCompressionType(), CDFr_NO_COMPRESSION);
+        TS_ASSERT_EQUALS(reader->getChecksum(), CDFr_NO_CHECKSUM);
+
+
 
 
 

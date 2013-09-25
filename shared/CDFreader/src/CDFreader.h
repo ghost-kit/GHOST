@@ -5,11 +5,14 @@
 #include "CDFvariable.h"
 #include "CDFBadDataHandler.h"
 #include "CDFerror.h"
+#include "CDFglobalDefs.h"
 
 #include <QString>
 #include <QMap>
 #include <QList>
 #include <QVariant>
+
+#include "cdf.h"
 
 
 
@@ -33,24 +36,24 @@ public:
     /* Variables */
     QString           getVarName(int index);
     QStringList       getVarNames();
-    int64_t           getNumberVariables();
+    long getNumberVariables();
     CDFvariable*      getVariable(int index);
     CDFvariable*      getVariable(QString name);
 
     /* Global Attributes */
     QString           getGlobalAttName(int index);
     QStringList       getGlobalAttNames();
-    int64_t           getNumberGlobalAttributes();
+    long getNumberGlobalAttributes();
     CDFattribute*     getGlobalAttribute(int index);
     CDFattribute*     getGlobalAttribute(QString name);
 
 
     //file related information
     QString     getFileName();
-    QVariant    getCompressionType();
-    QVariant    getChecksum();
-    QVariant    getFormat();
-    QVariant    getEncoding();
+    long    getCompressionType();
+    long    getChecksum();
+    long getFormat();
+    long getEncoding();
     QVariant    getCdfVersion();
     bool        isRowMajor();
 
@@ -65,12 +68,17 @@ protected:
 
     //File Related information
     QString     FileName;
-    QVariant    CompressionType;
-    QVariant    Format;
-    QVariant    Checksum;
-    QVariant    Encoding;
-    QVariant    cdfVersion;
-    bool        majority;
+    QString     Copyright;
+    long        CompressionType;
+    QList<long> CompressionParms;
+    long        CompressionPercentage;
+    long        Format;
+    long        Checksum;
+    long        Encoding;
+    long        cdfVersion;
+    long        cdfRelease;
+    long        cdfIncrement;
+    long        majority;
 
     //data related information
     QMap<QString, CDFvariable*>     Variables;
@@ -82,7 +90,8 @@ protected:
 
 private:
     CDFr::CDFerrorHandler*   errorTracker;
-
+    bool setErrorStatus(CDFstatus status);
+    void processAttribute(const long dataType, const long numElemets, const long attN, const long entryN ,QVariant &Data);
 
 };
 }

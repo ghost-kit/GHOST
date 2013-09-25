@@ -33,19 +33,39 @@ public:
 
     //Variable related information
     QString             getVarName();
-    int64_t             getVarType();
+    void                setVarName(QString name);
+
+    long                getVarType();
+    void                setVarType(long type);
+
     int64_t             getNumberDims();
+
     int64_t             getDim(int dim);
+    void                setDim(long index, int dimValue);
+
     int64_t*            getAllDims();
+    void                setAllDims(long dims[], int count);
+
     int64_t             getNumberEntries();
+    void                setNumberEntries(long numEntries);
+
     int64_t             getNumberAtts();
+    void                addAttribute(CDFattribute *attribute);
+
     int64_t             getMonotonicState();
-    bool                isZvar();
+    void                setMonotonicState(long state);
+
 
     //actual data
     QVariant            getFillValue();
+    void                setFillValue(QVariant fill);
+
     QVariant            getMinimum();
+    void                setMinimum(QVariant minimum);
+
     QVariant            getMaximum();
+    void                setMaximum(QVariant maximum);
+
     QVariant            getDataItem(int64_t index);
 
     //Attributes
@@ -56,20 +76,29 @@ public:
     inline int64_t      fromXYZ(int64_t x, int64_t y, int64_t z);
     inline int64_t      fromXY(int64_t x, int64_t y);
 
+    long getDimVaries(long index) const;
+    void setDimVaries(const long value[], long count);
+
+    bool getRecordVaries() const;
+    void setRecordVaries(bool value);
+
 protected:
     //file related information
     CDFreader *parent;
 
     //Variable Related information
-    QList<int64_t>  Dims;
+    QString         Name;
+    QMap<long, long>  Dims;
     int64_t         VarType;
+    int64_t         numEntries;
     QVariant        fillValue;
     QVariant        minimum;
     QVariant        maximum;
-    bool            zVar;
+    long              monotonicState;
+
 
     //variance status (does the data change?)
-    bool            recordVaries;               //Data Record Variance
+    long            recordVaries;               //Data Record Variance
     QList<bool>     dimVaries;                  //Dimensions Variance
 
     //data related info
