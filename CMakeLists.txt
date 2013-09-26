@@ -243,6 +243,7 @@ if(CXXTEST_FOUND)
     message(STATUS "cxxtest Found!")
 
     set(CDF_LIBRARIES ${CMAKE_CURRENT_BINARY_DIR}/install/lib/${CMAKE_STATIC_LIBRARY_PREFIX}cdf${CMAKE_STATIC_LIBRARY_SUFFIX})
+    include_directories(BEFORE ${CMAKE_CURRENT_BINARY_DIR}/install/include)
 
     set(CXXTEST_USE_PYTHON TRUE)
     include_directories(${CXXTEST_INCLUDE_DIR})

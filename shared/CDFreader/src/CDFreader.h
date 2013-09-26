@@ -57,6 +57,10 @@ public:
     QVariant    getCdfVersion();
     bool        isRowMajor();
 
+    //existence inquire
+    bool attributeExists(QString name);
+    bool variableExists(QString name);
+
     //handlers
     void        setBadDataHandler(CDFr::CDFbadDataHandler *handler);
 
@@ -81,8 +85,8 @@ protected:
     long        majority;
 
     //data related information
-    QMap<QString, CDFvariable*>     Variables;
-    QMap<QString, CDFattribute*>    Attributes;
+    CDFr::variableList     Variables;
+    CDFr::attributeList    Attributes;
 
     //Handlers
     CDFr::CDFbadDataHandler*        BadDataHandler;
@@ -91,7 +95,15 @@ protected:
 private:
     CDFr::CDFerrorHandler*   errorTracker;
     bool setErrorStatus(CDFstatus status);
-    void processAttribute(const long dataType, const long numElemets, const long attN, const long entryN ,QVariant &Data);
+    void clearErrorStatus();
+
+    CDFr::attributeList processAttributesList(CDFid fileID, long Scope, long VarNum=0);
+    QList<QVariant> extractAttributeElements(CDFid fileID, long attrN, long entryN);
+
+
+
+//    void processAttribute(void *parent, bool global, CDFr::CDFattribute* attribute, const CDFid file, const long attrN, const long entryN, const long dataType);
+//    void gatherAttributes(void *parent, CDFid fileID, bool global);
 
 };
 }

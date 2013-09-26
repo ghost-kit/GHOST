@@ -1,54 +1,97 @@
 #include "CDFattribute.h"
 
 //==================================================================//
-CDFr::CDFattribute::CDFattribute()
+CDFr::CDFattribute::CDFattribute(CDFreader *parent)
 {
+    this->Parent = parent;
 
 }
 
 //==================================================================//
 CDFr::CDFattribute::~CDFattribute()
 {
+    this->Parent = NULL;
+
 }
 
 //==================================================================//
 CDFr::CDFreader *CDFr::CDFattribute::getParent()
 {
 
-    return NULL;
+    return this->Parent;
+}
+
+void CDFr::CDFattribute::setParent(CDFr::CDFreader *parent)
+{
+    this->Parent = parent;
 }
 
 //==================================================================//
 int64_t CDFr::CDFattribute::getNumberOfEntries()
 {
 
-    return 0;
+    return this->Data.size();
 }
 
 //==================================================================//
-int64_t CDFr::CDFattribute::getType()
+long CDFr::CDFattribute::getType()
 {
 
-    return 0;
+    return this->type;
+}
+
+void CDFr::CDFattribute::setType(long type)
+{
+    this->type = type;
 }
 
 //==================================================================//
-bool CDFr::CDFattribute::isGlobal()
+bool CDFr::CDFattribute::isGlobalAttr()
 {
 
-    return false;
+    return this->global;
+}
+
+//==================================================================//
+bool CDFr::CDFattribute::isVariableAttr()
+{
+    return !this->global;
+}
+
+//==================================================================//
+void CDFr::CDFattribute::setGlobalAtt()
+{
+    this->global = true;
+}
+
+//==================================================================//
+void CDFr::CDFattribute::setVariableAtt()
+{
+    this->global = false;
 }
 
 //==================================================================//
 QString CDFr::CDFattribute::getAttributeName()
 {
 
-    return QString("");
+    return this->AttName;
+}
+
+//==================================================================//
+void CDFr::CDFattribute::setAttributeName(QString name)
+{
+    this->AttName = name;
 }
 
 //==================================================================//
 QVariant CDFr::CDFattribute::getAttributeItem(int64_t index)
 {
-    return QVariant("");
+    return this->Data[index];
+}
+
+//==================================================================//
+void CDFr::CDFattribute::addAttributeItem(QVariant item)
+{
+    this->Data.push_back(item);
 }
 

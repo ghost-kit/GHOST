@@ -1,6 +1,21 @@
 #ifndef CDFGLOBALDEFS_H
 #define CDFGLOBALDEFS_H
 
+#include "CDFattribute.h"
+#include "CDFvariable.h"
+#include "QMap"
+
+/******************************************************************************
+* TypeDefs.
+******************************************************************************/
+namespace CDFr {
+
+class CDFattribute;
+class CDFvariable;
+
+typedef  QMap<QString, CDFr::CDFattribute*> attributeList;
+typedef  QMap<QString, CDFr::CDFvariable*> variableList;
+}
 /******************************************************************************
 * Encoding (for data only, everything else is network encoding).
 ******************************************************************************/

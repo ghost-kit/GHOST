@@ -28,14 +28,15 @@ long CDFr::CDFreader::getNumberVariables()
 CDFr::CDFvariable* CDFr::CDFreader::getVariable(int index)
 {
 
-    return NULL;
+    QStringList keys = this->Variables.keys();
+    return this->Variables[keys[index]];
 }
 
 //==================================================================//
 CDFr::CDFvariable *CDFr::CDFreader::getVariable(QString name)
 {
 
-    return NULL;
+    return this->Variables[name];
 }
 
 //==================================================================//
@@ -124,8 +125,28 @@ bool CDFr::CDFreader::isRowMajor()
 }
 
 //==================================================================//
+bool CDFr::CDFreader::attributeExists(QString name)
+{
+
+    if(this->Attributes.contains(name)) return true;
+    else return false;
+
+}
+
+//==================================================================//
+bool CDFr::CDFreader::variableExists(QString name)
+{
+
+    if(this->Variables.contains(name)) return true;
+    else return false;
+
+}
+
+//==================================================================//
 void CDFr::CDFreader::setBadDataHandler(CDFbadDataHandler *handler)
 {
+
+    this->BadDataHandler = handler;
 }
 
 //==================================================================//
@@ -150,7 +171,7 @@ CDFr::CDFreader::CDFreader(QString FileName)
     //variables we need to keep
     long numzVars;
     long numAttrs;
-    long fileID;
+    CDFid fileID;
 
     //start the error tracker
     this->errorTracker = new CDFr::CDFerrorHandler;
@@ -272,8 +293,8 @@ CDFr::CDFreader::CDFreader(QString FileName)
             newVar->setRecordVaries(recVary);
             newVar->setNumberEntries(numElements);
 
-            //TODO: populate attributes
-
+            //populate attributes
+            newVar->setAttributeList(this->processAttributesList(fileID, CDFr_VARIABLE_SCOPE, x));
 
 
             //add the variable to the list
@@ -281,11 +302,16 @@ CDFr::CDFreader::CDFreader(QString FileName)
         }
     }
 
+    //get global attributes
+    this->Attributes = this->processAttributesList(fileID, CDFr_GLOBAL_SCOPE);
+
 
     //close the file
     CDFcloseCDF(fileID);
 
 }
+
+
 
 //==================================================================//
 CDFr::CDFreader::~CDFreader()
@@ -312,6 +338,282 @@ bool CDFr::CDFreader::setErrorStatus(CDFstatus status)
 }
 
 //==================================================================//
-void CDFr::CDFreader::processAttribute(const long dataType, const long numElemets, const long attN, const long entryN, QVariant &Data)
+void CDFr::CDFreader::clearErrorStatus()
 {
+    this->errorTracker->setError(CDFr_OK);
 }
+
+//==================================================================//
+CDFr::attributeList CDFr::CDFreader::processAttributesList(CDFid fileID, long Scope, long VarNum)
+{
+    //Generate Attributes
+    CDFr::attributeList AttList;
+
+
+    //getting global attributes
+    CDFstatus status;
+
+    bool global;
+    if(Scope == CDFr_GLOBAL_SCOPE)
+    {
+        global = true;
+    }
+    else
+    {
+        global = false;
+    }
+
+    long numAttrs;
+    long entryN;
+    long attrN;
+    long attrScope;
+    long maxEntry;
+    long dataType;
+    long numElems;
+    char attrName[CDF_ATTR_NAME_LEN256+1];
+
+
+    status = CDFgetNumAttributes(fileID, &numAttrs);
+
+    //check for error status
+    if(this->setErrorStatus(status)) return AttList;
+
+    //cycle through the attributes
+    for(long x = 0; x < numAttrs; x ++)
+    {
+        status = CDFattrInquire(fileID, x, attrName, &attrScope, &maxEntry);
+        if(this->setErrorStatus(status)) return AttList;
+
+        //we only want global scope attributes
+        if(global)
+        {
+            //make sure we have the correct scope
+            if(attrScope != CDFr_GLOBAL_SCOPE) continue;
+
+            //get all entries for the scope
+            for(entryN=0; entryN <= maxEntry; entryN++)
+            {
+                status = CDFinquireAttrgEntry(fileID, attrN, entryN, &dataType, &numElems);
+
+                //No Such entry is an expected error
+                if(status != CDFr_NO_SUCH_ENTRY && status != CDFr_NO_SUCH_ATTR && this->setErrorStatus(status)) break;
+                else this->clearErrorStatus();
+
+                CDFr::CDFattribute *newAttr = new CDFr::CDFattribute(this);
+
+                //add relevent data
+                newAttr->setAttributeName(QString(attrName));
+                newAttr->setGlobalAtt();
+                newAttr->setType(dataType);
+
+                //TODO: process the actual attribute
+                //                newAttr->addAttributeItem();
+
+
+                //add to the list
+                AttList[QString(attrName)] = newAttr;
+
+            }
+
+        }
+        else
+        {
+            //make sure we have the correct scope
+            if(attrScope != CDFr_VARIABLE_SCOPE) continue;
+
+            //status = CDFinquireAttrzEntry(fileID, attrN, VarNum, &dataType, &numElems);
+            if(this->setErrorStatus(status)) return AttList;
+
+
+            CDFr::CDFattribute *newAttr = new CDFr::CDFattribute(this);
+
+            //add relevent data
+            newAttr->setAttributeName(QString(attrName));
+            newAttr->setGlobalAtt();
+            newAttr->setType(dataType);
+
+            //TODO: process the actual attribute
+            //            newAttr->addAttributeItem();
+
+
+            //add to the list
+            AttList[QString(attrName)] = newAttr;
+
+
+        }
+
+        //get the stuff
+
+
+    }
+
+    return AttList;
+}
+
+////==================================================================//
+//void CDFr::CDFreader::processAttributeData(void* parent, bool global, CDFattribute *attribute, const CDFid file, const long attrN, const long entryN, const long dataType)
+//{
+
+//    //hack for parent type. TODO: Change this to a polymorphic class exchange
+//    CDFr::CDFvariable *varParent = NULL;
+//    CDFr::CDFreader   *readParent = NULL;
+
+//    QVariant data;
+
+//    switch(dataType)
+//    {
+//    //1 byte signed integer
+//    case CDF_BYTE:
+
+//    case CDF_CHAR:
+
+//    case CDF_INT1:
+
+//        break;
+
+//    //1 byte unsigned integer
+//    case CDF_UCHAR:
+
+//    case CDF_UINT1:
+
+//        break;
+
+//    //2 byte signed integer
+//    case CDF_INT2:
+
+//        break;
+
+//    //2 byte unsigned integer
+//    case CDF_UINT2:
+
+//        break;
+
+//    //4 byte signed integer
+//    case CDF_INT4:
+
+//        break;
+
+//    //4 byte unsigned integer
+//    case CDF_UINT4:
+
+//        break;
+
+//    //8-byte signed integer
+//    case CDF_INT8:
+
+//    case CDF_TIME_TT2000:
+
+//        break;
+
+//    //4-byte floating point
+//    case CDF_REAL4:
+
+//    case CDF_FLOAT:
+
+//        break;
+
+//    //8-byte floating point
+//    case CDF_REAL8:
+
+//    case CDF_DOUBLE:
+
+//    case CDF_EPOCH:
+
+//        break;
+
+//    //2 - 8-byte floating points
+//    case CDF_EPOCH16:
+
+//        break;
+
+//    }
+
+
+//    if(global)
+//    {
+
+//    }
+
+
+
+//}
+
+//void CDFr::CDFreader::gatherAttributes(void* parent, CDFid fileID, bool global)
+//{
+//    //Generate Attributes (Global Only)
+//    //getting global attributes
+//    {
+//        CDFstatus status;
+
+//        CDFr::CDFvariable *varParent = NULL;
+//        CDFr::CDFreader   *readerParent = NULL;
+
+//        if(global)
+//        {
+//            readerParent = (CDFr::CDFreader*)parent;
+//        }
+//        else
+//        {
+//            varParent = (CDFr::CDFvariable*)parent;
+//        }
+
+//        long numAttrs;
+//        long entryN;
+//        long attrN;
+//        long attrScope;
+//        long maxEntry;
+//        long dataType;
+//        long numElems;
+//        char attrName[CDF_ATTR_NAME_LEN256+1];
+
+
+//        status = CDFgetNumAttributes(fileID, &numAttrs);
+
+//        //check for error status
+//        if(this->setErrorStatus(status)) return;
+
+//        //cycle through the attributes
+//        for(long x = 0; x < numAttrs; x ++)
+//        {
+//            status = CDFattrInquire(fileID, x, attrName, &attrScope, &maxEntry);
+//            if(this->setErrorStatus(status)) return;
+
+//            //we only want global scope attributes
+//            if(global)
+//            {
+//                if(attrScope != CDFr_GLOBAL_SCOPE) continue;
+//            }
+//            else
+//            {
+//                if(attrScope != CDFr_VARIABLE_SCOPE) continue;
+//            }
+
+//            //get the stuff
+//            for(entryN=0; entryN <= maxEntry; entryN++)
+//            {
+//                status = CDFinquireAttrgEntry(fileID, attrN, entryN, &dataType, &numElems);
+
+//                //No Such entry is an expected error
+//                if(status != CDFr_NO_SUCH_ENTRY && status != CDFr_NO_SUCH_ATTR && this->setErrorStatus(status)) return;
+//                else this->clearErrorStatus();
+
+//                CDFr::CDFattribute *newAttr = new CDFr::CDFattribute(this);
+
+//                //add relevent data
+//                newAttr->setAttributeName(QString(attrName));
+//                newAttr->setGlobalAtt();
+//                newAttr->setType(dataType);
+
+//                //process the actual attribute
+//                this->gatherAttributes(this, fileID, true);
+
+//                //add the attribute to the object
+//                this->Attributes[QString(attrName)] = newAttr;
+
+//            }
+
+//        }
+//    }
+//}
+
+

@@ -26,21 +26,29 @@ class CDFattribute
 public:
 
     //constructor/destructor
-    CDFattribute();
+    CDFattribute(CDFr::CDFreader * parent);
     ~CDFattribute();
 
     //File Related Information
     CDFreader*  getParent();
+    void        setParent(CDFreader* parent);
 
     //Attribute information
     int64_t           getNumberOfEntries();
-    int64_t           getType();
+    long              getType();
+    void              setType(long type);
 
-    bool              isGlobal();
+    bool              isGlobalAttr();
+    bool              isVariableAttr();
+    void              setGlobalAtt();
+    void              setVariableAtt();
 
     //data
     QString           getAttributeName();
+    void              setAttributeName(QString name);
+
     QVariant          getAttributeItem(int64_t index);
+    void              addAttributeItem(QVariant item);
 
 protected:
     //File Variables
@@ -53,6 +61,7 @@ protected:
 
     //data
     QList<QVariant>   Data;
+
 };
 
 }

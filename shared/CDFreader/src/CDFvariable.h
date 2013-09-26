@@ -4,6 +4,7 @@
 #include "CDFreader.h"
 #include "CDFattribute.h"
 #include "CDFBadDataHandler.h"
+#include "CDFglobalDefs.h"
 #include "CDFerror.h"
 
 #include <QString>
@@ -46,10 +47,10 @@ public:
     int64_t*            getAllDims();
     void                setAllDims(long dims[], int count);
 
-    int64_t             getNumberEntries();
+    long             getNumberEntries();
     void                setNumberEntries(long numEntries);
 
-    int64_t             getNumberAtts();
+    long                 getNumberAtts();
     void                addAttribute(CDFattribute *attribute);
 
     int64_t             getMonotonicState();
@@ -72,6 +73,7 @@ public:
     CDFattribute *getAttribute(int64_t index);
     CDFattribute *getAttirbute(QString name);
 
+
     //index conversions
     inline int64_t      fromXYZ(int64_t x, int64_t y, int64_t z);
     inline int64_t      fromXY(int64_t x, int64_t y);
@@ -81,6 +83,8 @@ public:
 
     bool getRecordVaries() const;
     void setRecordVaries(bool value);
+
+    void setAttributeList(CDFr::attributeList Attributes);
 
 protected:
     //file related information
@@ -102,8 +106,9 @@ protected:
     QList<bool>     dimVaries;                  //Dimensions Variance
 
     //data related info
-    QMap<int64_t, QVariant> Data;               //data map[index_from_file] -> data point
-    QMap<QString, CDFattribute*> Attributes;    //Variable attributes maped by name
+    QMap<int64_t, QVariant>  Data;               //data map[index_from_file] -> data point
+    CDFr::attributeList      Attributes;         //Variable attributes maped by name
+
 
 private:
     bool errorState;

@@ -33,8 +33,19 @@ public:
         TS_ASSERT_EQUALS(reader->getChecksum(), CDFr_NO_CHECKSUM);
 
 
+        //check variabls
+        TS_ASSERT(reader->variableExists(QString("Epoch")));
+        TS_ASSERT(reader->variableExists(QString("BFIELD")));
+        TS_ASSERT(reader->variableExists(QString("MAGFLAGUC")));
+        TS_ASSERT(reader->variableExists(QString("CART_LABL_1")));
+        TS_ASSERT(reader->variableExists(QString("metavar0")));
 
-
+        //check variable attribute
+        TS_ASSERT_EQUALS(reader->getVariable(QString("Epoch"))->getNumberAtts(), 11);
+        TS_ASSERT_EQUALS(reader->getVariable(QString("BFIELD"))->getNumberAtts(), 14);
+        TS_ASSERT_EQUALS(reader->getVariable(QString("MAGFLAGUC"))->getNumberAtts(), 12);
+        TS_ASSERT_EQUALS(reader->getVariable(QString("CART_LABL_1"))->getNumberAtts(), 6);
+        TS_ASSERT_EQUALS(reader->getVariable(QString("metavar0"))->getNumberAtts(), 4);
 
     }
 

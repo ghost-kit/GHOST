@@ -85,7 +85,7 @@ void CDFr::CDFvariable::setAllDims(long dims[], int count)
 }
 
 //==================================================================//
-int64_t CDFr::CDFvariable::getNumberEntries()
+long CDFr::CDFvariable::getNumberEntries()
 {
 
     return this->numEntries;
@@ -98,7 +98,7 @@ void CDFr::CDFvariable::setNumberEntries(long numEntries)
 }
 
 //==================================================================//
-int64_t CDFr::CDFvariable::getNumberAtts()
+long CDFr::CDFvariable::getNumberAtts()
 {
 
     return this->Attributes.count();
@@ -219,6 +219,12 @@ bool CDFr::CDFvariable::getRecordVaries() const
 void CDFr::CDFvariable::setRecordVaries(bool value)
 {
     this->recordVaries = value;
+}
+
+//==================================================================//
+void CDFr::CDFvariable::setAttributeList(CDFr::attributeList Attributes)
+{
+    this->Attributes = Attributes;
 }
 
 //==================================================================//
