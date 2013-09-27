@@ -194,6 +194,14 @@ CDFr::CDFattribute* CDFr::CDFvariable::getAttirbute(QString name)
 }
 
 //==================================================================//
+bool CDFr::CDFvariable::attributeExists(QString name)
+{
+    QStringList keys = this->Attributes.keys();
+
+    return keys.contains(name);
+}
+
+//==================================================================//
 int64_t CDFr::CDFvariable::fromXYZ(int64_t x, int64_t y, int64_t z)
 {
 

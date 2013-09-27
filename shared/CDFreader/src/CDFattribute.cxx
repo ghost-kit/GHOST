@@ -3,14 +3,19 @@
 //==================================================================//
 CDFr::CDFattribute::CDFattribute(CDFreader *parent)
 {
-    this->Parent = parent;
+    this->readerParent = parent;
 
+}
+
+CDFr::CDFattribute::CDFattribute(CDFr::CDFvariable *parent)
+{
+    this->variableParent = parent;
 }
 
 //==================================================================//
 CDFr::CDFattribute::~CDFattribute()
 {
-    this->Parent = NULL;
+    this->readerParent = NULL;
 
 }
 
@@ -18,12 +23,12 @@ CDFr::CDFattribute::~CDFattribute()
 CDFr::CDFreader *CDFr::CDFattribute::getParent()
 {
 
-    return this->Parent;
+    return this->readerParent;
 }
 
 void CDFr::CDFattribute::setParent(CDFr::CDFreader *parent)
 {
-    this->Parent = parent;
+    this->readerParent = parent;
 }
 
 //==================================================================//
@@ -86,7 +91,10 @@ void CDFr::CDFattribute::setAttributeName(QString name)
 //==================================================================//
 QVariant CDFr::CDFattribute::getAttributeItem(int64_t index)
 {
-    return this->Data[index];
+    if(this->Data.size() < index)
+        return this->Data[index];
+    else
+        return QVariant(-99999999);
 }
 
 //==================================================================//

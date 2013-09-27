@@ -97,7 +97,7 @@ private:
     bool setErrorStatus(CDFstatus status);
     void clearErrorStatus();
 
-    CDFr::attributeList processAttributesList(CDFid fileID, long Scope, long VarNum=0);
+    CDFr::attributeList processAttributesList(CDFid fileID, long Scope, long VarNum=0, CDFvariable *variable = NULL);
     QList<QVariant> extractAttributeElements(CDFid fileID, long attrN, long entryN);
 
 

@@ -27,6 +27,8 @@ public:
 
     //constructor/destructor
     CDFattribute(CDFr::CDFreader * parent);
+    CDFattribute(CDFr::CDFvariable * parent);
+
     ~CDFattribute();
 
     //File Related Information
@@ -52,7 +54,8 @@ public:
 
 protected:
     //File Variables
-    CDFreader*  Parent;
+    CDFr::CDFreader*  readerParent;
+    CDFr::CDFvariable* variableParent;
 
     //Attribute info
     QString           AttName;

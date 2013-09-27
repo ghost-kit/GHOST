@@ -73,6 +73,8 @@ public:
     CDFattribute *getAttribute(int64_t index);
     CDFattribute *getAttirbute(QString name);
 
+    bool          attributeExists(QString name);
+
 
     //index conversions
     inline int64_t      fromXYZ(int64_t x, int64_t y, int64_t z);

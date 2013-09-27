@@ -4,7 +4,6 @@
 #include "CDFreader.h"
 #include "String"
 #include <QString>
-#include "CDFglobalDefs.h"
 
 
 using namespace std;
@@ -32,14 +31,6 @@ public:
         TS_ASSERT_EQUALS(reader->getCompressionType(), CDFr_NO_COMPRESSION);
         TS_ASSERT_EQUALS(reader->getChecksum(), CDFr_NO_CHECKSUM);
 
-
-        //check variabls
-        TS_ASSERT(reader->variableExists(QString("Epoch")));
-        TS_ASSERT(reader->variableExists(QString("BFIELD")));
-        TS_ASSERT(reader->variableExists(QString("MAGFLAGUC")));
-        TS_ASSERT(reader->variableExists(QString("CART_LABL_1")));
-        TS_ASSERT(reader->variableExists(QString("metavar0")));
-
         //check variable attribute
         TS_ASSERT_EQUALS(reader->getVariable(QString("Epoch"))->getNumberAtts(), 11);
         TS_ASSERT_EQUALS(reader->getVariable(QString("BFIELD"))->getNumberAtts(), 14);
@@ -50,9 +41,159 @@ public:
     }
 
 
+    void testCDFreaderVarsExist(void)
+    {
+        //make the cdfDataReader object
+        CDFr::CDFreader *reader = new CDFr::CDFreader(testFile);
+
+        //check existence for Variables
+        //check variabls
+        TS_ASSERT(reader->variableExists(QString("Epoch")));
+        TS_ASSERT(reader->variableExists(QString("BFIELD")));
+        TS_ASSERT(reader->variableExists(QString("MAGFLAGUC")));
+        TS_ASSERT(reader->variableExists(QString("CART_LABL_1")));
+        TS_ASSERT(reader->variableExists(QString("metavar0")));
+
+    }
+
+
+    void testCDFreaderAttsExist(void)
+    {
+        //make the cdfDataReader object
+        CDFr::CDFreader *reader = new CDFr::CDFreader(testFile);
+
+        //check existence for Attributes
+
+        //Epoch
+        TS_ASSERT_EQUALS(reader->getVariable(QString("Epoch"))->attributeExists("FIELDNAM"), true);
+        TS_ASSERT_EQUALS(reader->getVariable(QString("Epoch"))->attributeExists("CATDESC"), true);
+        TS_ASSERT_EQUALS(reader->getVariable(QString("Epoch"))->attributeExists("DICT_KEY"), true);
+        TS_ASSERT_EQUALS(reader->getVariable(QString("Epoch"))->attributeExists("FILLVAL"), true);
+        TS_ASSERT_EQUALS(reader->getVariable(QString("Epoch"))->attributeExists("LABLAXIS"), true);
+        TS_ASSERT_EQUALS(reader->getVariable(QString("Epoch"))->attributeExists("UNITS"), true);
+        TS_ASSERT_EQUALS(reader->getVariable(QString("Epoch"))->attributeExists("VALIDMIN"), true);
+        TS_ASSERT_EQUALS(reader->getVariable(QString("Epoch"))->attributeExists("VALIDMAX"), true);
+        TS_ASSERT_EQUALS(reader->getVariable(QString("Epoch"))->attributeExists("VAR_TYPE"), true);
+        TS_ASSERT_EQUALS(reader->getVariable(QString("Epoch"))->attributeExists("VAR_NOTES"), true);
+        TS_ASSERT_EQUALS(reader->getVariable(QString("Epoch"))->attributeExists("DIM_SIZES"), true);
+
+
+        //BField
+        TS_ASSERT_EQUALS(reader->getVariable(QString("BFIELD"))->attributeExists("FIELDNAM"), true);
+        TS_ASSERT_EQUALS(reader->getVariable(QString("BFIELD"))->attributeExists("CATDESC"), true);
+        TS_ASSERT_EQUALS(reader->getVariable(QString("BFIELD"))->attributeExists("DEPEND_0"), true);
+        TS_ASSERT_EQUALS(reader->getVariable(QString("BFIELD"))->attributeExists("DEPEND_1"), true);
+        TS_ASSERT_EQUALS(reader->getVariable(QString("BFIELD"))->attributeExists("DISPLAY_TYPE"), true);
+        TS_ASSERT_EQUALS(reader->getVariable(QString("BFIELD"))->attributeExists("FILLVAL"), true);
+        TS_ASSERT_EQUALS(reader->getVariable(QString("BFIELD"))->attributeExists("FORMAT"), true);
+        TS_ASSERT_EQUALS(reader->getVariable(QString("BFIELD"))->attributeExists("LABL_PTR_1"), true);
+        TS_ASSERT_EQUALS(reader->getVariable(QString("BFIELD"))->attributeExists("UNITS"), true);
+        TS_ASSERT_EQUALS(reader->getVariable(QString("BFIELD"))->attributeExists("VALIDMIN"), true);
+        TS_ASSERT_EQUALS(reader->getVariable(QString("BFIELD"))->attributeExists("VALIDMAX"), true);
+        TS_ASSERT_EQUALS(reader->getVariable(QString("BFIELD"))->attributeExists("VAR_TYPE"), true);
+        TS_ASSERT_EQUALS(reader->getVariable(QString("BFIELD"))->attributeExists("SCALETYP"), true);
+        TS_ASSERT_EQUALS(reader->getVariable(QString("BFIELD"))->attributeExists("DIM_SIZES"), true);
+
+
+        //MagFlagUC
+        TS_ASSERT_EQUALS(reader->getVariable(QString("MAGFLAGUC"))->attributeExists("FIELDNAM"), true);
+        TS_ASSERT_EQUALS(reader->getVariable(QString("MAGFLAGUC"))->attributeExists("CATDESC"), true);
+        TS_ASSERT_EQUALS(reader->getVariable(QString("MAGFLAGUC"))->attributeExists("DEPEND_0"), true);
+        TS_ASSERT_EQUALS(reader->getVariable(QString("MAGFLAGUC"))->attributeExists("FILLVAL"), true);
+        TS_ASSERT_EQUALS(reader->getVariable(QString("MAGFLAGUC"))->attributeExists("FORMAT"), true);
+        TS_ASSERT_EQUALS(reader->getVariable(QString("MAGFLAGUC"))->attributeExists("LABLAXIS"), true);
+        TS_ASSERT_EQUALS(reader->getVariable(QString("MAGFLAGUC"))->attributeExists("VALIDMIN"), true);
+        TS_ASSERT_EQUALS(reader->getVariable(QString("MAGFLAGUC"))->attributeExists("VALIDMAX"), true);
+        TS_ASSERT_EQUALS(reader->getVariable(QString("MAGFLAGUC"))->attributeExists("VAR_TYPE"), true);
+        TS_ASSERT_EQUALS(reader->getVariable(QString("MAGFLAGUC"))->attributeExists("SCALETYP"), true);
+        TS_ASSERT_EQUALS(reader->getVariable(QString("MAGFLAGUC"))->attributeExists("VAR_NOTES"), true);
+        TS_ASSERT_EQUALS(reader->getVariable(QString("MAGFLAGUC"))->attributeExists("DIM_SIZES"), true);
+
+
+        //CART_LABL_1
+        TS_ASSERT_EQUALS(reader->getVariable(QString("CART_LABL_1"))->attributeExists("FIELDNAM"), true);
+        TS_ASSERT_EQUALS(reader->getVariable(QString("CART_LABL_1"))->attributeExists("CATDESC"), true);
+        TS_ASSERT_EQUALS(reader->getVariable(QString("CART_LABL_1"))->attributeExists("DICT_KEY"), true);
+        TS_ASSERT_EQUALS(reader->getVariable(QString("CART_LABL_1"))->attributeExists("FORMAT"), true);
+        TS_ASSERT_EQUALS(reader->getVariable(QString("CART_LABL_1"))->attributeExists("VAR_TYPE"), true);
+        TS_ASSERT_EQUALS(reader->getVariable(QString("CART_LABL_1"))->attributeExists("DIM_SIZES"), true);
+
+        //metavar0
+        TS_ASSERT_EQUALS(reader->getVariable(QString("metavar0"))->attributeExists("FIELDNAM"), true);
+        TS_ASSERT_EQUALS(reader->getVariable(QString("metavar0"))->attributeExists("CATDESC"), true);
+        TS_ASSERT_EQUALS(reader->getVariable(QString("metavar0"))->attributeExists("FORMAT"), true);
+        TS_ASSERT_EQUALS(reader->getVariable(QString("metavar0"))->attributeExists("VAR_TYPE"), true);
+
+    }
+
+
+    void testCDFreaderAttsValuesCorrect(void)
+    {
+        //make the cdfDataReader object
+        CDFr::CDFreader *reader = new CDFr::CDFreader(testFile);
+
+        //check values for Attributes
+        //Epoch
+        TS_ASSERT_EQUALS(reader->getVariable(QString("Epoch"))->getAttirbute("FIELDNAM")->getAttributeItem(0).toString().toAscii().data(), "Epoch");
+        TS_ASSERT_EQUALS(reader->getVariable(QString("Epoch"))->getAttirbute("CATDESC")->getAttributeItem(0).toString().toAscii().data(), "Time Since 0 AD");
+        TS_ASSERT_EQUALS(reader->getVariable(QString("Epoch"))->getAttirbute("DICT_KEY")->getAttributeItem(0).toString().toAscii().data(), "time>epoch");
+        TS_ASSERT_EQUALS(reader->getVariable(QString("Epoch"))->getAttirbute("FILLVAL")->getAttributeItem(0).toFloat(), -1.0e31);
+        TS_ASSERT_EQUALS(reader->getVariable(QString("Epoch"))->getAttirbute("LABLAXIS")->getAttributeItem(0).toString().toAscii().data(), "Epoch");
+        TS_ASSERT_EQUALS(reader->getVariable(QString("Epoch"))->getAttirbute("UNITS")->getAttributeItem(0).toString().toAscii().data(), "ms");
+        TS_ASSERT_EQUALS(reader->getVariable(QString("Epoch"))->getAttirbute("VALIDMIN")->getAttributeItem(0).toFloat(), 6.27984e+13);
+        TS_ASSERT_EQUALS(reader->getVariable(QString("Epoch"))->getAttirbute("VALIDMAX")->getAttributeItem(0).toFloat(), 6.37766e+13);
+        TS_ASSERT_EQUALS(reader->getVariable(QString("Epoch"))->getAttirbute("VAR_TYPE")->getAttributeItem(0).toString().toAscii().data(), "support data");
+        TS_ASSERT_EQUALS(reader->getVariable(QString("Epoch"))->getAttirbute("VAR_NOTES")->getAttributeItem(0).toString().toAscii().data(), "Interval-centered time tag");
+        TS_ASSERT_EQUALS(reader->getVariable(QString("Epoch"))->getAttirbute("DIM_SIZES")->getAttributeItem(0).toInt(), 0);
 
 
 
+        //BField
+        TS_ASSERT_EQUALS(reader->getVariable(QString("BFIELD"))->getAttirbute("FIELDNAM")->getAttributeItem(0).toString().toAscii().data(), "B Field in RTN Coordinates");
+        TS_ASSERT_EQUALS(reader->getVariable(QString("BFIELD"))->getAttirbute("CATDESC")->getAttributeItem(0).toString().toAscii().data(), "Magnetic field vector in RTN coordinates from the IMPACT/MAG instrument.");
+        TS_ASSERT_EQUALS(reader->getVariable(QString("BFIELD"))->getAttirbute("DEPEND_0")->getAttributeItem(0).toString().toAscii().data(), "Epoch");
+        TS_ASSERT_EQUALS(reader->getVariable(QString("BFIELD"))->getAttirbute("DEPEND_1")->getAttributeItem(0).toString().toAscii().data(), "CART_LABL_1");
+        TS_ASSERT_EQUALS(reader->getVariable(QString("BFIELD"))->getAttirbute("DISPLAY_TYPE")->getAttributeItem(0).toString().toAscii().data(), "time_series");
+        TS_ASSERT_EQUALS(reader->getVariable(QString("BFIELD"))->getAttirbute("FILLVAL")->getAttributeItem(0).toFloat(), -1.0e+31);
+        TS_ASSERT_EQUALS(reader->getVariable(QString("BFIELD"))->getAttirbute("FORMAT")->getAttributeItem(0).toString().toAscii().data(), "E13.6");
+        TS_ASSERT_EQUALS(reader->getVariable(QString("BFIELD"))->getAttirbute("LABL_PTR_1")->getAttributeItem(0).toString().toAscii().data(), "metavar0");
+        TS_ASSERT_EQUALS(reader->getVariable(QString("BFIELD"))->getAttirbute("UNITS")->getAttributeItem(0).toString().toAscii().data(), "nT");
+        TS_ASSERT_EQUALS(reader->getVariable(QString("BFIELD"))->getAttirbute("VALIDMIN")->getAttributeItem(0).toFloat(), -10000.0);
+        TS_ASSERT_EQUALS(reader->getVariable(QString("BFIELD"))->getAttirbute("VALIDMAX")->getAttributeItem(0).toFloat(), 10000.0);
+        TS_ASSERT_EQUALS(reader->getVariable(QString("BFIELD"))->getAttirbute("VAR_TYPE")->getAttributeItem(0).toString().toAscii().data(), "data");
+        TS_ASSERT_EQUALS(reader->getVariable(QString("BFIELD"))->getAttirbute("SCALETYP")->getAttributeItem(0).toString().toAscii().data(), "linear");
+        TS_ASSERT_EQUALS(reader->getVariable(QString("BFIELD"))->getAttirbute("DIM_SIZES")->getAttributeItem(0).toInt(), 4);
+
+
+        //MagFlagUC
+        TS_ASSERT_EQUALS(reader->getVariable(QString("MAGFLAGUC"))->getAttirbute("FIELDNAM")->getAttributeItem(0).toString().toAscii().data(),"MAGFLAGUC");
+        TS_ASSERT_EQUALS(reader->getVariable(QString("MAGFLAGUC"))->getAttirbute("CATDESC")->getAttributeItem(0).toString().toAscii().data(), "[HIGHLY ENCODED VALUES] IMPACT/MAG status flag");
+        TS_ASSERT_EQUALS(reader->getVariable(QString("MAGFLAGUC"))->getAttirbute("DEPEND_0")->getAttributeItem(0).toString().toAscii().data(), "Epoch");
+        TS_ASSERT_EQUALS(reader->getVariable(QString("MAGFLAGUC"))->getAttirbute("FILLVAL")->getAttributeItem(0).toUInt(), 4294967295);
+        TS_ASSERT_EQUALS(reader->getVariable(QString("MAGFLAGUC"))->getAttirbute("FORMAT")->getAttributeItem(0).toString().toAscii().data(), "I8");
+        TS_ASSERT_EQUALS(reader->getVariable(QString("MAGFLAGUC"))->getAttirbute("LABLAXIS")->getAttributeItem(0).toString().toAscii().data(), "MAGFLAGUC");
+        TS_ASSERT_EQUALS(reader->getVariable(QString("MAGFLAGUC"))->getAttirbute("VALIDMIN")->getAttributeItem(0).toUInt(), 0);
+        TS_ASSERT_EQUALS(reader->getVariable(QString("MAGFLAGUC"))->getAttirbute("VALIDMAX")->getAttributeItem(0).toUInt(), 4294967295);
+        TS_ASSERT_EQUALS(reader->getVariable(QString("MAGFLAGUC"))->getAttirbute("VAR_TYPE")->getAttributeItem(0).toString().toAscii().data(), "data");
+        TS_ASSERT_EQUALS(reader->getVariable(QString("MAGFLAGUC"))->getAttirbute("SCALETYP")->getAttributeItem(0).toString().toAscii().data(), "linear");
+        TS_ASSERT_EQUALS(reader->getVariable(QString("MAGFLAGUC"))->getAttirbute("VAR_NOTES")->getAttributeItem(0).toString().toAscii().data(), "bit 0:3 Mag Error counter.     bit 4:7 Mag Command counter.     bit 8   spare.     bit 9   First.     bit 10  Time.     bit 11  Interface Parity Error (0=OK, 1=Fault).     bit 12  Interface Timeout Error (0=OK, 1=Fault).     bit 13  ADC Cal (0=OFF, 1=ON).     bit 14  In Flight Cal (0=OFF, 1=ON).     bit 15  Range (0=low fields, high sensitivity, 1=high fields, low sen.     bit 16  Calibration (0=old cal, 1=new cal).     bit 17  STEREO STEPPING For X-axis.     bit 18:31 spare");
+        TS_ASSERT_EQUALS(reader->getVariable(QString("MAGFLAGUC"))->getAttirbute("DIM_SIZES")->getAttributeItem(0).toInt(), 0);
+
+
+        //CART_LABL_1
+        TS_ASSERT_EQUALS(reader->getVariable(QString("CART_LABL_1"))->getAttirbute("FIELDNAM")->getAttributeItem(0).toString().toAscii().data(), "CART_LABL_1");
+        TS_ASSERT_EQUALS(reader->getVariable(QString("CART_LABL_1"))->getAttirbute("CATDESC")->getAttributeItem(0).toString().toAscii().data(), "CART_LABL_1");
+        TS_ASSERT_EQUALS(reader->getVariable(QString("CART_LABL_1"))->getAttirbute("DICT_KEY")->getAttributeItem(0).toString().toAscii().data(), "label");
+        TS_ASSERT_EQUALS(reader->getVariable(QString("CART_LABL_1"))->getAttirbute("FORMAT")->getAttributeItem(0).toString().toAscii().data(), "a6");
+        TS_ASSERT_EQUALS(reader->getVariable(QString("CART_LABL_1"))->getAttirbute("VAR_TYPE")->getAttributeItem(0).toString().toAscii().data(), "metadata");
+        TS_ASSERT_EQUALS(reader->getVariable(QString("CART_LABL_1"))->getAttirbute("DIM_SIZES")->getAttributeItem(0).toInt(), 4);
+
+        //metavar0
+        TS_ASSERT_EQUALS(reader->getVariable(QString("metavar0"))->getAttirbute("FIELDNAM")->getAttributeItem(0).toString().toAscii().data(), "metavar0");
+        TS_ASSERT_EQUALS(reader->getVariable(QString("metavar0"))->getAttirbute("CATDESC")->getAttributeItem(0).toString().toAscii().data(), "Metadata for variable BFIELD and possibly other variables.");
+        TS_ASSERT_EQUALS(reader->getVariable(QString("metavar0"))->getAttirbute("FORMAT")->getAttributeItem(0).toString().toAscii().data(), "a2");
+        TS_ASSERT_EQUALS(reader->getVariable(QString("metavar0"))->getAttirbute("VAR_TYPE")->getAttributeItem(0).toString().toAscii().data(), "metadata");
+    }
 
 };
 

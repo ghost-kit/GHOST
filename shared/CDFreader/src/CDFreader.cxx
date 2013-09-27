@@ -7,7 +7,11 @@
 QString CDFr::CDFreader::getVarName(int index)
 {
 
-    return QString("getVarName UNIMPLEMENTED");
+    QStringList keys = this->Variables.keys();
+
+    if(keys.size() < index)
+        return keys[index];
+    else return QString("Invalid Variable");
 }
 
 //==================================================================//
@@ -42,8 +46,9 @@ CDFr::CDFvariable *CDFr::CDFreader::getVariable(QString name)
 //==================================================================//
 QString CDFr::CDFreader::getGlobalAttName(int index)
 {
+    QStringList keys = this->Attributes.keys();
 
-    return QString("getGlobalAttName UNIMPLEMENTED");
+    return keys[index];
 }
 
 //==================================================================//
@@ -77,7 +82,7 @@ CDFr::CDFattribute* CDFr::CDFreader::getGlobalAttribute(QString name)
 //==================================================================//
 QString CDFr::CDFreader::getFileName()
 {
-    return QString("getFileName UNIMPLEMENTED");
+    return this->FileName;
 }
 
 //==================================================================//
@@ -294,7 +299,7 @@ CDFr::CDFreader::CDFreader(QString FileName)
             newVar->setNumberEntries(numElements);
 
             //populate attributes
-            newVar->setAttributeList(this->processAttributesList(fileID, CDFr_VARIABLE_SCOPE, x));
+            newVar->setAttributeList(this->processAttributesList(fileID, CDFr_VARIABLE_SCOPE, x, newVar));
 
 
             //add the variable to the list
@@ -344,109 +349,115 @@ void CDFr::CDFreader::clearErrorStatus()
 }
 
 //==================================================================//
-CDFr::attributeList CDFr::CDFreader::processAttributesList(CDFid fileID, long Scope, long VarNum)
+CDFr::attributeList CDFr::CDFreader::processAttributesList(CDFid fileID, long Scope, long VarNum, CDFr::CDFvariable * variable)
 {
     //Generate Attributes
     CDFr::attributeList AttList;
-
-
-    //getting global attributes
     CDFstatus status;
 
-    bool global;
-    if(Scope == CDFr_GLOBAL_SCOPE)
-    {
-        global = true;
-    }
-    else
-    {
-        global = false;
-    }
+    long attrScope = 0;
+    long maxgEntry = 0;
+    long maxzEntry = 0;
+    long maxrEntry = 0;
+    char attName[CDF_ATTR_NAME_LEN256+1];
 
-    long numAttrs;
-    long entryN;
-    long attrN;
-    long attrScope;
-    long maxEntry;
+    long numElements;
     long dataType;
-    long numElems;
-    char attrName[CDF_ATTR_NAME_LEN256+1];
+    long numAttrs;
 
-
+    //need to get the number of attributes
     status = CDFgetNumAttributes(fileID, &numAttrs);
-
-    //check for error status
     if(this->setErrorStatus(status)) return AttList;
 
-    //cycle through the attributes
-    for(long x = 0; x < numAttrs; x ++)
+    for(int att = 0; att < numAttrs; att++)
     {
-        status = CDFattrInquire(fileID, x, attrName, &attrScope, &maxEntry);
-        if(this->setErrorStatus(status)) return AttList;
+        //process the attributes in order
+        status = CDFinquireAttr(fileID, att, attName, &attrScope, &maxgEntry, &maxrEntry, &maxzEntry);
 
-        //we only want global scope attributes
-        if(global)
+        //skip the variable if there is a problem
+        if(this->setErrorStatus(status)) { this->clearErrorStatus(); continue;}
+
+        //if the variable isn't the correct scope, move on to the next one.
+        if(attrScope != Scope) continue;
+
+        //process differently based on scope
+        if(Scope == CDFr_GLOBAL_SCOPE)
         {
-            //make sure we have the correct scope
-            if(attrScope != CDFr_GLOBAL_SCOPE) continue;
+            //allocate the new attribute
+            CDFr::CDFattribute *newAttr = new CDFr::CDFattribute(this);
 
-            //get all entries for the scope
-            for(entryN=0; entryN <= maxEntry; entryN++)
+            //get required information
+            for(int entry = 0; entry <= maxgEntry; entry++)
             {
-                status = CDFinquireAttrgEntry(fileID, attrN, entryN, &dataType, &numElems);
+                status = CDFinquireAttrgEntry(fileID, att, entry, &dataType, &numElements);
 
-                //No Such entry is an expected error
-                if(status != CDFr_NO_SUCH_ENTRY && status != CDFr_NO_SUCH_ATTR && this->setErrorStatus(status)) break;
-                else this->clearErrorStatus();
+                //move on to next entry if this one doesn't exist
+                if(status == CDFr_NO_SUCH_ENTRY) continue;
 
-                CDFr::CDFattribute *newAttr = new CDFr::CDFattribute(this);
+                if(status != CDFr_OK )
+                {
+                    this->setErrorStatus(status);
+                    break;
+                }
 
-                //add relevent data
-                newAttr->setAttributeName(QString(attrName));
+                newAttr->setAttributeName(QString(attName));
                 newAttr->setGlobalAtt();
                 newAttr->setType(dataType);
 
-                //TODO: process the actual attribute
-                //                newAttr->addAttributeItem();
+                //TODO: Add actual data here
 
-
-                //add to the list
-                AttList[QString(attrName)] = newAttr;
-
+                AttList[QString(attName)] = newAttr;
             }
 
+
         }
-        else
+        else    // we Variable scope
         {
-            //make sure we have the correct scope
-            if(attrScope != CDFr_VARIABLE_SCOPE) continue;
+            //make sure the parent is defined
+            if(variable == NULL)
+            {
+                this->setErrorStatus(CDFr_NO_PARENT_DEFINED);
+                break;
+            }
 
-            //status = CDFinquireAttrzEntry(fileID, attrN, VarNum, &dataType, &numElems);
-            if(this->setErrorStatus(status)) return AttList;
+            //allocate new attribute
+            CDFr::CDFattribute *newAttr = new CDFr::CDFattribute(variable);
 
+            //get attribute information
+            status = CDFinquireAttrzEntry(fileID, att, VarNum, &dataType, &numElements);
 
-            CDFr::CDFattribute *newAttr = new CDFr::CDFattribute(this);
+            //if the entry does not exist, skip it
+            if(status == CDFr_NO_SUCH_ENTRY) continue;
 
-            //add relevent data
-            newAttr->setAttributeName(QString(attrName));
-            newAttr->setGlobalAtt();
+            if(status != CDFr_OK)
+            {
+                this->setErrorStatus(status);
+                break;
+            }
+
+            newAttr->setAttributeName(QString(attName));
+            newAttr->setVariableAtt();
             newAttr->setType(dataType);
 
-            //TODO: process the actual attribute
-            //            newAttr->addAttributeItem();
+            //TODO: Add actual data here
 
-
-            //add to the list
-            AttList[QString(attrName)] = newAttr;
-
+            AttList[QString(attName)] = newAttr;
 
         }
-
-        //get the stuff
-
 
     }
 
+
+
+
+
+
+
+
+
+
+
+    //return the list
     return AttList;
 }
 

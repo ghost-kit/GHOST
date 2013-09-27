@@ -146,4 +146,8 @@
 #define CDFr_TT2000_TIME_ERROR               -2229
 #define CDFr_UNABLE_TO_PROCESS_CDF           -2230
 
+
+//custom definitions
+#define CDFr_NO_PARENT_DEFINED               -4000
+
 #endif // CDFERRORDEFS_H

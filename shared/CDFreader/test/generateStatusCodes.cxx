@@ -16,10 +16,7 @@ int main()
 
         if(statText.contains("Text not found")) continue;
 
-        QStringList split = statText.split(":");
-        split[1] = split[1].trimmed();
-
-        std::cout << "this->errorTable[" << x << "] = QString(\"" << split[1].toAscii().data() << "\");" << std::endl;
+        std::cout << "this->errorTable[" << x << "] = QString(\"" << x << " " << text << "\");" << std::endl;
     }
 
 }
