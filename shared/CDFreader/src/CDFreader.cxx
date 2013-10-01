@@ -404,7 +404,7 @@ CDFr::attributeList CDFr::CDFreader::processAttributesList(CDFid fileID, long Sc
                 newAttr->setGlobalAtt();
                 newAttr->setType(dataType);
 
-                //TODO: Add actual data here
+                newAttr->setAttributeList(this->extractAttributeElements(fileID, att, entry, CDFr_GLOBAL_SCOPE));
 
                 AttList[QString(attName)] = newAttr;
             }
@@ -439,7 +439,8 @@ CDFr::attributeList CDFr::CDFreader::processAttributesList(CDFid fileID, long Sc
             newAttr->setVariableAtt();
             newAttr->setType(dataType);
 
-            //TODO: Add actual data here
+            newAttr->setAttributeList(this->extractAttributeElements(fileID, att, VarNum, CDFr_VARIABLE_SCOPE));
+
 
             AttList[QString(attName)] = newAttr;
 
@@ -448,183 +449,260 @@ CDFr::attributeList CDFr::CDFreader::processAttributesList(CDFid fileID, long Sc
     }
 
 
-
-
-
-
-
-
-
-
-
     //return the list
     return AttList;
 }
 
-////==================================================================//
-//void CDFr::CDFreader::processAttributeData(void* parent, bool global, CDFattribute *attribute, const CDFid file, const long attrN, const long entryN, const long dataType)
-//{
 
-//    //hack for parent type. TODO: Change this to a polymorphic class exchange
-//    CDFr::CDFvariable *varParent = NULL;
-//    CDFr::CDFreader   *readParent = NULL;
+//==================================================================//
+QList<QVariant>* CDFr::CDFreader::extractAttributeElements(CDFid fileID, long attrN, long entryNum, long scope)
+{
+    //the data list...
+    QList<QVariant> *dataList = new QList<QVariant>;
+    CDFstatus status;
 
-//    QVariant data;
+    //std::cerr << "====================" << std::endl;
 
-//    switch(dataType)
-//    {
-//    //1 byte signed integer
-//    case CDF_BYTE:
-
-//    case CDF_CHAR:
-
-//    case CDF_INT1:
-
-//        break;
-
-//    //1 byte unsigned integer
-//    case CDF_UCHAR:
-
-//    case CDF_UINT1:
-
-//        break;
-
-//    //2 byte signed integer
-//    case CDF_INT2:
-
-//        break;
-
-//    //2 byte unsigned integer
-//    case CDF_UINT2:
-
-//        break;
-
-//    //4 byte signed integer
-//    case CDF_INT4:
-
-//        break;
-
-//    //4 byte unsigned integer
-//    case CDF_UINT4:
-
-//        break;
-
-//    //8-byte signed integer
-//    case CDF_INT8:
-
-//    case CDF_TIME_TT2000:
-
-//        break;
-
-//    //4-byte floating point
-//    case CDF_REAL4:
-
-//    case CDF_FLOAT:
-
-//        break;
-
-//    //8-byte floating point
-//    case CDF_REAL8:
-
-//    case CDF_DOUBLE:
-
-//    case CDF_EPOCH:
-
-//        break;
-
-//    //2 - 8-byte floating points
-//    case CDF_EPOCH16:
-
-//        break;
-
-//    }
+    char nameOfatt[CDF_ATTR_NAME_LEN256+1];
+    status = CDFgetAttrName(fileID, attrN, nameOfatt);
 
 
-//    if(global)
-//    {
+    //get required information
+    long dataType;
+    long numElements;
+    long gzrEntry = 0;
 
-//    }
+    //set the correct scope for the attribute reader
+    if(scope == CDFr_GLOBAL_SCOPE) gzrEntry = 1;
+    else gzrEntry = 3;
+
+    status = CDFinquireAttrEntry(fileID, gzrEntry, attrN, entryNum, &dataType, &numElements);
+
+    //if error, set it, and return empty list
+    if(this->setErrorStatus(status)) return dataList;
+
+    //get the data
+    switch(dataType)
+    {
+    //1 byte signed integer
+    case CDF_CHAR:
+    {
+
+        //this is a string element
+        //Data is a stirng
+        char * data = new char[numElements + 1];
+
+        status = CDFgetAttrEntry(fileID, gzrEntry, attrN, entryNum, data);
+
+        if(this->setErrorStatus(status)) break;
+
+        data[numElements] = '\0';
+
+        //add to record
+        QVariant attr = QString(data);
+
+        dataList->push_back(attr);
+
+        break;
+    }
+
+    case CDF_BYTE:
+    case CDF_INT1:
+    {
+        //std::cerr << "1 Byte Processing" << std::endl;
+
+        //get the data
+        int8_t *data = new int8_t[numElements];
+        status = CDFgetAttrEntry(fileID, gzrEntry, attrN, entryNum, data);
+
+        //check error - if so, exit the switch
+        if(this->setErrorStatus(status)) break;
+
+        //process the data
+        for(int elem = 0; elem < numElements; elem++)
+        {
+            dataList->push_back(QVariant((int8_t)data[elem]));
+        }
+
+        break;
+    }
+        //1 byte unsigned integer
+    case CDF_UCHAR:
+    case CDF_UINT1:
+    {
+       // std::cerr << "Unsigned 1 Byte Processing" << std::endl;
+
+        //get the data
+        uint8_t *data = new uint8_t[numElements];
+        status = CDFgetAttrEntry(fileID, gzrEntry, attrN, entryNum, data);
+
+        //check error - if so, exit the switch
+        if(this->setErrorStatus(status)) break;
+
+        //process the data
+        for(int elem = 0; elem < numElements; elem++)
+        {
+            dataList->push_back(QVariant((uint8_t)data[elem]));
+        }
 
 
+        break;
+    }
+        //2 byte signed integer
+    case CDF_INT2:
+    {
+        //std::cerr << "2 Byte Signed Processing" << std::endl;
 
-//}
+        //get the data
+        int16_t *data = new int16_t[numElements];
+        status = CDFgetAttrEntry(fileID, gzrEntry, attrN, entryNum, data);
 
-//void CDFr::CDFreader::gatherAttributes(void* parent, CDFid fileID, bool global)
-//{
-//    //Generate Attributes (Global Only)
-//    //getting global attributes
-//    {
-//        CDFstatus status;
+        //check error - if so, exit the switch
+        if(this->setErrorStatus(status)) break;
 
-//        CDFr::CDFvariable *varParent = NULL;
-//        CDFr::CDFreader   *readerParent = NULL;
+        //process the data
+        for(int elem = 0; elem < numElements; elem++)
+        {
+            dataList->push_back(QVariant((int16_t)data[elem]));
+        }
 
-//        if(global)
-//        {
-//            readerParent = (CDFr::CDFreader*)parent;
-//        }
-//        else
-//        {
-//            varParent = (CDFr::CDFvariable*)parent;
-//        }
+        break;
+    }
 
-//        long numAttrs;
-//        long entryN;
-//        long attrN;
-//        long attrScope;
-//        long maxEntry;
-//        long dataType;
-//        long numElems;
-//        char attrName[CDF_ATTR_NAME_LEN256+1];
+        //2 byte unsigned integer
+    case CDF_UINT2:
+    {
+       // std::cerr << "2 byte unsigned processing" << std::endl;
+
+        //get the data
+        uint16_t *data = new uint16_t[numElements];
+        status = CDFgetAttrEntry(fileID, gzrEntry, attrN, entryNum, data);
+
+        //check error - if so, exit the switch
+        if(this->setErrorStatus(status)) break;
+
+        //process the data
+        for(int elem = 0; elem < numElements; elem++)
+        {
+            dataList->push_back(QVariant((uint16_t)data[elem]));
+        }
+        break;
+    }
+        //4 byte signed integer
+    case CDF_INT4:
+    {
+       // std::cerr << "4 byte int processing " << std::endl;
+
+        //get the data
+        int32_t *data = new int32_t[numElements];
+        status = CDFgetAttrEntry(fileID, gzrEntry, attrN, entryNum, data);
+
+        //check error - if so, exit the switch
+        if(this->setErrorStatus(status)) break;
+
+        //process the data
+        for(int elem = 0; elem < numElements; elem++)
+        {
+            dataList->push_back(QVariant((int32_t)data[elem]));
+        }
+        break;
+    }
+        //4 byte unsigned integer
+    case CDF_UINT4:
+    {
+       // std::cout << "4 byte unsinged processing" << std::endl;
+
+        //get the data
+        uint32_t *data = new uint32_t[numElements];
+        status = CDFgetAttrEntry(fileID, gzrEntry, attrN, entryNum, data);
+
+        //check error - if so, exit the switch
+        if(this->setErrorStatus(status)) break;
+
+        //process the data
+        for(int elem = 0; elem < numElements; elem++)
+        {
+            dataList->push_back(QVariant((uint32_t)data[elem]));
+        }
+        break;
+    }
+        //8-byte signed integer
+    case CDF_INT8:
+    case CDF_TIME_TT2000:
+    {
+       // std::cerr << "8 byte int processing" << std::endl;
+
+        //get the data
+        int64_t *data = new int64_t[numElements];
+        status = CDFgetAttrEntry(fileID, gzrEntry, attrN, entryNum, data);
+
+        //check error - if so, exit the switch
+        if(this->setErrorStatus(status)) break;
+
+        //process the data
+        for(int elem = 0; elem < numElements; elem++)
+        {
+            dataList->push_back(QVariant((int64_t)data[elem]));
+        }
+        break;
+    }
+        //4-byte floating point
+    case CDF_REAL4:
+    case CDF_FLOAT:
+    {
+       // std::cerr << "Float Processing" << std::endl;
+
+        //get the data
+        float *data = new float[numElements];
+        status = CDFgetAttrEntry(fileID, gzrEntry, attrN, entryNum, data);
+
+        //check error - if so, exit the switch
+        if(this->setErrorStatus(status)) break;
+
+        //process the data
+        for(int elem = 0; elem < numElements; elem++)
+        {
+            dataList->push_back(QVariant((float)data[elem]));
+        }
+        break;
+    }
+        //8-byte floating point
+    case CDF_REAL8:
+    case CDF_DOUBLE:
+    case CDF_EPOCH:
+    {
+      ///  std::cerr << "Double Processing" << std::endl;
+
+        //get the data
+        double *data = new double[numElements];
+        status = CDFgetAttrEntry(fileID, gzrEntry, attrN, entryNum, data);
+
+        //check error - if so, exit the switch
+        if(this->setErrorStatus(status)) break;
+
+        //process the data
+        for(int elem = 0; elem < numElements; elem++)
+        {
+            dataList->push_back(QVariant((double)data[elem]));
+        }
+        break;
+    }
+        //2 - 8-byte floating points
+    case CDF_EPOCH16:
+    {
+
+        std::cerr << "CDF_EPOCH16 unimplemented" << std::endl;
+        break;
+    }
+
+    default:
+        std::cerr << "UNKNOWN CDF TYPE" << std::endl;
+        break;
+    }
+
+    return dataList;
+}
 
 
-//        status = CDFgetNumAttributes(fileID, &numAttrs);
-
-//        //check for error status
-//        if(this->setErrorStatus(status)) return;
-
-//        //cycle through the attributes
-//        for(long x = 0; x < numAttrs; x ++)
-//        {
-//            status = CDFattrInquire(fileID, x, attrName, &attrScope, &maxEntry);
-//            if(this->setErrorStatus(status)) return;
-
-//            //we only want global scope attributes
-//            if(global)
-//            {
-//                if(attrScope != CDFr_GLOBAL_SCOPE) continue;
-//            }
-//            else
-//            {
-//                if(attrScope != CDFr_VARIABLE_SCOPE) continue;
-//            }
-
-//            //get the stuff
-//            for(entryN=0; entryN <= maxEntry; entryN++)
-//            {
-//                status = CDFinquireAttrgEntry(fileID, attrN, entryN, &dataType, &numElems);
-
-//                //No Such entry is an expected error
-//                if(status != CDFr_NO_SUCH_ENTRY && status != CDFr_NO_SUCH_ATTR && this->setErrorStatus(status)) return;
-//                else this->clearErrorStatus();
-
-//                CDFr::CDFattribute *newAttr = new CDFr::CDFattribute(this);
-
-//                //add relevent data
-//                newAttr->setAttributeName(QString(attrName));
-//                newAttr->setGlobalAtt();
-//                newAttr->setType(dataType);
-
-//                //process the actual attribute
-//                this->gatherAttributes(this, fileID, true);
-
-//                //add the attribute to the object
-//                this->Attributes[QString(attrName)] = newAttr;
-
-//            }
-
-//        }
-//    }
-//}
 
 

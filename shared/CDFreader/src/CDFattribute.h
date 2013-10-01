@@ -51,6 +51,7 @@ public:
 
     QVariant          getAttributeItem(int64_t index);
     void              addAttributeItem(QVariant item);
+    void              setAttributeList(QList<QVariant> *list);
 
 protected:
     //File Variables
@@ -63,7 +64,7 @@ protected:
     bool              global;
 
     //data
-    QList<QVariant>   Data;
+    QList<QVariant>   *Data;
 
 };
 

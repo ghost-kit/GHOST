@@ -98,12 +98,8 @@ private:
     void clearErrorStatus();
 
     CDFr::attributeList processAttributesList(CDFid fileID, long Scope, long VarNum=0, CDFvariable *variable = NULL);
-    QList<QVariant> extractAttributeElements(CDFid fileID, long attrN, long entryN);
+    QList<QVariant> *extractAttributeElements(CDFid fileID, long attrN, long entryNum, long scope);
 
-
-
-//    void processAttribute(void *parent, bool global, CDFr::CDFattribute* attribute, const CDFid file, const long attrN, const long entryN, const long dataType);
-//    void gatherAttributes(void *parent, CDFid fileID, bool global);
 
 };
 }

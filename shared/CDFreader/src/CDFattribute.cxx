@@ -1,4 +1,5 @@
 #include "CDFattribute.h"
+#include <iostream>
 
 //==================================================================//
 CDFr::CDFattribute::CDFattribute(CDFreader *parent)
@@ -16,6 +17,7 @@ CDFr::CDFattribute::CDFattribute(CDFr::CDFvariable *parent)
 CDFr::CDFattribute::~CDFattribute()
 {
     this->readerParent = NULL;
+    delete [] this->Data;
 
 }
 
@@ -35,7 +37,7 @@ void CDFr::CDFattribute::setParent(CDFr::CDFreader *parent)
 int64_t CDFr::CDFattribute::getNumberOfEntries()
 {
 
-    return this->Data.size();
+    return this->Data->size();
 }
 
 //==================================================================//
@@ -91,15 +93,26 @@ void CDFr::CDFattribute::setAttributeName(QString name)
 //==================================================================//
 QVariant CDFr::CDFattribute::getAttributeItem(int64_t index)
 {
-    if(this->Data.size() < index)
-        return this->Data[index];
+
+    if(this->Data)
+    {
+        return this->Data->operator [](index);
+    }
     else
-        return QVariant(-99999999);
+    {
+        //make it a NaN if we don't know what to do
+        return QVariant(0.0/0.0);
+    }
 }
 
 //==================================================================//
 void CDFr::CDFattribute::addAttributeItem(QVariant item)
 {
-    this->Data.push_back(item);
+    this->Data->push_back(item);
+}
+
+void CDFr::CDFattribute::setAttributeList(QList<QVariant> *list)
+{
+    this->Data = list;
 }
 
