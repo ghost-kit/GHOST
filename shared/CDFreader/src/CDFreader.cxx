@@ -187,6 +187,8 @@ CDFr::CDFreader::CDFreader(QString FileName)
     //Open the File
     CDFstatus status = CDFopenCDF(this->FileName.toAscii().data(), &fileID);
 
+    //std::cerr << "FileName: " << this->FileName.toAscii().data() << std::endl;
+
     //set error status
     if(this->setErrorStatus(status)) return;
 

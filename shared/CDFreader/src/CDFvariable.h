@@ -6,6 +6,7 @@
 #include "CDFBadDataHandler.h"
 #include "CDFglobalDefs.h"
 #include "CDFerror.h"
+#include "cdf.h"
 
 #include <QString>
 #include <QStringList>
@@ -67,7 +68,7 @@ public:
     QVariant            getMaximum();
     void                setMaximum(QVariant maximum);
 
-    QVariant            getDataItem(int64_t index);
+    QList<QVariant> getDataEntry(int64_t index);
 
     //Attributes
     CDFattribute *getAttribute(int64_t index);
@@ -108,9 +109,10 @@ protected:
     QList<bool>     dimVaries;                  //Dimensions Variance
 
     //data related info
-    QMap<int64_t, QVariant>  Data;               //data map[index_from_file] -> data point
     CDFr::attributeList      Attributes;         //Variable attributes maped by name
 
+    //memmory managment routines
+    bool allocateRecordMemory(long dataType, void *&data, long numValues);
 
 private:
     bool errorState;

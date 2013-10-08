@@ -67,6 +67,7 @@ public:
     //error handling
     bool    hasError();         //if there is an error or not
     QString getErrorString();   //returns the error string for the current error
+    bool setErrorStatus(CDFstatus status);
 
 protected:
 
@@ -94,7 +95,6 @@ protected:
 
 private:
     CDFr::CDFerrorHandler*   errorTracker;
-    bool setErrorStatus(CDFstatus status);
     void clearErrorStatus();
 
     CDFr::attributeList processAttributesList(CDFid fileID, long Scope, long VarNum=0, CDFvariable *variable = NULL);

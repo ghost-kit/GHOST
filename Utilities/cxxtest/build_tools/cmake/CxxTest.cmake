@@ -7,7 +7,7 @@ function(cxx_test target source)
     set(CPP_FULL_NAME "${CMAKE_CURRENT_BINARY_DIR}/${CPP_FILE_NAME}")
     add_custom_command(
         OUTPUT "${CPP_FULL_NAME}"
-        COMMAND ${CXXTESTGEN} --runner=ErrorPrinter --output "${CPP_FULL_NAME}" "${source}"
+        COMMAND ${CXXTESTGEN}  --have-eh --runner=ErrorPrinter --output "${CPP_FULL_NAME}" "${source}"
         DEPENDS "${source}"
     )
     add_executable(${target} ${CPP_FULL_NAME})

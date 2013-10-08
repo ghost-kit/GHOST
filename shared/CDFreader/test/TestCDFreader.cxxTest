@@ -5,10 +5,17 @@
 #include "String"
 #include <QString>
 
+#include <cxxtest/TestSuite.h>
+#include <cxxtest/GlobalFixture.h>
+#include <cxxtest/ErrorPrinter.h>
+
 
 using namespace std;
 
 #define testFile "STA_L1_MAGB_RTN-20100101T000000Z-20100102T000000Z.cdf"
+#define CXXTEST_HAVE_EH
+#define CXXTEST_ABORT_TEST_ON_FAIL
+
 
 class TestCDFreader : public CxxTest::TestSuite
 {
@@ -192,6 +199,23 @@ public:
         TS_ASSERT_EQUALS(reader->getVariable(QString("metavar0"))->getAttirbute("CATDESC")->getAttributeItem(0).toString(), QString("Metadata for variable BFIELD and possibly other variables."));
         TS_ASSERT_EQUALS(reader->getVariable(QString("metavar0"))->getAttirbute("FORMAT")->getAttributeItem(0).toString(), QString("a2"));
         TS_ASSERT_EQUALS(reader->getVariable(QString("metavar0"))->getAttirbute("VAR_TYPE")->getAttributeItem(0).toString(), QString("metadata"));
+    }
+
+    void testCDFreaderGetVarValues(void)
+    {
+
+        //make the cdfDataReader object
+        CDFr::CDFreader *reader = new CDFr::CDFreader(testFile);
+
+        //get a signle element from a variable
+        TS_ASSERT_EQUALS(reader->getVariable(QString("BFIELD"))->getDataEntry(0).size(), 4);
+
+                if(reader->getVariable(QString("BFIELD"))->getDataEntry(0).size() < 4)  TS_SKIP("Previous Failures in this test failed. Skipping remainder");
+        TS_ASSERT_DELTA(reader->getVariable(QString("BFIELD"))->getDataEntry(0).first().toFloat(), 1.023092e+00f, 1e-4);
+
+
+
+
     }
 
 };
