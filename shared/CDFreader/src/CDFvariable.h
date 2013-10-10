@@ -48,7 +48,7 @@ public:
     int64_t*            getAllDims();
     void                setAllDims(long dims[], int count);
 
-    long             getNumberEntries();
+    long                getNumberEntries();
     void                setNumberEntries(long numEntries);
 
     long                 getNumberAtts();
@@ -113,6 +113,9 @@ protected:
 
     //memmory managment routines
     bool allocateRecordMemory(long dataType, void *&data, long numValues);
+
+    //converters
+    QVariant convertVoid2Variant(const void *data, const long dataType, const long index=0);
 
 private:
     bool errorState;

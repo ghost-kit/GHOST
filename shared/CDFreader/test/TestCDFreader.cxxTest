@@ -207,13 +207,51 @@ public:
         //make the cdfDataReader object
         CDFr::CDFreader *reader = new CDFr::CDFreader(testFile);
 
+
+        //test BFIELD
         //get a signle element from a variable
         TS_ASSERT_EQUALS(reader->getVariable(QString("BFIELD"))->getDataEntry(0).size(), 4);
 
-                if(reader->getVariable(QString("BFIELD"))->getDataEntry(0).size() < 4)  TS_SKIP("Previous Failures in this test failed. Skipping remainder");
-        TS_ASSERT_DELTA(reader->getVariable(QString("BFIELD"))->getDataEntry(0).first().toFloat(), 1.023092e+00f, 1e-4);
+
+        if(reader->getVariable(QString("BFIELD"))->getDataEntry(0).size() < 4)  TS_SKIP("Previous Failures in this test failed. Skipping remainder");
+
+        //complete first record
+        TS_ASSERT_DELTA(reader->getVariable(QString("BFIELD"))->getDataEntry(0)[0].toFloat(), 1.023092e+00f, 1e-4);
+        TS_ASSERT_DELTA(reader->getVariable(QString("BFIELD"))->getDataEntry(0)[1].toFloat(), -5.221645e+00f, 1e-4);
+        TS_ASSERT_DELTA(reader->getVariable(QString("BFIELD"))->getDataEntry(0)[2].toFloat(), -1.597383e+00f, 1e-4);
+        TS_ASSERT_DELTA(reader->getVariable(QString("BFIELD"))->getDataEntry(0)[3].toFloat(), 5.555531e+00f, 1e-4);
+
+        //random data points
+        TS_ASSERT_DELTA(reader->getVariable(QString("BFIELD"))->getDataEntry(1).first().toFloat(), 1.008296e+00f, 1e-4);
+        TS_ASSERT_DELTA(reader->getVariable(QString("BFIELD"))->getDataEntry(4309).first().toFloat(), 3.571743e-01f, 1e-4);
+        TS_ASSERT_DELTA(reader->getVariable(QString("BFIELD"))->getDataEntry(2468).first().toFloat(), 8.687328e-01f, 1e-4);
+        TS_ASSERT_DELTA(reader->getVariable(QString("BFIELD"))->getDataEntry(10519).first().toFloat(), 2.197906e+00f, 1e-4);
+        TS_ASSERT_DELTA(reader->getVariable(QString("BFIELD"))->getDataEntry(12323).first().toFloat(), 2.551024e+00f, 1e-4);
+
+        //complete final record
+        TS_ASSERT_DELTA(reader->getVariable(QString("BFIELD"))->getDataEntry(287193)[0].toFloat(), -9.631263e-01f, 1e-4);
+        TS_ASSERT_DELTA(reader->getVariable(QString("BFIELD"))->getDataEntry(287193)[1].toFloat(), -6.419676e-01f, 1e-4);
+        TS_ASSERT_DELTA(reader->getVariable(QString("BFIELD"))->getDataEntry(287193)[2].toFloat(), 1.948974e+00f, 1e-4);
+        TS_ASSERT_DELTA(reader->getVariable(QString("BFIELD"))->getDataEntry(287193)[3].toFloat(), 2.266768e+00f, 1e-4);
+
+        //test MAGFLAGUC
+        //get a signle element from a variable
+        TS_ASSERT_EQUALS(reader->getVariable(QString("MAGFLAGUC"))->getDataEntry(0).size(), 1);
 
 
+        if(reader->getVariable(QString("MAGFLAGUC"))->getDataEntry(0).size() < 1)  TS_SKIP("Previous Failures in this test failed. Skipping remainder");
+
+        //complete first record
+        TS_ASSERT_EQUALS(reader->getVariable(QString("MAGFLAGUC"))->getDataEntry(0)[0].toULongLong(), 131408);
+
+        //random data points
+        TS_ASSERT_EQUALS(reader->getVariable(QString("MAGFLAGUC"))->getDataEntry(1).first().toULongLong(), 131408);
+        TS_ASSERT_EQUALS(reader->getVariable(QString("MAGFLAGUC"))->getDataEntry(4309).first().toULongLong(), 132576);
+        TS_ASSERT_EQUALS(reader->getVariable(QString("MAGFLAGUC"))->getDataEntry(2468).first().toULongLong(), 131376);
+        TS_ASSERT_EQUALS(reader->getVariable(QString("MAGFLAGUC"))->getDataEntry(10519).first().toULongLong(), 131376);
+
+        //complete final record
+        TS_ASSERT_EQUALS(reader->getVariable(QString("MAGFLAGUC"))->getDataEntry(287193)[0].toULongLong(), 132448);
 
 
     }

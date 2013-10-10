@@ -6,6 +6,33 @@
 #include "QMap"
 
 /******************************************************************************
+* types
+******************************************************************************/
+
+namespace CDFr
+{
+typedef float       float_t;
+typedef float       real4_t;
+typedef double      double_t;
+typedef double      real8_t;
+typedef double      epoch_t;
+typedef int8_t      int1_t;
+typedef int8_t      byte_t;
+typedef u_int8_t    uint1_t;
+typedef int16_t     int2_t;
+typedef u_int16_t   uint2_t;
+typedef int32_t     int4_t;
+typedef u_int32_t   uint4_t;
+typedef int64_t     int8_t;
+typedef int64_t     time_tt2000_t;
+typedef char        char_t;
+typedef uchar       uchar_t;
+
+//TODO: EPOCH16 needs to be worked on
+}
+
+
+/******************************************************************************
 * TypeDefs.
 ******************************************************************************/
 namespace CDFr {

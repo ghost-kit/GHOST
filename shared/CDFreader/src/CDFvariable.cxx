@@ -209,7 +209,8 @@ QList<QVariant> CDFr::CDFvariable::getDataEntry(int64_t index)
     //loop through the values
     for(int x = 0; x < numValues; x++)
     {
-
+        //convert the value to a variant and store
+        dataList.push_back(this->convertVoid2Variant(data, this->VarType, x));
 
     }
 
@@ -219,20 +220,19 @@ QList<QVariant> CDFr::CDFvariable::getDataEntry(int64_t index)
     //memmory managment
     if(data)
     {
-             if(this->VarType == CDF_FLOAT)       delete [] (float*)data;
-        else if(this->VarType == CDF_DOUBLE)      delete [] (double*)data;
-        else if(this->VarType == CDF_INT1)        delete [] (int8_t*)data;
-        else if(this->VarType == CDF_UINT1)       delete [] (u_int8_t*)data;
-        else if(this->VarType == CDF_BYTE)        delete [] (int8_t*)data;
-        else if(this->VarType == CDF_INT2)        delete [] (int16_t*)data;
-        else if(this->VarType == CDF_UINT2)       delete [] (u_int16_t*)data;
-        else if(this->VarType == CDF_INT4)        delete [] (int32_t*)data;
-        else if(this->VarType == CDF_UINT4)       delete [] (u_int32_t*)data;
-        else if(this->VarType == CDF_INT8)        delete [] (int64_t*)data;
-        else if(this->VarType == CDF_FLOAT)       delete [] (char*)data;
-        else if(this->VarType == CDF_REAL4)       delete [] (float*)data;
-        else if(this->VarType == CDF_REAL8)       delete [] (float*)data;
-        else if(this->VarType == CDF_EPOCH)       delete [] (double*)data;
+             if(this->VarType == CDF_FLOAT)       delete [] (CDFr::float_t*)data;
+        else if(this->VarType == CDF_DOUBLE)      delete [] (CDFr::double_t*)data;
+        else if(this->VarType == CDF_INT1)        delete [] (CDFr::int1_t*)data;
+        else if(this->VarType == CDF_UINT1)       delete [] (CDFr::uint1_t*)data;
+        else if(this->VarType == CDF_BYTE)        delete [] (CDFr::byte_t*)data;
+        else if(this->VarType == CDF_INT2)        delete [] (CDFr::int2_t*)data;
+        else if(this->VarType == CDF_UINT2)       delete [] (CDFr::uint2_t*)data;
+        else if(this->VarType == CDF_INT4)        delete [] (CDFr::int4_t*)data;
+        else if(this->VarType == CDF_UINT4)       delete [] (CDFr::uint4_t*)data;
+        else if(this->VarType == CDF_INT8)        delete [] (CDFr::int8_t*)data;
+        else if(this->VarType == CDF_REAL4)       delete [] (CDFr::real4_t*)data;
+        else if(this->VarType == CDF_REAL8)       delete [] (CDFr::real8_t*)data;
+        else if(this->VarType == CDF_EPOCH)       delete [] (CDFr::epoch_t*)data;
         else if(this->VarType == CDF_EPOCH16)     delete [] (double*)data;
     }
 
@@ -372,6 +372,79 @@ bool CDFr::CDFvariable::allocateRecordMemory(long dataType, void *&data, long nu
     }
 
     return true;
+}
+
+//==================================================================//
+QVariant CDFr::CDFvariable::convertVoid2Variant(const void *data, const long dataType, const long index)
+{
+    //build variant
+    QVariant returnVal;
+
+    switch(dataType)
+    {
+    case CDF_REAL4:
+    case CDF_FLOAT:
+
+        returnVal = QVariant(((float*)data)[index]);
+        break;
+
+    case CDF_EPOCH:
+    case CDF_REAL8:
+    case CDF_DOUBLE:
+        returnVal = QVariant(((double*)data)[index]);
+        break;
+
+    case CDF_BYTE:
+    case CDF_INT1:
+        returnVal = QVariant(((int8_t*)data)[index]);
+        break;
+
+    case CDF_UINT1:
+        returnVal = QVariant(((u_int8_t*)data)[index]);
+        break;
+
+    case CDF_INT2:
+        returnVal = QVariant(((int16_t*)data)[index]);
+        break;
+
+    case CDF_UINT2:
+        returnVal = QVariant(((u_int16_t*)data)[index]);
+        break;
+
+    case CDF_INT4:
+        returnVal = QVariant(((int32_t*)data)[index]);
+        break;
+
+    case CDF_UINT4:
+        returnVal = QVariant(((u_int32_t*)data)[index]);
+        break;
+
+    case CDF_TIME_TT2000:
+    case CDF_INT8:
+        returnVal = QVariant(((int64_t*)data)[index]);
+        break;
+
+    case CDF_CHAR:
+        returnVal = QVariant(QString((char*)data));
+        break;
+
+    case CDF_UCHAR:
+        returnVal = QVariant(((uchar*)data)[index]);
+        break;
+
+    case CDF_EPOCH16:
+        QPair<double, double> epoch16;
+
+        std::cerr << "CDF_EPOCH16 not yet supported... first half being returned" << std::endl;
+
+        //TODO: implement this CDF_EPOCH16 data type
+        returnVal = QVariant(((double *)data)[index]);
+        break;
+
+    }
+
+    return returnVal;
+
 }
 
 //==================================================================//
