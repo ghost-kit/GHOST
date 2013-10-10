@@ -1,4 +1,3 @@
-
 ### Geospace/ Heliosphere Observation & Simulation Tool-kit
 ------------------
 
@@ -9,6 +8,7 @@ The following feature list shows the status of our work.
 - [x] LFM Data Reader
 - [x] Enlil Data Reader
 - [x] CDAweb Tool Kit
+- [ ] MIX reader
 - [ ] Coordinate Transformation Filter
 - [ ] Space Craft Position Filter
 - [ ] Closed Field Line filter
