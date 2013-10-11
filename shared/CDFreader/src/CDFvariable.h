@@ -48,8 +48,8 @@ public:
     int64_t*            getAllDims();
     void                setAllDims(long dims[], int count);
 
-    long                getNumberEntries();
-    void                setNumberEntries(long numEntries);
+    long                getNumberRecords();
+    void                setNumberRecords(long numRecords);
 
     long                 getNumberAtts();
     void                addAttribute(CDFattribute *attribute);
@@ -68,7 +68,14 @@ public:
     QVariant            getMaximum();
     void                setMaximum(QVariant maximum);
 
-    QList<QVariant> getDataEntry(int64_t index);
+    QList<QVariant> getDataEntry(long index);
+    QString getDataEntryAsDateString(long index, bool iso=false);
+
+
+    QString getDateStringFromEPOCH(double epoch);
+    QString getIso8601DateStringFromEPOCH(double epoch);
+
+
 
     //Attributes
     CDFattribute *getAttribute(int64_t index);
@@ -89,19 +96,22 @@ public:
 
     void setAttributeList(CDFr::attributeList Attributes);
 
+    void setElementReadLength(long elementReadLength);
+
+
 protected:
     //file related information
     CDFreader *parent;
 
     //Variable Related information
-    QString         Name;
-    QMap<long, long>  Dims;
-    int64_t         VarType;
-    int64_t         numEntries;
-    QVariant        fillValue;
-    QVariant        minimum;
-    QVariant        maximum;
-    long              monotonicState;
+    QString             Name;
+    QMap<long, long>    Dims;
+    long                VarType;
+    long                numberRecords;
+    QVariant            fillValue;
+    QVariant            minimum;
+    QVariant            maximum;
+    long                monotonicState;
 
 
     //variance status (does the data change?)
@@ -119,6 +129,7 @@ protected:
 
 private:
     bool errorState;
+    long elementReadLength;
 
 };
 }

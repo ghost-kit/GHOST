@@ -176,6 +176,8 @@ CDFr::CDFreader::CDFreader(QString FileName)
     //variables we need to keep
     long numzVars;
     long numAttrs;
+    long maxzRec;
+
     CDFid fileID;
 
     //start the error tracker
@@ -205,7 +207,6 @@ CDFr::CDFreader::CDFreader(QString FileName)
         long dimSizes[CDF_MAX_DIMS];
         long maxrRec;
         long numrVars;
-        long maxzRec;
 
 
         //get the file information
@@ -279,6 +280,7 @@ CDFr::CDFreader::CDFreader(QString FileName)
         long    numDims;
         long    dimSizes[CDF_MAX_DIMS];
         long    dimVarys[CDF_MAX_DIMS];
+        long    maxRecordNumber;
 
         //cycle through all variables
         for(int x = 0; x < numzVars; x++)
@@ -289,6 +291,9 @@ CDFr::CDFreader::CDFreader(QString FileName)
             //check error
             if(this->setErrorStatus(status)) return;
 
+            //get number of records
+            status = CDFgetzVarMaxWrittenRecNum(fileID, x, &maxRecordNumber);
+
             //create the variable
             CDFr::CDFvariable *newVar = new CDFr::CDFvariable(this);
 
@@ -298,11 +303,12 @@ CDFr::CDFreader::CDFreader(QString FileName)
             newVar->setVarName(QString(varName));
             newVar->setDimVaries(dimVarys, numDims);
             newVar->setRecordVaries(recVary);
-            newVar->setNumberEntries(numElements);
+            newVar->setNumberRecords(maxRecordNumber+1);  //we want the number of records, not the max number, so add 1
+            newVar->setElementReadLength(numElements);
+
 
             //populate attributes
             newVar->setAttributeList(this->processAttributesList(fileID, CDFr_VARIABLE_SCOPE, x, newVar));
-
 
             //add the variable to the list
             this->Variables[QString(varName)] = newVar;
@@ -311,7 +317,6 @@ CDFr::CDFreader::CDFreader(QString FileName)
 
     //get global attributes
     this->Attributes = this->processAttributesList(fileID, CDFr_GLOBAL_SCOPE);
-
 
     //close the file
     CDFcloseCDF(fileID);

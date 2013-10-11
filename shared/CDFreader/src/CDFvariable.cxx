@@ -48,7 +48,7 @@ void CDFr::CDFvariable::setVarType(long type)
 int64_t CDFr::CDFvariable::getNumberDims()
 {
 
-    return this->Dims.count();
+    return this->Dims.size();
 }
 
 
@@ -56,7 +56,14 @@ int64_t CDFr::CDFvariable::getNumberDims()
 int64_t CDFr::CDFvariable::getDim(int dim)
 {
 
-    return this->Dims[dim];
+    if(this->getNumberDims() > 0 && dim < this->getNumberDims())
+    {
+       return this->Dims[dim];
+    }
+    else
+    {
+        return 0;
+    }
 }
 
 void CDFr::CDFvariable::setDim(long index, int dimValue)
@@ -87,16 +94,16 @@ void CDFr::CDFvariable::setAllDims(long dims[], int count)
 }
 
 //==================================================================//
-long CDFr::CDFvariable::getNumberEntries()
+long CDFr::CDFvariable::getNumberRecords()
 {
 
-    return this->numEntries;
+    return this->numberRecords;
 }
 
 //==================================================================//
-void CDFr::CDFvariable::setNumberEntries(long numEntries)
+void CDFr::CDFvariable::setNumberRecords(long numEntries)
 {
-    this->numEntries = numEntries;
+    this->numberRecords = numEntries;
 }
 
 //==================================================================//
@@ -166,7 +173,7 @@ void CDFr::CDFvariable::setMaximum(QVariant maximum)
 }
 
 //==================================================================//
-QList<QVariant> CDFr::CDFvariable::getDataEntry(int64_t index)
+QList<QVariant> CDFr::CDFvariable::getDataEntry(long index)
 {
     QList<QVariant> dataList;
     long numValues = 1;
@@ -207,11 +214,20 @@ QList<QVariant> CDFr::CDFvariable::getDataEntry(int64_t index)
 
 
     //loop through the values
-    for(int x = 0; x < numValues; x++)
+    if(this->VarType == CDF_CHAR || this->VarType == CDF_UCHAR)
     {
-        //convert the value to a variant and store
-        dataList.push_back(this->convertVoid2Variant(data, this->VarType, x));
-
+        for(int x = 0; x < numValues; x++)
+        {
+            dataList.push_back(this->convertVoid2Variant(data, this->VarType, x));
+        }
+    }
+    else
+    {
+        for(int x = 0; x < numValues; x++)
+        {
+            //convert the value to a variant and store
+            dataList.push_back(this->convertVoid2Variant(data, this->VarType, x));
+        }
     }
 
     //close the file
@@ -220,7 +236,7 @@ QList<QVariant> CDFr::CDFvariable::getDataEntry(int64_t index)
     //memmory managment
     if(data)
     {
-             if(this->VarType == CDF_FLOAT)       delete [] (CDFr::float_t*)data;
+        if(this->VarType == CDF_FLOAT)       delete [] (CDFr::float_t*)data;
         else if(this->VarType == CDF_DOUBLE)      delete [] (CDFr::double_t*)data;
         else if(this->VarType == CDF_INT1)        delete [] (CDFr::int1_t*)data;
         else if(this->VarType == CDF_UINT1)       delete [] (CDFr::uint1_t*)data;
@@ -240,6 +256,49 @@ QList<QVariant> CDFr::CDFvariable::getDataEntry(int64_t index)
     return dataList;
 
 }
+
+//==================================================================//
+QString CDFr::CDFvariable::getDataEntryAsDateString(long index, bool iso)
+{
+    //get the data entry as a double
+    double epoch = this->getDataEntry(index)[0].toDouble();
+
+    //return the double as an EPOCH string
+    if(!iso)
+    {
+        return this->getDateStringFromEPOCH(epoch);
+    }
+    else
+    {
+        return this->getIso8601DateStringFromEPOCH(epoch);
+    }
+}
+
+//==================================================================//
+QString CDFr::CDFvariable::getDateStringFromEPOCH(double epoch)
+{
+    char format[EPOCHx_FORMAT_MAX+1];
+    char encoded[EPOCHx_STRING_MAX+1];
+
+    sprintf(format, "<dom.02>-<month>-<year> <hour>:<min>:<sec>.<fos>");
+    encodeEPOCHx(epoch, format, encoded);
+
+    return  QString(encoded);
+}
+
+//==================================================================//
+QString CDFr::CDFvariable::getIso8601DateStringFromEPOCH(double epoch)
+{
+    char format[EPOCHx_FORMAT_MAX+1];
+    char encoded[EPOCHx_STRING_MAX+1];
+
+    sprintf(format, "<year><mm.02><dom.02>T<hour><min><sec>Z");
+    encodeEPOCHx(epoch, format, encoded);
+
+    return  QString(encoded);
+}
+
+
 
 //==================================================================//
 CDFr::CDFattribute* CDFr::CDFvariable::getAttribute(int64_t index)
@@ -307,62 +366,71 @@ void CDFr::CDFvariable::setAttributeList(CDFr::attributeList Attributes)
 }
 
 //==================================================================//
+void CDFr::CDFvariable::setElementReadLength(long elementReadLength)
+{
+    this->elementReadLength = elementReadLength;
+}
+
+//==================================================================//
 bool CDFr::CDFvariable::allocateRecordMemory(long dataType, void *&data, long numValues)
 {
+    //this sets the allocation size with the element length
+    long allocSize = numValues * this->elementReadLength;
+
     switch(dataType)
     {
     case CDF_REAL4:
     case CDF_FLOAT:
 
-        data = new float[numValues];
+        data = new float[allocSize];
         break;
 
     case CDF_EPOCH:
     case CDF_REAL8:
     case CDF_DOUBLE:
-        data = new double[numValues];
+        data = new double[allocSize];
         break;
 
     case CDF_BYTE:
     case CDF_INT1:
-        data = new int8_t[numValues];
+        data = new int8_t[allocSize];
         break;
 
     case CDF_UINT1:
-        data = new u_int8_t[numValues];
+        data = new u_int8_t[allocSize];
         break;
 
     case CDF_INT2:
-        data = new int16_t[numValues];
+        data = new int16_t[allocSize];
         break;
 
     case CDF_UINT2:
-        data = new u_int16_t[numValues];
+        data = new u_int16_t[allocSize];
         break;
 
     case CDF_INT4:
-        data = new int32_t[numValues];
+        data = new int32_t[allocSize];
         break;
 
     case CDF_UINT4:
-        data = new u_int32_t[numValues];
+        data = new u_int32_t[allocSize];
         break;
 
     case CDF_TIME_TT2000:
     case CDF_INT8:
-        data = new int64_t[numValues];
+        data = new int64_t[allocSize];
         break;
 
     case CDF_CHAR:
-        data = new char[numValues+1];
+        data = new char[allocSize+1];
         break;
 
     case CDF_UCHAR:
-        data = new uchar[numValues+1];
+        data = new uchar[allocSize+1];
         break;
 
     case CDF_EPOCH16:
-        data = new double[numValues*2];
+        data = new double[allocSize*2];
         break;
 
     default:
@@ -384,55 +452,81 @@ QVariant CDFr::CDFvariable::convertVoid2Variant(const void *data, const long dat
     {
     case CDF_REAL4:
     case CDF_FLOAT:
-
+    {
         returnVal = QVariant(((float*)data)[index]);
         break;
-
+    }
     case CDF_EPOCH:
     case CDF_REAL8:
     case CDF_DOUBLE:
+    {
         returnVal = QVariant(((double*)data)[index]);
         break;
-
+    }
     case CDF_BYTE:
     case CDF_INT1:
+    {
         returnVal = QVariant(((int8_t*)data)[index]);
         break;
-
+    }
     case CDF_UINT1:
+    {
         returnVal = QVariant(((u_int8_t*)data)[index]);
         break;
-
+    }
     case CDF_INT2:
+    {
         returnVal = QVariant(((int16_t*)data)[index]);
         break;
-
+    }
     case CDF_UINT2:
+    {
         returnVal = QVariant(((u_int16_t*)data)[index]);
         break;
-
+    }
     case CDF_INT4:
+    {
         returnVal = QVariant(((int32_t*)data)[index]);
         break;
-
+    }
     case CDF_UINT4:
+    {
         returnVal = QVariant(((u_int32_t*)data)[index]);
         break;
-
+    }
     case CDF_TIME_TT2000:
     case CDF_INT8:
+    {
         returnVal = QVariant(((int64_t*)data)[index]);
         break;
-
+    }
     case CDF_CHAR:
-        returnVal = QVariant(QString((char*)data));
-        break;
+    {
+        char *dataConv = (char*) data;
+        long start = index*this->elementReadLength;
 
+        QString dataValue = QString(dataConv);
+        dataValue = dataValue.mid(start, this->elementReadLength);
+        dataValue = dataValue.trimmed();
+
+        returnVal = QVariant(dataValue);
+
+        break;
+    }
     case CDF_UCHAR:
-        returnVal = QVariant(((uchar*)data)[index]);
-        break;
+    {
+        uchar *dataConv = (uchar*) data;
+        long start = index*this->elementReadLength;
 
+        QString dataValue = QString((char*)dataConv);
+        dataValue = dataValue.mid(start, this->elementReadLength);
+        dataValue = dataValue.trimmed();
+
+        returnVal = QVariant(dataValue);
+        break;
+    }
     case CDF_EPOCH16:
+    {
         QPair<double, double> epoch16;
 
         std::cerr << "CDF_EPOCH16 not yet supported... first half being returned" << std::endl;
@@ -440,7 +534,9 @@ QVariant CDFr::CDFvariable::convertVoid2Variant(const void *data, const long dat
         //TODO: implement this CDF_EPOCH16 data type
         returnVal = QVariant(((double *)data)[index]);
         break;
-
+    }
+    default:
+        break;
     }
 
     return returnVal;
