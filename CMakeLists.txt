@@ -10,10 +10,10 @@ if(JOSH_MURPHY)
             set(ParaView_DIR /Volumes/Data/Development/ParaView/superbuild/paraview/src/paraview-build)
 
         else() #At Home Settings
-            set(CMAKE_OSX_DEPLOYMENT_TARGET "10.6")
-            set(CMAKE_OSX_SYSROOT "/Applications/Xcode-433.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.6.sdk")
-            set(ParaView_DIR /Users/jjm390/Developer/ParaView/build401/paraview/src/paraview-build)
-            set(ParaView_DIR /Users/jjm390/Developer/ParaView/superbuild/paraview/src/paraview-build)
+            set(CMAKE_OSX_DEPLOYMENT_TARGET "10.7")
+            set(CMAKE_OSX_SYSROOT "/Applications/Xcode46.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk")
+            set(ParaView_DIR /Users/developer/Developer/ParaView/build401)
+            #set(ParaView_DIR /Users/jjm390/Developer/ParaView/superbuild/paraview/src/paraview-build)
         endif()
 
      elseif(UNIX)

@@ -304,6 +304,24 @@ public:
 
     }
 
+    void testFillValues(void)
+    {
+
+        //make the cdfDataReader object
+        CDFr::CDFreader *reader = new CDFr::CDFreader(testFile);
+        TS_ASSERT(!reader->hasError());
+
+        TS_ASSERT_EQUALS(reader->getVariable(QString("Epoch"))->getFillValue().toDouble(), -1.0e+31);
+        TS_ASSERT_EQUALS(reader->getVariable(QString("BFIELD"))->getFillValue().toFloat(), -1.0e+31f);
+        TS_ASSERT_EQUALS(reader->getVariable(QString("MAGFLAGUC"))->getFillValue().toLongLong(), 4294967295);
+        TS_ASSERT_EQUALS(reader->getVariable(QString("CART_LABL_1"))->getFillValue().toString(), QString("N/A"));
+        TS_ASSERT_EQUALS(reader->getVariable(QString("metavar0"))->getFillValue().toString(), QString("N/A"));
+
+
+
+    }
+
+
     void testCDFEpochStringConversion(void)
     {
 
@@ -311,11 +329,6 @@ public:
         CDFr::CDFreader *reader = new CDFr::CDFreader(testFile);
         TS_ASSERT(!reader->hasError());
 
-        TS_ASSERT_EQUALS(reader->getVariable(QString("Epoch"))->getDataEntryAsDateString(0), QString("01-Jan-2010 02:50:31.052"));
-        TS_ASSERT_EQUALS(reader->getVariable(QString("Epoch"))->getDataEntryAsDateString(0, true), QString("20100101T025031Z"));
-
-        TS_ASSERT_EQUALS(reader->getVariable(QString("Epoch"))->getDataEntryAsDateString(287193), QString("01-Jan-2010 19:59:40.013"));
-        TS_ASSERT_EQUALS(reader->getVariable(QString("Epoch"))->getDataEntryAsDateString(287193, true), QString("20100101T195940Z"));
 
     }
 

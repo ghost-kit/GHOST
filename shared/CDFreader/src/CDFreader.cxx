@@ -306,9 +306,26 @@ CDFr::CDFreader::CDFreader(QString FileName)
             newVar->setNumberRecords(maxRecordNumber+1);  //we want the number of records, not the max number, so add 1
             newVar->setElementReadLength(numElements);
 
-
             //populate attributes
             newVar->setAttributeList(this->processAttributesList(fileID, CDFr_VARIABLE_SCOPE, x, newVar));
+
+            if(newVar->attributeExists("FILLVAL"))
+            {
+                QVariant fillVal = newVar->getAttirbute("FILLVAL")->getAttributeItem(0);
+                newVar->setFillValue(fillVal);
+            }
+            else
+            {
+                //make sure we get a viewable type for bad fill values
+                if(newVar->getVarType() == CDF_UCHAR || newVar->getVarType() == CDF_CHAR)
+                {
+                    newVar->setFillValue(QString("N/A"));
+                }
+                else
+                {
+                    newVar->setFillValue(0.0);
+                }
+            }
 
             //add the variable to the list
             this->Variables[QString(varName)] = newVar;
