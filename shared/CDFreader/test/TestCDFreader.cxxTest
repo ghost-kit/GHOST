@@ -40,6 +40,8 @@ public:
         TS_ASSERT_EQUALS(reader->getCompressionType(), CDFr_NO_COMPRESSION);
         TS_ASSERT_EQUALS(reader->getChecksum(), CDFr_NO_CHECKSUM);
 
+        std::cerr << "Copyright: " << reader->getCopyright().toAscii().data() << std::endl;
+
         //check variable attribute
         TS_ASSERT_EQUALS(reader->getVariable(QString("Epoch"))->getNumberAtts(), 11);
         TS_ASSERT_EQUALS(reader->getVariable(QString("BFIELD"))->getNumberAtts(), 14);
@@ -296,11 +298,6 @@ public:
         CDFr::CDFreader *reader = new CDFr::CDFreader(testFile);
         TS_ASSERT(!reader->hasError());
 
-        TS_ASSERT_EQUALS(reader->getVariable(QString("Epoch"))->getDataEntryAsDateString(0), QString("01-Jan-2010 02:50:31.052"));
-        TS_ASSERT_EQUALS(reader->getVariable(QString("Epoch"))->getDataEntryAsDateString(0, true), QString("20100101T025031Z"));
-
-        TS_ASSERT_EQUALS(reader->getVariable(QString("Epoch"))->getDataEntryAsDateString(287193), QString("01-Jan-2010 19:59:40.013"));
-        TS_ASSERT_EQUALS(reader->getVariable(QString("Epoch"))->getDataEntryAsDateString(287193, true), QString("20100101T195940Z"));
 
     }
 
@@ -329,6 +326,11 @@ public:
         CDFr::CDFreader *reader = new CDFr::CDFreader(testFile);
         TS_ASSERT(!reader->hasError());
 
+        TS_ASSERT_EQUALS(reader->getVariable(QString("Epoch"))->getDataEntryAsDateString(0), QString("01-Jan-2010 02:50:31.052"));
+        TS_ASSERT_EQUALS(reader->getVariable(QString("Epoch"))->getDataEntryAsDateString(0, true), QString("20100101T025031Z"));
+
+        TS_ASSERT_EQUALS(reader->getVariable(QString("Epoch"))->getDataEntryAsDateString(287193), QString("01-Jan-2010 19:59:40.013"));
+        TS_ASSERT_EQUALS(reader->getVariable(QString("Epoch"))->getDataEntryAsDateString(287193, true), QString("20100101T195940Z"));
 
     }
 

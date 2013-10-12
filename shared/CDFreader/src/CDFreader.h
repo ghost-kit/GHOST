@@ -69,6 +69,9 @@ public:
     QString getErrorString();   //returns the error string for the current error
     bool setErrorStatus(CDFstatus status);
 
+    QString getCopyright() const;
+    void setCopyright(const QString &value);
+
 protected:
 
     //File Related information

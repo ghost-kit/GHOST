@@ -365,6 +365,16 @@ bool CDFr::CDFreader::setErrorStatus(CDFstatus status)
         return false;
     }
 }
+QString CDFr::CDFreader::getCopyright() const
+{
+    return Copyright;
+}
+
+void CDFr::CDFreader::setCopyright(const QString &value)
+{
+    Copyright = value;
+}
+
 
 //==================================================================//
 void CDFr::CDFreader::clearErrorStatus()
