@@ -70,6 +70,9 @@ public:
     long getMajority() const;
     void setMajority(long value);
 
+    static QString             getDateStringFromEPOCH(double epoch);
+    static QString             getIso8601DateStringFromEPOCH(double epoch);
+
 protected:
 
     //File Related information

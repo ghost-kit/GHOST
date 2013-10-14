@@ -76,8 +76,8 @@ public:
 
     CDFr::CDFrValueRange     getDataRange(long start, long end);
 
-    QString             getDateStringFromEPOCH(double epoch);
-    QString             getIso8601DateStringFromEPOCH(double epoch);
+    static QString             getDateStringFromEPOCH(double epoch);
+    static QString             getIso8601DateStringFromEPOCH(double epoch);
 
 
 

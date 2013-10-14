@@ -303,6 +303,12 @@ CDFr::CDFrValueRange CDFr::CDFvariable::getDataRange(long start, long end)
     long requestSize = end - start + 1;
     long numValues = requestSize;
 
+    if(requestSize < 1)
+    {
+        this->parent->setErrorStatus(CDFr_INVALID_RANGE);
+        return dataRange;
+    }
+
     //calculate the number of values
     if(this->getNumberDims() > 0)
     {

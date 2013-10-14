@@ -133,6 +133,7 @@ void CDFr::CDFerrorHandler::populateErrorTable()
 
     //custom error messages
     this->errorTable[-4000] = QString("-4000 NO_PARENT_DEFINED: No Parent has been defined for Attribute.");
+    this->errorTable[-5000] = QString("-5000 INVALID_RANGE: The Range Specified is invalid");
 }
 
 

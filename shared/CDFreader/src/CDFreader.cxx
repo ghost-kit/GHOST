@@ -377,6 +377,16 @@ void CDFr::CDFreader::setMajority(long value)
     majority = value;
 }
 
+QString CDFr::CDFreader::getDateStringFromEPOCH(double epoch)
+{
+    return CDFvariable::getDateStringFromEPOCH(epoch);
+}
+
+QString CDFr::CDFreader::getIso8601DateStringFromEPOCH(double epoch)
+{
+    return CDFvariable::getIso8601DateStringFromEPOCH(epoch);
+}
+
 
 
 //==================================================================//

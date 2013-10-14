@@ -149,5 +149,6 @@
 
 //custom definitions
 #define CDFr_NO_PARENT_DEFINED               -4000
+#define CDFr_INVALID_RANGE                   -5000
 
 #endif // CDFERRORDEFS_H
