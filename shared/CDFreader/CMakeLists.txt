@@ -9,7 +9,6 @@ set(cdfDataReaderFiles
       ${CMAKE_CURRENT_SOURCE_DIR}/src/CDFreader.cxx
       ${CMAKE_CURRENT_SOURCE_DIR}/src/CDFvariable.cxx
       ${CMAKE_CURRENT_SOURCE_DIR}/src/CDFattribute.cxx
-      ${CMAKE_CURRENT_SOURCE_DIR}/src/CDFBadDataHandler.cxx
 )
 
     add_library(cdfReader STATIC ${cdfDataReaderFiles})

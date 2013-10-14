@@ -298,7 +298,32 @@ public:
         CDFr::CDFreader *reader = new CDFr::CDFreader(testFile);
         TS_ASSERT(!reader->hasError());
 
+        CDFr::CDFrValueRange data = reader->getVariable("BFIELD")->getDataRange(10, 13);
+        TS_ASSERT(!reader->hasError());
 
+        //check data range size
+        TS_ASSERT_EQUALS(data.size(), 4);
+
+        //check data values
+        TS_ASSERT_DELTA(data[10][0].toFloat(),1.111508e+00f, 1e-4 );
+        TS_ASSERT_DELTA(data[10][1].toFloat(),-5.221117e+00f, 1e-4 );
+        TS_ASSERT_DELTA(data[10][2].toFloat(),-1.452028e+00f, 1e-4 );
+        TS_ASSERT_DELTA(data[10][3].toFloat(),5.532078e+00f, 1e-4 );
+
+        TS_ASSERT_DELTA(data[11][0].toFloat(),1.184719e+00f, 1e-4 );
+        TS_ASSERT_DELTA(data[11][1].toFloat(),-5.193027e+00f, 1e-4 );
+        TS_ASSERT_DELTA(data[11][2].toFloat(),-1.466871e+00f, 1e-4 );
+        TS_ASSERT_DELTA(data[11][3].toFloat(),5.524745e+00f, 1e-4 );
+
+        TS_ASSERT_DELTA(data[12][0].toFloat(),1.213923e+00f, 1e-4 );
+        TS_ASSERT_DELTA(data[12][1].toFloat(),-5.193291e+00f, 1e-4 );
+        TS_ASSERT_DELTA(data[12][2].toFloat(),-1.481484e+00f, 1e-4 );
+        TS_ASSERT_DELTA(data[12][3].toFloat(),5.535221e+00f, 1e-4 );
+
+        TS_ASSERT_DELTA(data[13][0].toFloat(),1.126139e+00f, 1e-4 );
+        TS_ASSERT_DELTA(data[13][1].toFloat(),-5.221197e+00f, 1e-4 );
+        TS_ASSERT_DELTA(data[13][2].toFloat(),-1.452057e+00f, 1e-4 );
+        TS_ASSERT_DELTA(data[13][3].toFloat(),5.535120e+00f, 1e-4 );
     }
 
     void testFillValues(void)

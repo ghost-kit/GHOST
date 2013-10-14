@@ -3,7 +3,6 @@
 
 #include "CDFattribute.h"
 #include "CDFvariable.h"
-#include "CDFBadDataHandler.h"
 #include "CDFerror.h"
 #include "CDFglobalDefs.h"
 
@@ -21,7 +20,6 @@ namespace CDFr
 
 class CDFvariable;
 class CDFattribute;
-class CDFbadDataHandler;
 class CDFerrorHandler;
 
 
@@ -36,41 +34,41 @@ public:
     /* Variables */
     QString           getVarName(int index);
     QStringList       getVarNames();
-    long getNumberVariables();
+    long              getNumberVariables();
     CDFvariable*      getVariable(int index);
     CDFvariable*      getVariable(QString name);
 
     /* Global Attributes */
     QString           getGlobalAttName(int index);
     QStringList       getGlobalAttNames();
-    long getNumberGlobalAttributes();
+    long              getNumberGlobalAttributes();
     CDFattribute*     getGlobalAttribute(int index);
     CDFattribute*     getGlobalAttribute(QString name);
 
 
     //file related information
     QString     getFileName();
-    long    getCompressionType();
-    long    getChecksum();
-    long getFormat();
-    long getEncoding();
+    long        getCompressionType();
+    long        getChecksum();
+    long        getFormat();
+    long        getEncoding();
     QVariant    getCdfVersion();
     bool        isRowMajor();
 
     //existence inquire
-    bool attributeExists(QString name);
-    bool variableExists(QString name);
-
-    //handlers
-    void        setBadDataHandler(CDFr::CDFbadDataHandler *handler);
+    bool        attributeExists(QString name);
+    bool        variableExists(QString name);
 
     //error handling
-    bool    hasError();         //if there is an error or not
-    QString getErrorString();   //returns the error string for the current error
-    bool setErrorStatus(CDFstatus status);
+    bool        hasError();         //if there is an error or not
+    QString     getErrorString();   //returns the error string for the current error
+    bool        setErrorStatus(CDFstatus status);
 
-    QString getCopyright() const;
-    void setCopyright(const QString &value);
+    QString     getCopyright() const;
+    void        setCopyright(const QString &value);
+
+    long getMajority() const;
+    void setMajority(long value);
 
 protected:
 
@@ -92,16 +90,13 @@ protected:
     CDFr::variableList     Variables;
     CDFr::attributeList    Attributes;
 
-    //Handlers
-    CDFr::CDFbadDataHandler*        BadDataHandler;
-
 
 private:
     CDFr::CDFerrorHandler*   errorTracker;
-    void clearErrorStatus();
+    void                     clearErrorStatus();
 
     CDFr::attributeList processAttributesList(CDFid fileID, long Scope, long VarNum=0, CDFvariable *variable = NULL);
-    QList<QVariant> *extractAttributeElements(CDFid fileID, long attrN, long entryNum, long scope);
+    QList<QVariant>     *extractAttributeElements(CDFid fileID, long attrN, long entryNum, long scope);
 
 
 };

@@ -148,13 +148,6 @@ bool CDFr::CDFreader::variableExists(QString name)
 }
 
 //==================================================================//
-void CDFr::CDFreader::setBadDataHandler(CDFbadDataHandler *handler)
-{
-
-    this->BadDataHandler = handler;
-}
-
-//==================================================================//
 bool CDFr::CDFreader::hasError()
 {
 
@@ -374,6 +367,16 @@ void CDFr::CDFreader::setCopyright(const QString &value)
 {
     Copyright = value;
 }
+long CDFr::CDFreader::getMajority() const
+{
+    return majority;
+}
+
+void CDFr::CDFreader::setMajority(long value)
+{
+    majority = value;
+}
+
 
 
 //==================================================================//
