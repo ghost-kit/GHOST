@@ -102,6 +102,8 @@ INSTALL(FILES
             ${PROJECT_BINARY_DIR}/cxform/${CMAKE_STATIC_LIBRARY_PREFIX}cxform${CMAKE_STATIC_LIBRARY_SUFFIX}
             ${PROJECT_BINARY_DIR}/io/${CMAKE_STATIC_LIBRARY_PREFIX}io${CMAKE_STATIC_LIBRARY_SUFFIX}
             ${PROJECT_BINARY_DIR}/DateTime/${CMAKE_STATIC_LIBRARY_PREFIX}DateTime${CMAKE_STATIC_LIBRARY_SUFFIX}
+            ${PROJECT_BINARY_DIR}/CDFreader/${CMAKE_STATIC_LIBRARY_PREFIX}CDFreader${CMAKE_STATIC_LIBRARY_SUFFIX}
+
         DESTINATION lib/)
 
 FILE(GLOB io_files "${PROJECT_SOURCE_DIR}/io/*.hpp")
@@ -112,6 +114,12 @@ INSTALL(FILES
         ${io_files}
         ${PROJECT_SOURCE_DIR}/io/ErrorQueue.h
         ${PROJECT_SOURCE_DIR}/cxform/cxform.h
+        ${PROJECT_SOURCE_DIR}/CDFreader/src/CDFreader.h
+        ${PROJECT_SOURCE_DIR}/CDFreader/src/CDFattribute.h
+        ${PROJECT_SOURCE_DIR}/CDFreader/src/CDFerror.h
+        ${PROJECT_SOURCE_DIR}/CDFreader/src/CDFerrorDefs.h
+        ${PROJECT_SOURCE_DIR}/CDFreader/src/CDFglobalDefs.h
+        ${PROJECT_SOURCE_DIR}/CDFreader/src/CDFvariable.h
         DESTINATION include/)
 
 INSTALL(FILES
