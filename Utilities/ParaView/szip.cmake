@@ -1,7 +1,7 @@
 add_external_project(szip
   CONFIGURE_COMMAND <SOURCE_DIR>/configure
                     --enable-encoding
-                    --disable-shared
+                    --enable-shared
                     --quiet
                     --prefix=<INSTALL_DIR>
 )

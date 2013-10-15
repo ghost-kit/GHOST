@@ -22,7 +22,7 @@ if(JOSH_MURPHY)
 
     file(GLOB_RECURSE AllFiles *)
     file(GLOB_RECURSE cdfReader shared/CDFreader/* )
-    message(STATUS "${AllFiles}")
+#    message(STATUS "${AllFiles}")
     set(QTCREATOR true)
 
 endif()
@@ -217,7 +217,7 @@ if(NOT WIN32)
     include(CheckFortran)
 endif()
 
-#include(mpi)
+include(mpi)
 include(qt)
 include(boost)
 include(jpeg)
@@ -228,6 +228,8 @@ include(hdf5)
 include(cdf)
 include(shared)
 include(ghost)
+include(python)
+include(paraview)
 
 if(NOT APPLE AND NOT UNIX)
     include(freetype)
@@ -237,6 +239,9 @@ endif()
 
 #turn on ghost
 set(ENABLE_ghost true)
+if(BUILD_PARAVIEW)
+    set(ENABLE_paraview true)
+endif()
 
 process_dependencies()
 

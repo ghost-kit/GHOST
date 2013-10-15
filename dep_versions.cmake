@@ -8,6 +8,17 @@
 #   ..
 # endif()
 
+
+if (WIN32 OR (CROSS_BUILD_STAGE STREQUAL "CROSS"))
+  add_revision(python
+    URL "http://www.paraview.org/files/dependencies/Python-2.7.3.tgz"
+    URL_MD5 "2cf641732ac23b18d139be077bd906cd")
+else()
+  add_revision(python
+    URL "http://paraview.org/files/dependencies/Python-2.7.2.tgz"
+    URL_MD5 "0ddfe265f1b3d0a8c2459f5bf66894c7")
+endif()
+
 add_revision(qt
   URL "http://www.paraview.org/files/dependencies/qt-everywhere-opensource-src-4.8.2.tar.gz"
   URL_MD5 3c1146ddf56247e16782f96910a8423b)
@@ -57,3 +68,31 @@ add_revision(shared
 
 add_revision(ghost
     SOURCE_DIR ${CMAKE_SOURCE_DIR}/ghost-kit)
+
+# ----------------------------------------------------------------------------
+# You choose to download ParaView source form GIT or other URL/FILE tarball
+option(ParaView_FROM_GIT "If enabled then the repository is fetched from git" ON)
+
+if (ParaView_FROM_GIT)
+  # Download PV from GIT
+  add_revision(paraview
+    GIT_REPOSITORY git://paraview.org/ParaView.git
+    GIT_TAG "v4.0.1")
+else()
+  # Variables to hold the URL and MD5 (optional)
+  set (ParaView_URL "http://www.paraview.org/files/v4.0/ParaView-v4.0.1-source.tgz" CACHE
+    STRING "Specify the url for ParaView tarball")
+  set (ParaView_URL_MD5 "6a300744eaf32676a3a7e1b42eb642c7" CACHE
+    STRING "MD5 of the ParaView tarball")
+
+  # Get the length of the URL specified.
+  if("${ParaView_URL}" STREQUAL "")
+    # No URL specified raise error.
+    message (FATAL_ERROR "ParaView_URL should have a valid URL or FilePath to a ParaView tarball")
+  else()
+    # Download PV from source specified in URL
+    add_revision(paraview
+      URL ${ParaView_URL}
+      URL_MD5 ${ParaView_URL_MD5})
+  endif()
+endif()

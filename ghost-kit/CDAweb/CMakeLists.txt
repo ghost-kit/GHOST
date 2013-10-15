@@ -33,8 +33,6 @@ set(LIBS ${INSTALL_DIR}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}cdf${CMAKE_STATIC_LIBR
          ${INSTALL_DIR}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}DateTime${CMAKE_STATIC_LIBRARY_SUFFIX}
     )
 
-find_package(Qt4 REQUIRED)
-include(${QT_USE_FILE})
 
 if(NOT ParaView_BINARY_DIR)
   find_package(ParaView REQUIRED)
@@ -43,6 +41,11 @@ endif()
 
 #needed to build plugins
 include(ParaViewPlugins)
+
+#find QT
+#find_package(Qt4 REQUIRED)
+#include(${QT_USE_FILE})
+
 
 #get file list
 INCLUDE_DIRECTORIES(src)
