@@ -5,6 +5,7 @@ project(GHOST_Shared)
 option(SHARED_BUILD_IO "Build the IO package" ON )
 option(SHARED_BUILD_DATETIME "Build the DateTime package" ON )
 option(SHARED_BUILD_CXFORM "Builds the CXFORM package" ON )
+option(SHARED_BUILD_CDFREADER "Builds the CDFreader package" ON)
 
 message(STATUS "Building selected libraries")
 
@@ -74,6 +75,27 @@ if(SHARED_BUILD_CXFORM)
     ##DEBUG##
     message(STATUS "cxform include: ${CXFORM_INCLUDE_DIR}")
     message(STATUS "cxform libraries: ${CXFORM_LIBRARY_DIR}")
+endif()
+
+### CDFreader LIBRARY ###
+if(SHARED_BUILD_CDFREADER)
+    	message(STATUS "BUILDING CDFreader")
+	add_subdirectory(${PROJECT_SOURCE_DIR}/CDFreader)
+ 
+   	GET_DIRECTORY_PROPERTY(CDFREADER_INCLUDES DIRECTORY CDFreader DEFINITION CDFREADER_INCLUDES)
+    	GET_DIRECTORY_PROPERTY(CDFREADER_LIBRARIES DIRECTORY CDFreader DEFINITION CDFREADER_LIBRARIES)
+	
+    set(CDFREADER_INCLUDE_DIR ${CDFREADER_INCLUDES} ${PROJECT_SOURCE_DIR}/CDFreader)
+    set(CDFREADER_LIBRARY_DIR ${PROJECT_BINARY_DIR}/CDFreader)
+    set(CDFREADER_LIBRARIES ${CDFREADER_LIBRARIES} CDFreader )
+
+    INCLUDE_DIRECTORIES(${CDFREADER_INCLUDE_DIR} ${PROJECT_SOURCE_DIR}/CDFreader)
+    LINK_DIRECTORIES(${CDFREADER_LIBRARY_DIR})
+
+    ##DEBUG##
+    message(STATUS "CDFreader include: ${CDFREADER_INCLUDE_DIR}")
+    message(STATUS "CDFreader libraries: ${CDFREADER_LIBRARY_DIR}")
+
 endif()
 
 INSTALL(FILES
