@@ -28,7 +28,7 @@
 #include "qurl.h"
 #include "cdf.h"
 
-#include "QNetworkAccessManager"
+#include <QNetworkAccessManager>
 
 #include "filterNetworkAccessModule.h"
 

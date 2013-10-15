@@ -1,70 +1,40 @@
 PROJECT("CDAWebTK")
 cmake_minimum_required(VERSION 2.8.9 FATAL_ERROR)
 
-option(QTCREATOR "View all headers and xml files in QTCreator" OFF)
-
-if(QTCREATOR)
-#These command are used to reveal code in QTCreator that may not be directly linked.
-#This passes those file names to the Files List in Make Plugin, but are not necessary
-#to build the final product.
-#It is not recomended to build the final binary with this setting on.
-
-    if(JOSH_HOME)
-        set(ParaView_DIR /Users/jjm390/Developer/pvbuild)
-        set(INSTALL_DIR /Users/jjm390/Developer/GHOST/GHOST-build/install)
-        set(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} ${INSTALL_DIR}/lib)
-        include_directories(BEFORE ${INSTALL_DIR}/install/include)
-    else()
-        set(ParaView_DIR /Volumes/Data/Development/ParaView/local/build)
-        set(INSTALL_DIR /Users/jomu9721/Data/Development/GHOST-Kit/GHOST-build/install)
-        set(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} ${INSTALL_DIR}/lib)
-        include_directories(BEFORE ${INSTALL_DIR}/include)
-    endif()
-
-    include_directories(BEFORE ${INSTALL_DIR}/include)
-    link_directories( ${INSTALL_DIR}/lib)
-
-
-
+if(MACD108)
+   set(ParaView_DIR /Volumes/Data/Development/ParaView/local/build)
+   set(INSTALL_DIR /Volumes/Data/Development/GHOST-Kit/GHOST-build/install)
+   set(PV_SuperBuild_DIR /Volumes/Data/Development/ParaView/superbuild)
+   set(CMAKE_OSX_DEPLOYMENT_TARGET "10.6")
+   set(CMAKE_OSX_SYSROOT "/Applications/Xcode-4.3.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.6.sdk")
 endif()
 
-##########################################################################
+
+set(CMAKE_LIBRARY_PATH  ${INSTALL_DIR}/lib
+                        ${PV_SuperBuild_DIR}/install/lib
+                        ${CMAKE_LIBRARY_PATH}
+    )
 
 
-##########################################################################
-
-if( PREFIX )
-  set( CMAKE_INCLUDE_PATH /usr/include ${PREFIX}/include ${CMAKE_INCLUDE_PATH} )
-  set( CMAKE_LIBRARY_PATH /usr/lib ${PREFIX}/lib ${CMAKE_LIBRARY_PATH} )
-endif( PREFIX )
-
-#convienience funciton for ME. :)
-
-set( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmake/" )
+link_directories(BEFORE ${INSTALL_DIR}/lib
+                        ${PV_SuperBuild_DIR}/install/lib
+    )
 
 
-#needed for these plugins
-# At present I am specifying ${LIBCDF_INCLUDE_DIRS} and ${LIBCDF_LIBRARIES} from the cmake command line
-set(Boost_USE_STATIC_LIBS ON)
-set(Boost_USE_MULTITHREAD ON)
-find_package(Boost COMPONENTS date_time REQUIRED)
+include_directories(BEFORE ${INSTALL_DIR}/include
+                           ${PV_SuperBuild_DIR}/install/include
+    )
 
-##find cdf
-if(NOT QTCREATOR)
-    set(CDF_USE_STATIC_LIBS ON)
-    find_package(CDF REQUIRED)
 
-    include_directories(${CDF_INCLUDES} ${Boost_INCLUDE_DIRS} ${SHARED_INCLUDE_DIR})
-    set(LIBS ${LIBS} ${CDF_LIBRARIES} ${Boost_LIBRARIES} ${SHARED_LIBRARIES})
-else()
+#Configure needed librarires
+set(LIBS ${INSTALL_DIR}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}cdf${CMAKE_STATIC_LIBRARY_SUFFIX}
+         ${INSTALL_DIR}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}CDFreader${CMAKE_STATIC_LIBRARY_SUFFIX}
+         ${INSTALL_DIR}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}boost_date_time${CMAKE_STATIC_LIBRARY_SUFFIX}
+         ${INSTALL_DIR}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}DateTime${CMAKE_STATIC_LIBRARY_SUFFIX}
+    )
 
-    set(LIBS ${LIBS} ${INSTALL_DIR}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}cdf${CMAKE_STATIC_LIBRARY_SUFFIX}
-                     ${Boost_LIBRARIES}
-                     DateTime
-                     )
-
-endif()
-
+find_package(Qt4 REQUIRED)
+include(${QT_USE_FILE})
 
 if(NOT ParaView_BINARY_DIR)
   find_package(ParaView REQUIRED)
@@ -76,6 +46,10 @@ include(ParaViewPlugins)
 
 #get file list
 INCLUDE_DIRECTORIES(src)
+INCLUDE_DIRECTORIES(BEFORE ${QT_QTNETWORK_INCLUDE_DIR})
+INCLUDE_DIRECTORIES(BEFORE ${QT_QTXML_INCLUDE_DIR})
+
+#get build files
 include(./CDAweb_Files.cmake)
 
 #plugin (Filter for CDAweb)
@@ -84,57 +58,8 @@ ADD_PARAVIEW_PLUGIN(CDAWebTK "1.0.0.beta1"
         GUI_INTERFACES ${CDAWebTK_PROP_IFACES}
         SERVER_MANAGER_SOURCES ${CDAWebTK_SM_SRC}
         SOURCES ${CDAWebTK_SRC}
-
                 )
 
 target_link_libraries(CDAWebTK ${LIBS})
 
 
-
-#for the mac distribution build
-add_custom_target(dist
-    COMMAND ${CMAKE_COMMAND}  -DBINARY_DIR:PATH=${PROJECT_BINARY_DIR}
-                              -DPV_SUPERBUILD_LIST_DIR:PATH=${ParaView_SuperBuild_DIR}/Projects
-                              -DPARAVIEW_BINARY_DIR:PATH=${ParaView_DIR}
-                              -DQT_LIBRARY_DIR:PATH=${QT_LIBRARY_DIR}
-                              -DTMP_DIR:PATH=${PROJECT_BINARY_DIR}
-                              -Dbundle_name:STRING=${PROJECT_BINARY_DIR}/CDAwebTK.tgz
-                              -P ${PROJECT_LIST_DIR}/install_CDAwebTK.cmake
-)
-
-###########
-# cxxtest #
-########################################################################
-set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${PROJECT_SOURCE_DIR}/../../Utilities/cxxtest)
-find_package(CxxTest)
-if(CXXTEST_FOUND)
-    find_package(Qt4 REQUIRED)
-    include(${QT_USE_FILE})
-    message(STATUS "cxxtest Found!")
-
-    set(CDF_USE_STATIC_LIBS ON)
-    find_package(CDF REQUIRED)
-
-    set(CXXTEST_USE_PYTHON TRUE)
-    include_directories(${CXXTEST_INCLUDE_DIR})
-    enable_testing()
-
-    set(cdfDataReaderFiles
-                ${CMAKE_CURRENT_SOURCE_DIR}/src/cdfDataReader.cxx
-                ${CMAKE_CURRENT_SOURCE_DIR}/src/BadDataHandler.cxx
-                ${CMAKE_CURRENT_SOURCE_DIR}/src/timeFitHandler.cxx)
-
-    add_library(cdfReader STATIC ${cdfDataReaderFiles})
-    CXXTEST_ADD_TEST(testCDFreader TestCDFreader.C "${CMAKE_CURRENT_SOURCE_DIR}/test/TestCDFreader.cxxTest")
-    target_link_libraries(testCDFreader ${CMAKE_CURRENT_BINARY_DIR}/libcdfReader.a ${QT_LIBRARIES} ${CDF_LIBRARIES})
-
-    #move test file
-    set(DataFile "${CMAKE_CURRENT_SOURCE_DIR}/../../test/data/STA_L1_MAGB_RTN-20100101T000000Z-20100102T000000Z.cdf")
-    add_custom_command(TARGET testCDFreader PRE_BUILD
-                       COMMAND ${CMAKE_COMMAND} -E
-                       copy ${DataFile} $<TARGET_FILE_DIR:testCDFreader>)
-
-
-else()
-    message ( STATUS "Could NOT find CxxTest - unit testing not available" )
-endif()

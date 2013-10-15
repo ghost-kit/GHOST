@@ -565,10 +565,8 @@ QVariant CDFr::CDFvariable::convertVoid2Variant(const void *data, const long dat
     {
         QPair<double, double> epoch16;
 
-        std::cerr << "CDF_EPOCH16 not yet supported... first half being returned" << std::endl;
 
-        //TODO: implement this CDF_EPOCH16 data type
-        returnVal = QVariant(((double *)data)[index]);
+        returnVal = QVariant(((double *)data)[index*2]);
         break;
     }
     default:

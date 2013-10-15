@@ -8,6 +8,10 @@
 #   ..
 # endif()
 
+add_revision(qt
+  URL "http://www.paraview.org/files/dependencies/qt-everywhere-opensource-src-4.8.2.tar.gz"
+  URL_MD5 3c1146ddf56247e16782f96910a8423b)
+
 add_revision(boost
   URL "http://www.paraview.org/files/dependencies/boost_1_50_0.tar.gz"
   URL_MD5 dbc07ab0254df3dda6300fd737b3f264)

@@ -12,6 +12,7 @@
 #include <QMap>
 #include <QList>
 #include <QVariant>
+#include <QPair>
 
 
 
