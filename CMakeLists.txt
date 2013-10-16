@@ -1,61 +1,32 @@
-cmake_minimum_required(VERSION 2.8.9)
-project(GHOST)
 
-###DEVELOPMENT SWITCHES####
-if(JOSH_MURPHY)
-    if(APPLE)
-        if(NOT AT_HOME)
-            set(CMAKE_OSX_DEPLOYMENT_TARGET "10.6")
-            set(CMAKE_OSX_SYSROOT "/Applications/Xcode-4.3.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.6.sdk")
-            set(ParaView_DIR /Volumes/Data/Development/ParaView/superbuild/paraview/src/paraview-build)
+cmake_minimum_required(VERSION 2.8.8)
 
-        else() #At Home Settings
-            set(CMAKE_OSX_DEPLOYMENT_TARGET "10.7")
-            set(CMAKE_OSX_SYSROOT "/Applications/Xcode46.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk")
-            set(ParaView_DIR /Users/developer/Developer/ParaView/build401)
-            #set(ParaView_DIR /Users/jjm390/Developer/ParaView/superbuild/paraview/src/paraview-build)
-        endif()
+###############
+if(MACD108)
+    set(CMAKE_OSX_DEPLOYMENT_TARGET "10.6")
+    set(CMAKE_OSX_SYSROOT "/Applications/Xcode-4.3.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.6.sdk")
+endif()
+###############
 
-     elseif(UNIX)
-        set(ParaView_DIR /home/jjm390/Developer/ParaView/build401/paraview/src/paraview-build)
-    endif()
-
-    file(GLOB_RECURSE AllFiles *)
-    file(GLOB_RECURSE cdfReader shared/CDFreader/* )
-#    message(STATUS "${AllFiles}")
-    set(QTCREATOR true)
-
+if (APPLE)
+  if(NOT CMAKE_OSX_DEPLOYMENT_TARGET)
+    message(WARNING "Ensure that CMAKE_OSX_SYSROOT, CMAKE_OSX_DEPLOYMENT_TARGET are set correctly")
+    set(CMAKE_OSX_ARCHITECTURES "x86_64" CACHE STRING "By default, build for 64-bit Leopard")
+  endif()
 endif()
 
-###END DEVELOPMENT SWITCHES###
+project("GHOST-kit")
+set (SuperBuild_CMAKE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/CMake")
+set (SuperBuild_PROJECTS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/Projects")
+set (SuperBuild_BINARY_DIR ${ParaViewSuperBuild_BINARY_DIR})
 
-###########################################################################################################
-## This file is the master build file for the GHOST ParaView plugin.  It is partially derived from the   ##
-## ParaViewSuperbuild CMakeLists.txt file distributed in the ParaViewSuperbuild package.                 ##
-## See licence file in licence subdirectory								 ##
-###########################################################################################################
-
-
-if(APPLE)
-    if(NOT CMAKE_OSX_DEPLOYMENT_TARGET)
-        message(WARNING "Ensure that CMAKE_OSX_SYSROOT, CMAKE_OSX_DEPLOYMENT_TARGET are set correctly")
-        set(CMAKE_OSX_ARCHITECTURES "x86_64" CACHE STRING "By default, build for 64-bit Leopard")
-    endif()
-endif()
-
-set(GHOST_CMAKE_DIR "${CMAKE_CURRENT_LIST_DIR}/CMake")
-set(GHOST_DEPEND_DIR "${CMAKE_CURRENT_LIST_DIR}/depends")
-set(GHOST_PROJECTS_DIR "${CMAKE_CURRENT_LIST_DIR}/projects")
-set(GHOST_PV_CMAKE_DIR "${CMAKE_CURRENT_LIST_DIR}/Utilities/ParaView")
-set(GHOST_BINARY_DIR "${GHOST_BINARY_DIR}")
-
-set(platform)
-if(APPLE)
-    set(platform "apple")
-elseif(UNIX)
-    set(platform "unix")
-elseif(WIN32)
-    set(platform "win32")
+set (platform)
+if (APPLE)
+  set (platform "apple")
+elseif (UNIX)
+  set (platform "unix")
+elseif (WIN32)
+  set (platform "win32")
 endif()
 
 #-----------------------------------------------------------------------------
@@ -65,29 +36,28 @@ set (CROSS_BUILD_STAGE "HOST" CACHE STRING
 set_property(CACHE CROSS_BUILD_STAGE PROPERTY STRINGS
    "HOST" "TOOLS" "CROSS")
 
-
-###------------------------------------------------------------------------------------------------------
-# Setup CMAKE_MODULE_PATH
+#-----------------------------------------------------------------------------
+# Setup CMAKE_MODULE_PATH so that platform specific configurations are processed
+# before the generic ones.
 string(TOLOWER "${CROSS_BUILD_STAGE}" lstage)
-set(CMAKE_MODULE_PATH
-  "${GHOST_PROJECTS_DIR}/${platform}/${lstage}"
-  "${GHOST_PROJECTS_DIR}/${platform}"
-  "${GHOST_PROJECTS_DIR}/common"
-  "${GHOST_PROJECTS_DIR}"
-  "${GHOST_CMAKE_DIR}"
-  "${GHOST_PV_CMAKE_DIR}"
+set (CMAKE_MODULE_PATH
+  "${SuperBuild_PROJECTS_DIR}/${platform}/${lstage}"
+  "${SuperBuild_PROJECTS_DIR}/${platform}"
+  "${SuperBuild_PROJECTS_DIR}/common"
+  "${SuperBuild_PROJECTS_DIR}"
+  "${SuperBuild_CMAKE_DIR}"
   "${CMAKE_CURRENT_SOURCE_DIR}"
   ${CMAKE_MODULE_PATH})
 
 #-----------------------------------------------------------------------------
-if(NOT CROSS_BUILD_STAGE STREQUAL "HOST")
+if (NOT CROSS_BUILD_STAGE STREQUAL "HOST")
   include(CrossCompilationMacros)
 
   #ask user to say what machine they are compiling onto
   #so we can get the right environment settings
   query_target_machine()
 
-  if(CROSS_BUILD_STAGE STREQUAL "CROSS")
+  if (CROSS_BUILD_STAGE STREQUAL "CROSS")
     #configure the platform dependent settings
     #64bit_build, static_only, mpi search path
     do_cross_platform_settings()
@@ -103,23 +73,22 @@ include(CMakeDependentOption)
 # Collect information about the build platform.
 include(CheckTypeSize)
 
-if(NOT CROSS_BUILD_STAGE STREQUAL "CROSS")
+if (NOT CROSS_BUILD_STAGE STREQUAL "CROSS")
   check_type_size(void* VOID_PTR_SIZE BUILTIN_TYPES_ONLY)
-  if(VOID_PTR_SIZE EQUAL 8)
-    set(64bit_build TRUE)
-  else()
-    set(64bit_build FALSE)
+  if (VOID_PTR_SIZE EQUAL 8)
+    set (64bit_build TRUE)
+  else ()
+    set (64bit_build FALSE)
   endif()
 endif()
 
-
 # Set suffix to be used for generating archives. This ensures that the package
 # files have decent names that we can directly upload to the website.
-set(package_suffix "${CMAKE_SYSTEM_NAME}")
-if(64bit_build)
-  set(package_suffix "${package_suffix}-64bit")
-else()
-  set(package_suffix "${package_suffix}-32bit")
+set (package_suffix "${CMAKE_SYSTEM_NAME}")
+if (64bit_build)
+  set (package_suffix "${package_suffix}-64bit")
+else ()
+  set (package_suffix "${package_suffix}-32bit")
 endif()
 
 include(paraview_version)
@@ -128,53 +97,66 @@ option(TRUST_SVN_CERTIFICATES_AUTOMATICALLY
   "Trust SVN certificates automatically" ON)
 mark_as_advanced(TRUST_SVN_CERTIFICATES_AUTOMATICALLY)
 
-###------------------------------------------------------------------------------------------------------
-# setup some standard variables
-set(install_location "${CMAKE_CURRENT_BINARY_DIR}/install")
-set(download_location "${CMAKE_CURRENT_BINARY_DIR}/downloads"
+#-----------------------------------------------------------------------------
+# Setup some standard variables that control various locations and flags.
+set (install_location "${CMAKE_CURRENT_BINARY_DIR}/install")
+set (download_location "${CMAKE_CURRENT_BINARY_DIR}/downloads"
      CACHE PATH "Location where source tar-balls are (to be) downloaded.")
 mark_as_advanced(download_location)
 
-###------------------------------------------------------------------------------------------------------
-
-if(WIN32)
-    set(ldflags)
-    set(cppflags)
-    set(cxxflags)
-    set(ld_library_path)
-else()
-    set(ldflags "$ENV{LDFLAGS} -L${install_location}/lib")
-    set(cppflags "$ENV{CPPFLAGS} -fPIC")
-    set(cxxflags "$ENV{CXXFLAGS} -fPIC")
-    set(cflags "$ENV{CFLAGS} -fPIC")
-    set(ld_library_path "${install_location}/lib:$ENV{LD_LIBRARY_PATH}")
+if (WIN32)
+  set (ldflags)
+  set (cppflags)
+  set (cxxflags)
+  set (ld_library_path)
+else ()
+  # FIXME: currently, if any of these are empty, we have build issues on Unix.
+  set (ldflags "$ENV{LDFLAGS} -L${install_location}/lib")
+  if (NOT CROSS_BUILD_STAGE STREQUAL "CROSS")
+    set (cppflags "$ENV{CPPFLAGS} -fPIC")
+    set (cxxflags "$ENV{CXXFLAGS} -fPIC")
+    set (cflags "$ENV{CFLAGS} -fPIC")
+  endif()
+  set (ld_library_path "${install_location}/lib:$ENV{LD_LIBRARY_PATH}")
 endif()
 
-if(UNIX AND NOT APPLE)
-    option(PASS_LD_LIBRARY_PATH_FOR_BUILDS
+#-----------------------------------------------------------------------------
+# Make sure install/lib directories exist by creating them
+# Windows doesn't like it if that directory does not exist even if it is empty
+file(MAKE_DIRECTORY "${install_location}/lib")
+
+
+if (UNIX AND NOT APPLE)
+  # I am not exactly sure about the cause of these issues and how to cleanly
+  # overcome them, however, on some linuxes when Cmake is built shared, we end
+  # if we set LD_LIBRARY_PATH to the install/lib dir, we end up with errors
+  # due to conflicts with system libz. So for now, I am making this an option.
+  # By default we will let the superbuild scripts set LD_LIBRARY_PATH. However
+  # if users get errors like: libz.so.1: no version information available, then
+  # users should turn this flag off.
+  option(PASS_LD_LIBRARY_PATH_FOR_BUILDS
          "Pass LD_LIBRARY_PATH to build scripts."
          ON)
-    mark_as_advanced(PASS_LD_LIBRARY_PATH_FOR_BUILDS)
+  mark_as_advanced(PASS_LD_LIBRARY_PATH_FOR_BUILDS)
 endif()
 
-if(APPLE)
-  set(cflags "${cflags} -arch x86_64 -mmacosx-version-min=${CMAKE_OSX_DEPLOYMENT_TARGET} -sysroot=${CMAKE_OSX_SYSROOT} ")
-  set(cppflags "${cppflags} -arch x86_64 -mmacosx-version-min=${CMAKE_OSX_DEPLOYMENT_TARGET} -sysroot=${CMAKE_OSX_SYSROOT} ")
-  set(cxxflags "${cxxflags} -arch x86_64 -mmacosx-version-min=${CMAKE_OSX_DEPLOYMENT_TARGET} -sysroot=${CMAKE_OSX_SYSROOT} ")
+if (APPLE)
+  set (cflags "${cflags} -arch x86_64 -mmacosx-version-min=${CMAKE_OSX_DEPLOYMENT_TARGET} -sysroot=${CMAKE_OSX_SYSROOT} ")
+  set (cppflags "${cppflags} -arch x86_64 -mmacosx-version-min=${CMAKE_OSX_DEPLOYMENT_TARGET} -sysroot=${CMAKE_OSX_SYSROOT} ")
+  set (cxxflags "${cxxflags} -arch x86_64 -mmacosx-version-min=${CMAKE_OSX_DEPLOYMENT_TARGET} -sysroot=${CMAKE_OSX_SYSROOT} ")
 endif()
-set(prefix_path "${install_location}")
+set (prefix_path "${install_location}")
 
-#merge in default/user-specified CMAKE flags
-set(ldflags "${CMAKE_SHARED_LINKER_FLAGS} ${ldflags}")
-set(cppflags "${CMAKE_CXX_FLAGS} ${cppflags}")
-set(cxxflags "${CMAKE_CXX_FLAGS} ${cxxflags}")
-set(cflags "${CMAKE_C_FLAGS} ${cflags}")
+# merge in default/user-specified CMake flags.
+set (ldflags "${CMAKE_SHARED_LINKER_FLAGS} ${ldflags}")
+set (cppflags "${CMAKE_CXX_FLAGS} ${cppflags}")
+set (cxxflags "${CMAKE_CXX_FLAGS} ${cxxflags}")
+set (cflags "${CMAKE_C_FLAGS} ${cflags}")
 
-string(STRIP "${ldflags}" ldflags)
-string(STRIP "${cppflags}" cppflags)
-string(STRIP "${cxxflags}" cxxflags)
-string(STRIP "${cflags}"  cflags)
-
+string (STRIP "${ldflags}" ldflags)
+string (STRIP "${cppflags}" cppflags)
+string (STRIP "${cxxflags}" cxxflags)
+string (STRIP "${cflags}"  cflags)
 #-----------------------------------------------------------------------------
 ## Top-level options. These must be limited to a commonly used subset with
 ## default values being used for building ParaView binaries.
@@ -190,7 +172,6 @@ if (WIN32)
     find_program(NMAKE_PATH nmake)
     mark_as_advanced(DEVENV_PATH NMAKE_PATH)
   endif()
-
   # Freetype uses its own build system on win32...
   find_program(FTJAM_EXECUTABLE jam)
   mark_as_advanced(FTJAM_EXECUTABLE)
@@ -200,94 +181,145 @@ if (WIN32)
     endif()
   endif()
 endif()
+#-----------------------------------------------------------------------------
+include (ParaViewModules)
+include (versions)
 
-###-------------------------------------------------------------------------------------------------------
-include(ParaViewModules)
-include(dep_versions)
+#------------------------------------------------------------------------------
+# enable testing support.
+include(CTest)
+configure_file(
+  "${SuperBuild_CMAKE_DIR}/CTestCustom.cmake.in"
+  "${CMAKE_CURRENT_BINARY_DIR}/CTestCustom.cmake" @ONLY)
+#------------------------------------------------------------------------------
 
-###-------------------------------------------------------------------------------------------------------
-# Projects to be built
+#-----------------------------------------------------------------------------
 set (CM_PROJECTS_ALL)
 
-if(NOT WIN32)
+if (NOT WIN32)
   # Check if there's a Fortran compiler. If there is, CMAKE_Fortran_COMPILER
   # will be set. Note that as of CMake 2.8.11 that CMAKE_Fortran_COMPILER
   # isn't passed to the external projects so setting it to something else
   # will give unexpected results. This is CMake Mantis issue 14,231.
-    include(CheckFortran)
+  include(CheckFortran)
 endif()
 
-include(mpi)
-include(qt)
-include(boost)
-include(jpeg)
-include(zlib)
-include(szip)
-include(hdf4)
-include(hdf5)
-include(cdf)
-include(shared)
-include(ghost)
-include(python)
-include(paraview)
 
-if(NOT APPLE AND NOT UNIX)
-    include(freetype)
+# Include all optional projects. These are the ones user can pick and choose.
+# Some of these allow using system libraries too.
+if (CROSS_BUILD_STAGE STREQUAL "CROSS")
+  #include(crossnumpy)
+  include(python)
+  #include(mesa)
+  include(paraview)
+elseif(CROSS_BUILD_STAGE STREQUAL "TOOLS")
+  include(boost)
+  include(png)
+  include(zlib)
+  include(python)
+  include(paraview)
+  include(portfwd)
+else()
+  include(boost)
+  include(cgns)
+  include(freetype)
+  include(hdf5)
+ # include(libxml2)
+ # include(manta)
+  include(matplotlib)
+  include(mpi)
+  include(numpy)
+  include(png)
+  include(python)
+  include(qt)
+ # include(silo)
+  include(szip)
+ # include(visitbridge)
+  include(zlib)
+  if(CMAKE_Fortran_COMPILER)
+    # both of these packages require a Fortran compiler to build so we
+    # only present them to the user if we have one.
+  #  include(nektarreader)
+    include(lapack)
+  endif()
+
+  if (UNIX)
+    # Supported on Linux/Mac
+    include(ffmpeg)
+  endif()
+
+  if (UNIX AND NOT APPLE)
+    include(portfwd)
     include(fontconfig)
-    include(png)
+   # include(mesa)
+   # include(osmesa)
+  endif()
+
+   include(ghost)
+   include(DateTime)
+   include(cdf)
+   include(CDFreader)
+   include(io)
+   include(hdf4)
+   include(jpeg)
+   include(cxform)
+
+  # Build CosmoTools on Linux and OS X
+  #if (UNIX)
+  #  include(qhull)
+  #  include(diy)
+  #  include(genericio)
+  #  include(cosmotools)
+  #endif()
+
+  # REMEMBER to tell VTK/ParaView to use VTK_SYSTEM_* for the
+  # libraries we've built here.
+  include(paraview)
+  #include(vistrails)
+  #include(acusolve)
+
+  # paraview.sdk is a module that is used install the ParaView SDK.
+  # Simply enabling this module will result in the ParaView SDK to be
+  # installed by "make install". Note that this is not always supported.
+  #include(paraviewsdk OPTIONAL)
 endif()
 
-#turn on ghost
+#-------------------------------------------------------------------------
+# Add any additional project that the user wants
+set(PV_EXTERNAL_PROJECTS "" CACHE STRING
+    "Provide the list of Projects that ParaView should additionally depends on")
+mark_as_advanced(PV_EXTERNAL_PROJECTS)
+
+# Include all additional external projects
+# Its their responsability to check the system and provide empty target if the
+# platform is not supported
+foreach(external_project IN ITEMS ${PV_EXTERNAL_PROJECTS})
+  include(${external_project})
+  set(ENABLE_${external_project} ON CACHE BOOL "" FORCE)
+endforeach()
+
+# Enable GHOST by default
 set(ENABLE_ghost true)
-if(BUILD_PARAVIEW)
-    set(ENABLE_paraview true)
-endif()
 
 process_dependencies()
 
+#-------------------------------------------------------------------------
+# Some sanity checks.
+# Sanity check: Cannot has osmesa and qt enabled at the same time.
+if (osmesa_ENABLED AND qt_ENABLED)
+  message(SEND_ERROR "Cannot enable OSMesa and QT at the same time.")
+endif()
+# Sanity check: Cannot has osmesa and mesa at the same time.
+if (osmesa_ENABLED AND mesa_ENABLED)
+  message(SEND_ERROR "Cannot enable OSMesa and Mesa at the same time.")
+endif()
+#-------------------------------------------------------------------------
 
-##############################
-### This is a development hack for making QT Creator show the files I need. Ignore if you are not me.
-#if(QTCREATOR)
-#    INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR}/install/include)
-#    INCLUDE_DIRECTORIES(${CMAKE_CURRENT_LIST_DIR}/shared/CDFreader/src)
-#    find_package(Qt4 REQUIRED)
-#    include(${QT_USE_FILE})
-#    add_library(CDFreader STATIC ${QT_LIBRARIES} ${cdfReader})
+if (paraview_ENABLED)
+  include(paraview.bundle OPTIONAL)
+endif()
 
-
-#set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${PROJECT_SOURCE_DIR}/Utilities/cxxtest)
-#find_package(CxxTest)
-#if(CXXTEST_FOUND)
-#    find_package(Qt4 REQUIRED)
-#    include(${QT_USE_FILE})
-#    message(STATUS "cxxtest Found!")
-
-#    set(CDF_LIBRARIES ${CMAKE_CURRENT_BINARY_DIR}/install/lib/${CMAKE_STATIC_LIBRARY_PREFIX}cdf${CMAKE_STATIC_LIBRARY_SUFFIX})
-#    include_directories(BEFORE ${CMAKE_CURRENT_BINARY_DIR}/install/include)
-
-#    set(CXXTEST_USE_PYTHON TRUE)
-#    include_directories(${CXXTEST_INCLUDE_DIR})
-#    enable_testing()
-
-#    CXXTEST_ADD_TEST(testCDFreader TestCDFreader.C "${CMAKE_CURRENT_SOURCE_DIR}/shared/CDFreader/test/TestCDFreader.cxxTest")
-#    target_link_libraries(testCDFreader CDFreader ${QT_LIBRARIES} ${CDF_LIBRARIES})
-
-#    #move test file
-#    set(DataFile "${CMAKE_CURRENT_SOURCE_DIR}/test/data/STA_L1_MAGB_RTN-20100101T000000Z-20100102T000000Z.cdf")
-#    add_custom_command(TARGET testCDFreader PRE_BUILD
-#                       COMMAND ${CMAKE_COMMAND} -E
-#                       copy ${DataFile} $<TARGET_FILE_DIR:testCDFreader>)
-
-
-#    add_executable(generateStatusText ${CMAKE_CURRENT_SOURCE_DIR}/shared/CDFreader/test/generateStatusCodes.cxx)
-#    target_link_libraries(generateStatusText CDFreader ${QT_LIBRARIES} ${CDF_LIBRARIES})
-
-#else()
-#    message ( STATUS "Could NOT find CxxTest - unit testing not available" )
-#endif()
-
-#endif()
-
-#############################
-
+option(NIGHTLY_BINARY_TESTING "Run Nightly-Binary ParaView Testing" OFF)
+if (NIGHTLY_BINARY_TESTING)
+  add_subdirectory(tests)
+endif()

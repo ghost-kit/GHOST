@@ -3,9 +3,8 @@ cmake_minimum_required(VERSION 2.8.9)
 
 message("BUILDING GHOST!!! IF you got this far, you have won half the battle!")
 
-if(DEP_INCLUDE_DIR)
-    INCLUDE_DIRECTORIES(${DEP_INCLUDE_DIR})
-endif()
+INCLUDE_DIRECTORIES(BEFORE ${CMAKE_INSTALL_PREFIX}/include)
+message("INCLUDE DIR: ${CMAKE_INSTALL_PREFIX}/include")
 
 ###OPTIONS##
 ##Turn on or off the components of the tool kit
@@ -13,7 +12,6 @@ option(GHOST_BUILD_LFM "Build the ParaView LFM Reader" ON)
 option(GHOST_BUILD_ENLIL "Build the ParaView ENLIL Reader" ON)
 option(GHOST_BUILD_CDAWEB "Build the ParaView CDAweb Tool Kit" ON)
 option(GHOST_MASTER_BUILD "Plugin Being being built as Master Build (DO NOT SET MANUALLY)" OFF)
-
 
 #Set Output Direcotries
 set(CMAKE_RUNTIME_OUTPUT_DIRECOTORY "${CMAKE_BINARY_DIR}/bin")
@@ -31,8 +29,6 @@ include(../Utilities/ParaView/ParaViewDetermineVersion.cmake)
 include(CMakeDependentOption)
 
 
-
-####WORKING ON THIS RIGHT NOW>>>>
 if(GHOST_MASTER_BUILD)
     message("CMAKE_SOURCE_DIR: ${CMAKE_SOURCE_DIR}")
     set(HDF4_LIBS
@@ -41,15 +37,15 @@ if(GHOST_MASTER_BUILD)
         )
 
     set(HDF_EXTRA_LIBS
-       ${CMAKE_INSTALL_PREFIX}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}z${CMAKE_STATIC_LIBRARY_SUFFIX}
-       ${CMAKE_INSTALL_PREFIX}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}sz${CMAKE_STATIC_LIBRARY_SUFFIX}
-       ${CMAKE_INSTALL_PREFIX}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}jpeg${CMAKE_STATIC_LIBRARY_SUFFIX}
+        z
+       ${CMAKE_INSTALL_PREFIX}/lib/${CMAKE_SHARED_LIBRARY_PREFIX}sz${CMAKE_SHARED_LIBRARY_SUFFIX}
+       ${CMAKE_INSTALL_PREFIX}/lib/${CMAKE_SHARED_LIBRARY_PREFIX}jpeg${CMAKE_SHARED_LIBRARY_SUFFIX}
        m
         )
 
     set(HDF5_LIBS
-       ${CMAKE_INSTALL_PREFIX}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}hdf5${CMAKE_STATIC_LIBRARY_SUFFIX}
-       ${CMAKE_INSTALL_PREFIX}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}hdf5_hl${CMAKE_STATIC_LIBRARY_SUFFIX}
+       ${CMAKE_INSTALL_PREFIX}/lib/${CMAKE_SHARED_LIBRARY_PREFIX}hdf5${CMAKE_SHARED_LIBRARY_SUFFIX}
+       ${CMAKE_INSTALL_PREFIX}/lib/${CMAKE_SHARED_LIBRARY_PREFIX}hdf5_hl${CMAKE_SHARED_LIBRARY_SUFFIX}
         )
 
     set(SHARED_LIBS
@@ -74,7 +70,6 @@ if(GHOST_MASTER_BUILD)
 else()
 
     message(FATAL_ERROR "NON Master Build is not yet supported")
-
 
 endif()
 
