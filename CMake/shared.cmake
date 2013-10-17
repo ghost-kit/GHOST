@@ -2,7 +2,7 @@
 
 add_external_project(
     shared
-    DEPENDS hdf4 hdf5 cdf qt
+    DEPENDS hdf4 hdf5 cdf
 
     CMAKE_ARGS
         -DSHARED_BUILD_IO=true
