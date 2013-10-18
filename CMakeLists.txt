@@ -3,8 +3,9 @@ cmake_minimum_required(VERSION 2.8.8)
 
 ###############
 if(MACD108)
-    set(CMAKE_OSX_DEPLOYMENT_TARGET "10.6")
-    set(CMAKE_OSX_SYSROOT "/Applications/Xcode-4.3.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.6.sdk")
+    set(CMAKE_OSX_ARCHITECTURES "x86_64"  CACHE STRING "By default, build for 64-bit Leopard")
+    set(CMAKE_OSX_DEPLOYMENT_TARGET "10.6" CACHE STRING "By default, build for 64-bit Leopard")
+    set(CMAKE_OSX_SYSROOT "/Applications/Xcode-4.3.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.6.sdk" CACHE STRING "By default, build for 64-bit Leopard")
 endif()
 ###############
 
