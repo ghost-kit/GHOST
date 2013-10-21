@@ -3,8 +3,10 @@ cmake_minimum_required(VERSION 2.8.9)
 
 message("BUILDING GHOST!!! IF you got this far, you have won half the battle!")
 
-INCLUDE_DIRECTORIES(BEFORE ${CMAKE_INSTALL_PREFIX}/include)
-message("INCLUDE DIR: ${CMAKE_INSTALL_PREFIX}/include")
+if(DEP_INCLUDE_DIR)
+    include_directories(BEFORE SYSTEM ${DEP_INCLUDE_DIR})
+endif()
+
 
 ###OPTIONS##
 ##Turn on or off the components of the tool kit
@@ -28,9 +30,6 @@ include(../Utilities/Git/Git.cmake)
 include(../Utilities/ParaView/ParaViewDetermineVersion.cmake)
 include(CMakeDependentOption)
 
-
-if(GHOST_MASTER_BUILD)
-    message("CMAKE_SOURCE_DIR: ${CMAKE_SOURCE_DIR}")
     set(HDF4_LIBS
             ${CMAKE_INSTALL_PREFIX}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}df${CMAKE_STATIC_LIBRARY_SUFFIX}
             ${CMAKE_INSTALL_PREFIX}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}mfhdf${CMAKE_STATIC_LIBRARY_SUFFIX}
@@ -38,14 +37,14 @@ if(GHOST_MASTER_BUILD)
 
     set(HDF_EXTRA_LIBS
         z
-       ${CMAKE_INSTALL_PREFIX}/lib/${CMAKE_SHARED_LIBRARY_PREFIX}sz${CMAKE_SHARED_LIBRARY_SUFFIX}
-       ${CMAKE_INSTALL_PREFIX}/lib/${CMAKE_SHARED_LIBRARY_PREFIX}jpeg${CMAKE_SHARED_LIBRARY_SUFFIX}
+       sz
+       ${CMAKE_INSTALL_PREFIX}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}jpeg${CMAKE_STATIC_LIBRARY_SUFFIX}
        m
         )
 
     set(HDF5_LIBS
-       ${CMAKE_INSTALL_PREFIX}/lib/${CMAKE_SHARED_LIBRARY_PREFIX}hdf5${CMAKE_SHARED_LIBRARY_SUFFIX}
-       ${CMAKE_INSTALL_PREFIX}/lib/${CMAKE_SHARED_LIBRARY_PREFIX}hdf5_hl${CMAKE_SHARED_LIBRARY_SUFFIX}
+       hdf5
+       hdf5_hl
         )
 
     set(SHARED_LIBS
@@ -59,7 +58,7 @@ if(GHOST_MASTER_BUILD)
         )
 
     set(BOOST_LIBS
-        ${CMAKE_INSTALL_PREFIX}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}boost_date_time${CMAKE_STATIC_LIBRARY_SUFFIX}
+        boost_date_time
         )
 
 
@@ -67,11 +66,6 @@ if(GHOST_MASTER_BUILD)
         vtkNetCDF_cxx
         )
 
-else()
-
-    message(FATAL_ERROR "NON Master Build is not yet supported")
-
-endif()
 
 #Get ParaView (so we can build our module!!)
 if(NOT ParaView_BINARY_DIR)
@@ -102,7 +96,6 @@ Try deleting your CMakeCache.txt file and rebuilding")
 #LFM Reader
 if(GHOST_BUILD_LFM)
     message(STATUS "Building LFM Reader Module")
-    include(lfm/LFM_Files.cmake)
 
     #Need LFM
     include(lfm/LFM_Files.cmake)
@@ -188,7 +181,7 @@ add_custom_target(dist
             ${CMAKE_COMMAND}  -E copy ${CMAKE_CURRENT_BINARY_DIR}/lib/* ${CMAKE_INSTALL_PREFIX}/release/
 )
 
-if(UNIX AND NOT APPLE)
+if(UNIX AND (NOT APPLE))
 
     INSTALL(TARGETS GhostKit
             RUNTIME DESTINATION bin

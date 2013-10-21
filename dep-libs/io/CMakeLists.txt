@@ -26,28 +26,6 @@ endif (USE_MPI)
 ########
 # Hdf4 #
 ########################################################################
-if(NOT USE_MASTER_BUILD)
-    set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/cmake/")
-    find_package(HDF4 REQUIRED)
-
-    message("SETTING AUTO-DETECTED LIBRARIES")
-
-    if(HDF4_FOUND)
-        message(STATUS "HDF4 Found!")
-        message(STATUS "Linking HDF4 Libraries: ${HDF4_LIBRARIES}")
-        message(STATUS "EXTRA HDF4 Lirbraries: ${HDF4_EXTRA_LIBRARIES}")
-
-        find_package(JPEG)
-        message(STATUS "JPEG: ${JPEG_LIBRARY}")
-
-        find_package(ZLIB)
-        set(HDF4_LIBRARIES ${HDF4_LIBRARIES} ${ZLIB_LIBRARY} ${JPEG_LIBRARY})
-
-        add_definitions(-DHAS_HDF4)
-    endif(HDF4_FOUND)
-
-else()
-
     message("SETTING MASTER BUILD LIBRARIES")
 
     INCLUDE_DIRECTORIES(${CMAKE_INSTALL_PREFIX}/include)
@@ -56,8 +34,8 @@ else()
             ${CMAKE_INSTALL_PREFIX}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}df${CMAKE_STATIC_LIBRARY_SUFFIX}
             ${CMAKE_INSTALL_PREFIX}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}mfhdf${CMAKE_STATIC_LIBRARY_SUFFIX}
             sz
-			z
-           	m
+            z
+            m
         )
 
     set(JPEG_LIBRARIES
@@ -67,14 +45,9 @@ else()
 
     add_definitions(-DHAS_HDF4:BOOL=true)
 
-endif()
-
 ########
 # Hdf5 #
 ########################################################################
-if(NOT USE_MASTER_BUILD)
-
-
     find_package(HDF5 COMPONENTS C )
     message(STATUS "IO: Linking HDF5 Libraries: ${HDF5_LIBRARIES} ${PHDF5_LIBRARIES}")
 
@@ -91,17 +64,6 @@ if(NOT USE_MASTER_BUILD)
             add_definitions(-DHAS_PHDF5)
         endif (HDF5_IS_PARALLEL)
     endif (HDF5_FOUND)
-
-else()
-
-    set(HDF5_LIBRARIES
-            ${CMAKE_INSTALL_PREFIX}/lib/${CMAKE_SHARED_LIBRARY_PREFIX}hdf5${CMAKE_SHARED_LIBRARY_SUFFIX}
-            ${CMAKE_INSTALL_PREFIX}/lib/${CMAKE_SHARED_LIBRARY_PREFIX}hdf5_hl${CMAKE_SHARED_LIBRARY_SUFFIX}
-            z
-            m
-        )
-
-endif()
 
 ##############
 # io library #
@@ -126,34 +88,30 @@ add_library(io STATIC
             PHdf5.hpp PHdf5.C
             ${IO_CMAKE} )
 
-if(USE_MASTER_BUILD)
-    message("LINKING LIBRARIES for MASTER BUILD")
-    message("Libraries Linked: ${IO_LIBRARIES}")
-    target_link_libraries(io ${IO_LIBRARIES})
-endif()
-
-
 ###########
 # cxxtest #
 ########################################################################
+if(BUILD_TEST)
+    set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${PROJECT_SOURCE_DIR}/../../Utilities/cxxtest)
+    find_package(CxxTest)
+    if(CXXTEST_FOUND)
+        message(STATUS "cxxtest Found!")
+        set(CXXTEST_USE_PYTHON TRUE)
+        include_directories(${CXXTEST_INCLUDE_DIR})
+        enable_testing()
+        CXXTEST_ADD_TEST(testErrorQueue testErrorQueue.C "${PROJECT_SOURCE_DIR}/testErrorQueue.cxxTest")
+        ADD_LIBRARY(test_ErrorQueue ErrorQueue.h ErrorQueue.C)
+        TARGET_LINK_LIBRARIES(testErrorQueue test_ErrorQueue)
+        CXXTEST_ADD_TEST(testNoppNompi testNoppNompi.C "${PROJECT_SOURCE_DIR}/testNoppNompi.cxxTest")
+        target_link_libraries(testNoppNompi io ${HDF4_LIBRARIES} ${IO_LIBRARIES} )
+    else()
+        message ( STATUS "Could NOT find CxxTest - unit testing not available" )
+    endif()
+endif()
 
-set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${PROJECT_SOURCE_DIR}/../../Utilities/cxxtest)
-find_package(CxxTest)
-if(CXXTEST_FOUND)
-    message(STATUS "cxxtest Found!")
-    set(CXXTEST_USE_PYTHON TRUE)
-    include_directories(${CXXTEST_INCLUDE_DIR})
-    enable_testing()
-    CXXTEST_ADD_TEST(testErrorQueue testErrorQueue.C "${PROJECT_SOURCE_DIR}/testErrorQueue.cxxTest")
-    ADD_LIBRARY(test_ErrorQueue ErrorQueue.h ErrorQueue.C)
-    TARGET_LINK_LIBRARIES(testErrorQueue test_ErrorQueue)
-    CXXTEST_ADD_TEST(testNoppNompi testNoppNompi.C "${PROJECT_SOURCE_DIR}/testNoppNompi.cxxTest")
-    target_link_libraries(testNoppNompi io ${HDF4_LIBRARIES} ${IO_LIBRARIES} )
-else ()
-    message ( STATUS "Could NOT find CxxTest - unit testing not available" )
-endif ()
-
-
+#################
+# install Files #
+#########################################################################
 INSTALL(FILES
         ${PROJECT_BINARY_DIR}/${CMAKE_STATIC_LIBRARY_PREFIX}io${CMAKE_STATIC_LIBRARY_SUFFIX}
         DESTINATION lib/)

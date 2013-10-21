@@ -7,7 +7,20 @@ if(MACD108)
     set(CMAKE_OSX_DEPLOYMENT_TARGET "10.6" CACHE STRING "By default, build for 64-bit Leopard")
     set(CMAKE_OSX_SYSROOT "/Applications/Xcode-4.3.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.6.sdk" CACHE STRING "By default, build for 64-bit Leopard")
 endif()
+
+if(TMLMP8)
+    set(CMAKE_OSX_ARCHITECTURES "x86_64"  CACHE STRING "By default, build for 64-bit Leopard")
+    set(CMAKE_OSX_DEPLOYMENT_TARGET "10.7" CACHE STRING "By default, build for 64-bit Leopard")
+    set(CMAKE_OSX_SYSROOT "/Applications/Xcode46.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk" CACHE STRING "By default, build for 64-bit Leopard")
+endif()
 ###############
+
+set(ParaView_FROM_GIT OFF)
+
+if(NOT NUM_CORES)
+    set(NUM_CORES 5)
+endif()
+
 
 if (APPLE)
   if(NOT CMAKE_OSX_DEPLOYMENT_TARGET)
@@ -197,7 +210,7 @@ configure_file(
 #-----------------------------------------------------------------------------
 set (CM_PROJECTS_ALL)
 
-if (NOT WIN32)
+if(NOT WIN32)
   # Check if there's a Fortran compiler. If there is, CMAKE_Fortran_COMPILER
   # will be set. Note that as of CMake 2.8.11 that CMAKE_Fortran_COMPILER
   # isn't passed to the external projects so setting it to something else
@@ -209,9 +222,9 @@ endif()
 # Include all optional projects. These are the ones user can pick and choose.
 # Some of these allow using system libraries too.
 if (CROSS_BUILD_STAGE STREQUAL "CROSS")
-  #include(crossnumpy)
+  include(crossnumpy)
   include(python)
-  #include(mesa)
+  include(mesa)
   include(paraview)
 elseif(CROSS_BUILD_STAGE STREQUAL "TOOLS")
   include(boost)
@@ -225,22 +238,22 @@ else()
   include(cgns)
   include(freetype)
   include(hdf5)
- # include(libxml2)
- # include(manta)
+  include(libxml2)
+  include(manta)
   include(matplotlib)
   include(mpi)
   include(numpy)
   include(png)
   include(python)
   include(qt)
- # include(silo)
+  include(silo)
   include(szip)
- # include(visitbridge)
+  include(visitbridge)
   include(zlib)
   if(CMAKE_Fortran_COMPILER)
     # both of these packages require a Fortran compiler to build so we
     # only present them to the user if we have one.
-  #  include(nektarreader)
+    include(nektarreader)
     include(lapack)
   endif()
 
@@ -252,8 +265,8 @@ else()
   if (UNIX AND NOT APPLE)
     include(portfwd)
     include(fontconfig)
-   # include(mesa)
-   # include(osmesa)
+    include(mesa)
+    include(osmesa)
   endif()
 
    include(ghost)
@@ -266,23 +279,23 @@ else()
    include(cxform)
 
   # Build CosmoTools on Linux and OS X
-  #if (UNIX)
-  #  include(qhull)
-  #  include(diy)
-  #  include(genericio)
-  #  include(cosmotools)
-  #endif()
+  if (UNIX)
+    include(qhull)
+    include(diy)
+    include(genericio)
+    include(cosmotools)
+  endif()
 
   # REMEMBER to tell VTK/ParaView to use VTK_SYSTEM_* for the
   # libraries we've built here.
   include(paraview)
-  #include(vistrails)
-  #include(acusolve)
+  include(vistrails)
+  include(acusolve)
 
   # paraview.sdk is a module that is used install the ParaView SDK.
   # Simply enabling this module will result in the ParaView SDK to be
   # installed by "make install". Note that this is not always supported.
-  #include(paraviewsdk OPTIONAL)
+  include(paraviewsdk OPTIONAL)
 endif()
 
 #-------------------------------------------------------------------------

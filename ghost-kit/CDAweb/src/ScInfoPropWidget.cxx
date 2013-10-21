@@ -5,7 +5,7 @@
 
 #include "ScInfoPropWidget.h"
 #include "ui_ScInfoPropWidget.h"
-#include "DateTime.h"
+#include "ltrDateTime.h"
 #include "pqPropertiesPanel.h"
 #include "pqTreeWidgetItem.h"
 #include "pqTreeWidgetSelectionHelper.h"

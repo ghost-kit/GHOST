@@ -4,7 +4,7 @@
 #include "pqPropertyWidget.h"
 #include "pqOutputPort.h"
 #include "filterNetworkAccessModule.h"
-#include "DateTime.h"
+#include "ltrDateTime.h"
 
 #include <QWidget>
 #include <QListWidgetItem>
@@ -18,7 +18,7 @@
 
 #include <QReadWriteLock>
 #include <QTableWidgetItem>
-#include "DateTime.h"
+#include "ltrDateTime.h"
 
 class DataSetInfo {
 public:

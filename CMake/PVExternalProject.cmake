@@ -99,7 +99,7 @@ function (PVExternalProject_Add name)
       # GNU make recognizes the string "$(MAKE)" as recursive make, so
       # ensure that it appears directly in the makefile.
       if (CROSS_BUILD_STAGE STREQUAL "HOST")
-        string(REGEX REPLACE "^\\$\\(MAKE\\)" "${CMAKE_MAKE_PROGRAM} -j16" build_cmd "${build_cmd}")
+        string(REGEX REPLACE "^\\$\\(MAKE\\)" "${CMAKE_MAKE_PROGRAM} -j${NUM_CORES}" build_cmd "${build_cmd}")
       else()
         # Don't do parallel 'make' when cross compiling or building tools for
         # cross compiling.
