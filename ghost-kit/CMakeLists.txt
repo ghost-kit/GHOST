@@ -49,7 +49,7 @@ include(CMakeDependentOption)
 
     set(SHARED_LIBS
         ${CMAKE_INSTALL_PREFIX}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}io${CMAKE_STATIC_LIBRARY_SUFFIX}
-        ${CMAKE_INSTALL_PREFIX}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}DateTime${CMAKE_STATIC_LIBRARY_SUFFIX}
+        ${CMAKE_INSTALL_PREFIX}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}ltrDateTime${CMAKE_STATIC_LIBRARY_SUFFIX}
         ${CMAKE_INSTALL_PREFIX}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}cxform${CMAKE_STATIC_LIBRARY_SUFFIX}
         )
 
@@ -170,7 +170,7 @@ target_link_libraries(GhostKit ${GHOST_LIBS} ${GHOST_LIBS})
 add_custom_target(dist
     COMMAND ${CMAKE_COMMAND}  -E make_directory ${CMAKE_INSTALL_PREFIX}/release &&
             ${CMAKE_COMMAND}  -DBINARY_DIR:PATH=${CMAKE_CURRENT_BINARY_DIR}
-                              -DPV_SUPERBUILD_LIST_DIR:PATH=${GHOST_PV_CMAKE_DIR}
+                              -DPV_SUPERBUILD_LIST_DIR:PATH=${PV_SUPERBUILD_LIST_DIR}
                               -DPARAVIEW_BINARY_DIR:PATH=${ParaView_DIR}
                               -DQT_LIBRARY_DIR:PATH=${QT_LIBRARY_DIR}
                               -DTMP_DIR:PATH=${CMAKE_CURRENT_BINARY_DIR}
@@ -178,7 +178,7 @@ add_custom_target(dist
                               -DTARGET_NAME:STRING="GhostKit"
                               -Dbundle_name:STRING=${CMAKE_INSTALL_PREFIX}/release/ghost_plugin.tgz
                               -P ${CMAKE_CURRENT_LIST_DIR}/install_ghost_mac.cmake &&
-            ${CMAKE_COMMAND}  -E copy ${CMAKE_CURRENT_BINARY_DIR}/lib/* ${CMAKE_INSTALL_PREFIX}/release/
+            ${CMAKE_COMMAND}  -E copy ${CMAKE_CURRENT_BINARY_DIR}/${TMP_DIR}/${PROJECT_NAME}/* ${CMAKE_INSTALL_PREFIX}/release/
 )
 
 if(UNIX AND (NOT APPLE))

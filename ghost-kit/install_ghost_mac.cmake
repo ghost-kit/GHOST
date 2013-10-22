@@ -16,11 +16,15 @@ execute_process(COMMAND ${CMAKE_COMMAND} -E remove_directory ${TMP_DIR}/${PROJEC
 execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${TMP_DIR}/${PROJECT_NAME})
 execute_process(COMMAND ${CMAKE_COMMAND} -E copy ${BINARY_DIR}/lib/${SHARED_LIBRARY_PREFIX}${TARGET_NAME}${SHARED_LIBRARY_SUFFIX} ${TMP_DIR}/${PROJECT_NAME})
 
+message("DIR: ${PARAVIEW_BINARY_DIR}")
 
 if (APPLE)
     message("FIXING UP THE PLUGIN")
+    message("Command:  ${PV_SUPERBUILD_LIST_DIR}/Projects/apple/fixup_plugin.py")
+    message("PV_BINARY_DIR: ${PARAVIEW_BINARY_DIR}")
+
   execute_process(
-      COMMAND ${PV_SUPERBUILD_LIST_DIR}/apple/fixup_plugin.py
+      COMMAND ${PV_SUPERBUILD_LIST_DIR}/Projects/apple/fixup_plugin.py
             # The directory containing the plugin dylibs or the plugin itself.
             ${TMP_DIR}/${PROJECT_NAME}/${SHARED_LIBRARY_PREFIX}${TARGET_NAME}${SHARED_LIBRARY_SUFFIX}
             # names to replace (in order)
