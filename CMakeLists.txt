@@ -15,7 +15,6 @@ if(TMLMP8)
 endif()
 ###############
 
-set(ParaView_FROM_GIT OFF)
 
 if(NOT NUM_CORES)
     set(NUM_CORES 5)
@@ -313,7 +312,8 @@ foreach(external_project IN ITEMS ${PV_EXTERNAL_PROJECTS})
 endforeach()
 
 # Enable GHOST by default
-set(ENABLE_ghost true)
+set(ENABLE_ghost ON)
+set(ParaView_FROM_GIT OFF)
 
 process_dependencies()
 
