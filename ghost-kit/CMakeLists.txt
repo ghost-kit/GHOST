@@ -58,7 +58,7 @@ include(CMakeDependentOption)
         )
 
     set(BOOST_LIBS
-        boost_date_time
+        ${CMAKE_INSTALL_PREFIX}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}boost_date_time${CMAKE_STATIC_LIBRARY_SUFFIX}
         )
 
 
