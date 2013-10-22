@@ -1,58 +1,53 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
-project(lfm)
+project(LFMreader)
 
-# Required variables:
-#  * ParaView_DIR: Path to directory containing ParaViewConfig.cmake
-#  * ParaView_SuperBuild: Mac OS-X only:  SuperBuild is shipped with fixup_plugin.py, which is part of the SuperBuild.
-#  * PREFIX:  Path to relevant libraries (HDF4, JPEG, etc)
-#
-# There are two ways to set required variables for building this plugin:
-#  1.  Pass via command-line arguments (recommended):
-#  
-#      cmake .. -DParaView_DIR=/Users/schmitt/paraview/opt/ParaView-3.98.1_OSX-10.7/paraview/src/paraview-build \
-#               -DParaView_SuperBuild_DIR=/Users/schmitt/paraview/opt/src/ParaViewSuperbuild-3.98.0 \
-#               -PREFIX=/Users/schmitt/paraview/opt
-#  
-#  2.  Hard-code it in this file by uncommenting the following lines:
-
-#set(ParaView_DIR /Users/schmitt/paraview/opt/ParaView-3.98.1_OSX-10.7/paraview/src/paraview-build)
-#set(ParaView_SuperBuild_DIR /Users/schmitt/paraview/opt/src/ParaViewSuperbuild-3.98.1)
-#set(ParaView_DIR /Users/schmitt/paraview/opt/ParaView-3.98.0_OSX-10.7/paraview/src/paraview-build)
-#set(ParaView_SuperBuild_DIR /Users/schmitt/paraview/opt/src/ParaViewSuperbuild-3.98.0)
-
-########################################################################
+if(TMLMP8)
+    set(PREFIX "/Users/developer/Developer/GHOST-Kit/GHOST-build/install")
+    set(ParaView_DIR "/Users/developer/Developer/GHOST-Kit/GHOST-build/paraview/src/paraview-build")
+    set(CMAKE_INSTALL_PREFIX "/Users/developer/Developer/GHOST-Kit/Install")
+    set(PV_SUPERBUILD_LIST_DIR "/Users/developer/Developer/GHOST-Kit/GHOST")
+endif()
 
 if( PREFIX )
   set( CMAKE_INCLUDE_PATH /usr/include ${PREFIX}/include ${CMAKE_INCLUDE_PATH} )
   set( CMAKE_LIBRARY_PATH /usr/lib ${PREFIX}/lib ${CMAKE_LIBRARY_PATH} )
 endif( PREFIX )
 
-##CACHE SETTINGS! ##
-message(WARNING "IF you are having problems building the shared repo, try deleting your CMakeCache.txt file and rebuilding")
-set(SHARED_USE_FPIC ON CACHE INTERNAL "")
-set(SHARED_BUILD_IO ON CACHE INTERNAL "")
-
-## Add shared Library ##
-add_subdirectory(Shared)
-
-include_directories( ${SHARED_INCLUDE_DIR} )
-message(STATUS "Shared Include: ${SHARED_INCLUDE_DIR}")
-message(STATUS "Shared LIBRARY: ${SHARED_LIBRARIES}")
 
 FIND_PACKAGE(ParaView REQUIRED)
-
 INCLUDE(${PARAVIEW_USE_FILE})
 
 include(LFM_Files.cmake)
 
-ADD_PARAVIEW_PLUGIN(vtkLFMReader "1.0"
-        SERVER_MANAGER_XML      ${LFM_SM_XML} #vtkLFMReader.xml
-        SERVER_MANAGER_SOURCES  ${LFM_SM_SRC} #vtkLFMReader.cxx
-        GUI_RESOURCE_FILES      ${LFM_GUI_XML} #vtkLFMGUI.xml
+ADD_PARAVIEW_PLUGIN(LFMreader   "1.0.1"
+        SERVER_MANAGER_XML      ${LFM_SM_XML}
+        SERVER_MANAGER_SOURCES  ${LFM_SM_SRC}
+        GUI_RESOURCE_FILES      ${LFM_GUI_XML}
     )
 
-Target_LINK_LIBRARIES(vtkLFMReader 
-  io
-  ${SHARED_LIBRARIES}
-#  vtkhdf5
+Target_LINK_LIBRARIES(LFMreader
+    ${PREFIX}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}io${CMAKE_STATIC_LIBRARY_SUFFIX}
+    ${PREFIX}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}mfhdf${CMAKE_STATIC_LIBRARY_SUFFIX}
+    ${PREFIX}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}df${CMAKE_STATIC_LIBRARY_SUFFIX}
+    ${PREFIX}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}jpeg${CMAKE_STATIC_LIBRARY_SUFFIX}
+    ${PREFIX}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}io${CMAKE_STATIC_LIBRARY_SUFFIX}
+    ${PREFIX}/lib/${CMAKE_SHARED_LIBRARY_PREFIX}sz${CMAKE_SHARED_LIBRARY_SUFFIX}
+    ${PREFIX}/lib/${CMAKE_SHARED_LIBRARY_PREFIX}hdf5${CMAKE_SHARED_LIBRARY_SUFFIX}
+    ${PREFIX}/lib/${CMAKE_SHARED_LIBRARY_PREFIX}hdf5_hl${CMAKE_SHARED_LIBRARY_SUFFIX}
+    z
+    )
+
+
+add_custom_target(dist
+    COMMAND ${CMAKE_COMMAND}  -E make_directory ${CMAKE_INSTALL_PREFIX}/release &&
+            ${CMAKE_COMMAND}  -DBINARY_DIR:PATH=${CMAKE_CURRENT_BINARY_DIR}
+                              -DPV_SUPERBUILD_LIST_DIR:PATH=${PV_SUPERBUILD_LIST_DIR}
+                              -DPARAVIEW_BINARY_DIR:PATH=${ParaView_DIR}
+                              -DQT_LIBRARY_DIR:PATH=${QT_LIBRARY_DIR}
+                              -DTMP_DIR:PATH=${CMAKE_CURRENT_BINARY_DIR}
+                              -DPROJECT_NAME:STRING=${CMAKE_PROJECT_NAME}
+                              -DTARGET_NAME:STRING="LFMreader"
+                              -Dbundle_name:STRING=${CMAKE_INSTALL_PREFIX}/release/LFMreader_plugin.tgz
+                              -P ${CMAKE_CURRENT_LIST_DIR}/install_lfm_mac.cmake &&
+            ${CMAKE_COMMAND}  -E copy ${CMAKE_CURRENT_BINARY_DIR}/${TMP_DIR}/${PROJECT_NAME}/* ${CMAKE_INSTALL_PREFIX}/release/
 )
