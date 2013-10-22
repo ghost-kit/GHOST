@@ -3,6 +3,8 @@
 #include "Io.hpp"
 
 #include <algorithm>
+#include <QString>
+#include <QList>
 
 #include "vtkPointData.h"
 #include "vtkInformation.h"
@@ -45,13 +47,17 @@ vtkLFMReader::~vtkLFMReader()
 //----------------------------------------------------------------
 
 /// Returns true if searchString is in listOfStrings
-bool isStrInList(const list<string> &listOfStrings, const string &searchString){
-  list<string>::const_iterator it;
-  it = find(listOfStrings.begin(), listOfStrings.end(), searchString);
-  if (it != listOfStrings.end() )
-    return true;
-  else
-    return false;
+bool isStrInList(const list<string> &listOfStrings, const string &searchString)
+{
+    QList<string> stringList;
+    stringList.fromStdList(listOfStrings);
+
+    std::cerr << "String Search: " << searchString << std::endl;
+
+    if(stringList.contains(searchString)) return true;
+    else return false;
+
+
 }
 
 //----------------------------------------------------------------
