@@ -7,9 +7,6 @@ endif()
 add_external_project(
     DateTime
 
-    CMAKE_ARGS
-        -DMACOSX_VERSION_MIN=${CMAKE_OSX_DEPLOYMENT_TARGET}
-
     BUILD_COMMAND
         make
 
