@@ -81,7 +81,7 @@ add_revision(fontconfig
 
 add_revision(qt
   URL "http://www.paraview.org/files/dependencies/qt-everywhere-opensource-src-4.8.5.tar.gz"
-  URL_MD5 3c1146ddf56247e16782f96910a8423b)
+  URL_MD5 1864987bdbb2f58f8ae8b350dfdbe133)
 
 if (WIN32 OR (CROSS_BUILD_STAGE STREQUAL "CROSS"))
   add_revision(python
