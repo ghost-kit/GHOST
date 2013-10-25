@@ -16,7 +16,7 @@ endif()
 ###############
 
 if(NOT NUM_CORES)
-    set(NUM_CORES 5)
+    set(NUM_CORES 6)
 endif()
 
 
