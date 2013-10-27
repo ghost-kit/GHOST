@@ -20,8 +20,8 @@ elseif (APPLE)
   # Need to patch Qt code to build with Xcode 4.3 or newer (where SDK
   # location chnages using the following command:
   #find . -name "*.pro" -exec sed -i -e "s:/Developer/SDKs/:.*:g" {} \;
-#  set (patch_command
-#       PATCH_COMMAND /usr/bin/find . -name "*.pro" -exec sed -i -e "s:/Developer/SDKs/:.*:g" {} +)
+  set (patch_command
+       PATCH_COMMAND /usr/bin/find . -name "*.pro" -exec sed -i -e "s:/Developer/SDKs/:.*:g" {} +)
 endif()
 set(qt_EXTRA_CONFIGURATION_OPTIONS ""
     CACHE STRING "Extra arguments to be passed to Qt when configuring.")
