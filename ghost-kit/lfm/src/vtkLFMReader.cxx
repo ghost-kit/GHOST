@@ -4,6 +4,8 @@
 
 #include <algorithm>
 #include <QList>
+#include <QString>
+#include <QStringList>
 
 #include "vtkPointData.h"
 #include "vtkInformation.h"
@@ -47,10 +49,9 @@ vtkLFMReader::~vtkLFMReader()
 
 /// Returns true if searchString is in listOfStrings
 bool isStrInList(const list<string> &listOfStrings, const string &searchString){
-    QList<string> stringList;
-    stringList.fromStdList(listOfStrings);
-
-    if(stringList.contains(searchString))
+    list<string>::const_iterator it;
+    it = find(listOfStrings.begin(), listOfStrings.end(), searchString);
+    if (it != listOfStrings.end() )
         return true;
     else
         return false;

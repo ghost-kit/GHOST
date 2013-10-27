@@ -275,6 +275,7 @@ else()
    include(hdf4)
    include(jpeg)
    include(cxform)
+   include(lfm)
 
   # Build CosmoTools on Linux and OS X
   if (UNIX)

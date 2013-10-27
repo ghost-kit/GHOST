@@ -25,6 +25,9 @@ add_revision(cdf
 add_revision(ghost
     SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/ghost-kit)
 
+add_revision(lfm
+    SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/ghost-kit/lfm)
+
 add_revision(io
     SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/dep-libs/io)
 
