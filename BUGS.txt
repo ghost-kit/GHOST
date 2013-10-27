@@ -1,3 +1,7 @@
+* QT 4.8.2 does not build on XCode 4.6.4+ due to compiler constraints.  
+  I have updated the build to the fixed version of QT (4.8.5) which 
+  will build with XCode 4.6.4+
+
 * VTK does not build correctly when VTK_USE_SYSTEM_HDF5 is ON and HDF5 was built
   with HL enabled (which is needed for NetCDF). To solution currently  is to
   manually edit the CMake variable HDF5_C_LIBRARY to be
