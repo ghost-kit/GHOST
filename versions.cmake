@@ -28,6 +28,13 @@ add_revision(ghost
 add_revision(lfm
     SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/ghost-kit/lfm)
 
+add_revision(enlil
+    SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/ghost-kit/enlil)
+
+add_revision(cdaweb
+    SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/ghost-kit/CDAweb)
+
+
 add_revision(io
     SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/dep-libs/io)
 

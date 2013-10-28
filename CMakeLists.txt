@@ -269,6 +269,7 @@ else()
     include(osmesa)
   endif()
 
+  #GHOSTkit related builds
    include(ghost)
    include(DateTime)
    include(cdf)
@@ -278,6 +279,8 @@ else()
    include(jpeg)
    include(cxform)
    include(lfm)
+   include(enlil)
+   include(cdaweb)
 
   # Build CosmoTools on Linux and OS X
   if (UNIX)
@@ -312,10 +315,6 @@ foreach(external_project IN ITEMS ${PV_EXTERNAL_PROJECTS})
   include(${external_project})
   set(ENABLE_${external_project} ON CACHE BOOL "" FORCE)
 endforeach()
-
-# Enable GHOST by default
-set(ENABLE_ghost ON)
-set(ParaView_FROM_GIT OFF)
 
 process_dependencies()
 
