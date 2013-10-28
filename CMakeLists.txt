@@ -9,9 +9,11 @@ if(MACD108)
 endif()
 
 if(TMLMP8)
+    set(CMAKE_BUILD_TYPE "release")
     set(CMAKE_OSX_ARCHITECTURES "x86_64"  CACHE STRING "By default, build for 64-bit Leopard")
-    set(CMAKE_OSX_DEPLOYMENT_TARGET "10.7" CACHE STRING "By default, build for 64-bit Leopard")
-    set(CMAKE_OSX_SYSROOT "/Applications/Xcode46.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk" CACHE STRING "By default, build for 64-bit Leopard")
+    set(CMAKE_OSX_DEPLOYMENT_TARGET "10.6" CACHE STRING "By default, build for 64-bit Leopard")
+    set(CMAKE_OSX_SYSROOT "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.6.sdk" CACHE STRING "By default, build for 64-bit Leopard")
+    set(NUM_CORES 16)
 endif()
 ###############
 
