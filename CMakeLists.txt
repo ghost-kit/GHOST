@@ -17,6 +17,9 @@ if(TMLMP8)
 endif()
 ###############
 
+OPTION(BUILD_PLUGIN_WITH_DEBUG "Build the plugins with Debug symbols" OFF)
+
+
 if(NOT NUM_CORES)
     set(NUM_CORES 6)
 endif()

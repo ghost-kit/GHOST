@@ -1,5 +1,9 @@
 ### Adding the actual ghost build ###
 
+if(${BUILD_PLUGIN_WITH_DEBUG})
+  set(MORE_ARGS "-DCMAKE_BUILD_TYPE=debug")
+endif()
+
 add_external_project(
     ghost
     DEPENDS io CDFreader DateTime boost qt paraview cxform
@@ -10,6 +14,7 @@ add_external_project(
         -DDEP_INCLUDE_DIR=${install_location}/include
         -DGHOST_PV_CMAKE_DIR=${GHOST_PV_CMAKE_DIR}
         -DPV_SUPERBUILD_LIST_DIR=${CMAKE_SOURCE_DIR}
+        ${MORE_ARGS}
 
     INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} dist
 
