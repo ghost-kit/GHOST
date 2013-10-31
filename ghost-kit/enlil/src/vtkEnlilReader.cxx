@@ -1533,7 +1533,7 @@ int vtkEnlilReader::LoadMetaData(vtkInformationVector *outputVector)
         Data->GetFieldData()->AddArray(physTime.GetPointer());
 
         //mjd is encoded as TIME already.  Do we want to put in here as well?
-        vtkNew<vtkFloatArray> currentMJD;
+        vtkNew<vtkDoubleArray> currentMJD;
         currentMJD->SetName("MJD");
         currentMJD->SetNumberOfComponents(1);
         currentMJD->InsertNextValue(this->current_MJD);

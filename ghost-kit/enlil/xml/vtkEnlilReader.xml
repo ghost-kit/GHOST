@@ -8,8 +8,6 @@
        file_name_method="AddFileName">
 
       <OutputPort name="Fields" index="0" />
-      <OutputPort name="MetaData" index="1" />
-
 
       <IntVectorProperty
          name="GridScaleFactor"
@@ -82,9 +80,6 @@
            extensions="txt enc nc"
            file_description="***GENERIC*** Data File"/>
       </Hints>
-
-
-
 
 
       <Documentation>
