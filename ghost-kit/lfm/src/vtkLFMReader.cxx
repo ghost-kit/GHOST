@@ -11,12 +11,16 @@
 #include "vtkInformation.h"
 #include "vtkInformationVector.h"
 #include "vtkFloatArray.h"
+#include "vtkDoubleArray.h"
+#include "vtkStringArray.h"
 #include "vtkObjectFactory.h"
 #include "vtkStreamingDemandDrivenPipeline.h"
 #include "vtkStructuredGrid.h"
 
 #include <vtksys/SystemTools.hxx>
 #include <vtksys/RegularExpression.hxx>
+
+#include "ltrDateTime.h"
 
 using namespace std;
 
@@ -237,6 +241,14 @@ int vtkLFMReader::RequestInformation (vtkInformation* request,
         double mjd;
         io->readAttribute("mjd", mjd);
         this->TimeStepValues.push_back( mjd );
+        this->currentDateTime.setMJD(mjd);
+        if (hasAttribute(attributes, "time")){
+           float time;
+           io->readAttribute("time", time);
+           this->elapsedSeconds=time;
+        } else {
+           this->elapsedSeconds=0.0;
+        }
     }
     else if (hasAttribute(attributes, "time")){
         // Slava Merkin's LFM-Helio doesn't have the "mjd" parameter, but it does have "time":
@@ -244,11 +256,20 @@ int vtkLFMReader::RequestInformation (vtkInformation* request,
         float time;
         io->readAttribute("time", time);
         this->TimeStepValues.push_back( time );
+        this->elapsedSeconds=time;
+        DateTime arbStart(1995,3,21,0,0,0);
+        this->currentDateTime.setMJD(arbStart.getMJD());
+        this->currentDateTime.incrementMJD((time-3000.0)/86400.0);
     }
     else{
         vtkWarningMacro("Could not find time information in file (attribute \"mjd\" or \"time\")! Defaulting to 0.0");
         this->TimeStepValues.push_back( 0.0 );
+        DateTime arbStart(1995,3,21,0,0,0);
+        this->currentDateTime.setMJD(arbStart.getMJD());
+        this->elapsedSeconds=0.0;
     }
+    // cout << "currentDateTime " << currentDateTime.getDateTimeString()
+    //      << endl;
     outInfo->Set(vtkStreamingDemandDrivenPipeline::TIME_STEPS(),
                  &this->TimeStepValues[0],
             static_cast<int>(this->TimeStepValues.size()));
@@ -267,6 +288,8 @@ int vtkLFMReader::RequestInformation (vtkInformation* request,
                                                                                 << "timeRange[0]=" << timeRange[0] <<" timeRange[1]=" << timeRange[1]);
 
     io->close();
+    
+    // Import a Meta 
     if (io){
         delete io;
         io = NULL;
@@ -655,6 +678,7 @@ int vtkLFMReader::RequestData(vtkInformation* request,
         io = NULL;
     }
 
+    this->LoadMetaData(outputVector);
     return 1;
 }
 
@@ -1008,3 +1032,36 @@ void vtkLFMReader::calculateElectricField(const int &nip1, const int &njp1, cons
 }
 
 //--------------------------------------------------------------------
+
+//---------------------------------------------------------------------------------------------
+//-- Meta Data Population
+int vtkLFMReader::LoadMetaData(vtkInformationVector *outputVector)
+{
+
+    vtkStructuredGrid *Data = vtkStructuredGrid::GetData(outputVector,0);
+    
+    //Store Elpased Seconds
+    // std::cout << "Setting Elpased Seconds Metadata" << std::endl;
+    vtkNew<vtkFloatArray> elapsedSeconds;
+    elapsedSeconds->SetName("Elpased Seconds");
+    elapsedSeconds->SetNumberOfComponents(1);
+    elapsedSeconds->InsertNextValue(this->elapsedSeconds);
+    Data->GetFieldData()->AddArray(elapsedSeconds.GetPointer());
+
+    //date string
+    vtkNew<vtkStringArray> DateString;
+    DateString->SetName("DateString");
+    DateString->SetNumberOfComponents(1);
+    DateString->InsertNextValue(this->currentDateTime.getDateTimeString());
+    Data->GetFieldData()->AddArray(DateString.GetPointer());
+
+    //mjd is encoded as TIME already.  Do we want to put in here as well?
+    vtkNew<vtkDoubleArray> currentMJD;
+    currentMJD->SetName("MJD");
+    currentMJD->SetNumberOfComponents(1);
+    currentMJD->InsertNextValue(this->currentDateTime.getMJD());
+    Data->GetFieldData()->AddArray(currentMJD.GetPointer());
+
+    return 1;
+
+}

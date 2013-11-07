@@ -6,10 +6,13 @@
 #include "vtkToolkits.h"
 #include "vtkPolyDataAlgorithm.h"
 #include "vtkFloatArray.h"
+#include "vtkNew.h"
 
 #include <vtksys/stl/string>
 #include <vtksys/stl/vector>
 #include <vtksys/stl/map>
+
+#include "ltrDateTime.h"
 
 namespace GRID_SCALE
 {
@@ -129,6 +132,10 @@ protected:
    */
   int RequestData(vtkInformation*,vtkInformationVector**,vtkInformationVector* outVec);
        
+  int LoadMetaData(vtkInformationVector* outputVector);
+  double elapsedSeconds;
+  double currentMJD;
+  DateTime currentDateTime;
 private:  
   char *HdfFileName;
   /// \see GRID_SCALE::ScaleType

@@ -1,6 +1,6 @@
 add_external_project(
     lfm
-    DEPENDS paraview io qt
+    DEPENDS paraview io qt DateTime
 
     CMAKE_ARGS
         -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}/release

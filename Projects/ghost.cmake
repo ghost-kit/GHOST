@@ -6,7 +6,7 @@ endif()
 
 add_external_project(
     ghost
-    DEPENDS io CDFreader DateTime boost qt paraview cxform
+    DEPENDS io DateTime boost qt paraview cxform
 
     CMAKE_ARGS
         -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}
