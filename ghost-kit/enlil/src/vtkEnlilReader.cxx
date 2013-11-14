@@ -7,6 +7,7 @@
 #include "vtkDataArraySelection.h"
 #include "vtkFloatArray.h"
 #include "vtkFloatArray.h"
+#include "vtkDoubleArray.h"
 #include "vtkTable.h"
 #include "vtkIdList.h"
 #include "vtkInformation.h"
