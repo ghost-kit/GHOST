@@ -54,13 +54,17 @@ public:
       {
       this->HdfFileName = new char[strlen(_arg)+1];
       strcpy(this->HdfFileName,_arg);
-      this->arraysProcessed = false;
       }
      else
       {
       this->HdfFileName = NULL;
       }
+
+    //update
+    this->arraysProcessed = false;
     this->Modified();
+
+    std::cerr << "FileName Changed to: " << this->HdfFileName << std::endl;
     }
 
 
