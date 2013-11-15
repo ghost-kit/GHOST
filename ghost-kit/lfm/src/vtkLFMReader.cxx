@@ -22,6 +22,8 @@
 #include <vtksys/RegularExpression.hxx>
 
 #include "ltrDateTime.h"
+#include <map>
+#include <vector>
 
 using namespace std;
 
@@ -409,7 +411,7 @@ int vtkLFMReader::RequestData(vtkInformation* request,
    ****************************************************************************/
 
     //Density Selective Read
-    if(this->CellDataArraySelection->ArrayIsEnabled("rho_")){
+    if(this->CellDataArraySelection->ArrayIsEnabled(describeVariable[std::string("rho_")].c_str())){
         vtkDebugMacro(<<"Plasma Density Selected");
         float *rho = new float [nPoints];
         io->readVariable("rho_", "", lfmGridInfo, rho);
@@ -427,7 +429,7 @@ int vtkLFMReader::RequestData(vtkInformation* request,
     }
 
     //Sound Speed Selective Read
-    if(this->CellDataArraySelection->ArrayIsEnabled("c_")){
+    if(this->CellDataArraySelection->ArrayIsEnabled(describeVariable[std::string("c_")].c_str())){
         vtkDebugMacro(<< "Sound Speed Selected");
         float *c = new float [nPoints];
         io->readVariable("c_", "", lfmGridInfo, c);
@@ -448,7 +450,7 @@ int vtkLFMReader::RequestData(vtkInformation* request,
    ****************************************************************************/
     // Velocity
     //Velocity Selective Read
-    if(this->CellDataArraySelection->ArrayIsEnabled("vx_")){
+    if(this->CellDataArraySelection->ArrayIsEnabled(describeVariable[std::string("vx_")].c_str())){
         vtkDebugMacro(<< "Velocity Selected");
         float *vx = new float [nPoints];
         float *vy = new float [nPoints];
@@ -474,7 +476,7 @@ int vtkLFMReader::RequestData(vtkInformation* request,
     }
 
     //Magnetic Field Selective Read
-    if(this->CellDataArraySelection->ArrayIsEnabled("bx_")){
+    if(this->CellDataArraySelection->ArrayIsEnabled(describeVariable[std::string("bx_")].c_str())){
         vtkDebugMacro(<< "Magnetic Field Vector Selected");
         float *bx = new float [nPoints];
         float *by = new float [nPoints];
@@ -499,7 +501,7 @@ int vtkLFMReader::RequestData(vtkInformation* request,
     }
 
     //Averaged Magnetic Field Selective Read
-    if(this->CellDataArraySelection->ArrayIsEnabled("avgBx")){
+    if(this->CellDataArraySelection->ArrayIsEnabled(describeVariable[std::string("avgBx")].c_str())){
         vtkDebugMacro(<< "Averaged Magnetic Field Vector Selected");
         float *avgbz = new float [nPoints];
         float *avgby = new float [nPoints];
@@ -524,7 +526,7 @@ int vtkLFMReader::RequestData(vtkInformation* request,
     }
 
     //Electric Field Selective Read
-    if(this->CellDataArraySelection->ArrayIsEnabled("ei_")){
+    if(this->CellDataArraySelection->ArrayIsEnabled(describeVariable[std::string("ei_")].c_str())){
         vtkDebugMacro(<< "Electric Field vector Selected");
         float *ei = new float [nPoints];
         float *ej = new float [nPoints];
@@ -564,7 +566,7 @@ int vtkLFMReader::RequestData(vtkInformation* request,
 
     
     //Averaged E(ijk) Fields
-    if(this->CellDataArraySelection->ArrayIsEnabled("avgEi")){
+    if(this->CellDataArraySelection->ArrayIsEnabled(describeVariable[std::string("avgEi")].c_str())){
         vtkDebugMacro(<< "Averaged Electric Field Vector Selected");
 
         float *avgei = new float [nPoints];
@@ -615,7 +617,7 @@ int vtkLFMReader::RequestData(vtkInformation* request,
         // Density scalar
         ssVarName << "rho_." << fluidNumber;
         varName = ssVarName.str();
-        if (this->CellDataArraySelection->ArrayIsEnabled(varName.c_str())){
+        if (this->CellDataArraySelection->ArrayIsEnabled(describeVariable[varName].c_str())){
             vtkDebugMacro(<< describeVariable[varName] << " Selected");
             float *rho = new float [nPoints];
             io->readVariable(varName, "", lfmGridInfo, rho);
@@ -632,7 +634,7 @@ int vtkLFMReader::RequestData(vtkInformation* request,
         ssVarName.str(string());
         ssVarName << "c_." << fluidNumber;
         varName = ssVarName.str();
-        if (this->CellDataArraySelection->ArrayIsEnabled(varName.c_str())){
+        if (this->CellDataArraySelection->ArrayIsEnabled(describeVariable[varName].c_str())){
             vtkDebugMacro(<< describeVariable[varName] << " Selected");
             float *c = new float [nPoints];
             io->readVariable(varName, "", lfmGridInfo, c);
@@ -656,7 +658,7 @@ int vtkLFMReader::RequestData(vtkInformation* request,
         ssVarName.str(string());
         ssVarName << "vz_." << fluidNumber;
         string zVarName = ssVarName.str();
-        if(this->CellDataArraySelection->ArrayIsEnabled(varName.c_str())){
+        if(this->CellDataArraySelection->ArrayIsEnabled(describeVariable[varName].c_str())){
             vtkDebugMacro(<< describeVariable[xVarName] << " Selected");
             float *vx = new float [nPoints];
             float *vy = new float [nPoints];
@@ -740,9 +742,10 @@ void vtkLFMReader::SetPointArrayStatus(const char* PointArray, int status)
 //----------------------------------------------------------------
 void vtkLFMReader::addScalarInformation(const std::string &scalarName, const std::string &scalarDescription)
 {
-    if(!this->CellDataArraySelection->ArrayExists(scalarName.c_str())) {
-       this->CellDataArraySelection->AddArray(scalarName.c_str()); 
+    if(!this->CellDataArraySelection->ArrayExists(scalarDescription.c_str())) {
+       this->CellDataArraySelection->AddArray(scalarDescription.c_str());
        this->describeVariable[scalarName] = scalarDescription;
+
     }
 }
 
@@ -752,6 +755,8 @@ void vtkLFMReader::addVectorInformation(const std::string &x, const std::string 
 {
     if(!this->CellDataArraySelection->ArrayExists(vectorDescription.c_str())) {
        this->CellDataArraySelection->AddArray(vectorDescription.c_str()); 
+
+
        this->describeVariable[x] = vectorDescription;
        this->describeVariable[y] = vectorDescription;
        this->describeVariable[z] = vectorDescription;
@@ -1077,3 +1082,5 @@ int vtkLFMReader::LoadMetaData(vtkInformationVector *outputVector)
     return 1;
 
 }
+
+

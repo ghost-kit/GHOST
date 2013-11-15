@@ -9,9 +9,9 @@
 #include "vtkNew.h"
 #include "vtkDataArraySelection.h"
 
-#include <vtksys/stl/string>
-#include <vtksys/stl/vector>
-#include <vtksys/stl/map>
+#include <map>
+#include <vector>
+#include <string>
 
 #include "ltrDateTime.h"
 
@@ -173,7 +173,9 @@ private:
    */
   std::map<std::string, std::string> describeVariable;
 
+
   // Selected field of interest
+
   vtkDataArraySelection* PointDataArraySelection;
   vtkDataArraySelection* CellDataArraySelection;
 
