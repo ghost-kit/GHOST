@@ -281,7 +281,7 @@ int vtkLFMReader::RequestInformation (vtkInformation* request,
             this->arraysProcessed = true;
             this->Modified();
 
-            std::cerr << "Number of Arrays: " << this->CellDataArraySelection->GetNumberOfArrays() << std::endl;
+            //std::cerr << "Number of Arrays: " << this->CellDataArraySelection->GetNumberOfArrays() << std::endl;
         }
 
         /********************************************************************/

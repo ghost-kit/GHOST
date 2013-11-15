@@ -8,6 +8,7 @@
 #include "vtkFloatArray.h"
 #include "vtkNew.h"
 #include "vtkDataArraySelection.h"
+#include "vtkSMSourceProxy.h"
 #include "vtkSetGet.h"
 
 #include <map>
@@ -62,9 +63,8 @@ public:
 
     //update
     this->arraysProcessed = false;
-    this->Modified();
 
-    std::cerr << "FileName Changed to: " << this->HdfFileName << std::endl;
+    //std::cerr << "FileName Changed to: " << this->HdfFileName << std::endl;
     }
 
 
