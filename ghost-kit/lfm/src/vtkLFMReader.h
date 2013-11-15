@@ -7,12 +7,15 @@
 #include "vtkPolyDataAlgorithm.h"
 #include "vtkFloatArray.h"
 #include "vtkNew.h"
+#include "vtkDataArraySelection.h"
 
 #include <vtksys/stl/string>
 #include <vtksys/stl/vector>
 #include <vtksys/stl/map>
 
 #include "ltrDateTime.h"
+
+class vtkDataArraySelection;
 
 namespace GRID_SCALE
 {
@@ -88,15 +91,24 @@ public:
 
   ///  How many point & cell-centered arrays are in the file?
   //@{
-  int GetNumberOfCellArrays() { return CellArrayName.size(); }  
-  int GetNumberOfPointArrays() { return PointArrayName.size(); }
+  int GetNumberOfCellArrays() { 
+      return this->CellDataArraySelection->GetNumberOfArrays();
+  }
+  int GetNumberOfPointArrays() { 
+      return this->PointDataArraySelection->GetNumberOfArrays();
+  }
   //@}
 
   /** Returns the name of variable at index (ie. GetCellArrayName(0) == "Plasma Density")
    * 
    * \FIXME: What if index is invalid?
    */
-  const char* GetCellArrayName(int index) { return this->CellArrayName[index].c_str(); }
+  const char* GetCellArrayName(int index) { 
+      return this->CellDataArraySelection->GetArrayName(index);
+  }
+  const char* GetPointArrayName(int index) { 
+      return this->PointDataArraySelection->GetArrayName(index);
+  }
   // @}
   
 protected:
@@ -143,6 +155,8 @@ private:
 
   int nSpecies;
 
+  int numberOfArrays;
+
   /// TimeStepValues must match property in vtkLFMReader.xml
   std::vector<double> TimeStepValues;
     
@@ -159,21 +173,9 @@ private:
    */
   std::map<std::string, std::string> describeVariable;
 
-  /** Stores names of all variables that can be read into
-   *  ParaView. These values are displayed on the GUI for variable
-   *  name & on colorbar
-   *
-   * eg. "Plasma Density", "Velocity Vectory", etc.
-   */
-  std::vector<std::string> CellArrayName;
-  std::vector<std::string> PointArrayName;
-  
-  /** bit to decide whether or not variable is enabled & should be read into ParaView.
-   *   == 0: Variable disabled. Skip.
-   *   == 1: Variable enabled. Load into ParaView
-   */
-  std::map<std::string,int> CellArrayStatus;
-  std::map<std::string,int> PointArrayStatus;
+  // Selected field of interest
+  vtkDataArraySelection* PointDataArraySelection;
+  vtkDataArraySelection* CellDataArraySelection;
 
   vtkLFMReader(const vtkLFMReader&); // Not implemented
   void operator=(const vtkLFMReader&); // Not implemented

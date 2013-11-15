@@ -16,6 +16,7 @@
 #include "vtkObjectFactory.h"
 #include "vtkStreamingDemandDrivenPipeline.h"
 #include "vtkStructuredGrid.h"
+#include "vtkDataArraySelection.h"
 
 #include <vtksys/SystemTools.hxx>
 #include <vtksys/RegularExpression.hxx>
@@ -37,6 +38,15 @@ vtkLFMReader::vtkLFMReader() : HdfFileName(NULL), GridScaleType(GRID_SCALE::NONE
     // NOTE: This will make things VERY SLOW
     //this->DebugOn();
     this->DebugOff();
+    //configure array status selectors
+    this->PointDataArraySelection = vtkDataArraySelection::New();
+    this->CellDataArraySelection  = vtkDataArraySelection::New();
+    this->PointDataArraySelection->DisableAllArrays();
+    this->CellDataArraySelection->DisableAllArrays();
+
+    this->numberOfArrays = 0;
+
+
 }
 
 //----------------------------------------------------------------
@@ -47,6 +57,9 @@ vtkLFMReader::~vtkLFMReader()
         delete [] this->HdfFileName;
         this->HdfFileName = NULL;
     }
+    this->PointDataArraySelection->Delete();
+    this->CellDataArraySelection->Delete();
+
 }
 
 //----------------------------------------------------------------
@@ -141,6 +154,7 @@ int vtkLFMReader::RequestInformation (vtkInformation* request,
     // Determine which variables are available to the GUI
     /********************************************************************/
 
+    if (NULL != outputVector->GetInformationObject(0)){
     // Scalars
     if (hasVariable(variables, "rho_"))
         addScalarInformation("rho_", "Plasma Density");
@@ -287,6 +301,7 @@ int vtkLFMReader::RequestInformation (vtkInformation* request,
                                                                                 << "TimeStepValues=" << this->TimeStepValues[0] << " " << this->TimeStepValues[1] << endl
                                                                                 << "timeRange[0]=" << timeRange[0] <<" timeRange[1]=" << timeRange[1]);
 
+    }
     io->close();
     
     // Import a Meta 
@@ -394,7 +409,7 @@ int vtkLFMReader::RequestData(vtkInformation* request,
    ****************************************************************************/
 
     //Density Selective Read
-    if(this->CellArrayStatus[describeVariable["rho_"]]){
+    if(this->CellDataArraySelection->ArrayIsEnabled("rho_")){
         vtkDebugMacro(<<"Plasma Density Selected");
         float *rho = new float [nPoints];
         io->readVariable("rho_", "", lfmGridInfo, rho);
@@ -412,7 +427,7 @@ int vtkLFMReader::RequestData(vtkInformation* request,
     }
 
     //Sound Speed Selective Read
-    if(this->CellArrayStatus[describeVariable["c_"]]){
+    if(this->CellDataArraySelection->ArrayIsEnabled("c_")){
         vtkDebugMacro(<< "Sound Speed Selected");
         float *c = new float [nPoints];
         io->readVariable("c_", "", lfmGridInfo, c);
@@ -433,7 +448,7 @@ int vtkLFMReader::RequestData(vtkInformation* request,
    ****************************************************************************/
     // Velocity
     //Velocity Selective Read
-    if(this->CellArrayStatus[describeVariable["vx_"]]){
+    if(this->CellDataArraySelection->ArrayIsEnabled("vx_")){
         vtkDebugMacro(<< "Velocity Selected");
         float *vx = new float [nPoints];
         float *vy = new float [nPoints];
@@ -459,7 +474,7 @@ int vtkLFMReader::RequestData(vtkInformation* request,
     }
 
     //Magnetic Field Selective Read
-    if(this->CellArrayStatus[describeVariable["bx_"]]){
+    if(this->CellDataArraySelection->ArrayIsEnabled("bx_")){
         vtkDebugMacro(<< "Magnetic Field Vector Selected");
         float *bx = new float [nPoints];
         float *by = new float [nPoints];
@@ -484,7 +499,7 @@ int vtkLFMReader::RequestData(vtkInformation* request,
     }
 
     //Averaged Magnetic Field Selective Read
-    if(this->CellArrayStatus[describeVariable["avgBx"]]){
+    if(this->CellDataArraySelection->ArrayIsEnabled("avgBx")){
         vtkDebugMacro(<< "Averaged Magnetic Field Vector Selected");
         float *avgbz = new float [nPoints];
         float *avgby = new float [nPoints];
@@ -509,7 +524,7 @@ int vtkLFMReader::RequestData(vtkInformation* request,
     }
 
     //Electric Field Selective Read
-    if(this->CellArrayStatus[describeVariable["ei_"]]){
+    if(this->CellDataArraySelection->ArrayIsEnabled("ei_")){
         vtkDebugMacro(<< "Electric Field vector Selected");
         float *ei = new float [nPoints];
         float *ej = new float [nPoints];
@@ -549,7 +564,7 @@ int vtkLFMReader::RequestData(vtkInformation* request,
 
     
     //Averaged E(ijk) Fields
-    if(this->CellArrayStatus[describeVariable["avgEi"]]){
+    if(this->CellDataArraySelection->ArrayIsEnabled("avgEi")){
         vtkDebugMacro(<< "Averaged Electric Field Vector Selected");
 
         float *avgei = new float [nPoints];
@@ -600,7 +615,7 @@ int vtkLFMReader::RequestData(vtkInformation* request,
         // Density scalar
         ssVarName << "rho_." << fluidNumber;
         varName = ssVarName.str();
-        if (this->CellArrayStatus[describeVariable[varName]]){
+        if (this->CellDataArraySelection->ArrayIsEnabled(varName.c_str())){
             vtkDebugMacro(<< describeVariable[varName] << " Selected");
             float *rho = new float [nPoints];
             io->readVariable(varName, "", lfmGridInfo, rho);
@@ -617,7 +632,7 @@ int vtkLFMReader::RequestData(vtkInformation* request,
         ssVarName.str(string());
         ssVarName << "c_." << fluidNumber;
         varName = ssVarName.str();
-        if (this->CellArrayStatus[describeVariable[varName]]){
+        if (this->CellDataArraySelection->ArrayIsEnabled(varName.c_str())){
             vtkDebugMacro(<< describeVariable[varName] << " Selected");
             float *c = new float [nPoints];
             io->readVariable(varName, "", lfmGridInfo, c);
@@ -641,7 +656,7 @@ int vtkLFMReader::RequestData(vtkInformation* request,
         ssVarName.str(string());
         ssVarName << "vz_." << fluidNumber;
         string zVarName = ssVarName.str();
-        if(this->CellArrayStatus[describeVariable[xVarName]]){
+        if(this->CellDataArraySelection->ArrayIsEnabled(varName.c_str())){
             vtkDebugMacro(<< describeVariable[xVarName] << " Selected");
             float *vx = new float [nPoints];
             float *vy = new float [nPoints];
@@ -687,14 +702,14 @@ int vtkLFMReader::RequestData(vtkInformation* request,
 //Cell Array Status Retrieval
 int vtkLFMReader::GetCellArrayStatus(const char *CellArray)
 {
-    return this->CellArrayStatus[string(CellArray)];
+    return this->CellDataArraySelection->GetArraySetting(CellArray);
 }
 
 //----------------------------------------------------------------
 
 int vtkLFMReader::GetPointArrayStatus(const char *PointArray)
 {
-    return this->PointArrayStatus[string(PointArray)];
+    return this->PointDataArraySelection->GetArraySetting(PointArray);
 }
 
 //----------------------------------------------------------------
@@ -703,7 +718,10 @@ int vtkLFMReader::GetPointArrayStatus(const char *PointArray)
 void vtkLFMReader::SetCellArrayStatus(const char* CellArray, int status)
 {
 
-    this->CellArrayStatus[CellArray] = status;
+    if(status == 1)
+        this->CellDataArraySelection->EnableArray(CellArray);
+    else
+        this->CellDataArraySelection->DisableArray(CellArray);
     this->Modified();
 
 }
@@ -712,21 +730,19 @@ void vtkLFMReader::SetCellArrayStatus(const char* CellArray, int status)
 
 void vtkLFMReader::SetPointArrayStatus(const char* PointArray, int status)
 {
-    this->PointArrayStatus[PointArray] = status;
+    if(status == 1)
+        this->PointDataArraySelection->EnableArray(PointArray);
+    else
+        this->PointDataArraySelection->DisableArray(PointArray);
     this->Modified();
 }
 
 //----------------------------------------------------------------
 void vtkLFMReader::addScalarInformation(const std::string &scalarName, const std::string &scalarDescription)
 {
-    // only add unique keys (dont add duplicate entries)
-    if (this->CellArrayStatus.count( scalarDescription ) == 0){
-
-        this->describeVariable[scalarName] = scalarDescription;
-
-        this->CellArrayName.push_back(scalarDescription);
-        this->CellArrayStatus[scalarDescription] = 1;
-        vtkDebugMacro(<< scalarName << ": " << scalarDescription);
+    if(!this->CellDataArraySelection->ArrayExists(scalarName.c_str())) {
+       this->CellDataArraySelection->AddArray(scalarName.c_str()); 
+       this->describeVariable[scalarName] = scalarDescription;
     }
 }
 
@@ -734,15 +750,11 @@ void vtkLFMReader::addScalarInformation(const std::string &scalarName, const std
 void vtkLFMReader::addVectorInformation(const std::string &x, const std::string &y, const std::string &z,
                                         const std::string &vectorDescription)
 {
-    // only add unique keys (dont add duplicate entries)
-    if (this->CellArrayStatus.count( vectorDescription ) == 0){
-        this->describeVariable[x] = vectorDescription;
-        this->describeVariable[y] = vectorDescription;
-        this->describeVariable[z] = vectorDescription;
-
-        this->CellArrayName.push_back(vectorDescription);
-        this->CellArrayStatus[vectorDescription] = 1;
-        vtkDebugMacro(<< x << "," << y << "," << z << ": " << vectorDescription);
+    if(!this->CellDataArraySelection->ArrayExists(vectorDescription.c_str())) {
+       this->CellDataArraySelection->AddArray(vectorDescription.c_str()); 
+       this->describeVariable[x] = vectorDescription;
+       this->describeVariable[y] = vectorDescription;
+       this->describeVariable[z] = vectorDescription;
     }
 }
 //----------------------------------------------------------------
