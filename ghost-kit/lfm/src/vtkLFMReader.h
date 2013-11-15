@@ -8,6 +8,7 @@
 #include "vtkFloatArray.h"
 #include "vtkNew.h"
 #include "vtkDataArraySelection.h"
+#include "vtkSetGet.h"
 
 #include <map>
 #include <vector>
@@ -38,10 +39,33 @@ public:
   vtkTypeMacro(vtkLFMReader, vtkStructuredGridReader);
   void PrintSelf(ostream& os, vtkIndent indent);
   
-  vtkSetStringMacro(HdfFileName);
+//  vtkSetStringMacro(HdfFileName);
   /// SetFileName must match property in vtkLFMReader.xml
   virtual void SetFileName(const char *fileName) { this->SetHdfFileName(fileName); }
   vtkGetStringMacro(HdfFileName);
+
+
+  virtual void SetHdfFileName (const char* _arg)
+    {
+
+    if ( this->HdfFileName && _arg && (!strcmp(this->HdfFileName,_arg))) { return;}
+    if (this->HdfFileName) { delete [] this->HdfFileName; }
+    if (_arg)
+      {
+      this->HdfFileName = new char[strlen(_arg)+1];
+      strcpy(this->HdfFileName,_arg);
+      this->arraysProcessed = false;
+      }
+     else
+      {
+      this->HdfFileName = NULL;
+      }
+    this->Modified();
+    }
+
+
+
+
   virtual char *GetFileName() { return this->GetHdfFileName(); }
 
   /// SetGridScaleType must match property in vtkLFMReader.xml

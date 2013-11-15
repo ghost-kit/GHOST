@@ -125,7 +125,7 @@ int vtkLFMReader::CanReadFile(const char *filename)
     }
 
     //if we made it this far, assume attribute is not in list.
-    return 1;
+    return isValidFile;
 }
 
 //----------------------------------------------------------------
@@ -137,11 +137,19 @@ int vtkLFMReader::RequestInformation (vtkInformation* request,
 { 
     Io *io = Io::extensionSelector("hdf");
     io->openRead(this->GetFileName());
-    array_info_t xGrid_info = io->getArrayInfo("X_grid");
+
     list<string> variables = io->getVariableNames();
     list<string> attributes = io->getAttributeNames();
 
-    if(this->globalDims.size() == 0){
+    if(!this->arraysProcessed)
+    {
+
+        //clear out old dimensions
+        this->globalDims.clear();
+
+        //set new dimensions
+        array_info_t xGrid_info = io->getArrayInfo("X_grid");
+
         this->globalDims.push_back( xGrid_info.localDims[2] ); // nip1
         this->globalDims.push_back( xGrid_info.localDims[1] ); // njp1
         this->globalDims.push_back( xGrid_info.localDims[0] ); // nkp1
@@ -150,14 +158,13 @@ int vtkLFMReader::RequestInformation (vtkInformation* request,
                       << this->globalDims[0] << ", "
                                              << this->globalDims[1] << ", "
                                              << this->globalDims[2]);
-    }
 
-    /********************************************************************/
-    // Determine which variables are available to the GUI
-    /********************************************************************/
 
-    if(!this->arraysProcessed)
-    {
+        /********************************************************************/
+        // Determine which variables are available to the GUI
+        /********************************************************************/
+
+
         //see what is set as active by the system
         std::vector<std::string> CellActiveList;
         std::vector<std::string> PointActiveList;
@@ -175,7 +182,7 @@ int vtkLFMReader::RequestInformation (vtkInformation* request,
         }
 
         //save state of current Point Selection
-        for(int PointCount = 0; PointCount < numCells; PointCount++)
+        for(int PointCount = 0; PointCount < numPoints; PointCount++)
         {
             if(this->PointDataArraySelection->ArrayIsEnabled(this->PointDataArraySelection->GetArrayName(PointCount)))
             {
@@ -183,179 +190,182 @@ int vtkLFMReader::RequestInformation (vtkInformation* request,
             }
         }
 
-     //if arrays marked as not processed, clear the current arrays and reprocess.
+        //if arrays marked as not processed, clear the current arrays and reprocess.
         this->CellDataArraySelection->RemoveAllArrays();
         this->PointDataArraySelection->RemoveAllArrays();
 
 
-    if (NULL != outputVector->GetInformationObject(0)){
-    // Scalars
-    if (hasVariable(variables, "rho_"))
-        addScalarInformation("rho_", "Plasma Density");
-    if (hasVariable(variables, "c_"))
-        addScalarInformation("c_", "Sound Speed");
+        if (NULL != outputVector->GetInformationObject(0)){
+            // Scalars
+            if (hasVariable(variables, "rho_"))
+                addScalarInformation("rho_", "Plasma Density");
+            if (hasVariable(variables, "c_"))
+                addScalarInformation("c_", "Sound Speed");
 
-    // Vectors
-    if (hasVariable(variables, "vx_") && hasVariable(variables, "vy_") && hasVariable(variables, "vz_"))
-        addVectorInformation("vx_", "vy_", "vz_", "Velocity Vector");
-    if (hasVariable(variables, "bx_") && hasVariable(variables, "by_") && hasVariable(variables, "bz_"))
-        addVectorInformation("bx_", "by_", "bz_", "Magnetic Field Vector");
-    if (hasVariable(variables, "avgBx") && hasVariable(variables, "avgBy") && hasVariable(variables, "avgBz"))
-        addVectorInformation("avgBx", "avgBy", "avgBz", "Magnetic Field Vector (avg)");
+            // Vectors
+            if (hasVariable(variables, "vx_") && hasVariable(variables, "vy_") && hasVariable(variables, "vz_"))
+                addVectorInformation("vx_", "vy_", "vz_", "Velocity Vector");
+            if (hasVariable(variables, "bx_") && hasVariable(variables, "by_") && hasVariable(variables, "bz_"))
+                addVectorInformation("bx_", "by_", "bz_", "Magnetic Field Vector");
+            if (hasVariable(variables, "avgBx") && hasVariable(variables, "avgBy") && hasVariable(variables, "avgBz"))
+                addVectorInformation("avgBx", "avgBy", "avgBz", "Magnetic Field Vector (avg)");
 
-    // Derived Quantities
-    if (hasVariable(variables, "ei_") && hasVariable(variables, "ej_") && hasVariable(variables, "ek_"))
-        addVectorInformation("ei_", "ej_", "ek_", "Electric Field Vector");
-    if (hasVariable(variables, "avgEi") && hasVariable(variables, "avgEj") && hasVariable(variables, "avgEk"))
-        addVectorInformation("avgEi", "avgEj", "avgEk", "Electric Field Vector (avg)");
-    // placeholder for calculating the Current vector.  See Pjcalc2.F from CISM_DX reader.
-    //if (hasVariable(variables, "bi_") && hasVariable(variables, "bj_") && hasVariable(variables, "bk_"))
-    //  addVectorInformation("bi_", "bj_", "bk_", "Current Vector");
+            // Derived Quantities
+            if (hasVariable(variables, "ei_") && hasVariable(variables, "ej_") && hasVariable(variables, "ek_"))
+                addVectorInformation("ei_", "ej_", "ek_", "Electric Field Vector");
+            if (hasVariable(variables, "avgEi") && hasVariable(variables, "avgEj") && hasVariable(variables, "avgEk"))
+                addVectorInformation("avgEi", "avgEj", "avgEk", "Electric Field Vector (avg)");
+            // placeholder for calculating the Current vector.  See Pjcalc2.F from CISM_DX reader.
+            //if (hasVariable(variables, "bi_") && hasVariable(variables, "bj_") && hasVariable(variables, "bk_"))
+            //  addVectorInformation("bi_", "bj_", "bk_", "Current Vector");
 
 
-    // Multifluid Variables
-    if(hasAttribute(attributes, "n_species")){
-        io->readAttribute("n_species", nSpecies);
+            // Multifluid Variables
+            if(hasAttribute(attributes, "n_species")){
+                io->readAttribute("n_species", nSpecies);
 
-        for(int fluidNumber=1; fluidNumber <= nSpecies; fluidNumber++){
-            stringstream ssVarName;
-            string varName;
+                for(int fluidNumber=1; fluidNumber <= nSpecies; fluidNumber++){
+                    stringstream ssVarName;
+                    string varName;
 
-            ssVarName << "rho_." << fluidNumber;
-            varName = ssVarName.str();
-            if (hasVariable(variables, varName)){
-                stringstream description;
-                description << "Plasma Density #" << fluidNumber;
-                addScalarInformation(varName, description.str());
+                    ssVarName << "rho_." << fluidNumber;
+                    varName = ssVarName.str();
+                    if (hasVariable(variables, varName)){
+                        stringstream description;
+                        description << "Plasma Density #" << fluidNumber;
+                        addScalarInformation(varName, description.str());
+                    }
+
+                    ssVarName.str(string());
+                    ssVarName << "c_." << fluidNumber;
+                    varName = ssVarName.str();
+                    if (hasVariable(variables, varName)){
+                        stringstream description;
+                        description << "Sound Speed #" << fluidNumber;
+                        addScalarInformation(varName, description.str());
+                    }
+
+                    ssVarName.str(string());
+                    ssVarName << "vx_." << fluidNumber;
+                    string xVarName = ssVarName.str();
+                    ssVarName.str(string());
+                    ssVarName << "vy_." << fluidNumber;
+                    string yVarName = ssVarName.str();
+                    ssVarName.str(string());
+                    ssVarName << "vz_." << fluidNumber;
+                    string zVarName = ssVarName.str();
+                    if (hasVariable(variables, xVarName) && hasVariable(variables, yVarName) && hasVariable(variables, zVarName)){
+                        stringstream description;
+                        description << "Velocity Vector #" << fluidNumber;
+                        addVectorInformation(xVarName, yVarName, zVarName, description.str());
+                    }
+                }
             }
 
-            ssVarName.str(string());
-            ssVarName << "c_." << fluidNumber;
-            varName = ssVarName.str();
-            if (hasVariable(variables, varName)){
-                stringstream description;
-                description << "Sound Speed #" << fluidNumber;
-                addScalarInformation(varName, description.str());
+            //restore cell state
+            this->CellDataArraySelection->DisableAllArrays();
+            for(int CellCount =0; CellCount < CellActiveList.size(); CellCount++)
+            {
+                if(this->CellDataArraySelection->ArrayExists(CellActiveList[CellCount].c_str()))
+                     this->CellDataArraySelection->EnableArray(CellActiveList[CellCount].c_str());
             }
 
-            ssVarName.str(string());
-            ssVarName << "vx_." << fluidNumber;
-            string xVarName = ssVarName.str();
-            ssVarName.str(string());
-            ssVarName << "vy_." << fluidNumber;
-            string yVarName = ssVarName.str();
-            ssVarName.str(string());
-            ssVarName << "vz_." << fluidNumber;
-            string zVarName = ssVarName.str();
-            if (hasVariable(variables, xVarName) && hasVariable(variables, yVarName) && hasVariable(variables, zVarName)){
-                stringstream description;
-                description << "Velocity Vector #" << fluidNumber;
-                addVectorInformation(xVarName, yVarName, zVarName, description.str());
+            //restore point state
+            this->PointDataArraySelection->DisableAllArrays();
+            for(int PointCount =0; PointCount < PointActiveList.size(); PointCount++)
+            {
+                if(this->PointDataArraySelection->ArrayExists(PointActiveList[PointCount].c_str()))
+                    this->PointDataArraySelection->EnableArray(PointActiveList[PointCount].c_str());
+            }
+
+            this->arraysProcessed = true;
+            this->Modified();
+        }
+
+        /********************************************************************/
+        // Set WHOLE_EXTENT
+        /********************************************************************/
+        //Navigation helpers
+        const int nim1 = this->globalDims[0]-2;
+        const int njp1 = this->globalDims[1];
+        const int nk   = this->globalDims[2]-1;
+
+        int extent[6] = {0, nim1,
+                         0, njp1,
+                         0, nk};
+
+        vtkDebugMacro(<< "Whole extents: "
+                      << extent[0] << ", " << extent[1] << ", "
+                                   << extent[2] << ", " << extent[3] << ", "
+                                   << extent[4] << ", " << extent[5]);
+
+        //Set extents of grid
+        vtkInformation* outInfo = outputVector->GetInformationObject(0);
+        outInfo->Set(vtkStreamingDemandDrivenPipeline::WHOLE_EXTENT(),extent,6);
+
+
+        /********************************************************************/
+        // Set Time information
+        /********************************************************************/
+
+        this->TimeStepValues.clear();
+
+        // Currently 1 time step per file.  Append to a vector in case we want to extend this in the future.
+        if (hasAttribute(attributes, "mjd")){
+            // modified julian date
+            double mjd;
+            io->readAttribute("mjd", mjd);
+            this->TimeStepValues.push_back( mjd );
+            this->currentDateTime.setMJD(mjd);
+            if (hasAttribute(attributes, "time")){
+                float time;
+                io->readAttribute("time", time);
+                this->elapsedSeconds=time;
+            } else {
+                this->elapsedSeconds=0.0;
             }
         }
-    }
-
-    //restore cell state
-    this->CellDataArraySelection->DisableAllArrays();
-    for(int CellCount =0; CellCount < CellActiveList.size(); CellCount++)
-    {
-        this->CellDataArraySelection->EnableArray(CellActiveList[CellCount].c_str());
-    }
-
-    //restore point state
-    this->PointDataArraySelection->DisableAllArrays();
-    for(int PointCount =0; PointCount < PointActiveList.size(); PointCount++)
-    {
-        this->PointDataArraySelection->EnableArray(PointActiveList[PointCount].c_str());
-    }
-
-    this->arraysProcessed = true;
-    }
-
-    /********************************************************************/
-    // Set WHOLE_EXTENT
-    /********************************************************************/
-    //Navigation helpers
-    const int nim1 = this->globalDims[0]-2;
-    const int njp1 = this->globalDims[1];
-    const int nk   = this->globalDims[2]-1;
-
-    int extent[6] = {0, nim1,
-                     0, njp1,
-                     0, nk};
-
-    vtkDebugMacro(<< "Whole extents: "
-                  << extent[0] << ", " << extent[1] << ", "
-                               << extent[2] << ", " << extent[3] << ", "
-                               << extent[4] << ", " << extent[5]);
-
-    //Set extents of grid
-    vtkInformation* outInfo = outputVector->GetInformationObject(0);
-    outInfo->Set(vtkStreamingDemandDrivenPipeline::WHOLE_EXTENT(),extent,6);
-
-
-    /********************************************************************/
-    // Set Time information
-    /********************************************************************/
-
-    this->TimeStepValues.clear();
-
-    // Currently 1 time step per file.  Append to a vector in case we want to extend this in the future.
-    if (hasAttribute(attributes, "mjd")){
-        // modified julian date
-        double mjd;
-        io->readAttribute("mjd", mjd);
-        this->TimeStepValues.push_back( mjd );
-        this->currentDateTime.setMJD(mjd);
-        if (hasAttribute(attributes, "time")){
-           float time;
-           io->readAttribute("time", time);
-           this->elapsedSeconds=time;
-        } else {
-           this->elapsedSeconds=0.0;
+        else if (hasAttribute(attributes, "time")){
+            // Slava Merkin's LFM-Helio doesn't have the "mjd" parameter, but it does have "time":
+            //time = number of seconds since beginning of simluation
+            float time;
+            io->readAttribute("time", time);
+            this->TimeStepValues.push_back( time );
+            this->elapsedSeconds=time;
+            DateTime arbStart(1995,3,21,0,0,0);
+            this->currentDateTime.setMJD(arbStart.getMJD());
+            this->currentDateTime.incrementMJD((time-3000.0)/86400.0);
         }
-    }
-    else if (hasAttribute(attributes, "time")){
-        // Slava Merkin's LFM-Helio doesn't have the "mjd" parameter, but it does have "time":
-        //time = number of seconds since beginning of simluation
-        float time;
-        io->readAttribute("time", time);
-        this->TimeStepValues.push_back( time );
-        this->elapsedSeconds=time;
-        DateTime arbStart(1995,3,21,0,0,0);
-        this->currentDateTime.setMJD(arbStart.getMJD());
-        this->currentDateTime.incrementMJD((time-3000.0)/86400.0);
-    }
-    else{
-        vtkWarningMacro("Could not find time information in file (attribute \"mjd\" or \"time\")! Defaulting to 0.0");
-        this->TimeStepValues.push_back( 0.0 );
-        DateTime arbStart(1995,3,21,0,0,0);
-        this->currentDateTime.setMJD(arbStart.getMJD());
-        this->elapsedSeconds=0.0;
-    }
-    // cout << "currentDateTime " << currentDateTime.getDateTimeString()
-    //      << endl;
-    outInfo->Set(vtkStreamingDemandDrivenPipeline::TIME_STEPS(),
-                 &this->TimeStepValues[0],
-            static_cast<int>(this->TimeStepValues.size()));
+        else{
+            vtkWarningMacro("Could not find time information in file (attribute \"mjd\" or \"time\")! Defaulting to 0.0");
+            this->TimeStepValues.push_back( 0.0 );
+            DateTime arbStart(1995,3,21,0,0,0);
+            this->currentDateTime.setMJD(arbStart.getMJD());
+            this->elapsedSeconds=0.0;
+        }
+        // cout << "currentDateTime " << currentDateTime.getDateTimeString()
+        //      << endl;
+        outInfo->Set(vtkStreamingDemandDrivenPipeline::TIME_STEPS(),
+                     &this->TimeStepValues[0],
+                static_cast<int>(this->TimeStepValues.size()));
 
-    double timeRange[2];
-    //Set Time Range for file
-    timeRange[0] = this->TimeStepValues.front();
-    timeRange[1] = this->TimeStepValues.back();
+        double timeRange[2];
+        //Set Time Range for file
+        timeRange[0] = this->TimeStepValues.front();
+        timeRange[1] = this->TimeStepValues.back();
 
-    //Update Pipeline
-    outInfo->Set(vtkStreamingDemandDrivenPipeline::TIME_RANGE(), timeRange, 2);
+        //Update Pipeline
+        outInfo->Set(vtkStreamingDemandDrivenPipeline::TIME_RANGE(), timeRange, 2);
 
-    vtkDebugMacro(<< "number of timesteps in file=" << this->TimeStepValues.size());
-    vtkDebugMacro(<< "Modified julian date in file=" << this->TimeStepValues[0] << endl
-                                                                                << "TimeStepValues=" << this->TimeStepValues[0] << " " << this->TimeStepValues[1] << endl
-                                                                                << "timeRange[0]=" << timeRange[0] <<" timeRange[1]=" << timeRange[1]);
+        vtkDebugMacro(<< "number of timesteps in file=" << this->TimeStepValues.size());
+        vtkDebugMacro(<< "Modified julian date in file=" << this->TimeStepValues[0] << endl
+                                                                                    << "TimeStepValues=" << this->TimeStepValues[0] << " " << this->TimeStepValues[1] << endl
+                                                                                    << "timeRange[0]=" << timeRange[0] <<" timeRange[1]=" << timeRange[1]);
 
     }
     io->close();
     
-    // Import a Meta 
+    // Import a Meta
     if (io){
         delete io;
         io = NULL;
@@ -794,8 +804,8 @@ void vtkLFMReader::SetPointArrayStatus(const char* PointArray, int status)
 void vtkLFMReader::addScalarInformation(const std::string &scalarName, const std::string &scalarDescription)
 {
     if(!this->CellDataArraySelection->ArrayExists(scalarDescription.c_str())) {
-       this->CellDataArraySelection->AddArray(scalarDescription.c_str());
-       this->describeVariable[scalarName] = scalarDescription;
+        this->CellDataArraySelection->AddArray(scalarDescription.c_str());
+        this->describeVariable[scalarName] = scalarDescription;
 
     }
 }
@@ -805,12 +815,12 @@ void vtkLFMReader::addVectorInformation(const std::string &x, const std::string 
                                         const std::string &vectorDescription)
 {
     if(!this->CellDataArraySelection->ArrayExists(vectorDescription.c_str())) {
-       this->CellDataArraySelection->AddArray(vectorDescription.c_str()); 
+        this->CellDataArraySelection->AddArray(vectorDescription.c_str());
 
 
-       this->describeVariable[x] = vectorDescription;
-       this->describeVariable[y] = vectorDescription;
-       this->describeVariable[z] = vectorDescription;
+        this->describeVariable[x] = vectorDescription;
+        this->describeVariable[y] = vectorDescription;
+        this->describeVariable[z] = vectorDescription;
     }
 }
 //----------------------------------------------------------------
