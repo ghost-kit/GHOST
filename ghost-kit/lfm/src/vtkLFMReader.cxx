@@ -158,6 +158,31 @@ int vtkLFMReader::RequestInformation (vtkInformation* request,
 
     if(!this->arraysProcessed)
     {
+        //see what is set as active by the system
+        std::vector<std::string> CellActiveList;
+        std::vector<std::string> PointActiveList;
+
+        int numCells = this->CellDataArraySelection->GetNumberOfArrays();
+        int numPoints = this->PointDataArraySelection->GetNumberOfArrays();
+
+        //save state of current Cell selection
+        for(int CellCount = 0; CellCount < numCells; CellCount++)
+        {
+            if(this->CellDataArraySelection->ArrayIsEnabled(this->CellDataArraySelection->GetArrayName(CellCount)))
+            {
+                CellActiveList.push_back(std::string(this->CellDataArraySelection->GetArrayName(CellCount)));
+            }
+        }
+
+        //save state of current Point Selection
+        for(int PointCount = 0; PointCount < numCells; PointCount++)
+        {
+            if(this->PointDataArraySelection->ArrayIsEnabled(this->PointDataArraySelection->GetArrayName(PointCount)))
+            {
+                PointActiveList.push_back(std::string(this->PointDataArraySelection->GetArrayName(PointCount)));
+            }
+        }
+
      //if arrays marked as not processed, clear the current arrays and reprocess.
         this->CellDataArraySelection->RemoveAllArrays();
         this->PointDataArraySelection->RemoveAllArrays();
@@ -228,6 +253,20 @@ int vtkLFMReader::RequestInformation (vtkInformation* request,
                 addVectorInformation(xVarName, yVarName, zVarName, description.str());
             }
         }
+    }
+
+    //restore cell state
+    this->CellDataArraySelection->DisableAllArrays();
+    for(int CellCount =0; CellCount < CellActiveList.size(); CellCount++)
+    {
+        this->CellDataArraySelection->EnableArray(CellActiveList[CellCount].c_str());
+    }
+
+    //restore point state
+    this->PointDataArraySelection->DisableAllArrays();
+    for(int PointCount =0; PointCount < PointActiveList.size(); PointCount++)
+    {
+        this->PointDataArraySelection->EnableArray(PointActiveList[PointCount].c_str());
     }
 
     this->arraysProcessed = true;
