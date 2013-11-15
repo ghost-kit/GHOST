@@ -155,8 +155,6 @@ private:
 
   int nSpecies;
 
-  int numberOfArrays;
-
   /// TimeStepValues must match property in vtkLFMReader.xml
   std::vector<double> TimeStepValues;
     
@@ -178,6 +176,8 @@ private:
 
   vtkDataArraySelection* PointDataArraySelection;
   vtkDataArraySelection* CellDataArraySelection;
+
+  bool arraysProcessed;
 
   vtkLFMReader(const vtkLFMReader&); // Not implemented
   void operator=(const vtkLFMReader&); // Not implemented

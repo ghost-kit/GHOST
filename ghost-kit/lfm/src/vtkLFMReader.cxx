@@ -46,7 +46,7 @@ vtkLFMReader::vtkLFMReader() : HdfFileName(NULL), GridScaleType(GRID_SCALE::NONE
     this->PointDataArraySelection->DisableAllArrays();
     this->CellDataArraySelection->DisableAllArrays();
 
-    this->numberOfArrays = 0;
+    this->arraysProcessed = false;
 
 
 }
@@ -156,6 +156,13 @@ int vtkLFMReader::RequestInformation (vtkInformation* request,
     // Determine which variables are available to the GUI
     /********************************************************************/
 
+    if(!this->arraysProcessed)
+    {
+     //if arrays marked as not processed, clear the current arrays and reprocess.
+        this->CellDataArraySelection->RemoveAllArrays();
+        this->PointDataArraySelection->RemoveAllArrays();
+
+
     if (NULL != outputVector->GetInformationObject(0)){
     // Scalars
     if (hasVariable(variables, "rho_"))
@@ -221,6 +228,9 @@ int vtkLFMReader::RequestInformation (vtkInformation* request,
                 addVectorInformation(xVarName, yVarName, zVarName, description.str());
             }
         }
+    }
+
+    this->arraysProcessed = true;
     }
 
     /********************************************************************/
@@ -724,6 +734,7 @@ void vtkLFMReader::SetCellArrayStatus(const char* CellArray, int status)
         this->CellDataArraySelection->EnableArray(CellArray);
     else
         this->CellDataArraySelection->DisableArray(CellArray);
+
     this->Modified();
 
 }
@@ -735,7 +746,8 @@ void vtkLFMReader::SetPointArrayStatus(const char* PointArray, int status)
     if(status == 1)
         this->PointDataArraySelection->EnableArray(PointArray);
     else
-        this->PointDataArraySelection->DisableArray(PointArray);
+        this->PointDataArraySelection->DisableArray(PointArray);\
+
     this->Modified();
 }
 
