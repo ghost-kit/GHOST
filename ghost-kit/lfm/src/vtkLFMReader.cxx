@@ -318,9 +318,13 @@ int vtkLFMReader::RequestInformation (vtkInformation* request,
             double mjd;
             io->readAttribute("mjd", mjd);
             this->TimeStepValues.push_back( mjd );
+
+            std::cout << "mjd: " << mjd << std::endl;
+
             this->currentDateTime.setMJD(mjd);
+
             if (hasAttribute(attributes, "time")){
-                float time;
+                double time;
                 io->readAttribute("time", time);
                 this->elapsedSeconds=time;
             } else {
@@ -422,13 +426,17 @@ int vtkLFMReader::RequestData(vtkInformation* request,
     // Tell ParaView what the requested time is. Without this, the GUI thinks a single file loaded in displays has a time of "0.0".
     if (outInfo->Has(vtkStreamingDemandDrivenPipeline::UPDATE_TIME_STEP())){
         double requestedTime = outInfo->Get(vtkStreamingDemandDrivenPipeline::UPDATE_TIME_STEP());
-        // Hack to get time displaying correctly for single time step visualization in ParaView-3.98.1:
-        if (fabs(requestedTime) <= 1e-6){
+        // Hack to get time displaying correctly for single time step visualization in ParaView 4.0.1:
+        if (fabs(requestedTime) <= 1e-6)
+        {
+            std::cout << "Requested Time (PRE FIX): " << requestedTime << std::endl;
+
             // Set the current time to the start of the time range.
-            double *timeRange=outInfo->Get(vtkStreamingDemandDrivenPipeline::TIME_RANGE());
-            requestedTime = timeRange[0];
+            requestedTime = this->TimeStepValues[0];
+
         }
         output->GetInformation()->Set(vtkDataObject::DATA_TIME_STEP(), requestedTime);
+        std::cout << "Requested Time (POST FIX): " << requestedTime << std::endl;
     }
 
     /* Note the funny dimensions:
