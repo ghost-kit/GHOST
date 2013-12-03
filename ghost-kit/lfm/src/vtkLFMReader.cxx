@@ -319,12 +319,12 @@ int vtkLFMReader::RequestInformation (vtkInformation* request,
             io->readAttribute("mjd", mjd);
             this->TimeStepValues.push_back( mjd );
 
-            std::cout << "mjd: " << mjd << std::endl;
+//            std::cout << "mjd: " << mjd << std::endl;
 
             this->currentDateTime.setMJD(mjd);
 
             if (hasAttribute(attributes, "time")){
-                double time;
+                float time;
                 io->readAttribute("time", time);
                 this->elapsedSeconds=time;
             } else {
@@ -429,14 +429,14 @@ int vtkLFMReader::RequestData(vtkInformation* request,
         // Hack to get time displaying correctly for single time step visualization in ParaView 4.0.1:
         if (fabs(requestedTime) <= 1e-6)
         {
-            std::cout << "Requested Time (PRE FIX): " << requestedTime << std::endl;
+//            std::cout << "Requested Time (PRE FIX): " << requestedTime << std::endl;
 
             // Set the current time to the start of the time range.
             requestedTime = this->TimeStepValues[0];
 
         }
         output->GetInformation()->Set(vtkDataObject::DATA_TIME_STEP(), requestedTime);
-        std::cout << "Requested Time (POST FIX): " << requestedTime << std::endl;
+//        std::cout << "Requested Time (POST FIX): " << requestedTime << std::endl;
     }
 
     /* Note the funny dimensions:
