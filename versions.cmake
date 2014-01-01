@@ -28,6 +28,10 @@ add_revision(ghost
 add_revision(lfm
     SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/ghost-kit/lfm)
 
+add_revision(gkcxform
+    SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/ghost-kit/cxForm)
+
+
 add_revision(enlil
     SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/ghost-kit/enlil)
 
