@@ -22,17 +22,58 @@
 #include "vtkTable.h"
 #include "vtksys/SystemTools.hxx"
 
+
 //===============================================//
-vtkStandardNewMacro(gk_cxform)
-
-void gk_cxform::PrintSelf(ostream &os, vtkIndent indent)
-{
-}
-
-
-
 gk_cxform::gk_cxform()
 : Superclass()
 {
 
+}
+
+//===============================================//
+vtkStandardNewMacro(gk_cxform)
+
+//===============================================//
+void gk_cxform::PrintSelf(ostream &os, vtkIndent indent)
+{
+}
+
+//===============================================//
+void gk_cxform::SetSourceSystem(int value)
+{
+
+}
+
+//===============================================//
+void gk_cxform::SetDestSystem(int value)
+{
+
+}
+
+//===============================================//
+int gk_cxform::RequestInformation(vtkInformation *request, vtkInformationVector **inputVector, vtkInformationVector *outputVector)
+{
+
+    return 0;
+}
+
+//===============================================//
+int gk_cxform::RequestData(vtkInformation *request, vtkInformationVector **inputVector, vtkInformationVector *outputVector)
+{
+
+    return 0;
+}
+
+//===============================================//
+int gk_cxform::FillInputPortInformation(int port, vtkInformation *info)
+{
+
+    return 0;
+}
+
+//===============================================//
+int gk_cxform::FillOutputPortInformation(int port, vtkInformation *info)
+{
+
+    return 0;
 }

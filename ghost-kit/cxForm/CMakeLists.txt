@@ -1,15 +1,17 @@
 project(cxformFilter)
 cmake_minimum_required(VERSION 2.8.9 FATAL_ERROR)
 
+if( PREFIX )
+  set( CMAKE_INCLUDE_PATH /usr/include ${PREFIX}/include ${CMAKE_INCLUDE_PATH} )
+  set( CMAKE_LIBRARY_PATH /usr/lib ${PREFIX}/lib ${CMAKE_LIBRARY_PATH} )
+endif( PREFIX )
 
 #Configure needed librarires
-set(LIBS ${PREFIX}/install/lib/${CMAKE_STATIC_LIBRARY_PREFIX}cxform${CMAKE_STATIC_LIBRARY_SUFFIX}
-         ${PREFIX}/install/lib/${CMAKE_STATIC_LIBRARY_PREFIX}boost_date_time${CMAKE_STATIC_LIBRARY_SUFFIX}
-         ${PREFIX}/install/lib/${CMAKE_STATIC_LIBRARY_PREFIX}ltrDateTime${CMAKE_STATIC_LIBRARY_SUFFIX}
+set(LIBS ${PREFIX}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}cxform${CMAKE_STATIC_LIBRARY_SUFFIX}
+         ${PREFIX}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}boost_date_time${CMAKE_STATIC_LIBRARY_SUFFIX}
+         ${PREFIX}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}ltrDateTime${CMAKE_STATIC_LIBRARY_SUFFIX}
     )
 
-#DEBUG#
-set(ParaView_DIR ${PREFIX}/paraview/src/paraview-build/)
 
 if(NOT ParaView_BINARY_DIR)
   find_package(ParaView REQUIRED)

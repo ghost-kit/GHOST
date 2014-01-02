@@ -12,9 +12,16 @@ public:
         vtkTypeMacro(gk_cxform, vtkDataSetAlgorithm)
         void PrintSelf(ostream& os, vtkIndent indent);
 
+        void SetSourceSystem(int value);
+        void SetDestSystem(int value);
 
 protected:
         gk_cxform();
+
+        int RequestInformation(vtkInformation *request, vtkInformationVector **inputVector, vtkInformationVector *outputVector);
+        int RequestData(vtkInformation *request, vtkInformationVector ** inputVector, vtkInformationVector * outputVector);
+        int FillInputPortInformation(int port, vtkInformation *info);
+        int FillOutputPortInformation(int port, vtkInformation *info);
 
 };
 
