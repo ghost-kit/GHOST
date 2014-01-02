@@ -284,7 +284,7 @@ else()
    include(lfm)
    include(enlil)
    include(cdaweb)
-   include(gkcxform)
+#   include(gkcxform)
 
   # Build CosmoTools on Linux and OS X
   if (UNIX)
