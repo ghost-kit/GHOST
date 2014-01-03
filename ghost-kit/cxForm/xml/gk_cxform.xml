@@ -24,13 +24,22 @@
                                 label="Source Coordinate System"
                                 command="SetSourceSystem"
                                 number_of_elements="1"
-                                default_values="2"
+                                default_values="12"
                                 panel_visibility="default">
 
                 <EnumerationDomain name="enum">
-                    <Entry value="0" text="TBA0"/>
-                    <Entry value="1" text="TBA1"/>
-                    <Entry value="2" text="TBA2"/>
+                    <Entry value="1" text="J2000"/>
+                    <Entry value="2" text="GEI"/>
+                    <Entry value="3" text="GEO"/>
+                    <Entry value="4" text="MAG"/>
+                    <Entry value="5" text="GSE"/>
+                    <Entry value="6" text="GSM"/>
+                    <Entry value="7" text="SM"/>
+                    <Entry value="8" text="RTN"/>
+                    <Entry value="9" text="GSEQ"/>
+                    <Entry value="10" text="HEE"/>
+                    <Entry value="11" text="HAE"/>
+                    <Entry value="12" text="HEEQ"/>
                 </EnumerationDomain>
 
                 <Documentation>
@@ -43,13 +52,22 @@
                                 label="Destination Coordinate System"
                                 command="SetDestSystem"
                                 number_of_elements="1"
-                                default_values="2"
+                                default_values="6"
                                 panel_visibility="default">
 
                 <EnumerationDomain name="enum">
-                    <Entry value="0" text="TBA0"/>
-                    <Entry value="1" text="TBA1"/>
-                    <Entry value="2" text="TBA2"/>
+                <Entry value="1" text="J2000"/>
+                <Entry value="2" text="GEI"/>
+                <Entry value="3" text="GEO"/>
+                <Entry value="4" text="MAG"/>
+                <Entry value="5" text="GSE"/>
+                <Entry value="6" text="GSM"/>
+                <Entry value="7" text="SM"/>
+                <Entry value="8" text="RTN"/>
+                <Entry value="9" text="GSEQ"/>
+                <Entry value="10" text="HEE"/>
+                <Entry value="11" text="HAE"/>
+                <Entry value="12" text="HEEQ"/>
                 </EnumerationDomain>
 
                 <Documentation>

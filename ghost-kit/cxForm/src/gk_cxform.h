@@ -4,6 +4,22 @@
 #include "vtkPointSetAlgorithm.h"
 #include "vtkFiltersGeneralModule.h"
 
+#define UNKOWN  0
+#define J2000   1
+#define GEI     2
+#define GEO     3
+#define MAG     4
+#define GSE     5
+#define GSM     6
+#define SM      7
+#define RTN     8
+#define GSEQ    9
+#define HEE     10
+#define HAE     11
+#define HEEQ    12
+
+
+
 class VTKFILTERSGENERAL_EXPORT gk_cxform : public vtkPointSetAlgorithm
 {
 public:
@@ -23,6 +39,8 @@ protected:
         int RequestDataObject(vtkInformation *request, vtkInformationVector **inputVector, vtkInformationVector *outputVector);
         int RequestData(vtkInformation *request, vtkInformationVector ** inputVector, vtkInformationVector * outputVector);
 
+        int sourceSystem;
+        int destSystem;
 
 private:
         gk_cxform(const gk_cxform&);  // Not implemented.

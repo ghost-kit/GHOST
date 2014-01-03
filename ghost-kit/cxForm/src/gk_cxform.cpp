@@ -72,6 +72,10 @@ void gk_cxform::PrintSelf(ostream &os, vtkIndent indent)
 //===============================================//
 void gk_cxform::SetSourceSystem(int value)
 {
+    this->sourceSystem = value;
+    this->Modified();
+
+    std::cerr << "Modified Source System to " << value << std::endl;
 
 }
 
@@ -79,6 +83,10 @@ void gk_cxform::SetSourceSystem(int value)
 void gk_cxform::SetDestSystem(int value)
 {
 
+    this->destSystem = value;
+    this->Modified();
+
+    std::cerr << "Modified Destination System to " << value << std::endl;
 }
 
 //===============================================//
