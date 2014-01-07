@@ -34,6 +34,7 @@
 
 #include "ltrDateTime.h"
 #include "cxform.h"
+#include <math.h>
 
 //===============================================//
 gk_cxform::gk_cxform()
@@ -225,7 +226,19 @@ int gk_cxform::RequestData(vtkInformation *request, vtkInformationVector **input
         second  = currentDate.getSecond();
 
         //get es
-//        es      = date2es(year, month, day, hour, minute, second);
+        es      = (mjd - 2400000) * 86400;
+
+
+        int retval;
+        Vec v_in, v_out0, v_out2, v_out3;
+
+        v_in[0] = -896921337.28302002;
+        v_in[1] = 220296912.43620300;
+        v_in[2] =  44419205.01961136;
+
+        retval = cxform("HEEQ", "GSM", es, v_in, v_out0);
+
+        std::cerr << "Output: " << v_out0[0] << "," << v_out0[1] << "," << v_out0[2] << ";" << std::endl;
 
         std::cerr << "Time: " << year << " " << month << " " << day << " " << hour << " " << minute << " " << second << std::endl;
         std::cerr << "MJD:  " << mjd  << std::endl;

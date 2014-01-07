@@ -21,7 +21,7 @@ int main()
 	static char outSys0[] = "GEO";
 	static char outSys1[] = "GSE";
 	static char outSys2[] = "GSM";
-	static char outSys3[] = "SM";
+	static char outSys3[] = "HEEQ";
 
 	year = 2005;
 	month = 3;

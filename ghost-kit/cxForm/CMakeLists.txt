@@ -9,6 +9,8 @@ endif( PREFIX )
 #Configure needed librarires
 set(LIBS ${PREFIX}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}boost_date_time${CMAKE_STATIC_LIBRARY_SUFFIX}
          ${PREFIX}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}ltrDateTime${CMAKE_STATIC_LIBRARY_SUFFIX}
+         ${PREFIX}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}cxform${CMAKE_STATIC_LIBRARY_SUFFIX}
+
     )
 
 
@@ -42,7 +44,9 @@ ADD_PARAVIEW_PLUGIN(GK_CXFORM "1.0.0.beta1"
 
 target_link_libraries(GK_CXFORM ${LIBS})
 
-add_executable(cxTest src/main.c src/cxform-auto.c src/cxform-manual.c)
+add_executable(cxTest src/main.c )
+
+target_link_libraries(cxTest ${LIBS})
 
 add_custom_target(dist
     COMMAND ${CMAKE_COMMAND}  -E make_directory ${CMAKE_INSTALL_PREFIX}/release &&
