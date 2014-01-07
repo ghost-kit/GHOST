@@ -185,11 +185,22 @@ int gk_cxform::RequestData(vtkInformation *request, vtkInformationVector **input
     {
         //TODO: Implement the actual transform
 //        this->Transform->TransformPointsNormalsVectors(inPts, newPts, inNormals, newNormals, inVectors, newVectors);
+
+
+        std::cerr << "Points, Normals, Vectors to be transformed: " << inVectors->GetName() << std::endl;
     }
     else
     {
         //TODO: Implement the actual transform
 //        this->Transform->TransformPoints(inPts, newPts);
+        //get Date:
+        //TODO: Figure out how to get the time step info here.
+        //TODO: Check CDAweb filter to see how MJD is retrieved.
+        double mjd;
+
+
+        std::cerr << "MJD: " << mjd;
+        std::cerr << " : Transforming Grid Only" << std::endl;
     }
 
     this->UpdateProgress (.6);
