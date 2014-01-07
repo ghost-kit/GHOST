@@ -7,8 +7,7 @@ if( PREFIX )
 endif( PREFIX )
 
 #Configure needed librarires
-set(LIBS ${PREFIX}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}cxform${CMAKE_STATIC_LIBRARY_SUFFIX}
-         ${PREFIX}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}boost_date_time${CMAKE_STATIC_LIBRARY_SUFFIX}
+set(LIBS ${PREFIX}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}boost_date_time${CMAKE_STATIC_LIBRARY_SUFFIX}
          ${PREFIX}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}ltrDateTime${CMAKE_STATIC_LIBRARY_SUFFIX}
     )
 
@@ -29,6 +28,7 @@ INCLUDE_DIRECTORIES(src)
 set(GKcxForm_SM_XML xml/gk_cxform.xml)
 set(GKcxForm_SM_SRC src/gk_cxform.cpp)
 set(GKcxForm_SRC ${GKcxForm_MOC_BUILT_SOURCES})
+set(cxForm_SRC src/cxform-auto.c src/cxform-manual.c)
 
 
 #plugin (Filter for CDAweb)
@@ -36,11 +36,13 @@ ADD_PARAVIEW_PLUGIN(GK_CXFORM "1.0.0.beta1"
         SERVER_MANAGER_XML ${GKcxForm_SM_XML}
         GUI_INTERFACES ${GKcxForm_PROP_IFACES}
         SERVER_MANAGER_SOURCES ${GKcxForm_SM_SRC}
-        SOURCES ${GKcxForm_SRC}
+        SOURCES ${cxForm_SRC}
                 )
 
 
 target_link_libraries(GK_CXFORM ${LIBS})
+
+add_executable(cxTest src/main.c src/cxform-auto.c src/cxform-manual.c)
 
 add_custom_target(dist
     COMMAND ${CMAKE_COMMAND}  -E make_directory ${CMAKE_INSTALL_PREFIX}/release &&

@@ -30,6 +30,11 @@
 #include "vtkFloatArray.h"
 #include "vtkPointData.h"
 #include "vtkCellData.h"
+
+
+#include "ltrDateTime.h"
+#include "cxform.h"
+
 //===============================================//
 gk_cxform::gk_cxform()
 {
@@ -207,6 +212,26 @@ int gk_cxform::RequestData(vtkInformation *request, vtkInformationVector **input
 
         std::cerr << "MJD: " << mjd;
         std::cerr << " : Transforming Grid Only" << std::endl;
+
+        //get date/Time components
+        DateTime currentDate(mjd);
+        long es=0, year=0, month=0, day=0, hour=0, minute=0, second=0;
+
+        year    = currentDate.getYear();
+        month   = currentDate.getMonth();
+        day     = currentDate.getDay();
+        hour    = currentDate.getHour();
+        minute  = currentDate.getMinute();
+        second  = currentDate.getSecond();
+
+        //get es
+//        es      = date2es(year, month, day, hour, minute, second);
+
+        std::cerr << "Time: " << year << " " << month << " " << day << " " << hour << " " << minute << " " << second << std::endl;
+        std::cerr << "MJD:  " << mjd  << std::endl;
+        std::cerr << "ES:   " << es   << std::endl;
+
+
     }
 
     this->UpdateProgress (.6);
