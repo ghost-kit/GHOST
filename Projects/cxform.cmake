@@ -5,6 +5,8 @@ endif()
 
 add_external_project(
     cxform
+    DEPENDS DateTime
+
 
     CMAKE_ARGS
         -DMACOSX_VERSION_MIN=${CMAKE_OSX_DEPLOYMENT_TARGET}

@@ -1,6 +1,6 @@
 add_external_project(
     gkcxform
-    DEPENDS paraview boost DateTime cxform
+    DEPENDS cxform paraview boost DateTime
 
     CMAKE_ARGS
         -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}/release

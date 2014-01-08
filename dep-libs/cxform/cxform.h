@@ -5,6 +5,9 @@
 #ifndef CXFORM_H
 #define CXFORM_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 typedef double Vec[3];
 typedef double Mat[3][3];
@@ -29,6 +32,10 @@ void mat_times_vec(Mat m1,   Vec v1, Vec v_out);
 
 enum direction { FORWARD, BACK };
 typedef enum direction Direction;
+
+#ifdef __cplusplus
+}
+#endif
 
 
 #endif

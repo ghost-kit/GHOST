@@ -33,7 +33,7 @@
 
 
 #include "ltrDateTime.h"
-#include "cxform.h"
+#include "cppxform.h"
 #include <math.h>
 
 //===============================================//
@@ -216,33 +216,17 @@ int gk_cxform::RequestData(vtkInformation *request, vtkInformationVector **input
 
         //get date/Time components
         DateTime currentDate(mjd);
-        long es=0, year=0, month=0, day=0, hour=0, minute=0, second=0;
 
-        year    = currentDate.getYear();
-        month   = currentDate.getMonth();
-        day     = currentDate.getDay();
-        hour    = currentDate.getHour();
-        minute  = currentDate.getMinute();
-        second  = currentDate.getSecond();
+        std::vector<double> testVector;
+        testVector.push_back(-896921337.28302002);
+        testVector.push_back(220296912.43620300);
+        testVector.push_back(44419205.01961136);
 
-        //get es
-        es      = (mjd - 2400000) * 86400;
+        //cppForm::cxformpp newXform(currentDate, "GSM", testVector);
 
+        //double *testOut = newXform.cxForm("HEEQ");
 
-        int retval;
-        Vec v_in, v_out0, v_out2, v_out3;
-
-        v_in[0] = -896921337.28302002;
-        v_in[1] = 220296912.43620300;
-        v_in[2] =  44419205.01961136;
-
-        retval = cxform("HEEQ", "GSM", es, v_in, v_out0);
-
-        std::cerr << "Output: " << v_out0[0] << "," << v_out0[1] << "," << v_out0[2] << ";" << std::endl;
-
-        std::cerr << "Time: " << year << " " << month << " " << day << " " << hour << " " << minute << " " << second << std::endl;
-        std::cerr << "MJD:  " << mjd  << std::endl;
-        std::cerr << "ES:   " << es   << std::endl;
+        //std::cerr << "Test Output: " << testOut[0] << "," << testOut[1] << "," << testOut[2] << std::endl;
 
 
     }
