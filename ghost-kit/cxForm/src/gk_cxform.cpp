@@ -222,11 +222,12 @@ int gk_cxform::RequestData(vtkInformation *request, vtkInformationVector **input
         testVector.push_back(220296912.43620300);
         testVector.push_back(44419205.01961136);
 
-        //cppForm::cxformpp newXform(currentDate, "GSM", testVector);
+        cppForm::cxformpp newXform(currentDate, "GSM", testVector);
 
-        //double *testOut = newXform.cxForm("HEEQ");
+        double *testOut = newXform.cxForm("HEEQ");
 
-        //std::cerr << "Test Output: " << testOut[0] << "," << testOut[1] << "," << testOut[2] << std::endl;
+        std::cerr << "Date:        " << currentDate.getDateTimeString() << std::endl;
+        std::cerr << "Test Output: " << testOut[0] << "," << testOut[1] << "," << testOut[2] << std::endl;
 
 
     }
