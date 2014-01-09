@@ -213,23 +213,17 @@ int gk_cxform::RequestData(vtkInformation *request, vtkInformationVector **input
     this->UpdateProgress (.2);
 
     // Loop over all points, updating position
-    //
-
     if ( inVectors || inNormals )
     {
+        /*Non-Structured Data*/
         //TODO: Implement the actual non-structured transformation
-        vtkErrorMacro(<< "Non-Structured input not yet supported.");
+        vtkErrorMacro(<< "Non-Structured input not yet supported with the cxForm Filter.");
 
     }
     else
     {
-        //TODO: Implement the actual transform
-
-        std::cerr << "MJD: " << mjd;
-        std::cerr << " : Transforming Structured Grid" << std::endl;
-
-        std::cerr << "InSystem:  " << this->systemLookupTable[this->sourceSystem] << std::endl;
-        std::cerr << "OutSystem: " << this->systemLookupTable[this->destSystem] << std::endl;
+        /*Structured Data*/
+        vtkDebugMacro(<< "Converting from " << this->systemLookupTable[this->sourceSystem] << " to " << this->systemLookupTable[this->destSystem] << ".");
 
         //transform points
         double xyz[3];
@@ -254,6 +248,14 @@ int gk_cxform::RequestData(vtkInformation *request, vtkInformationVector **input
             xyzxform = NULL;
         }
 
+        // Update points and release temp memory
+            output->SetPoints(newPts);
+            newPts->Delete();
+
+        vtkDebugMacro( << "Tranforming any present Vector Point Data");
+
+        //TODO: Tranform Vector Data
+
         this->Modified();
     }
 
@@ -261,12 +263,10 @@ int gk_cxform::RequestData(vtkInformation *request, vtkInformationVector **input
 
 
 //TODO: Transform Cells
+    vtkWarningMacro(<< "We have not yet implemented Cell Data Transformation");
 
     this->UpdateProgress (.8);
 
-// Update ourselves and release memory
-    output->SetPoints(newPts);
-    newPts->Delete();
 
     if (newNormals)
       {
@@ -299,6 +299,7 @@ int gk_cxform::RequestData(vtkInformation *request, vtkInformationVector **input
     outPD->PassData(pd);
     outCD->PassData(cd);
 
+    //TODO: check field data manipulations to set the units/coordinate system properly.
     vtkFieldData* inFD = input->GetFieldData();
     if (inFD)
       {
