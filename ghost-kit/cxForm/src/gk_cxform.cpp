@@ -249,6 +249,9 @@ int gk_cxform::RequestData(vtkInformation *request, vtkInformationVector **input
 
 
             newPts->InsertPoint(x,xyzxform);
+
+            delete [] xyzxform;
+            xyzxform = NULL;
         }
 
         this->Modified();

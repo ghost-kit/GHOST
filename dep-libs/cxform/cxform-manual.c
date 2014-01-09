@@ -936,7 +936,7 @@ gse_twixt_hee(const double et, Vec v_in, Vec v_out, Direction direction)
   Rsun = r0*(1-e*e)/(1.+e*cosd(v)); 
   /*  v_out[0] += (double)1.5e8;  */
   
-  v_out[0] += Rsun;
+  //v_out[0] += Rsun;
 
   return 0;
 }
