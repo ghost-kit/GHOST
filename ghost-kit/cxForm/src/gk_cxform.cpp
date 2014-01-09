@@ -35,10 +35,27 @@
 #include "ltrDateTime.h"
 #include "cppxform.h"
 #include <math.h>
+#include <vector>
 
 //===============================================//
 gk_cxform::gk_cxform()
 {
+    this->systemLookupTable.push_back(std::string("UNKNOWN"));
+    this->systemLookupTable.push_back(std::string("J2000"));
+    this->systemLookupTable.push_back(std::string("GEI"));
+    this->systemLookupTable.push_back(std::string("GEO"));
+    this->systemLookupTable.push_back(std::string("MAG"));
+    this->systemLookupTable.push_back(std::string("GSE"));
+    this->systemLookupTable.push_back(std::string("GSM"));
+    this->systemLookupTable.push_back(std::string("SM"));
+    this->systemLookupTable.push_back(std::string("RTN"));
+    this->systemLookupTable.push_back(std::string("GSEQ"));
+    this->systemLookupTable.push_back(std::string("HEE"));
+    this->systemLookupTable.push_back(std::string("HAE"));
+    this->systemLookupTable.push_back(std::string("HEEQ"));
+    this->systemLookupTable.push_back(std::string("HEEQ-180"));
+
+
 
 }
 
@@ -155,7 +172,7 @@ int gk_cxform::RequestData(vtkInformation *request, vtkInformationVector **input
     vtkPointData *pd=input->GetPointData(), *outPD=output->GetPointData();
     vtkCellData *cd=input->GetCellData(), *outCD=output->GetCellData();
 
-    vtkDebugMacro(<<"Executing transform filter");
+    vtkDebugMacro(<<"Executing cxform filter");
 
     // First, copy the input to the output as a starting point
     output->CopyStructure( input );
@@ -200,36 +217,41 @@ int gk_cxform::RequestData(vtkInformation *request, vtkInformationVector **input
 
     if ( inVectors || inNormals )
     {
-        //TODO: Implement the actual transform
-//        this->Transform->TransformPointsNormalsVectors(inPts, newPts, inNormals, newNormals, inVectors, newVectors);
+        //TODO: Implement the actual non-structured transformation
+        vtkErrorMacro(<< "Non-Structured input not yet supported.");
 
-
-        std::cerr << "MJD: " << mjd;
-        std::cerr << " : Points, Normals, Vectors to be transformed: " << inVectors->GetName() << std::endl;
     }
     else
     {
         //TODO: Implement the actual transform
 
         std::cerr << "MJD: " << mjd;
-        std::cerr << " : Transforming Grid Only" << std::endl;
+        std::cerr << " : Transforming Structured Grid" << std::endl;
 
-        //get date/Time components
-        DateTime currentDate(mjd);
+        std::cerr << "InSystem:  " << this->systemLookupTable[this->sourceSystem] << std::endl;
+        std::cerr << "OutSystem: " << this->systemLookupTable[this->destSystem] << std::endl;
 
-        std::vector<double> testVector;
-        testVector.push_back(-896921337.28302002);
-        testVector.push_back(220296912.43620300);
-        testVector.push_back(44419205.01961136);
+        //transform points
+        double xyz[3];
+        DateTime xformDate(mjd);
+        double *xyzxform;
+        std::vector<double> point;
 
-        cppForm::cxformpp newXform(currentDate, "GSM", testVector);
+        for(int x = 0; x < numPts; x ++)
+        {
+            //get points
+            inPts->GetPoint(x, xyz);
+            point.clear();
 
-        double *testOut = newXform.cxForm("HEEQ");
+            //transform point
+            cppForm::cxformpp xform(xformDate, this->systemLookupTable[this->sourceSystem].c_str(), xyz);
+            xyzxform = xform.cxForm(this->systemLookupTable[this->destSystem].c_str());
 
-        std::cerr << "Date:        " << currentDate.getDateTimeString() << std::endl;
-        std::cerr << "Test Output: " << testOut[0] << "," << testOut[1] << "," << testOut[2] << std::endl;
 
+            newPts->InsertPoint(x,xyzxform);
+        }
 
+        this->Modified();
     }
 
     this->UpdateProgress (.6);
@@ -240,7 +262,7 @@ int gk_cxform::RequestData(vtkInformation *request, vtkInformationVector **input
     this->UpdateProgress (.8);
 
 // Update ourselves and release memory
-//    output->SetPoints(newPts);
+    output->SetPoints(newPts);
     newPts->Delete();
 
     if (newNormals)
@@ -291,7 +313,7 @@ int gk_cxform::RequestData(vtkInformation *request, vtkInformationVector **input
 
     this->UpdateProgress (1.0);
 
-
+    this->Modified();
     return 1;
 }
 

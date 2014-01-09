@@ -3,6 +3,7 @@
 
 #include "vtkPointSetAlgorithm.h"
 #include "vtkFiltersGeneralModule.h"
+#include <vector>
 
 #define UNKOWN  0
 #define J2000   1
@@ -45,6 +46,7 @@ protected:
 private:
         gk_cxform(const gk_cxform&);  // Not implemented.
         void operator=(const gk_cxform&);  // Not implemented.
+        std::vector<std::string> systemLookupTable;
 
 };
 

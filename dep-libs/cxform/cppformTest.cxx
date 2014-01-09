@@ -8,12 +8,12 @@
 int main()
 {
     DateTime newDate(56002.021);
-    std::vector<double> inVector;
+    double inVector[3];
 
 
-    inVector.push_back(-896921337.28302002);
-    inVector.push_back(220296912.43620300);
-    inVector.push_back(44419205.01961136);
+    inVector[0] = 0.0;
+    inVector[1] = 0.0;
+    inVector[2] = 0.0;
 
     cppForm::cxformpp testUnit(newDate, "GSM", inVector);
     double* outVector = testUnit.cxForm("HEEQ");
@@ -25,8 +25,13 @@ int main()
     std::cout << "Input Vector:  " << inVector[0] << "," << inVector[1] << "," << inVector[2] << " (GSM)" << std::endl;
     std::cout << "OutPut Vector: " << outVector[0] << "," << outVector[1] << "," << outVector[3] << " (HEEQ)" << std::endl << std::endl;
 
-    std::cout << "ES my Style: " << std::endl;
-    std::cout << "Input Vector:  " << inVector[0] << "," << inVector[1] << "," << inVector[2] << " (GSM)" << std::endl;
-    std::cout << "OutPut Vector: " << outVector[0] << "," << outVector[1] << "," << outVector[3] << " (HEEQ)" << std::endl;
+    cppForm::cxformpp testUnit2(newDate, "HEEQ", outVector);
+    outVector = testUnit2.cxForm("GSM");
+     outVector2 = testUnit2.cxForm2("GSM");
+
+     std::cout << "Reversal: " << std::endl;
+    std::cout << "OutPut Vector: " << outVector[0] << "," << outVector[1] << "," << outVector[3] << " (GSM)" << std::endl << std::endl;
+
+
 
 }

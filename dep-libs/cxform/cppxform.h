@@ -15,7 +15,7 @@ class cxformpp
 {
 public:
     //constructors/destructors
-    cxformpp(DateTime Date, const char* sourceSystem, std::vector<double> inputVector);
+    cxformpp(DateTime Date, const char* sourceSystem, double inputVector[]);
     ~cxformpp();
 
     //transform commands

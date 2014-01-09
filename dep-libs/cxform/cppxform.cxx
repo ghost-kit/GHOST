@@ -3,9 +3,14 @@
 namespace cppForm
 {
 
-cxformpp::cxformpp(DateTime Date, const char* sourceSystem, std::vector<double> inputVector)
+cxformpp::cxformpp(DateTime Date, const char* sourceSystem, double inputVector[])
 {
-    this->inVector = inputVector;
+    std::vector<double> newVector;
+    newVector.push_back(inputVector[0]);
+    newVector.push_back(inputVector[1]);
+    newVector.push_back(inputVector[2]);
+
+    this->inVector = newVector;
     this->inDate = Date;
     this->inSystem = std::string(sourceSystem);
 }
