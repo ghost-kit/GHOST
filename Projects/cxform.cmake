@@ -10,6 +10,7 @@ add_external_project(
 
     CMAKE_ARGS
         -DMACOSX_VERSION_MIN=${CMAKE_OSX_DEPLOYMENT_TARGET}
+        -DPREFIX=<INSTALL_DIR>
 
     BUILD_COMMAND
         make

@@ -19,7 +19,9 @@ add_library(
 
 if(NOT PREFIX)
     #This just sets the prefix for Joshua Murphy's work development machine.
-    set(PREFIX /Volumes/Data/Development/GHOST-Kit/build/install)
+    #set(PREFIX /Volumes/Data/Development/GHOST-Kit/build/install)
+    set(PREFIX /Users/jjm390/Developer/GHOST/build/install)
+
 endif()
 
 
