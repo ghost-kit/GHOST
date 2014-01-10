@@ -15,7 +15,7 @@ int main()
     inVector[1] = 0.0;
     inVector[2] = 0.0;
 
-    cppForm::cxformpp testUnit(newDate, "GSM", inVector);
+    cppForm::cppxform testUnit(newDate, "GSM", inVector);
     double* outVector = testUnit.cxForm("HEEQ");
     double* outVector2 = testUnit.cxForm2("HEEQ");
 
@@ -25,7 +25,7 @@ int main()
     std::cout << "Input Vector:  " << inVector[0] << "," << inVector[1] << "," << inVector[2] << " (GSM)" << std::endl;
     std::cout << "OutPut Vector: " << outVector[0] << "," << outVector[1] << "," << outVector[3] << " (HEEQ)" << std::endl << std::endl;
 
-    cppForm::cxformpp testUnit2(newDate, "HEEQ", outVector);
+    cppForm::cppxform testUnit2(newDate, "HEEQ", outVector);
     outVector = testUnit2.cxForm("GSM");
      outVector2 = testUnit2.cxForm2("GSM");
 

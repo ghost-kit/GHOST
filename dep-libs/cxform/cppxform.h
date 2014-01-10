@@ -11,12 +11,12 @@
 namespace cppForm
 {
 
-class cxformpp
+class cppxform
 {
 public:
     //constructors/destructors
-    cxformpp(DateTime Date, const char* sourceSystem, double inputVector[]);
-    ~cxformpp();
+    cppxform(DateTime Date, const char* sourceSystem, double inputVector[]);
+    ~cppxform();
 
     //transform commands
     double* cxForm(const char* destSystem);

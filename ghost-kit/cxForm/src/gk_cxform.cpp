@@ -53,9 +53,7 @@ gk_cxform::gk_cxform()
     this->systemLookupTable.push_back(std::string("HEE"));
     this->systemLookupTable.push_back(std::string("HAE"));
     this->systemLookupTable.push_back(std::string("HEEQ"));
-    this->systemLookupTable.push_back(std::string("HEEQ-180"));
-
-
+    this->systemLookupTable.push_back(std::string("HEEQ180"));
 
 }
 
@@ -98,7 +96,7 @@ void gk_cxform::SetSourceSystem(int value)
     this->sourceSystem = value;
     this->Modified();
 
-    std::cerr << "Modified Source System to " << value << std::endl;
+    std::cerr << "Modified Source System to " << this->systemLookupTable[value] << std::endl;
 
 }
 
@@ -109,7 +107,7 @@ void gk_cxform::SetDestSystem(int value)
     this->destSystem = value;
     this->Modified();
 
-    std::cerr << "Modified Destination System to " << value << std::endl;
+    std::cerr << "Modified Destination System to " << this->systemLookupTable[value] << std::endl;
 }
 
 //===============================================//
@@ -237,10 +235,10 @@ int gk_cxform::RequestData(vtkInformation *request, vtkInformationVector **input
             inPts->GetPoint(x, xyz);
             point.clear();
 
-            //transform point
-            cppForm::cxformpp xform(xformDate, this->systemLookupTable[this->sourceSystem].c_str(), xyz);
-            xyzxform = xform.cxForm(this->systemLookupTable[this->destSystem].c_str());
 
+            //transform point
+            cppForm::cppxform xform(xformDate, this->systemLookupTable[this->sourceSystem].c_str(), xyz);
+            xyzxform = xform.cxForm(this->systemLookupTable[this->destSystem].c_str());
 
             newPts->InsertPoint(x,xyzxform);
 
@@ -255,6 +253,39 @@ int gk_cxform::RequestData(vtkInformation *request, vtkInformationVector **input
         vtkDebugMacro( << "Tranforming any present Vector Point Data");
 
         //TODO: Tranform Vector Data
+        int numArrays = pd->GetNumberOfArrays();
+
+        for(int h = 0; h < numArrays; h++)
+        {
+            if(pd->GetArray(h)->GetNumberOfComponents() == 3)
+            {
+                vtkDataArray* array = pd->GetArray(h);
+                vtkDoubleArray* OutArray = vtkDoubleArray::New();
+                int numElements = array->GetNumberOfTuples();
+
+                std::string testName = std::string("test");
+
+                OutArray->SetNumberOfComponents(3);
+                OutArray->Allocate(3*numElements);
+                OutArray->SetName(testName.c_str());
+
+                for(int a = 0; a < numElements; a++)
+                {
+                    array->GetTuple(a, xyz);
+                    cppForm::cppxform xform(xformDate, this->systemLookupTable[this->sourceSystem].c_str(), xyz);
+                    xyzxform = xform.cxForm(this->systemLookupTable[this->destSystem].c_str());
+
+                    OutArray->InsertNextTuple(xyzxform);
+
+//                    std::cerr << "IN:  " << xyz[0] << "," << xyz[1] << "," << xyz[2] << std::endl;
+//                    std::cerr << "OUT: " << xyzxform[0] << "," << xyzxform[1] << "," << xyzxform[2] << std::endl;
+
+                }
+
+                //update the array
+                output->GetPointData()->AddArray(OutArray);
+            }
+        }
 
         this->Modified();
     }
@@ -317,7 +348,6 @@ int gk_cxform::RequestData(vtkInformation *request, vtkInformationVector **input
 
     this->UpdateProgress (1.0);
 
-    this->Modified();
     return 1;
 }
 

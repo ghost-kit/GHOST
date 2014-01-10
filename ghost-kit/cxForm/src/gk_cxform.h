@@ -18,6 +18,7 @@
 #define HEE     10
 #define HAE     11
 #define HEEQ    12
+#define HEEQ180 13
 
 
 

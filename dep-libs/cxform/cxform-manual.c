@@ -955,6 +955,15 @@ hae_twixt_heeq(const double et, Vec v_in, Vec v_out, Direction direction)
 }
 
 
+int
+heeq_twixt_heeq180(const double et, Vec v_in, Vec v_out, Direction direction)
+{
+    Mat mat;
+    hapgood_matrix(180, Z, mat);
+    mat_times_vec(mat, v_in, v_out);
+
+    return 0;
+}
 
 /*****************************************************************************\
 |*              UTILITY FUNCTIONS                                            *|

@@ -3,7 +3,7 @@
 namespace cppForm
 {
 
-cxformpp::cxformpp(DateTime Date, const char* sourceSystem, double inputVector[])
+cppxform::cppxform(DateTime Date, const char* sourceSystem, double inputVector[])
 {
     std::vector<double> newVector;
     newVector.push_back(inputVector[0]);
@@ -15,12 +15,12 @@ cxformpp::cxformpp(DateTime Date, const char* sourceSystem, double inputVector[]
     this->inSystem = std::string(sourceSystem);
 }
 
-cxformpp::~cxformpp()
+cppxform::~cppxform()
 {
 
 }
 
-double *cxformpp::cxForm(const char *destSystem)
+double *cppxform::cxForm(const char *destSystem)
 {
     long es = this->getES();
 
@@ -36,7 +36,7 @@ double *cxformpp::cxForm(const char *destSystem)
     return outVector;
 }
 
-double *cxformpp::cxForm2(const char *destSystem)
+double *cppxform::cxForm2(const char *destSystem)
 {
     long es = this->getES(true);
 
@@ -52,18 +52,18 @@ double *cxformpp::cxForm2(const char *destSystem)
     return outVector;
 }
 
-double cxformpp::getMJD()
+double cppxform::getMJD()
 {
     return this->inDate.getMJD();
 }
 
-long cxformpp::cxRound(double d)
+long cppxform::cxRound(double d)
 {
     if (d < 0.0)  return (long)(d - 0.5);
     else          return (long)(d + 0.5);
 }
 
-long cxformpp::getES( int version)
+long cppxform::getES( int version)
 {
     //jd = mjd + 2400000.5
     //es = (jd - 2451545) * 86400;

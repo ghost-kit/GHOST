@@ -805,7 +805,7 @@ void vtkLFMReader::SetPointArrayStatus(const char* PointArray, int status)
     if(status == 1)
         this->PointDataArraySelection->EnableArray(PointArray);
     else
-        this->PointDataArraySelection->DisableArray(PointArray);\
+        this->PointDataArraySelection->DisableArray(PointArray);
 
     this->Modified();
 }
