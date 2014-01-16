@@ -11,7 +11,7 @@
 
 using namespace std;
 
-#define testFile "STA_L1_MAGB_RTN-20100101T000000Z-20100102T000000Z.cdf"
+#define testFile ""
 #define CXXTEST_HAVE_EH
 #define CXXTEST_ABORT_TEST_ON_FAIL
 
