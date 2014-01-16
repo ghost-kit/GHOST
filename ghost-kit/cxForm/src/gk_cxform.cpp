@@ -242,7 +242,6 @@ int gk_cxform::RequestData(vtkInformation *request, vtkInformationVector **input
 
             newPts->InsertPoint(x,xyzxform);
 
-            delete [] xyzxform;
             xyzxform = NULL;
         }
 
@@ -257,22 +256,27 @@ int gk_cxform::RequestData(vtkInformation *request, vtkInformationVector **input
 
         for(int h = 0; h < numArrays; h++)
         {
+
+            std::cerr << "Inside of array loop" << std::endl << std::flush;
+            //configure arrays
+            vtkDoubleArray* InArray = vtkDoubleArray::SafeDownCast(pd->GetArray(h));
+            vtkDoubleArray* OutArray = vtkDoubleArray::New();
+
+            int numElements = InArray->GetNumberOfTuples();
+            int numComponents = InArray->GetNumberOfComponents();
+
+            OutArray->SetNumberOfComponents(numComponents);
+            OutArray->Allocate(numComponents*numElements);
+            OutArray->SetName(InArray->GetName());
+
             if(pd->GetArray(h)->GetNumberOfComponents() == 3)
             {
-                vtkDataArray* array = pd->GetArray(h);
-                vtkDoubleArray* OutArray = vtkDoubleArray::New();
-                int numElements = array->GetNumberOfTuples();
-
-                std::string testName = std::string("test");
-
-                OutArray->SetNumberOfComponents(3);
-                OutArray->Allocate(3*numElements);
-                OutArray->SetName(testName.c_str());
-
+                double zero[3] = {0,0,0};
+                cppForm::cppxform xform(xformDate, this->systemLookupTable[this->sourceSystem].c_str(), zero);
                 for(int a = 0; a < numElements; a++)
                 {
-                    array->GetTuple(a, xyz);
-                    cppForm::cppxform xform(xformDate, this->systemLookupTable[this->sourceSystem].c_str(), xyz);
+                    InArray->GetTuple(a, xyz);
+                    xform.setInVector(xyz);
                     xyzxform = xform.cxForm(this->systemLookupTable[this->destSystem].c_str());
 
                     OutArray->InsertNextTuple(xyzxform);
@@ -282,12 +286,18 @@ int gk_cxform::RequestData(vtkInformation *request, vtkInformationVector **input
 
                 }
 
-                //update the array
-                output->GetPointData()->AddArray(OutArray);
             }
+            else
+            {
+
+                //TODO: copy scalar arrays
+            }
+
+            //update the array
+            output->GetPointData()->AddArray(OutArray);
+            OutArray->Delete();
         }
 
-        this->Modified();
     }
 
     this->UpdateProgress (.6);
@@ -327,8 +337,8 @@ int gk_cxform::RequestData(vtkInformation *request, vtkInformationVector **input
       outCD->CopyVectorsOff();
       }
 
-    outPD->PassData(pd);
-    outCD->PassData(cd);
+//    outPD->PassData(pd);
+//    outCD->PassData(cd);
 
     //TODO: check field data manipulations to set the units/coordinate system properly.
     vtkFieldData* inFD = input->GetFieldData();

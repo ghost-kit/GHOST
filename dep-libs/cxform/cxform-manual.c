@@ -35,6 +35,8 @@ static char const Ident[] =
 **                     generation which adds definitive values for 1995 & 2000
 **	 2006/09/24  v0.7  Ryan Boller: Updated IGRF coefficients to 10th generation
 ** 
+**   2014/01/15  v0.8  Joshua Murphy: Updated IGRF coefficients to 11th Generation
+**                     Added HEEQ + 180 coordinate system (specific to Enlil as far as I know)
 */
 
 #include <stdio.h>
@@ -344,14 +346,17 @@ epsilon(const double et)
 **   http://www.ngdc.noaa.gov/IAGA/vmod/igrf.html
 **
 ** Note: IGRF coefficients are now updated to 10th generation
+**
+** Note: IGRF coefficients are now updated to 11th generation
+**   http://www.ngdc.noaa.gov/IAGA/vmod/igrf.html
 */
 
 double calcG01(double fracYearIndex, double fracYear)
 {
-	static int g01[NUM_IGRF_YEARS_DEFINED] =
-		{-31543, -31464, -31354, -31212, -31060, -30926, -30805, -30715,
-		 -30654, -30594, -30554, -30500, -30421, -30334, -30220, -30100,
-		 -29992, -29873, -29775, -29692, -29619.4, -29556.8, -29512.8};
+    static double g01[NUM_IGRF_YEARS_DEFINED] =
+        {-31543, -31464, -31354, -31212, -31060, -30926, -30805, -30715, -30654,
+         -30594, -30554, -30500, -30421, -30334, -30220, -30100, -29992, -29873,
+         -29775, -29692, -29619.4, -29554.63, -29496.5};
 	
 	return (g01[(int)floor(fracYearIndex)]*(1.0-fracYear) + 
 		g01[(int)ceil(fracYearIndex)]*fracYear);
@@ -359,10 +364,10 @@ double calcG01(double fracYearIndex, double fracYear)
 
 double calcG11(double fracYearIndex, double fracYear)
 {
-	static int g11[NUM_IGRF_YEARS_DEFINED] = 
-		{-2298, -2298, -2297, -2306, -2317, -2318, -2316, -2306, -2292, -2285,
-		 -2250, -2215, -2169, -2119, -2068, -2013, -1956, -1905, -1848, -1784,
-		 -1728.2, -1671.8, -1617.8};
+    static double g11[NUM_IGRF_YEARS_DEFINED] =
+        {-2298,  -2298,  -2297,  -2306,  -2317,  -2318,  -2316,  -2306,  -2292,  -2285,
+         -2250,  -2215,  -2169,  -2119,  -2068,  -2013,  -1956,  -1905,  -1848,  -1784,
+         -1728.2,  -1669.05,  -1585.9};
 	
 	return (g11[(int)floor(fracYearIndex)]*(1.0-fracYear) + 
 		g11[(int)ceil(fracYearIndex)]*fracYear);
@@ -370,10 +375,10 @@ double calcG11(double fracYearIndex, double fracYear)
 
 double calcH11(double fracYearIndex, double fracYear)
 {
-	static int h11[NUM_IGRF_YEARS_DEFINED] = 
-		{5922, 5909, 5898, 5875, 5845, 5817, 5808, 5812, 5821, 5810, 5815,
-		 5820, 5791, 5776, 5737, 5675, 5604, 5500, 5406, 5306, 5186.1, 5080.0, 
-		 4973.5};
+    static double h11[NUM_IGRF_YEARS_DEFINED] =
+        {5922,   5909,   5898,   5875,   5845,   5817,   5808,   5812,   5821,   5810,
+         5815,   5820,   5791,   5776,   5737,   5675,   5604,   5500,   5406,   5306,
+         5186.1,   5077.99,   4945.1};
 		 
 	return (h11[(int)floor(fracYearIndex)]*(1.0-fracYear) + 
 		h11[(int)ceil(fracYearIndex)]*fracYear);
@@ -955,9 +960,15 @@ hae_twixt_heeq(const double et, Vec v_in, Vec v_out, Direction direction)
 }
 
 
+/* heeq to heeq + 180
+ ** Written by Joshua Murphy (CU Boulder, LASP)
+ **  15 Jan 2014
+ **/
+
 int
 heeq_twixt_heeq180(const double et, Vec v_in, Vec v_out, Direction direction)
 {
+    //simple rotation around Z of 180 degrees
     Mat mat;
     hapgood_matrix(180, Z, mat);
     mat_times_vec(mat, v_in, v_out);

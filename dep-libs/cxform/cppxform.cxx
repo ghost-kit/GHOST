@@ -5,56 +5,74 @@ namespace cppForm
 
 cppxform::cppxform(DateTime Date, const char* sourceSystem, double inputVector[])
 {
-    std::vector<double> newVector;
-    newVector.push_back(inputVector[0]);
-    newVector.push_back(inputVector[1]);
-    newVector.push_back(inputVector[2]);
+    this->inVector[0] = inputVector[0];
+    this->inVector[1] = inputVector[1];
+    this->inVector[2] = inputVector[2];
 
-    this->inVector = newVector;
     this->inDate = Date;
     this->inSystem = std::string(sourceSystem);
+    this->outVector = NULL;
+
 }
 
 cppxform::~cppxform()
 {
-
+    if(this->outVector) delete [] this->outVector;
+    this->cleanHandler();
 }
 
+//USER SHOULD NOT DELETE THE RETURNED VALUE
+// This class manages the memory dealocation.
+// User should just set the value to void.
 double *cppxform::cxForm(const char *destSystem)
 {
+    if(this->outVector)
+    {
+        this->outVectorHandler.push_back(this->outVector);
+        this->outVector = NULL;
+    }
+
+    this->outVector = new double[3];
+
     long es = this->getES();
 
-    double* newVector = new double[3];
-    double* outVector = new double[3];
+    int retVal = cxform(this->inSystem.c_str(), destSystem, (double)es, this->inVector, this->outVector);
 
-    newVector[0] = this->inVector[0];
-    newVector[1] = this->inVector[1];
-    newVector[2] = this->inVector[2];
+//    std::cerr << "inVector:  " << this->inVector[0] << "," << this->inVector[1] << "," << this->inVector[2] << std::endl;
+//    std::cerr << "OutVector: " << this->outVector[0] << "," << this->outVector[1] << "," << this->outVector[2] << std::endl;
 
-    int retVal = cxform(this->inSystem.c_str(), destSystem, (double)es, newVector, outVector);
-
-    return outVector;
+    return this->outVector;
 }
 
-double *cppxform::cxForm2(const char *destSystem)
-{
-    long es = this->getES(true);
-
-    double* newVector = new double[3];
-    double* outVector = new double[3];
-
-    newVector[0] = this->inVector[0];
-    newVector[1] = this->inVector[1];
-    newVector[2] = this->inVector[2];
-
-    int retVal = cxform(this->inSystem.c_str(), destSystem, (double)es, newVector, outVector);
-
-    return outVector;
-}
 
 double cppxform::getMJD()
 {
     return this->inDate.getMJD();
+}
+
+void cppxform::setInVector(double vec[])
+{
+    this->inVector[0] = vec[0];
+    this->inVector[1] = vec[1];
+    this->inVector[2] = vec[2];
+}
+
+void cppxform::setSourceSystem(const char *name)
+{
+    this->inSystem = std::string(name);
+}
+
+//if you have cleared all references to the output values,
+//  you can use this to clear the memory
+void cppxform::cleanHandler()
+{
+    int numHandles = this->outVectorHandler.size();
+    for(int x = 0; x < numHandles; x++)
+    {
+        delete [] this->outVectorHandler[x];
+    }
+
+    this->outVectorHandler.clear();
 }
 
 long cppxform::cxRound(double d)
