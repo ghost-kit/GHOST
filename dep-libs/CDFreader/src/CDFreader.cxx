@@ -568,7 +568,7 @@ QList<QVariant>* CDFr::CDFreader::extractAttributeElements(CDFid fileID, long at
         //process the data
         for(int elem = 0; elem < numElements; elem++)
         {
-            dataList->push_back(QVariant((int8_t)data[elem]));
+            dataList->push_back(QVariant((qint8)data[elem]));
         }
 
         break;
@@ -580,7 +580,7 @@ QList<QVariant>* CDFr::CDFreader::extractAttributeElements(CDFid fileID, long at
        // std::cerr << "Unsigned 1 Byte Processing" << std::endl;
 
         //get the data
-        uint8_t *data = new uint8_t[numElements];
+        quint8 *data = new quint8[numElements];
         status = CDFgetAttrEntry(fileID, gzrEntry, attrN, entryNum, data);
 
         //check error - if so, exit the switch
@@ -589,7 +589,7 @@ QList<QVariant>* CDFr::CDFreader::extractAttributeElements(CDFid fileID, long at
         //process the data
         for(int elem = 0; elem < numElements; elem++)
         {
-            dataList->push_back(QVariant((uint8_t)data[elem]));
+            dataList->push_back(QVariant((quint8)data[elem]));
         }
 
 
@@ -622,7 +622,7 @@ QList<QVariant>* CDFr::CDFreader::extractAttributeElements(CDFid fileID, long at
        // std::cerr << "2 byte unsigned processing" << std::endl;
 
         //get the data
-        uint16_t *data = new uint16_t[numElements];
+        quint16 *data = new quint16[numElements];
         status = CDFgetAttrEntry(fileID, gzrEntry, attrN, entryNum, data);
 
         //check error - if so, exit the switch
@@ -631,7 +631,7 @@ QList<QVariant>* CDFr::CDFreader::extractAttributeElements(CDFid fileID, long at
         //process the data
         for(int elem = 0; elem < numElements; elem++)
         {
-            dataList->push_back(QVariant((uint16_t)data[elem]));
+            dataList->push_back(QVariant((quint16)data[elem]));
         }
         break;
     }
@@ -660,7 +660,7 @@ QList<QVariant>* CDFr::CDFreader::extractAttributeElements(CDFid fileID, long at
        // std::cout << "4 byte unsinged processing" << std::endl;
 
         //get the data
-        uint32_t *data = new uint32_t[numElements];
+        quint32 *data = new quint32[numElements];
         status = CDFgetAttrEntry(fileID, gzrEntry, attrN, entryNum, data);
 
         //check error - if so, exit the switch
@@ -669,7 +669,7 @@ QList<QVariant>* CDFr::CDFreader::extractAttributeElements(CDFid fileID, long at
         //process the data
         for(int elem = 0; elem < numElements; elem++)
         {
-            dataList->push_back(QVariant((uint32_t)data[elem]));
+            dataList->push_back(QVariant((quint32)data[elem]));
         }
         break;
     }
@@ -680,7 +680,7 @@ QList<QVariant>* CDFr::CDFreader::extractAttributeElements(CDFid fileID, long at
        // std::cerr << "8 byte int processing" << std::endl;
 
         //get the data
-        int64_t *data = new int64_t[numElements];
+        qint64 *data = new qint64[numElements];
         status = CDFgetAttrEntry(fileID, gzrEntry, attrN, entryNum, data);
 
         //check error - if so, exit the switch
@@ -689,7 +689,7 @@ QList<QVariant>* CDFr::CDFreader::extractAttributeElements(CDFid fileID, long at
         //process the data
         for(int elem = 0; elem < numElements; elem++)
         {
-            dataList->push_back(QVariant((int64_t)data[elem]));
+            dataList->push_back(QVariant((qint64)data[elem]));
         }
         break;
     }

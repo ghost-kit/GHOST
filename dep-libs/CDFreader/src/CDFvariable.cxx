@@ -1,5 +1,7 @@
 #include "CDFvariable.h"
 #include <iostream>
+#include <cstdlib>
+#include <stdio.h>
 
 //==================================================================//
 CDFr::CDFvariable::CDFvariable(CDFr::CDFreader *parent)
@@ -502,38 +504,38 @@ QVariant CDFr::CDFvariable::convertVoid2Variant(const void *data, const long dat
     case CDF_BYTE:
     case CDF_INT1:
     {
-        returnVal = QVariant(((int8_t*)data)[index]);
+        returnVal = QVariant(((qint8*)data)[index]);
         break;
     }
     case CDF_UINT1:
     {
-        returnVal = QVariant(((u_int8_t*)data)[index]);
+        returnVal = QVariant(((quint8*)data)[index]);
         break;
     }
     case CDF_INT2:
     {
-        returnVal = QVariant(((int16_t*)data)[index]);
+        returnVal = QVariant(((qint16*)data)[index]);
         break;
     }
     case CDF_UINT2:
     {
-        returnVal = QVariant(((u_int16_t*)data)[index]);
+        returnVal = QVariant(((quint16*)data)[index]);
         break;
     }
     case CDF_INT4:
     {
-        returnVal = QVariant(((int32_t*)data)[index]);
+        returnVal = QVariant(((qint32*)data)[index]);
         break;
     }
     case CDF_UINT4:
     {
-        returnVal = QVariant(((u_int32_t*)data)[index]);
+        returnVal = QVariant(((quint32*)data)[index]);
         break;
     }
     case CDF_TIME_TT2000:
     case CDF_INT8:
     {
-        returnVal = QVariant(((int64_t*)data)[index]);
+        returnVal = QVariant(((qint64*)data)[index]);
         break;
     }
     case CDF_CHAR:

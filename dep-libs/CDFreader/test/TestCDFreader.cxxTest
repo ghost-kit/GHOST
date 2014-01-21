@@ -2,7 +2,7 @@
 #define TESTCDFREADER_H
 
 #include "CDFreader.h"
-#include "String"
+#include <string>
 #include <QString>
 
 #include <cxxtest/TestSuite.h>
