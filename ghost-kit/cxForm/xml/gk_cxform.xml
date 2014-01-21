@@ -40,7 +40,7 @@
                     <Entry value="10" text="HEE"/>
                     <Entry value="11" text="HAE"/>
                     <Entry value="12" text="HEEQ"/>
-                    <Entry value="13" text="HEEQ - 180 (Enlil)"/>
+                    <Entry value="13" text="HEEQ + 180 (Enlil)"/>
 
                 </EnumerationDomain>
 
@@ -70,7 +70,7 @@
                 <Entry value="10" text="HEE"/>
                 <Entry value="11" text="HAE"/>
                 <Entry value="12" text="HEEQ"/>
-                <Entry value="13" text="HEEQ - 180 (Enlil)"/>
+                <Entry value="13" text="HEEQ + 180 (Enlil)"/>
 
                 </EnumerationDomain>
 

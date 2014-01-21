@@ -20,19 +20,30 @@ public:
 
     //transform commands
     double* cxForm(const char* destSystem);
-    double* cxForm2(const char *destSystem);
 
     //get MJD
     double getMJD();
+
+    //set vector
+    void setInVector(double vec[]);
+
+    //set source system
+    void setSourceSystem(const char *name);
+
+    //clean handler
+    void cleanHandler();
 
 protected:
     long   cxRound(double d);
     long   getES(int version=0);
 
 private:
-    std::vector<double>  inVector;
+    double               inVector[3];
     DateTime             inDate;
     std::string          inSystem;
+    double*              outVector;
+
+    std::vector<double*> outVectorHandler;
 
 };
 

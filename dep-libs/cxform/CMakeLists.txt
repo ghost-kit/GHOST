@@ -30,8 +30,34 @@ include_directories(BEFORE ${PREFIX}/include)
 
 set(cxLIBS ${PREFIX}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}ltrDateTime${CMAKE_STATIC_LIBRARY_SUFFIX})
 
-add_executable(testCppForm cppformTest.cxx)
-target_link_libraries(testCppForm ${cxLIBS} cppForm )
+# Test Configuration
+set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${PROJECT_SOURCE_DIR}/../../Utilities/cxxtest)
+find_package(CxxTest)
+if(CXXTEST_FOUND)
+    message(STATUS "cxxtest Found!")
+
+    include_directories(BEFORE ${CMAKE_CURRENT_BINARY_DIR}/install/include)
+
+    set(CXXTEST_USE_PYTHON TRUE)
+    include_directories(${CXXTEST_INCLUDE_DIR})
+    enable_testing()
+
+    CXXTEST_ADD_TEST(testCppXform TestCppXform.C "${CMAKE_CURRENT_SOURCE_DIR}/test/TestCppXform.cxxTest")
+    target_link_libraries(testCppXform cppForm  ${cxLIBS})
+
+    #move test file
+    set(DataFile "${CMAKE_CURRENT_SOURCE_DIR}/../../data-files/cdf_data/STA_L1_MAGB_RTN-20100101T000000Z-20100102T000000Z.cdf")
+    add_custom_command(TARGET testCDFreader PRE_BUILD
+                       COMMAND ${CMAKE_COMMAND} -E
+                       copy ${DataFile} $<TARGET_FILE_DIR:testCDFreader>)
+
+
+else()
+    message ( STATUS "Could NOT find CxxTest - unit testing not available" )
+endif()
+
+
+
 
 
 INSTALL(FILES

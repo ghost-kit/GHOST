@@ -1,0 +1,63 @@
+
+#include "../cppxform.h"
+#include "String"
+
+#include <cxxtest/TestSuite.h>
+#include <cxxtest/GlobalFixture.h>
+#include <cxxtest/ErrorPrinter.h>
+
+#include <iomanip>
+
+
+using namespace std;
+
+#define testFile ""
+#define CXXTEST_HAVE_EH
+#define CXXTEST_ABORT_TEST_ON_FAIL
+
+
+class TestCppXform : public CxxTest::TestSuite
+{
+public:
+
+    //Basic Test with reversal
+    void testConstruction(void)
+    {
+        DateTime newDate(56002.021);
+        double inVector[3];
+
+
+        inVector[0] = 81200.0;
+        inVector[1] = 2120.0;
+        inVector[2] = 12120.0;
+
+        cppForm::cppxform testUnit(newDate, "HEEQ180", inVector);
+        double* outVector = testUnit.cxForm("MAG");
+
+        cppForm::cppxform testUnit2(newDate, "MAG", outVector);
+        outVector = testUnit2.cxForm("HEEQ180");
+
+        TS_ASSERT_DELTA(inVector[0], outVector[0], 1e-6);
+        TS_ASSERT_DELTA(inVector[1], outVector[1], 1e-6);
+        TS_ASSERT_DELTA(inVector[2], outVector[2], 1e-6);
+
+        testUnit.setSourceSystem("GSM");
+        outVector = testUnit.cxForm("HEEQ180");
+
+        testUnit2.setInVector(outVector);
+        testUnit2.setSourceSystem("HEEQ180");
+
+        double *outVector2 = testUnit2.cxForm("GSM");
+
+        TS_ASSERT_DELTA(inVector[0], outVector2[0], 1e-6);
+        TS_ASSERT_DELTA(inVector[1], outVector2[1], 1e-6);
+        TS_ASSERT_DELTA(inVector[2], outVector2[2], 1e-6);
+    }
+
+
+    //More in-depth tests
+
+    //test against NASA data
+
+
+};
