@@ -6,9 +6,6 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_LIST_DIR}/cmake )
 INCLUDE_DIRECTORIES( ${CMAKE_CURRENT_SOURCE_DIR}/src)
 INCLUDE_DIRECTORIES( ${CMAKE_INSTALL_PREFIX}/include)
 
-IF(NOT PREFIX)
-    set(PREFIX /home/jjm390/Developer/GHOST/build/install)
-ENDIF()
 
 INCLUDE_DIRECTORIES( ${PREFIX}/include)
 
@@ -52,6 +49,8 @@ else()
     message ( STATUS "Could NOT find CxxTest - unit testing not available" )
 endif()
 
+
+set(CMAKE_INSTALL_PREFIX ${PREFIX})
 
 INSTALL(FILES
             ${PROJECT_BINARY_DIR}/${CMAKE_STATIC_LIBRARY_PREFIX}CDFreader${CMAKE_STATIC_LIBRARY_SUFFIX}
