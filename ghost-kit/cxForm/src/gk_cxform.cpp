@@ -246,8 +246,8 @@ int gk_cxform::RequestData(vtkInformation *request, vtkInformationVector **input
         }
 
         // Update points and release temp memory
-            output->SetPoints(newPts);
-            newPts->Delete();
+        output->SetPoints(newPts);
+        newPts->Delete();
 
         vtkDebugMacro( << "Tranforming any present Vector Point Data");
 
@@ -289,21 +289,32 @@ int gk_cxform::RequestData(vtkInformation *request, vtkInformationVector **input
 
                     OutArray->InsertNextTuple(xyzxform);
 
-//                    std::cerr << "IN:  " << xyz[0] << "," << xyz[1] << "," << xyz[2] << std::endl;
-//                    std::cerr << "OUT: " << xyzxform[0] << "," << xyzxform[1] << "," << xyzxform[2] << std::endl;
+                    //                    std::cerr << "IN:  " << xyz[0] << "," << xyz[1] << "," << xyz[2] << std::endl;
+                    //                    std::cerr << "OUT: " << xyzxform[0] << "," << xyzxform[1] << "," << xyzxform[2] << std::endl;
 
+                    xform.cleanHandler();
                 }
 
             }
-            else
+            else if(pd->GetArray(h)->GetNumberOfComponents() == 1)
             {
                 std::cerr << "Scalar Array - unimplemented as yet" << std::endl;
 
                 //TODO: copy scalar arrays
+                double inValue;
+                for(int a = 0; a < numElements; a++)
+                {
+                    OutArray->InsertNextTuple1(InArray->GetTuple1(a));
+
+                }
+            }
+            else
+            {
+                std::cerr << "only scalar and 3-vectors are supported at this point" << std::endl;
             }
 
             //update the array
-            output->GetPointData()->AddArray(OutArray);
+            outPD->AddArray(OutArray);
             OutArray->Delete();
 
             std::cerr << "Deleted Tempoary Memory" << std::endl;
@@ -314,8 +325,8 @@ int gk_cxform::RequestData(vtkInformation *request, vtkInformationVector **input
     this->UpdateProgress (.6);
 
 
-//TODO: Transform Cells
-    vtkWarningMacro(<< "We have not yet implemented Cell Data Transformation");
+    //TODO: Transform Cells
+    //vtkWarningMacro(<< "We have not yet implemented Cell Data Transformation");
 
     this->UpdateProgress (.8);
 
@@ -324,51 +335,49 @@ int gk_cxform::RequestData(vtkInformation *request, vtkInformationVector **input
 
 
     if (newNormals)
-      {
-      outPD->SetNormals(newNormals);
-      newNormals->Delete();
-      outPD->CopyNormalsOff();
-      }
+    {
+        outPD->SetNormals(newNormals);
+        newNormals->Delete();
+        outPD->CopyNormalsOff();
+    }
 
     if (newVectors)
-      {
-      outPD->SetVectors(newVectors);
-      newVectors->Delete();
-      outPD->CopyVectorsOff();
-      }
+    {
+        outPD->SetVectors(newVectors);
+        newVectors->Delete();
+        outPD->CopyVectorsOff();
+    }
 
     if (newCellNormals)
-      {
-      outCD->SetNormals(newCellNormals);
-      newCellNormals->Delete();
-      outCD->CopyNormalsOff();
-      }
+    {
+        outCD->SetNormals(newCellNormals);
+        newCellNormals->Delete();
+        outCD->CopyNormalsOff();
+    }
 
     if (newCellVectors)
-      {
-      outCD->SetVectors(newCellVectors);
-      newCellVectors->Delete();
-      outCD->CopyVectorsOff();
-      }
+    {
+        outCD->SetVectors(newCellVectors);
+        newCellVectors->Delete();
+        outCD->CopyVectorsOff();
+    }
 
-//    outPD->PassData(pd);
-//    outCD->PassData(cd);
 
     //TODO: check field data manipulations to set the units/coordinate system properly.
     vtkFieldData* inFD = input->GetFieldData();
     if (inFD)
-      {
-      vtkFieldData* outFD = output->GetFieldData();
-      if (!outFD)
-        {
-        outFD = vtkFieldData::New();
-        output->SetFieldData(outFD);
-        // We can still use outFD since it's registered
-        // by the output
-        outFD->Delete();
-        }
-      outFD->PassData(inFD);
-      }
+    {
+//        vtkFieldData* outFD = output->GetFieldData();
+//        if (!outFD)
+//        {
+//            outFD = vtkFieldData::New();
+//            output->SetFieldData(outFD);
+//            // We can still use outFD since it's registered
+//            // by the output
+//            outFD->Delete();
+//        }
+//        outFD->PassData(inFD);
+    }
 
     this->UpdateProgress (1.0);
 

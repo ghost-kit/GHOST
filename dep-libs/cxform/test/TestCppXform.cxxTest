@@ -21,7 +21,7 @@ class TestCppXform : public CxxTest::TestSuite
 public:
 
     //Basic Test with reversal
-    void testConstruction(void)
+    void testReversal(void)
     {
         DateTime newDate(56002.021);
         double inVector[3];

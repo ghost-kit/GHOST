@@ -13,6 +13,7 @@ endif()
 option(GHOST_BUILD_LFM "Build the ParaView LFM Reader" ON)
 option(GHOST_BUILD_ENLIL "Build the ParaView ENLIL Reader" ON)
 option(GHOST_BUILD_CDAWEB "Build the ParaView CDAweb Tool Kit" ON)
+option(GHOST_BUILD_CXFORM "Build the cxForm Tranform Filter" ON)
 option(GHOST_MASTER_BUILD "Plugin Being being built as Master Build (DO NOT SET MANUALLY)" OFF)
 
 #Set Output Direcotries
@@ -50,7 +51,7 @@ include(CMakeDependentOption)
     set(SHARED_LIBS
         ${CMAKE_INSTALL_PREFIX}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}io${CMAKE_STATIC_LIBRARY_SUFFIX}
         ${CMAKE_INSTALL_PREFIX}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}ltrDateTime${CMAKE_STATIC_LIBRARY_SUFFIX}
-        ${CMAKE_INSTALL_PREFIX}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}cxform${CMAKE_STATIC_LIBRARY_SUFFIX}
+        ${CMAKE_INSTALL_PREFIX}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}cppForm${CMAKE_STATIC_LIBRARY_SUFFIX}
         )
 
     set(CDF_LIBS
@@ -120,10 +121,19 @@ if(GHOST_BUILD_CDAWEB)
     include(CDAweb/CDAweb_Files.cmake)
 endif()
 
+#Transform Filter
+if(GHOST_BUILD_CXFORM)
+    message(STATUS "Building CXForm Transform Module")
+
+    #Need CDAweb
+    include(cxform/GKcxFormFiles.cmake)
+endif()
+
 ##gather all built files
 set(SERVER_MAN_XML_LIST ${CDAWebTK_SM_XML}
                         ${ENLIL_SM_XML}
                         ${LFM_SM_XML}
+                        ${GKcxForm_SM_XML}
 
     )
 
@@ -138,6 +148,7 @@ set(GUI_INTERFACE_LIST  ${CDAWebTK_PROP_IFACES}
 set(SERVER_MAN_SRC_LIST ${CDAWebTK_SM_SRC}
                         ${ENLIL_SM_SRC}
                         ${LFM_SM_SRC}
+                        ${GKcxForm_SM_SRC}
     )
 
 set(ADD_SRC_LIST        ${CDAWebTK_SRC}

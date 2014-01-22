@@ -28,10 +28,8 @@ include(ParaViewPlugins)
 #get file list
 INCLUDE_DIRECTORIES(src)
 
-#temp
+include(GKcxFormFiles.cmake)
 
-set(GKcxForm_SM_XML xml/gk_cxform.xml)
-set(GKcxForm_SM_SRC src/gk_cxform.cpp)
 
 
 #plugin (Filter for CDAweb)
