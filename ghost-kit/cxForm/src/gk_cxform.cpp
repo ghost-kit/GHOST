@@ -251,7 +251,7 @@ int gk_cxform::RequestData(vtkInformation *request, vtkInformationVector **input
 
         vtkDebugMacro( << "Tranforming any present Vector Point Data");
 
-        //TODO: Tranform Vector Data
+        //Tranform Point Data
         int numArrays = pd->GetNumberOfArrays();
 
         for(int h = 0; h < numArrays; h++)
