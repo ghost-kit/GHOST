@@ -318,6 +318,7 @@ int vtkEnlilReader::RequestInformation(
     this->CurrentFileName = (char*) this->fileNames[0].c_str();
     this->FileName = CurrentFileName;
 
+    std::cerr << "GetINFO filename processing: " << this->FileName << std::endl;
     if(status)
     {
         //Work Around for restore state problems
@@ -332,30 +333,17 @@ int vtkEnlilReader::RequestInformation(
         /*Set Information*/
         //Set Time
 
-        // Special case: if the time range is a single value, supress it.  This is
-        // most likely from a data set that is a single file with no time anyway.
-        // Even if it is not, how much value added is there for a single time value?
-        //  This section is adapted from the ParaView vtkFileSeriesReader
-        if (this->timeRange[0] >= this->timeRange[1])
-        {
-            DataOutputInfo->Remove(vtkStreamingDemandDrivenPipeline::TIME_RANGE());
-            DataOutputInfo->Remove(vtkStreamingDemandDrivenPipeline::TIME_STEPS());
-        }
-        else
-        {
-            DataOutputInfo->Set(
-                        vtkStreamingDemandDrivenPipeline::TIME_STEPS(),
-                        this->TimeSteps.data(),
-                        this->NumberOfTimeSteps);
+        DataOutputInfo->Set(
+                    vtkStreamingDemandDrivenPipeline::TIME_STEPS(),
+                    this->TimeSteps.data(),
+                    this->NumberOfTimeSteps);
 
-            DataOutputInfo->Set(
-                        vtkStreamingDemandDrivenPipeline::TIME_RANGE(),
-                        this->timeRange,
-                        2);
+        DataOutputInfo->Set(
+                    vtkStreamingDemandDrivenPipeline::TIME_RANGE(),
+                    this->timeRange,
+                    2);
 
-            //            std::cout << "time Range: " << this->timeRange[0] << " to " << this->timeRange[1] << std::endl;
 
-        }
 
         //Set Extents
         DataOutputInfo->Set(
@@ -464,7 +452,7 @@ double vtkEnlilReader::getRequestedTime(vtkInformationVector* outputVector)
         //set the modified julian date
         this->current_MJD = requestedTimeValue;
 
-        //        std::cout << "Requested Time Step: " << setprecision(12) << requestedTimeValue << std::endl;
+                std::cerr << "Requested Time Step: " << setprecision(12) << requestedTimeValue << std::endl;
     }
 
     return requestedTimeValue;
@@ -476,6 +464,7 @@ double vtkEnlilReader::getRequestedTime(vtkInformationVector* outputVector)
 
 void vtkEnlilReader::AddFileName(const char *fname)
 {
+    std::cerr << "Added FileName: " << fname << std::endl;
     this->fileNames.push_back(fname);
     this->Modified();
 }
@@ -487,7 +476,14 @@ const char* vtkEnlilReader::GetFileName(unsigned int idx)
 
 void vtkEnlilReader::RemoveAllFileNames()
 {
+    std::cerr << "Cleared all File Names" << std::endl;
     this->fileNames.clear();
+    this->numberOfArrays = 0;
+    this->timesCalulated = false;
+    this->NumberOfTimeSteps = 0;
+    this->gridClean = false;
+
+    this->FileName = NULL;
     this->Modified();
 }
 
@@ -587,13 +583,13 @@ int vtkEnlilReader::LoadVariableData(vtkInformationVector* outputVector)
                 //                                             << std::endl;
 
                 //when loading from state fiile, we may get some junk marking us to read bad data
-//                if(this->ExtentOutOfBounds(this->SubExtent, this->WholeExtent))
-//                {
-//                    //                    std::cout << "Bad SubExtents" << std::endl;
-////                    this->printExtents(this->WholeExtent, (char*)"Whole Extents: ");
-////                    this->printExtents(this->SubExtent, (char*)"Bad SubExtent: ");
+                //                if(this->ExtentOutOfBounds(this->SubExtent, this->WholeExtent))
+                //                {
+                //                    //                    std::cout << "Bad SubExtents" << std::endl;
+                ////                    this->printExtents(this->WholeExtent, (char*)"Whole Extents: ");
+                ////                    this->printExtents(this->SubExtent, (char*)"Bad SubExtent: ");
 
-//                }
+                //                }
 
                 this->LoadArrayValues(array, outputVector);
                 this->SetProgress(progress);
