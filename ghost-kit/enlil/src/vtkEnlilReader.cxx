@@ -452,7 +452,7 @@ double vtkEnlilReader::getRequestedTime(vtkInformationVector* outputVector)
         //set the modified julian date
         this->current_MJD = requestedTimeValue;
 
-                std::cerr << "Requested Time Step: " << setprecision(12) << requestedTimeValue << std::endl;
+//                std::cerr << "Requested Time Step: " << setprecision(12) << requestedTimeValue << std::endl;
     }
 
     return requestedTimeValue;
@@ -464,7 +464,7 @@ double vtkEnlilReader::getRequestedTime(vtkInformationVector* outputVector)
 
 void vtkEnlilReader::AddFileName(const char *fname)
 {
-    std::cerr << "Added FileName: " << fname << std::endl;
+//    std::cerr << "Added FileName: " << fname << std::endl;
     this->fileNames.push_back(fname);
     this->Modified();
 }
@@ -476,7 +476,7 @@ const char* vtkEnlilReader::GetFileName(unsigned int idx)
 
 void vtkEnlilReader::RemoveAllFileNames()
 {
-    std::cerr << "Cleared all File Names" << std::endl;
+//    std::cerr << "Cleared all File Names" << std::endl;
     this->fileNames.clear();
     this->numberOfArrays = 0;
     this->timesCalulated = false;
