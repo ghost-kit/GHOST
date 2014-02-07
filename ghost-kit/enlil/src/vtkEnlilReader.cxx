@@ -46,6 +46,7 @@
 #include "readerCache.h"
 #include "vtkNew.h"
 #include <QString>
+#include <QStringList>
 vtkStandardNewMacro(vtkEnlilReader)
 
 
@@ -452,7 +453,7 @@ double vtkEnlilReader::getRequestedTime(vtkInformationVector* outputVector)
         //set the modified julian date
         this->current_MJD = requestedTimeValue;
 
-//                std::cerr << "Requested Time Step: " << setprecision(12) << requestedTimeValue << std::endl;
+        //                std::cerr << "Requested Time Step: " << setprecision(12) << requestedTimeValue << std::endl;
     }
 
     return requestedTimeValue;
@@ -464,7 +465,7 @@ double vtkEnlilReader::getRequestedTime(vtkInformationVector* outputVector)
 
 void vtkEnlilReader::AddFileName(const char *fname)
 {
-//    std::cerr << "Added FileName: " << fname << std::endl;
+    //    std::cerr << "Added FileName: " << fname << std::endl;
     this->fileNames.push_back(fname);
     this->Modified();
 }
@@ -476,7 +477,7 @@ const char* vtkEnlilReader::GetFileName(unsigned int idx)
 
 void vtkEnlilReader::RemoveAllFileNames()
 {
-//    std::cerr << "Cleared all File Names" << std::endl;
+    //    std::cerr << "Cleared all File Names" << std::endl;
     this->fileNames.clear();
     this->numberOfArrays = 0;
     this->timesCalulated = false;
@@ -1513,12 +1514,43 @@ int vtkEnlilReader::LoadMetaData(vtkInformationVector *outputVector)
     if(status)
     {
         //File Name
+        vtkNew<vtkStringArray> FilePathString;
+        FilePathString->SetName("File Path");
+        FilePathString->SetNumberOfComponents(1);
+        FilePathString->InsertNextValue(this->CurrentFileName);
+
+        Data->GetFieldData()->AddArray(FilePathString.GetPointer());
+
+        //extract directory name
+        vtkNew<vtkStringArray> currentDirectory;
+        currentDirectory->SetName("Current Directory");
+        currentDirectory->SetNumberOfComponents(1);
+
+        //extract file name
         vtkNew<vtkStringArray> FileNameString;
         FileNameString->SetName("File Name");
         FileNameString->SetNumberOfComponents(1);
-        FileNameString->InsertNextValue(this->CurrentFileName);
 
-        Data->GetFieldData()->AddArray(FileNameString.GetPointer());
+
+        QString directoryExtract(this->CurrentFileName);
+
+        //TODO: To make this work with windows, we would need to condition this.
+        QStringList dirParts = directoryExtract.split("/");
+        int numDirParts = dirParts.size();
+
+        if(numDirParts > 1)
+        {
+            currentDirectory->InsertNextValue(dirParts[numDirParts-2].toAscii().data());
+            FileNameString->InsertNextValue(dirParts[numDirParts-1].toAscii().data());
+
+            Data->GetFieldData()->AddArray(currentDirectory.GetPointer());
+            Data->GetFieldData()->AddArray(FileNameString.GetPointer());
+        }
+        else
+        {
+            std::cerr << "Cannot Parse Directory" << std::endl;
+        }
+
 
         //date string
         vtkNew<vtkStringArray> DateString;
