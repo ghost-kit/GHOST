@@ -1512,6 +1512,13 @@ int vtkEnlilReader::LoadMetaData(vtkInformationVector *outputVector)
 
     if(status)
     {
+        //File Name
+        vtkNew<vtkStringArray> FileNameString;
+        FileNameString->SetName("File Name");
+        FileNameString->SetNumberOfComponents(1);
+        FileNameString->InsertNextValue(this->CurrentFileName);
+
+        Data->GetFieldData()->AddArray(FileNameString.GetPointer());
 
         //date string
         vtkNew<vtkStringArray> DateString;
