@@ -139,6 +139,12 @@ protected:
 
     DateTime textToDateTime(QString dateString);
 
+    vtkSMStringVectorProperty *SaveStateGroup;          // = vtkSMStringVectorProperty::SafeDownCast(smproxy->GetProperty("SaveStateGroup"));
+    vtkSMStringVectorProperty *SaveStateObservatory;    // = vtkSMStringVectorProperty::SafeDownCast(smproxy->GetProperty("SaveStateObservatory"));
+    vtkSMStringVectorProperty *SaveStateInstrument;     // = vtkSMStringVectorProperty::SafeDownCast(smproxy->GetProperty("SaveStateInstrument"));
+    vtkSMStringVectorProperty *SaveStateDataSet;        // = vtkSMStringVectorProperty::SafeDownCast(smproxy->GetProperty("SaveStateDataSet"));
+    vtkSMStringVectorProperty *SaveStateVariables;      // = vtkSMStringVectorProperty::SafeDownCast(smproxy->GetProperty("SaveStateVariables"));
+
 
 private:
     Ui::ScInfoPropWidget *ui;

@@ -132,6 +132,7 @@
             </StringVectorProperty>
 
             <StringVectorProperty   name="SaveStateGroup"
+                                    number_of_elements = "1"
                                     default_values=""
                                     immediate_update="1"
                                     panel_visibility="never">
@@ -143,6 +144,7 @@
             </StringVectorProperty>
 
             <StringVectorProperty   name="SaveStateObservatory"
+                                    number_of_elements = "1"
                                     default_values=""
                                     immediate_update="1"
                                     panel_visibility="never">
@@ -154,6 +156,7 @@
             </StringVectorProperty>
 
             <StringVectorProperty   name="SaveStateInstrument"
+                                    number_of_elements = "1"
                                     default_values=""
                                     immediate_update="1"
                                     panel_visibility="never">
@@ -165,6 +168,7 @@
             </StringVectorProperty>
 
             <StringVectorProperty   name="SaveStateDataSet"
+                                    number_of_elements = "1"
                                     default_values=""
                                     immediate_update="1"
                                     panel_visibility="never">
@@ -176,6 +180,7 @@
             </StringVectorProperty>
 
             <StringVectorProperty   name="SaveStateVariables"
+                                    number_of_elements = "1"
                                     default_values=""
                                     immediate_update="1"
                                     panel_visibility="never">
