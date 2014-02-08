@@ -131,16 +131,61 @@
 
             </StringVectorProperty>
 
-            <StringVectorProperty   name="SaveState"
+            <StringVectorProperty   name="SaveStateGroup"
                                     default_values=""
                                     immediate_update="1"
                                     panel_visibility="never">
 
                 <Documentation>
-                    This Property is for Saving the State of the Property Panel.
+                    This Property is for Saving the State of the Observatory Group Selection.
                 </Documentation>
 
             </StringVectorProperty>
+
+            <StringVectorProperty   name="SaveStateObservatory"
+                                    default_values=""
+                                    immediate_update="1"
+                                    panel_visibility="never">
+
+                <Documentation>
+                    This Property is for Saving the State of the Observatory Selection.
+                </Documentation>
+
+            </StringVectorProperty>
+
+            <StringVectorProperty   name="SaveStateInstrument"
+                                    default_values=""
+                                    immediate_update="1"
+                                    panel_visibility="never">
+
+                <Documentation>
+                    This Property is for Saving the State of the Instrument Selection.
+                </Documentation>
+
+            </StringVectorProperty>
+
+            <StringVectorProperty   name="SaveStateDataSet"
+                                    default_values=""
+                                    immediate_update="1"
+                                    panel_visibility="never">
+
+                <Documentation>
+                    This Property is for Saving the State of the DataSet Selection.
+                </Documentation>
+
+            </StringVectorProperty>
+
+            <StringVectorProperty   name="SaveStateVariables"
+                                    default_values=""
+                                    immediate_update="1"
+                                    panel_visibility="never">
+
+                <Documentation>
+                    This Property is for Saving the State of the Variable Selection.
+                </Documentation>
+
+            </StringVectorProperty>
+
 
 
             <ExposedProperties>

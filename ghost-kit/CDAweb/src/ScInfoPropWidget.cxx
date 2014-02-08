@@ -151,7 +151,9 @@ ScInfoPropWidget::~ScInfoPropWidget()
 void ScInfoPropWidget::apply()
 {
 
-//    std::cout << "APPLY CLICKED" << std::endl;
+    std::cout << "APPLY CLICKED" << std::endl;
+
+    std::cout << "Initialize Save State" << std::endl;
 
     //gather the requisite selection information
     QMap<QString, QMap<QString, QStringList> > selectionMap;
