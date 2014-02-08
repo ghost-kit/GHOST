@@ -43,7 +43,7 @@ void FileDownloader::fileDownloaded(QNetworkReply* pReply)
 
 void FileDownloader::downloadError(QNetworkReply::NetworkError error)
 {
-    std::cout << "Download Error occured" << std::endl;
+    std::cerr << "Download Error occured" << std::endl;
 }
 
 QByteArray FileDownloader::downloadedData() const

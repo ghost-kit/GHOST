@@ -152,9 +152,9 @@ bool vtkSpaceCraftInfoHandler::processCDAWeb(vtkMultiBlockDataSet *mb)
 
         for(elementsIter = this->DataCache[DataSet][time].begin(); elementsIter != this->DataCache[DataSet][time].end(); ++elementsIter)
         {
-            std::cout << "DATA[" << time << "][" << (*elementsIter).varName.toStdString()
-                      << "]: " << (*elementsIter).data.toDouble() << " " << (*elementsIter).units.toStdString() << " :Bad Data: "
-                      << (*elementsIter).badDataValue.toDouble() << std::endl;
+//            std::cout << "DATA[" << time << "][" << (*elementsIter).varName.toStdString()
+//                      << "]: " << (*elementsIter).data.toDouble() << " " << (*elementsIter).units.toStdString() << " :Bad Data: "
+//                      << (*elementsIter).badDataValue.toDouble() << std::endl;
 
 
             vtkDoubleArray *newDataElement = vtkDoubleArray::New();
@@ -205,10 +205,10 @@ bool vtkSpaceCraftInfoHandler::processCDAWebSource(vtkMultiBlockDataSet *mb)
     mb->SetNumberOfBlocks(this->DownloadedFileNames.size());
 
 //    std::cout << "File Names being processed:" << std::endl;
-    for(int h=0; h < this->DownloadedFileNames.size(); h++)
-    {
-        std::cout << this->DownloadedFileNames.values()[h].toAscii().data() << std::endl;
-    }
+//    for(int h=0; h < this->DownloadedFileNames.size(); h++)
+//    {
+//        std::cout << this->DownloadedFileNames.values()[h].toAscii().data() << std::endl;
+//    }
 
 //    std::cout << "Number of NEW blocks: " << mb->GetNumberOfBlocks() << std::endl;
 
@@ -301,7 +301,7 @@ void vtkSpaceCraftInfoHandler::checkCDFstatus(CDFstatus status)
 //=========================================================================================//
 void vtkSpaceCraftInfoHandler::LoadCDFData()
 {
-    std::cout << __FUNCTION__ << std::endl;
+//    std::cout << __FUNCTION__ << std::endl;
     this->cleanData();
 
     QVector<double> timeSteps;
@@ -328,7 +328,7 @@ void vtkSpaceCraftInfoHandler::LoadCDFData()
 //=========================================================================================//
 void vtkSpaceCraftInfoHandler::LoadCDFDataSource()
 {
-    std::cout << __FUNCTION__ << std::endl;
+//    std::cout << __FUNCTION__ << std::endl;
     this->cleanData();
 
     QMap<QString, QString>::Iterator iter;
@@ -942,9 +942,9 @@ void vtkSpaceCraftInfoHandler::SetSCIData(const char *group, const char *observa
                         {
                             this->urlMap[DSet] = currentObject;
 
-                            std::cout << "URL: " << this->urlMap[DSet]->operator []("Name").toAscii().data() << std::endl;
-                            std::cout << "Added to the URL map at key " << DSet.toAscii().data() << std::endl;
-                            std::cout << "Size of Map: " << this->urlMap.size() << std::endl;
+//                            std::cout << "URL: " << this->urlMap[DSet]->operator []("Name").toAscii().data() << std::endl;
+//                            std::cout << "Added to the URL map at key " << DSet.toAscii().data() << std::endl;
+//                            std::cout << "Size of Map: " << this->urlMap.size() << std::endl;
 
                             //Download the actual files
                             statusBar.setStatusBarMessage(("Downloading " + DSet));
@@ -1002,7 +1002,7 @@ void vtkSpaceCraftInfoHandler::SetSCIData(const char *group, const char *observa
 //Time Fit Handler
 void vtkSpaceCraftInfoHandler::SetTimeFitHandler(int handler)
 {
-    std::cout << "Selected a New Time Fit Handler" << std::endl;
+//    std::cout << "Selected a New Time Fit Handler" << std::endl;
 }
 
 //=========================================================================================//
@@ -1016,7 +1016,7 @@ void vtkSpaceCraftInfoHandler::SetBadDataHandler(int handler)
     switch(handler)
     {
     case 0:
-        std::cout << "BDHandler: default BadDataHandler" << std::endl;
+//        std::cout << "BDHandler: default BadDataHandler" << std::endl;
         delete [] this->BDhandler;
         this->BDhandler = new BadDataHandler();
 
@@ -1025,7 +1025,7 @@ void vtkSpaceCraftInfoHandler::SetBadDataHandler(int handler)
         std::cerr << "Linear Interp not yet implemented. Using last selected." << std::endl;
         break;
     case 2:
-        std::cout << "BDHandler: omitBDhandler" << std::endl;
+//        std::cout << "BDHandler: omitBDhandler" << std::endl;
         delete [] this->BDhandler;
         this->BDhandler = new omitBDHandler();
 
@@ -1080,7 +1080,7 @@ int vtkSpaceCraftInfoHandler::RequestDataSource(vtkInformation *request, vtkInfo
     }
     else
     {
-        std::cout << "MB set created successfully... now what?" << std::endl;
+//        std::cout << "MB set created successfully... now what?" << std::endl;
     }
 
     this->outInfo = info;
@@ -1108,7 +1108,7 @@ int vtkSpaceCraftInfoHandler::RequestInfoFilter(vtkInformation *request, vtkInfo
         this->NumberOfTimeSteps = this->inInfo->Length(vtkStreamingDemandDrivenPipeline::TIME_STEPS());
         double *timeValues = this->inInfo->Get(vtkStreamingDemandDrivenPipeline::TIME_STEPS());
 
-        std::cout << "Number of time steps: " << this->NumberOfTimeSteps  << std::endl;
+//        std::cout << "Number of time steps: " << this->NumberOfTimeSteps  << std::endl;
 
         //push time steps into list
         this->timeSteps.clear();
@@ -1232,14 +1232,14 @@ void vtkSpaceCraftInfoHandler::setNumOutputPorts(int value)
 void vtkSpaceCraftInfoHandler::setTempPath(const char *path)
 {
     this->tempFilePath = QString(path) + "/";
-    std::cout << "You are trying to set your path to: " << this->tempFilePath.toAscii().data() << std::endl;
+//    std::cout << "You are trying to set your path to: " << this->tempFilePath.toAscii().data() << std::endl;
 
 }
 
 //===============================================//
 void vtkSpaceCraftInfoHandler::setOverShoot(int value)
 {
-    std::cout << "Setting OverShoot to " <<  value << " Minutes." << std::endl;
+//    std::cout << "Setting OverShoot to " <<  value << " Minutes." << std::endl;
     this->overShoot = value;
 
 }

@@ -133,8 +133,8 @@ void vtkSpaceCraftInfoSource::SetBadDataHandler(int handler)
 //===============================================//
 void vtkSpaceCraftInfoSource::setTimeRange(const double start, const double end)
 {
-    std::cout << "Start MJD: " << start << std::endl;
-    std::cout << "End MJD:   " << end << std::endl;
+//    std::cout << "Start MJD: " << start << std::endl;
+//    std::cout << "End MJD:   " << end << std::endl;
 
     this->infoHandler.setStartTime(start);
     this->infoHandler.setEndTime(end);
