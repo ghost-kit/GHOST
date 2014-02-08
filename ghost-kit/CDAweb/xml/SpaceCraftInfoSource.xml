@@ -75,6 +75,18 @@
 
             </DoubleVectorProperty>
 
+            <StringVectorProperty   name="SaveState"
+                                    default_values=""
+                                    immediate_update="1"
+                                    panel_visibility="never">
+
+                <Documentation>
+                    This Property is for Saving the State of the Property Panel.
+                </Documentation>
+
+            </StringVectorProperty>
+
+
 
             <IntVectorProperty name="TimeFitHandler"
                                 command="SetTimeFitHandler"
