@@ -921,8 +921,6 @@ void vtkSpaceCraftInfoHandler::SetSCIData(const char *group, const char *observa
 
                     url = url + "?format=cdf";
 
-                    std::cerr << url.toAscii().data() << std::endl;
-
                     //get the data
                     manager.Get(url,QString("DataResult"),QString("FileDescription"));
 

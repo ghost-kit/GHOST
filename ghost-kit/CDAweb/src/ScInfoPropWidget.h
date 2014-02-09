@@ -60,9 +60,13 @@ protected:
 
     //state helpers
     void cleanStateProperties();
+    void cleanStateGroupList();
+    void cleanStateObservatoryList();
+    void cleanStateInstrumentList();
+    void cleanStateDataSetList();
+    void cleanStateVariableList();
 
-    //Data Selection Array Handlers
-
+    //**Data Selection Array Handlers**//
     //group selection handlers
     vtkDataArraySelection *GroupSelectionTracker;
 
@@ -139,12 +143,19 @@ protected:
 
     DateTime textToDateTime(QString dateString);
 
-    vtkSMStringVectorProperty *SaveStateGroup;          // = vtkSMStringVectorProperty::SafeDownCast(smproxy->GetProperty("SaveStateGroup"));
-    vtkSMStringVectorProperty *SaveStateObservatory;    // = vtkSMStringVectorProperty::SafeDownCast(smproxy->GetProperty("SaveStateObservatory"));
-    vtkSMStringVectorProperty *SaveStateInstrument;     // = vtkSMStringVectorProperty::SafeDownCast(smproxy->GetProperty("SaveStateInstrument"));
-    vtkSMStringVectorProperty *SaveStateDataSet;        // = vtkSMStringVectorProperty::SafeDownCast(smproxy->GetProperty("SaveStateDataSet"));
-    vtkSMStringVectorProperty *SaveStateVariables;      // = vtkSMStringVectorProperty::SafeDownCast(smproxy->GetProperty("SaveStateVariables"));
+    //Active Selection State
+    vtkSMStringVectorProperty *SaveStateGroup;
+    vtkSMStringVectorProperty *SaveStateObservatory;
+    vtkSMStringVectorProperty *SaveStateInstrument;
+    vtkSMStringVectorProperty *SaveStateDataSet;
+    vtkSMStringVectorProperty *SaveStateVariables;
 
+    //GUI State
+    vtkSMStringVectorProperty *SaveStateGroupList;
+    vtkSMStringVectorProperty *SaveStateObservatoryList;
+    vtkSMStringVectorProperty *SaveStateInstrumentList;
+    vtkSMStringVectorProperty *SaveStateDataSetList;
+    vtkSMStringVectorProperty *SaveStateVariablesList;
 
 private:
     Ui::ScInfoPropWidget *ui;
