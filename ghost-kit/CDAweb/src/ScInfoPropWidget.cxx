@@ -47,6 +47,14 @@ ScInfoPropWidget::ScInfoPropWidget(vtkSMProxy *smproxy, vtkSMProperty *smpropert
     this->SaveStateDataSetList     = vtkSMStringVectorProperty::SafeDownCast(this->smProxy->GetProperty("SaveStateDataSetList"));
     this->SaveStateVariablesList   = vtkSMStringVectorProperty::SafeDownCast(this->smProxy->GetProperty("SaveStateVariablesList"));
 
+    //initialize current state
+    this->currentGroupList = vtkStringList::New();
+    this->currentObservatoryList = vtkStringList::New();
+    this->currentInstrumentList = vtkStringList::New();
+    this->currentDataSetList = vtkStringList::New();
+    this->currentVariablesList = vtkStringList::New();
+
+
     //===============================================================================================
     //DEBUG//
     if(this->SaveStateGroup->GetNumberOfElements() > 0)
@@ -216,6 +224,13 @@ ScInfoPropWidget::ScInfoPropWidget(vtkSMProxy *smproxy, vtkSMProperty *smpropert
 ScInfoPropWidget::~ScInfoPropWidget()
 {
 
+    //clean states
+    this->currentGroupList->Delete();
+    this->currentObservatoryList->Delete();
+    this->currentInstrumentList->Delete();
+    this->currentDataSetList->Delete();
+    this->currentVariablesList->Delete();
+
     delete ui;
 }
 
@@ -226,69 +241,23 @@ void ScInfoPropWidget::apply()
 
     //save state of Group List
     this->cleanStateGroupList();
-    int groupListSize = this->ObsGroupList.size();
-    for(int x = 0; x < groupListSize; x++)
-    {
-        this->SaveStateGroupList->SetElement(x, this->ObsGroupList[x].toAscii().data());
-    }
+    this->SaveStateGroupList->SetElements(this->currentGroupList);
 
     //save state of Observatory List
     this->cleanStateObservatoryList();
-    int obsListSize = this->ObservatoryList.size();
-    for(int x = 0; x < obsListSize; x++)
-    {
-        this->SaveStateObservatoryList->SetElement(x, this->ObservatoryList[x].toAscii().data());
-    }
+    this->SaveStateObservatoryList->SetElements(this->currentObservatoryList);
 
     //Save state of Instrument List
     this->cleanStateInstrumentList();
-    int instListSize = this->InstrumentList.size();
-    QStringList InstListNames = this->InstrumentList.keys();
-    QStringList InstListDesc  = this->InstrumentList.values();
-
-    int listCounter = 0;
-    for(int x = 0; x < instListSize; x++)
-    {
-        if(InstListDesc[x] != "")
-        {
-            this->SaveStateInstrumentList->SetElement(listCounter, QString(InstListNames[x] + ";;" + InstListDesc[x]).toAscii().data());
-            listCounter++;
-        }
-    }
+    this->SaveStateInstrumentList->SetElements(this->currentInstrumentList);
 
     //Save state of Data Set List
     this->cleanStateDataSetList();
-    QStringList DSlist = this->DataSetInformation.keys();
-    QString DSEntry;
-    int DSListSize = DSlist.size();
-    listCounter = 0;
-    for(int x = 0; x < DSListSize; x++)
-    {
-        if(!this->InstrumentSelectionTracker->ArrayIsEnabled(DSlist[x].toAscii().data())) continue;
-
-        QString headName = DSlist[x];
-        QString headDesc = this->InstrumentList[headName];
-
-        DSEntry = headName + ":" + headDesc + ">>";
-
-        for(int y = 0; y < this->DataSetInformation[DSlist[x]].size(); y++)
-        {
-            QString Name = this->DataSetInformation[DSlist[x]][y].Name;
-            QString ID   = this->DataSetInformation[DSlist[x]][y].ID;
-
-            QString startDT = QString::number(this->DataSetInformation[DSlist[x]][y].StartTime.getMJD());
-            QString endDT   = QString::number(this->DataSetInformation[DSlist[x]][y].EndTime.getMJD());
-
-            QString newEntry = DSEntry + startDT + "&&" + endDT + "::" + ID + "^^" + Name;
-            this->SaveStateDataSetList->SetElement(listCounter, newEntry.toAscii().data());
-
-            listCounter++;
-        }
-    }
+    this->SaveStateDataSetList->SetElements(this->currentDataSetList);
 
     //Save state of Variable list
-    //TODO: Save Variable List
-
+    this->cleanStateVariableList();
+    this->SaveStateVariablesList->SetElements(this->currentVariablesList);
 
     //gather the requisite selection information
     QMap<QString, QMap<QString, QStringList> > selectionMap;
@@ -538,7 +507,6 @@ bool ScInfoPropWidget::getSciVariables(filterNetworkAccessModule &manager, QStri
 
 //==================================================================
 //parse for groups
-//TODO: Save state of this Group list.
 bool ScInfoPropWidget::getGroupsList()
 {
     //get new group information
@@ -587,6 +555,13 @@ bool ScInfoPropWidget::loadGroupListToGUI()
     ui->Group->addItem("--- Select Group ---");
     ui->Group->addItems(this->ObsGroupList);
 
+    //Save current state
+    this->currentGroupList->RemoveAllItems();
+    for(int x = 0; x < this->ObsGroupList.size(); x++)
+    {
+        this->currentGroupList->AddUniqueString(this->ObsGroupList[x].toAscii().data());
+    }
+
     return true;
 }
 
@@ -603,15 +578,28 @@ void ScInfoPropWidget::groupSelectedChanged(QString selection)
         ui->Observatory->clear();
         ui->Observatory->addItem("--- Select Observatory ---");
         ui->Observatory->addItems(this->ObservatoryList);
+
+        //Save current state
+        this->currentObservatoryList->RemoveAllItems();
+        for(int x = 0; x < this->ObservatoryList.size(); x++)
+        {
+            this->currentObservatoryList->AddUniqueString(this->ObservatoryList[x].toAscii().data());
+        }
     }
     else
     {
         ui->Observatory->clear();
     }
 
+    //clear the downstream UI states
     ui->Instruments->clear();
     ui->Variables->clear();
     ui->DataSet->clear();
+
+    //clear the downstream states
+    this->currentInstrumentList->RemoveAllItems();
+    this->currentVariablesList->RemoveAllItems();
+    this->currentDataSetList->RemoveAllItems();
 
 }
 
@@ -622,6 +610,11 @@ void ScInfoPropWidget::observatorySelectionChanged(QString selection)
 
     //clear the Instrument Tracker
     this->InstrumentSelectionTracker->RemoveAllArrays();
+
+    //clear state information
+    this->currentInstrumentList->RemoveAllItems();
+    this->currentDataSetList->RemoveAllItems();
+    this->currentVariablesList->RemoveAllItems();
 
     //clear DataSet and Variables
     this->DataSetSelectionTracker.clear();
@@ -670,9 +663,6 @@ void ScInfoPropWidget::observatorySelectionChanged(QString selection)
             this->DataSetSelectionTracker[InstrumentNames[x]] = vtkDataArraySelection::New();
             this->DataSetVariableInfoCacheStatus[InstrumentNames[x]] = vtkDataArraySelection::New();
 
-            /**** THE BELOW NEEDS TO BE MOVED TO A NEW METHOD FOR POPULATING TREE LISTS ****/
-            /**** vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv ****/
-
             //populate the GUI tree items
             pqTreeWidgetItem *newItem = new pqTreeWidgetItem();
 
@@ -684,8 +674,8 @@ void ScInfoPropWidget::observatorySelectionChanged(QString selection)
             //place in the GUI
             ui->Instruments->addTopLevelItem(newItem);
 
-            /**** ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ ****/
-            /**** END NEED TO BE MOVED ****/
+            //Save the state
+            this->currentInstrumentList->AddUniqueString(QString(InstrumentNames[x] + ";;" + InstrumentDesc[x]).toAscii().data());
 
         }
     }
@@ -770,9 +760,6 @@ void ScInfoPropWidget::getAllVariableSetInfo()
 void ScInfoPropWidget::extractDataSetInfo()
 {
     //This method extracts needed information from the XML
-
-    std::cout << "Processing the Data Set List for GUI" << std::endl;
-
     for(int x = 0; x < this->InstrumentSelectionTracker->GetNumberOfArrays(); x ++)
     {
         QString NameOfArray = QString(InstrumentSelectionTracker->GetArrayName(x));
@@ -781,14 +768,12 @@ void ScInfoPropWidget::extractDataSetInfo()
         if(!this->InstrumentSelectionTracker->ArrayIsEnabled(NameOfArray.toAscii().data())) continue;
 
         //process the enabled arrays
-        //        std::cout << "Processing GUI for Instrument: " << NameOfArray.toStdString() << std::endl;
-
         //get the required data object
         filterNetworkList *item = this->InstrumentDataSetInfoCache[NameOfArray];
 
         if(!item)
         {
-            //            std::cerr << "ERROR: Invalid Pointer" << std::endl;
+            std::cerr << "ERROR: Invalid Pointer" << std::endl;
             break;
         }
 
@@ -825,13 +810,15 @@ void ScInfoPropWidget::extractDataSetInfo()
 //==================================================================
 void ScInfoPropWidget::buildDataSetGUIObjects()
 {
-    //    std::cout << "Building DataSet GUI Objects" << std::endl;
-
     //need to cycle through the DataSet Information
     QStringList Keys = this->DataSetInformation.keys();
 
     //clear out the old
     ui->DataSet->clear();
+
+    //clear state information
+    this->currentDataSetList->RemoveAllItems();
+    this->currentVariablesList->RemoveAllItems();
 
     //build the new
     for(int x = 0; x < Keys.size(); x++)
@@ -860,15 +847,17 @@ void ScInfoPropWidget::buildDataSetGUIObjects()
             DateTime startDT = this->DataSetInformation[Keys[x]][y].StartTime;
             DateTime endDT   = this->DataSetInformation[Keys[x]][y].EndTime;
 
-            //            std::cout << "Name: " << Name.toStdString() << std::endl;
-            //            std::cout << "ID:   " << ID.toStdString() << std::endl;
-            //            std::cout << "Instrument: " << Inst.toStdString() << std::endl;
-
             //make the trackers for variables
             if(!this->VariablesSelectionTracker[Inst][ID])
             {
                 this->VariablesSelectionTracker[Inst][ID] = vtkDataArraySelection::New();
             }
+
+            //Save State
+            this->currentDataSetList->AddUniqueString(QString(headText + "::" + headText2 + ">>" +
+                                                       QString::number(startDT.getMJD(),'g', 12) + "&&" +
+                                                       QString::number(endDT.getMJD(), 'g', 12) + "::" +
+                                                       ID + "^^" + Name ).toAscii().data());
 
             //create the child item
             pqTreeWidgetItem *child = new pqTreeWidgetItem;
@@ -876,12 +865,10 @@ void ScInfoPropWidget::buildDataSetGUIObjects()
             child->setText(1, Name);
             if(this->DataSetSelectionTracker[Inst]->ArrayIsEnabled(ID.toAscii().data()))
             {
-                //                std::cout << "Value is active" << std::endl;
                 child->setCheckState(0, Qt::Checked);
             }
             else
             {
-                //                std::cout << "Value is inactive" << std::endl;
                 child->setCheckState(0, Qt::Unchecked);
             }
             child->setTextColor(0, QColor("Dark Blue"));
@@ -901,8 +888,6 @@ void ScInfoPropWidget::buildDataSetGUIObjects()
                 child->setTextColor(1, QColor("Gray"));
             }
             head->addChild(child);
-
-            //            std::cout << "==="    << std::endl;
 
         }
 
@@ -972,16 +957,15 @@ void ScInfoPropWidget::extractVariableInfo()
 //==================================================================
 void ScInfoPropWidget::buildVariableGUIObjects()
 {
-    //Build Variable GUI objects
-    //    std::cout << "Building Variable GUI Objects" << std::endl;
+    //Clear Current State
+    this->currentVariablesList->RemoveAllItems();
 
+    //Build Variable GUI objects
     //get Instrument Names:
     QStringList Instrument = this->DataSetSelectionTracker.keys();
 
     //clear out old data
     ui->Variables->clear();
-
-    //    std::cout << "Variables GUI Cleared" << std::endl << std::flush;
 
     //build new items
     for(int x = 0; x < this->DataSetSelectionTracker.size(); x++)
@@ -996,6 +980,9 @@ void ScInfoPropWidget::buildVariableGUIObjects()
         IHead->setText(1, IHead_desc);
         IHead->setTextColor(1, QColor("Dark Green"));
 
+        //State Information
+        QString IHeadState = Instrument[x] + "::" + IHead_desc + ">>";
+
         //flag for displaying IHead
         int IHeadActiveFlag = 0;
 
@@ -1004,7 +991,6 @@ void ScInfoPropWidget::buildVariableGUIObjects()
         {
             //get current Data Set
             QString currentDataSet = this->DataSetSelectionTracker[Instrument[x]]->GetArrayName(y);
-            //            std::cout << "Got Array Name" << std::endl << std::flush;
 
             //skip if not activated
             if(!this->DataSetSelectionTracker[Instrument[x]]->ArrayIsEnabled(currentDataSet.toAscii().data())) continue;
@@ -1016,47 +1002,39 @@ void ScInfoPropWidget::buildVariableGUIObjects()
             DSHead->setText(1, currentDataInfo.Name);
             DSHead->setTextColor(1, QColor("Dark Red"));
 
+            //State Information
+            QString HeadState = currentDataSet + "::" + currentDataInfo.Name + ">>";
 
             //Process the Varables List
             for(int z = 0; z < this->VariableSetInformation[Instrument[x]][currentDataSet].size(); z++)
             {
-                //                std::cout << "\nProcessing index " << z << " of " << this->VariableSetInformation[Instrument[x]][currentDataSet].size() - 1 << std::endl << std::flush;
                 //populate array selectors
                 QString Name = this->VariableSetInformation[Instrument[x]][currentDataSet][z].Name;
                 QString ID   = this->VariableSetInformation[Instrument[x]][currentDataSet][z].ID;
-
-                //                std::cout << "Variable:   " << Name.toStdString() << std::endl;
-                //                std::cout << "ID:         " << ID.toStdString() << std::endl;
-                //                std::cout << "Instrument: " << Instrument[x].toStdString() << std::endl;
-                //                std::cout << "DataSet:    " << currentDataSet.toStdString() << std::endl;
 
                 //create the child item
                 pqTreeWidgetItem *var = new pqTreeWidgetItem;
                 var->setText(0, ID);
                 var->setText(1, Name);
 
-                //                std::cout << "Created Variable Object for " << Name.toStdString() << std::endl << std::flush;
+                //Save State
+                QString VarState = IHeadState + HeadState + ID + "^^" + Name;
+                this->currentVariablesList->AddUniqueString(VarState.toAscii().data());
 
                 //need a set flag to know if the base object should be displayed.
-
-
                 if(this->VariablesSelectionTracker[Instrument[x]][currentDataSet]->ArrayIsEnabled(ID.toAscii().data()))
                 {
-                    //                    std::cout << "Object is Enabled" << std::endl << std::flush;
                     var->setCheckState(0, Qt::Checked);
                 }
                 else
                 {
-                    //                    std::cout << "Object is Disabled" << std::endl << std::flush;
                     var->setCheckState(0, Qt::Unchecked);
                 }
                 var->setTextColor(0, QColor("Dark Blue"));
 
-                //                std::cout << "Color set to Blue" << std::endl << std::flush;
 
                 //add var to DataSet
                 DSHead->addChild(var);
-                //                std::cout << "Added to DataSet Head" << std::endl << std::flush;
 
                 //incriment IHead flag
                 IHeadActiveFlag ++;
@@ -1065,14 +1043,12 @@ void ScInfoPropWidget::buildVariableGUIObjects()
 
             //add DSHead to Instrument
             IHead->addChild(DSHead);
-            //            std::cout << "Added to Instrument Head" << std::endl << std::flush;
         }
 
         //Add item to the GUI if active
         if(IHeadActiveFlag)
         {
             ui->Variables->addTopLevelItem(IHead);
-            //            std::cout << "Added to GUI" << std::endl << std::flush;
         }
     }
 
@@ -1202,31 +1178,31 @@ void ScInfoPropWidget::cleanStateProperties()
 //==================================================================
 void ScInfoPropWidget::cleanStateGroupList()
 {
-        //TODO: Clean Group List
+    //TODO: Clean Group List
 }
 
 //==================================================================
 void ScInfoPropWidget::cleanStateObservatoryList()
 {
-        //TODO: Clean Observatory List
+    //TODO: Clean Observatory List
 }
 
 //==================================================================
 void ScInfoPropWidget::cleanStateInstrumentList()
 {
-        //TODO: Clean Instrument List
+    //TODO: Clean Instrument List
 }
 
 //==================================================================
 void ScInfoPropWidget::cleanStateDataSetList()
 {
-        //TODO: Clean Data Set List
+    //TODO: Clean Data Set List
 }
 
 //==================================================================
 void ScInfoPropWidget::cleanStateVariableList()
 {
-        //TODO: Clean Varaiable List
+    //TODO: Clean Varaiable List
 }
 
 //==================================================================

@@ -1,24 +1,28 @@
 #ifndef SCINFOPROPWIDGET_H
 #define SCINFOPROPWIDGET_H
 
+//LOCAL
 #include "pqPropertyWidget.h"
 #include "pqOutputPort.h"
 #include "filterNetworkAccessModule.h"
 #include "ltrDateTime.h"
 
+//QT
 #include <QWidget>
 #include <QListWidgetItem>
 #include <QTreeWidgetItem>
+#include <QStringList>
+#include <QString>
+#include <QReadWriteLock>
+#include <QTableWidgetItem>
 
+//VTK
 #include <vtkSMProxy.h>
 #include <vtkSMProperty.h>
 #include <vtkSMStringVectorProperty.h>
 #include <vtkDataArraySelection.h>
-
-
-#include <QReadWriteLock>
-#include <QTableWidgetItem>
-#include "ltrDateTime.h"
+#include <vtkStringList.h>
+#include <vtkNew.h>
 
 class DataSetInfo {
 public:
@@ -156,6 +160,13 @@ protected:
     vtkSMStringVectorProperty *SaveStateInstrumentList;
     vtkSMStringVectorProperty *SaveStateDataSetList;
     vtkSMStringVectorProperty *SaveStateVariablesList;
+
+    //Current State
+    vtkStringList* currentGroupList;
+    vtkStringList* currentObservatoryList;
+    vtkStringList* currentInstrumentList;
+    vtkStringList* currentDataSetList;
+    vtkStringList* currentVariablesList;
 
 private:
     Ui::ScInfoPropWidget *ui;
