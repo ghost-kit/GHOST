@@ -58,6 +58,9 @@ protected:
     double startMJD;
     double endMJD;
 
+    //state helpers
+    void cleanStateProperties();
+
     //Data Selection Array Handlers
 
     //group selection handlers
@@ -81,9 +84,6 @@ protected:
     QMap<QString, QMap<QString, QList<DataSetInfo> > > VariableSetInformation;
     QMap<QString, QMap<QString, vtkDataArraySelection *> > VariablesSelectionTracker;
     bool getAllVars;
-
-
-
 
 
     //Cached Objects

@@ -45,6 +45,7 @@ ScInfoPropWidget::ScInfoPropWidget(vtkSMProxy *smproxy, vtkSMProperty *smpropert
     this->SaveStateDataSet     = vtkSMStringVectorProperty::SafeDownCast(this->smProxy->GetProperty("SaveStateDataSet"));
     this->SaveStateVariables   = vtkSMStringVectorProperty::SafeDownCast(this->smProxy->GetProperty("SaveStateVariables"));
 
+    //===============================================================================================
     //DEBUG//
     if(this->SaveStateGroup->GetNumberOfElements() > 0)
         std::cout << "Group:       " << this->SaveStateGroup->GetElement(0) << std::endl;
@@ -61,12 +62,22 @@ ScInfoPropWidget::ScInfoPropWidget(vtkSMProxy *smproxy, vtkSMProperty *smpropert
     }
 
     if(this->SaveStateDataSet->GetNumberOfElements() > 0)
-        std::cout << "DataSet:     " << this->SaveStateDataSet->GetElement(0) << std::endl;
+    {
+        for(int x = 0; x < this->SaveStateDataSet->GetNumberOfElements(); x++)
+        {
+            std::cout << "DataSet:     " << this->SaveStateDataSet->GetElement(x) << std::endl;
+        }
+    }
 
     if(this->SaveStateVariables->GetNumberOfElements() > 0)
-        std::cout << "Variable:    " << this->SaveStateVariables->GetElement(0) << std::endl;
+    {
+        for(int x = 0; x < this->SaveStateVariables->GetNumberOfElements(); x++)
+        {
+            std::cout << "Variable:     " << this->SaveStateVariables->GetElement(x) << std::endl;
+        }
+    }
     //END DEBUG//
-
+    //===============================================================================================
 
     //make return property available
     this->svp = vtkSMStringVectorProperty::SafeDownCast(smproperty);
@@ -189,11 +200,15 @@ void ScInfoPropWidget::apply()
     QStringList Instruments = this->DataSetSelectionTracker.keys();
     QString CodeString;
 
-    this->SaveStateInstrument->SetNumberOfElements(this->InstrumentSelectionTracker->GetNumberOfArraysEnabled());
-    this->SaveStateDataSet->SetNumberOfElements(this->DataSetSelectionTracker.size());
-    this->SaveStateVariables->SetNumberOfElements(this->VariablesSelectionTracker.size());
-
     int instCount = 0;
+    int VARcount = 0;
+    int DScount = 0;
+
+    //clear out the old values
+    this->cleanStateProperties();
+
+    QString DataSetSaveState;
+    QString VariableSaveState;
 
     for(int i = 0; i < Instruments.size(); i++)
     {
@@ -202,8 +217,8 @@ void ScInfoPropWidget::apply()
 
         //save the state of the instruments
         this->SaveStateInstrument->SetElement(instCount, Instruments[i].toAscii().data());
+        std::cout << "Saved Instrument: " << this->SaveStateInstrument->GetElement(instCount) << std::endl;
 
-        int DScount = 0;
         //move on to data sets within the Instrument
         for(int d = 0; d < DataSetSelectionTracker[Instruments[i]]->GetNumberOfArrays(); d++)
         {
@@ -214,10 +229,24 @@ void ScInfoPropWidget::apply()
             //skip if the dataset is not active
             if(!this->DataSetSelectionTracker[Instruments[i]]->ArrayIsEnabled(activeDataSet.toAscii().data())) continue;
 
+            //clear last Instrument State
+            DataSetSaveState = Instruments[i] + "::" + activeDataSet;
+            this->SaveStateDataSet->SetElement(DScount, DataSetSaveState.toAscii().data());
+            std::cout << "Saved DataSet: " << this->SaveStateDataSet->GetElement(DScount) << std::endl;
+
             //otherwise, move on to the Variabels
             //TODO: BUILD Variables SaveData
             if(this->getAllVars)
             {
+                //Save the State
+                this->SaveStateVariables->SetNumberOfElements(1);
+                VariableSaveState = "ALL";
+                this->SaveStateVariables->SetElement(0, VariableSaveState.toAscii().data());
+                std::cout << "Saved Variable: " << this->SaveStateVariables->GetElement(0) << std::endl;
+
+                VARcount ++;
+
+                //get info for return string
                 for(int v = 0; v < this->VariableSetInformation[Instruments[i]][activeDataSet].size(); v++)
                 {
                     //get variable ID
@@ -226,9 +255,10 @@ void ScInfoPropWidget::apply()
                     //add variable to the map
                     selectionMap[Instruments[i]][activeDataSet].push_back(varName);
 
-                    // std::cout << "Active: [" << Instruments[i].toStdString() << "][" << activeDataSet.toStdString() << "] ~ " << varName.toStdString() << std::endl;
+                    //increment state counter
 
                 }
+
             }
             else
             {
@@ -240,12 +270,16 @@ void ScInfoPropWidget::apply()
                     //skip if the variable is not active
                     if(!this->VariablesSelectionTracker[Instruments[i]][activeDataSet]->ArrayIsEnabled(varName.toAscii().data())) continue;
 
+                    //Save the State
+                    VariableSaveState = DataSetSaveState + QString(";;") + varName;
+                    this->SaveStateVariables->SetElement(VARcount, VariableSaveState.toAscii().data());
+                    std::cout << VARcount << "-Saved Variable: " << this->SaveStateVariables->GetElement(VARcount) << std::endl;
+
                     //add variable to the map
                     selectionMap[Instruments[i]][activeDataSet].push_back(varName);
 
-                    //                    std::cout << "Active: [" << Instruments[i].toStdString() << "][" << activeDataSet.toStdString() << "] ~ " << varName.toStdString() << std::endl;
-
-
+                    //increment the state counter
+                    VARcount ++;
                 }
             }
 
@@ -1059,6 +1093,36 @@ void ScInfoPropWidget::updateVariables()
     this->extractVariableInfo();
     this->buildVariableGUIObjects();
 }
+
+
+//==================================================================
+void ScInfoPropWidget::cleanStateProperties()
+{
+
+    //clean dataset
+    for(int x = 0; x < this->SaveStateDataSet->GetNumberOfElements(); x++)
+    {
+        this->SaveStateDataSet->SetElement(x, "");
+    }
+    this->SaveStateDataSet->SetNumberOfElements(1);
+
+    //clean instruments
+    for(int x = 0; x < this->SaveStateInstrument->GetNumberOfElements(); x++)
+    {
+        this->SaveStateInstrument->SetElement(x, "");
+    }
+    this->SaveStateInstrument->SetNumberOfElements(1);
+
+    //clean Variables
+    for(int x = 0; x < this->SaveStateVariables->GetNumberOfElements(); x++)
+    {
+        this->SaveStateVariables->SetElement(x, "");
+    }
+    this->SaveStateVariables->SetNumberOfElements(1);
+
+}
+
+
 
 //==================================================================
 void ScInfoPropWidget::dataSetSelectionChanged(QTreeWidgetItem *item, int)
