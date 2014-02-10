@@ -278,6 +278,7 @@ ScInfoPropWidget::ScInfoPropWidget(vtkSMProxy *smproxy, vtkSMProperty *smpropert
     this->addPropertyLink(ui->Variables, smproxy->GetPropertyName(smproperty), SIGNAL(itemChanged(QTreeWidgetItem*,int)), this->svp);
     this->addPropertyLink(ui->allVariables, smproxy->GetPropertyName(smproperty), SIGNAL(clicked()), this->svp);
 
+
     //Load first set of Values
     if(QString(this->SaveStateGroup->GetElement(0)) == "")
     {
@@ -450,13 +451,16 @@ void ScInfoPropWidget::apply()
     std::cout << "Code String: " << CodeString.toAscii().data() << std::endl;
 
     //Add relevent information to ParaView Property
-    this->svp->SetElement(0, this->currentGroup.toAscii().data());
+    this->svp->SetElement(0, QString::number(this->startMJD, 'g', 17).toAscii().data());
+    this->svp->SetElement(1, QString::number(this->endMJD, 'g', 17).toAscii().data());
+
+    this->svp->SetElement(2, this->currentGroup.toAscii().data());
     this->SaveStateGroup->SetElement(0, this->currentGroup.toAscii().data());
 
-    this->svp->SetElement(1, this->currentObservatory.toAscii().data());
+    this->svp->SetElement(3, this->currentObservatory.toAscii().data());
     this->SaveStateObservatory->SetElement(0, this->currentObservatory.toAscii().data());
 
-    this->svp->SetElement(2, CodeString.toAscii().data());
+    this->svp->SetElement(4, CodeString.toAscii().data());
 
     //Time Range Stuff...
     if(this->smProxy->GetProperty("TimeRange"))

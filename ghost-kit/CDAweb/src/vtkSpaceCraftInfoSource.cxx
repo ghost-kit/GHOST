@@ -104,11 +104,11 @@ double vtkSpaceCraftInfoSource::getEndTime()
 }
 
 //===============================================//
-void vtkSpaceCraftInfoSource::SetSCIData(const char *group, const char *observatory, const char *list)
+void vtkSpaceCraftInfoSource::SetSCIData(const char* startTime, const char* stopTime, const char *group, const char *observatory, const char *list)
 {
     this->infoHandler.setProcessed(false);
     this->Modified();
-    return this->infoHandler.SetSCIData(group, observatory, list);
+    return this->infoHandler.SetSCIData(startTime, stopTime, group, observatory, list);
 
 }
 

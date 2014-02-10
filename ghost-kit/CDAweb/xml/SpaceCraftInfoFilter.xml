@@ -119,8 +119,8 @@
 
             <StringVectorProperty name="SpaceCraftInfoProperties"
                                 command="SetSCIData"
-                                number_of_elements_per_command="3"
-                                number_of_elements = "3"
+                                number_of_elements_per_command="5"
+                                number_of_elements = "5"
                                 panel_widget="SpaceCraftInfoProperties"
                                 label = ""
                                 panel_visibility = "default">
@@ -194,67 +194,6 @@
 
             </StringVectorProperty>
 
-<!-- GUI STATE -->
-
-            <StringVectorProperty   name="SaveStateGroupList"
-                                    number_of_elements = "1"
-                                    default_values=""
-                                    immediate_update="1"
-                                    panel_visibility="never">
-
-                <Documentation>
-                    This Property is for Saving the State of the Observatory Group Selection.
-                </Documentation>
-
-            </StringVectorProperty>
-
-            <StringVectorProperty   name="SaveStateObservatoryList"
-                                    number_of_elements = "1"
-                                    default_values=""
-                                    immediate_update="1"
-                                    panel_visibility="never">
-
-                <Documentation>
-                    This Property is for Saving the State of the Observatory Selection.
-                </Documentation>
-
-            </StringVectorProperty>
-
-            <StringVectorProperty   name="SaveStateInstrumentList"
-                                    number_of_elements = "1"
-                                    default_values=""
-                                    immediate_update="1"
-                                    panel_visibility="never">
-
-                <Documentation>
-                    This Property is for Saving the State of the Instrument Selection.
-                </Documentation>
-
-            </StringVectorProperty>
-
-            <StringVectorProperty   name="SaveStateDataSetList"
-                                    number_of_elements = "1"
-                                    default_values=""
-                                    immediate_update="1"
-                                    panel_visibility="never">
-
-                <Documentation>
-                    This Property is for Saving the State of the DataSet Selection.
-                </Documentation>
-
-            </StringVectorProperty>
-
-            <StringVectorProperty   name="SaveStateVariablesList"
-                                    number_of_elements = "1"
-                                    default_values=""
-                                    immediate_update="1"
-                                    panel_visibility="never">
-
-                <Documentation>
-                    This Property is for Saving the State of the Variable Selection.
-                </Documentation>
-
-            </StringVectorProperty>
 
 <!-- Exposure -->
 

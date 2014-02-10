@@ -14,7 +14,7 @@ public:
 
     double getStartTime();
     double getEndTime();
-    void SetSCIData(const char *group, const char *observatory, const char *list);
+    void SetSCIData(const char* startTime, const char* stopTime, const char *group, const char *observatory, const char *list);
     void SetTimeFitHandler(int handler);
     void SetBadDataHandler(int handler);
     void setTimeRange(const double start, const double end);

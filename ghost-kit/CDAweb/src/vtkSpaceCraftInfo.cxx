@@ -806,8 +806,25 @@ void vtkSpaceCraftInfoHandler::updateForOvershoot(DateTime &startTime, DateTime 
 }
 
 //=========================================================================================//
-void vtkSpaceCraftInfoHandler::SetSCIData(const char *group, const char *observatory, const char *list)
+void vtkSpaceCraftInfoHandler::SetSCIData(const char *startTime, const char *stopTime, const char *group, const char *observatory, const char *list)
 {
+    //configure time
+    QString inTime(startTime);
+    QString outTime(stopTime);
+
+    double startMJD = inTime.toDouble();
+    double stopMJD  = outTime.toDouble();
+
+    std::cout << "Begin Start Time: " << this->startTime << std::endl;
+    std::cout << "Begin Stop  Time: " << this->endTime  << std::endl;
+
+    this->startTime = startMJD;
+    this->endTime = stopMJD;
+
+    std::cout << "Restore Start Time: " << this->startTime << std::endl;
+    std::cout << "Restore Stop  Time: " << this->endTime  << std::endl;
+
+    std::cout << "Overshoot: " << this->overShoot << std::endl;
 
     std::cout << "FILTER: " << group << " : " << observatory << " : " << list << std::endl;
     //mark dirty
@@ -865,8 +882,6 @@ void vtkSpaceCraftInfoHandler::SetSCIData(const char *group, const char *observa
                 statusBar.updateAll();
 
                 //get the variables we need to get data on
-
-
                 if(parts[1] != "")
                 {
                     VarSet = parts[1].split("|");
@@ -876,30 +891,15 @@ void vtkSpaceCraftInfoHandler::SetSCIData(const char *group, const char *observa
 
                     //set start time
                     DateTime startTime;
-                    if(this->numInputPorts == 1)
-                    {
-                        startTime.setMJD(this->timeSteps.first());
-                    }
-                    else
-                    {
-                        startTime.setMJD(this->startTime);
-                    }
+                    startTime.setMJD(this->startTime);
 
                     //set the end time
                     DateTime endTime;
-                    if(this->numInputPorts == 1)
-                    {
-                        endTime.setMJD(this->timeSteps.last());
-                    }
-                    else
-                    {
-                        endTime.setMJD(this->endTime);
-                    }
+                    endTime.setMJD(this->endTime);
 
                     //we need a way of overshooting the time range for fitting purposes.
                     //HACK
                     updateForOvershoot(startTime, endTime);
-
 
                     url = QString("http://cdaweb.gsfc.nasa.gov/WS/cdasr/1/dataviews/sp_phys")
                             + "/datasets/" + DSet
@@ -907,6 +907,9 @@ void vtkSpaceCraftInfoHandler::SetSCIData(const char *group, const char *observa
                             + QString(startTime.getISO8601DateTimeString().c_str())
                             + ","
                             + QString(endTime.getISO8601DateTimeString().c_str()) + "/";
+
+                    std::cerr << "initial url: " << url.toAscii().data() << std::endl;
+
 
                     for(int a = 0; a < VarSet.size(); a++)
                     {
@@ -922,11 +925,14 @@ void vtkSpaceCraftInfoHandler::SetSCIData(const char *group, const char *observa
 
                     url = url + "?format=cdf";
 
+                    std::cerr << "URL: " << url.toAscii().data() << std::endl;
+
                     //get the data
                     manager.Get(url,QString("DataResult"),QString("FileDescription"));
 
-                    filterNetworkList *objects = manager.getFinalOjects();
+                    std::cerr << "Sent Get Request" << std::endl;
 
+                    filterNetworkList *objects = manager.getFinalOjects();
                     filterNetworkList::Iterator iter;
 
                     //save our uri objects for processing
@@ -994,7 +1000,6 @@ void vtkSpaceCraftInfoHandler::SetSCIData(const char *group, const char *observa
     statusBar.show();
 
     statusBar.hide();
-
 }
 
 //=========================================================================================//
@@ -1099,6 +1104,9 @@ int vtkSpaceCraftInfoHandler::RequestDataSource(vtkInformation *request, vtkInfo
 int vtkSpaceCraftInfoHandler::RequestInfoFilter(vtkInformation *request, vtkInformationVector **inputVector, vtkInformationVector *outputVector)
 {
     //    std::cout << __FUNCTION__ << " on line " << __LINE__ << std::endl;
+
+    std::cout << "Number of information objects: " << outputVector->GetNumberOfInformationObjects() << std::endl;
+    std::cout << "Information: " << outputVector->GetInformationObject(0)->GetClassName() << std::endl;
 
     this->setInInfo(inputVector[0]->GetInformationObject(0));
     if(this->getInInfo()->Has(vtkStreamingDemandDrivenPipeline::TIME_STEPS()))

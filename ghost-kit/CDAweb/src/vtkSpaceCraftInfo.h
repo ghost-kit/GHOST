@@ -21,6 +21,8 @@
 #include "vtkTable.h"
 #include "vtkSMDoubleVectorProperty.h"
 #include "vtkInformation.h"
+#include <vtkSMProxyManager.h>
+#include <vtkSMProxy.h>
 
 #include "qmap.h"
 #include "qstring.h"
@@ -73,7 +75,7 @@ public:
   bool findEpochVar(cdfDataReader &cdfFile, QStringList &varsAvailable, QString &EpochVar);
 
   //Callbacks
-  virtual void SetSCIData(const char *group, const char *observatory, const char *list);
+  virtual void SetSCIData(const char *startTime, const char *stopTime, const char *group, const char *observatory, const char *list);
   virtual void SetTimeFitHandler(int handler);
   virtual void SetBadDataHandler(int handler);
 

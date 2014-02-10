@@ -167,7 +167,6 @@ protected:
     vtkSMDoubleVectorProperty *startTimeState;
     vtkSMDoubleVectorProperty *endTimeState;
 
-
 private:
     Ui::ScInfoPropWidget *ui;
 
