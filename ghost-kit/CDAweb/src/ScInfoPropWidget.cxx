@@ -106,11 +106,11 @@ void ScInfoPropWidget::restoreGUIinit()
             activeItemList[0]->setCheckState(0, Qt::Checked);
         }
     }
-    //TODO: Restore DataSets
+    //Restore DataSets
     this->updateDataSet();
     this->updateVariables();
 
-    //TODO: Restore Active DataSets
+    //Restore Active DataSets
     std::cout << "DataSet Format: " << this->SaveStateDataSet->GetElement(0) << std::endl;
     int numDS = this->SaveStateDataSet->GetNumberOfElements();
     QMap<QString, QStringList> DataSetRestore;
@@ -496,6 +496,11 @@ void ScInfoPropWidget::apply()
     //apply the upstream parameters
     Superclass::apply();
 
+}
+
+void ScInfoPropWidget::reset()
+{
+//    this->restoreGUIinit();
 }
 
 //==================================================================
@@ -1164,36 +1169,6 @@ void ScInfoPropWidget::cleanStateProperties()
     }
     this->SaveStateVariables->SetNumberOfElements(1);
 
-}
-
-//==================================================================
-void ScInfoPropWidget::cleanStateGroupList()
-{
-    //TODO: Clean Group List
-}
-
-//==================================================================
-void ScInfoPropWidget::cleanStateObservatoryList()
-{
-    //TODO: Clean Observatory List
-}
-
-//==================================================================
-void ScInfoPropWidget::cleanStateInstrumentList()
-{
-    //TODO: Clean Instrument List
-}
-
-//==================================================================
-void ScInfoPropWidget::cleanStateDataSetList()
-{
-    //TODO: Clean Data Set List
-}
-
-//==================================================================
-void ScInfoPropWidget::cleanStateVariableList()
-{
-    //TODO: Clean Varaiable List
 }
 
 //==================================================================

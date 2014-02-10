@@ -51,7 +51,7 @@ public:
     ~ScInfoPropWidget();
 
     void apply();
-//    void reset();
+    void reset();
 
     void updateDataSet();
     void updateVariables();
@@ -68,11 +68,7 @@ protected:
 
     //state helpers
     void cleanStateProperties();
-    void cleanStateGroupList();
-    void cleanStateObservatoryList();
-    void cleanStateInstrumentList();
-    void cleanStateDataSetList();
-    void cleanStateVariableList();
+
 
     //**Data Selection Array Handlers**//
     //group selection handlers
