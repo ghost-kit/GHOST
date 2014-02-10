@@ -15,6 +15,7 @@
 #include <QString>
 #include <QReadWriteLock>
 #include <QTableWidgetItem>
+#include <QComboBox>
 
 //VTK
 #include <vtkSMProxy.h>
@@ -52,6 +53,7 @@ public:
 
     void updateDataSet();
     void updateVariables();
+    void setInstumentGUI();
 protected:
     //Filter Components
     vtkSMProxy *smProxy;
@@ -125,6 +127,9 @@ protected:
 
 
     //handlers
+    void nonRestoreGUIinit();
+    void restoreGUIinit();
+
     bool getSCList(filterNetworkAccessModule &manager);
     bool getSCInstrument(filterNetworkAccessModule &manager);
     bool getSciDataGroup(filterNetworkAccessModule &manager, QString dataset);
@@ -132,6 +137,8 @@ protected:
 
     bool getGroupsList();
     bool getObservatoryList(QString Group);
+    void setObservatoryGUI();
+
     bool loadGroupListToGUI();
 
     bool getInstrumentList(double startTimes, double endTime);
