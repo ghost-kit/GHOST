@@ -25,7 +25,7 @@
 #include <iomanip>
 #include <Qt>
 //==================================================================
-void ScInfoPropWidget::nonRestoreGUIinit()
+void ScInfoPropWidget::setGroupGUI()
 {
     filterNetworkAccessModule SCListManager;
     this->getSCList(SCListManager);
@@ -48,18 +48,38 @@ void ScInfoPropWidget::restoreGUIinit()
 {
     std::cerr << "WARNING: Restore from State not yet FULLY implemented" << std::endl;
 
-    ui->Group->clear();
-    ui->Group->addItem("--- Select Group ---");
+    //clean auto-restored junk
+    this->InstrumentSelectionTracker->RemoveAllArrays();
+    this->ObservatorySelectionTracker->RemoveAllArrays();
 
-    //TODO: BECAUSE of bad programming style (by me) I must make a network call to restore the
-    //          Group list and the Observatory list.  Must seperate the network call inforamtion from
-    //          the gui selections to make this work more efficiently.
-    this->nonRestoreGUIinit();
+    int Dsize = this->DataSetSelectionTracker.size();
+    QStringList keys = this->DataSetSelectionTracker.keys();
+    for(int x = 0; x < Dsize; x ++)
+    {
+        this->DataSetSelectionTracker[keys[x]]->RemoveAllArrays();
+    }
+
+    int Vsize = this->VariablesSelectionTracker.size();
+    QStringList xKeys = this->VariablesSelectionTracker.keys();
+    for(int x = 0; x < Vsize; x++)
+    {
+        int Dsize = this->VariablesSelectionTracker[xKeys[x]].size();
+
+        QStringList vKeys = this->VariablesSelectionTracker.keys();
+        for(int y = 0; y < Dsize; y++)
+        {
+            this->VariablesSelectionTracker[xKeys[x]][vKeys[y]]->RemoveAllArrays();
+        }
+    }
+
+    //Restore the Group GUI list
+    this->setGroupGUI();
 
     //Restoring State of the Group GUI
     QString activeItem = QString(this->SaveStateGroup->GetElement(0));
     int activeIndex = ui->Group->findText(activeItem);
     ui->Group->setCurrentIndex(activeIndex);
+    this->currentGroup = activeItem;
 
     //Restore Observatories
     this->getObservatoryList(activeItem);
@@ -72,6 +92,7 @@ void ScInfoPropWidget::restoreGUIinit()
     this->currentObservatory = activeItem;
 
     //Restore Instruments
+    this->InstrumentSelectionTracker->RemoveAllArrays();
     this->setInstumentGUI();
 
     //Restore Active Instruments
@@ -86,7 +107,42 @@ void ScInfoPropWidget::restoreGUIinit()
         }
     }
     //TODO: Restore DataSets
+    this->updateDataSet();
+    this->updateVariables();
+
     //TODO: Restore Active DataSets
+    std::cout << "DataSet Format: " << this->SaveStateDataSet->GetElement(0) << std::endl;
+    int numDS = this->SaveStateDataSet->GetNumberOfElements();
+    QMap<QString, QStringList> DataSetRestore;
+
+    for(int x = 0; x < numDS; x++)
+    {
+        QStringList breakdown = QString(this->SaveStateDataSet->GetElement(x)).split("::");
+        if(breakdown.size() > 1)
+        {
+            DataSetRestore[breakdown[0]].push_back(breakdown[1]);
+        }
+        else
+        {
+            std::cerr << "Failure Restoring State..." << std::endl;
+        }
+    }
+
+    //Activate the items...
+    QStringList DKeys = DataSetRestore.keys();
+    for(int x = 0; x < DataSetRestore.size(); x++)
+    {
+
+        QStringList activeItems = DataSetRestore[DKeys[x]];
+        for(int y = 0; y < activeItems.size(); y++)
+        {
+            QList<QTreeWidgetItem*> activeItemList = ui->DataSet->findItems(activeItems[y], Qt::MatchExactly | Qt::MatchRecursive );
+            if(activeItemList.size() > 0)
+            {
+                activeItemList[0]->setCheckState(0, Qt::Checked);
+            }
+        }
+    }
     //TODO: Restore Variables
     //TODO: Restore Active Variables
     //TODO: Issue Apply if this is a state restore / skip otherwise
@@ -108,19 +164,9 @@ ScInfoPropWidget::ScInfoPropWidget(vtkSMProxy *smproxy, vtkSMProperty *smpropert
     this->SaveStateDataSet     = vtkSMStringVectorProperty::SafeDownCast(this->smProxy->GetProperty("SaveStateDataSet"));
     this->SaveStateVariables   = vtkSMStringVectorProperty::SafeDownCast(this->smProxy->GetProperty("SaveStateVariables"));
 
-    //make save state GUI list properties available
-    this->SaveStateGroupList       = vtkSMStringVectorProperty::SafeDownCast(this->smProxy->GetProperty("SaveStateGroupList"));
-    this->SaveStateObservatoryList = vtkSMStringVectorProperty::SafeDownCast(this->smProxy->GetProperty("SaveStateObservatoryList"));
-    this->SaveStateInstrumentList  = vtkSMStringVectorProperty::SafeDownCast(this->smProxy->GetProperty("SaveStateInstrumentList"));
-    this->SaveStateDataSetList     = vtkSMStringVectorProperty::SafeDownCast(this->smProxy->GetProperty("SaveStateDataSetList"));
-    this->SaveStateVariablesList   = vtkSMStringVectorProperty::SafeDownCast(this->smProxy->GetProperty("SaveStateVariablesList"));
-
-    //initialize current state
-    this->currentGroupList = vtkStringList::New();
-    this->currentObservatoryList = vtkStringList::New();
-    this->currentInstrumentList = vtkStringList::New();
-    this->currentDataSetList = vtkStringList::New();
-    this->currentVariablesList = vtkStringList::New();
+    //intiailize the time state
+    this->startTimeState            = vtkSMDoubleVectorProperty::SafeDownCast(this->smProxy->GetProperty("TimeRangeInfoStart"));
+    this->endTimeState              = vtkSMDoubleVectorProperty::SafeDownCast(this->smProxy->GetProperty("TimeRangeInfoEnd"));
 
 
     //===============================================================================================
@@ -155,47 +201,6 @@ ScInfoPropWidget::ScInfoPropWidget(vtkSMProxy *smproxy, vtkSMProperty *smpropert
         }
     }
 
-    // Lists
-
-    if(this->SaveStateGroupList->GetNumberOfElements() > 0)
-    {
-        for(int x = 0; x < this->SaveStateGroupList->GetNumberOfElements(); x++)
-        {
-            std::cout << "GroupList:       " << this->SaveStateGroupList->GetElement(x) << std::endl;
-        }
-    }
-
-    if(this->SaveStateObservatoryList->GetNumberOfElements() > 0)
-    {
-        for(int x = 0; x < this->SaveStateObservatoryList->GetNumberOfElements(); x++)
-        {
-            std::cout << "ObservatoryList: " << this->SaveStateObservatoryList->GetElement(x) << std::endl;
-        }
-    }
-
-    if(this->SaveStateInstrumentList->GetNumberOfElements() > 0)
-    {
-        for(int x = 0; x < this->SaveStateInstrumentList->GetNumberOfElements(); x++)
-        {
-            std::cout << "InstrumentList:  " << this->SaveStateInstrumentList->GetElement(x) << std::endl;
-        }
-    }
-
-    if(this->SaveStateDataSetList->GetNumberOfElements() > 0)
-    {
-        for(int x = 0; x < this->SaveStateDataSetList->GetNumberOfElements(); x++)
-        {
-            std::cout << "DataSetList:     " << this->SaveStateDataSetList->GetElement(x) << std::endl;
-        }
-    }
-
-    if(this->SaveStateVariablesList->GetNumberOfElements() > 0)
-    {
-        for(int x = 0; x < this->SaveStateVariablesList->GetNumberOfElements(); x++)
-        {
-            std::cout << "VariableList:    " << this->SaveStateVariablesList->GetElement(x) << std::endl;
-        }
-    }
 
 
     //END DEBUG//
@@ -209,11 +214,11 @@ ScInfoPropWidget::ScInfoPropWidget(vtkSMProxy *smproxy, vtkSMProperty *smpropert
     }
 
     //get properties
-    vtkSMDoubleVectorProperty *timeStartProperties = vtkSMDoubleVectorProperty::SafeDownCast(smproxy->GetProperty("TimeRangeInfoStart"));
-    this->startMJD = timeStartProperties->GetElement(0);
+    this->startMJD = this->startTimeState->GetElement(0);
+    this->endMJD = this->endTimeState->GetElement(0);
 
-    vtkSMDoubleVectorProperty *timeEndProperties = vtkSMDoubleVectorProperty::SafeDownCast(smproxy->GetProperty("TimeRangeInfoEnd"));
-    this->endMJD = timeEndProperties->GetElement(0);
+    std::cerr << "Start MJD: " << this->startMJD << std::endl;
+    std::cerr << "End MJD:   " << this->endMJD << std::endl;
 
     //URLs for CDAWeb
     this->baseURL = QString("http://cdaweb.gsfc.nasa.gov/WS/cdasr/1");
@@ -276,7 +281,7 @@ ScInfoPropWidget::ScInfoPropWidget(vtkSMProxy *smproxy, vtkSMProperty *smpropert
     //Load first set of Values
     if(QString(this->SaveStateGroup->GetElement(0)) == "")
     {
-        this->nonRestoreGUIinit();
+        this->setGroupGUI();
     }
     else //restore state
     {
@@ -290,13 +295,6 @@ ScInfoPropWidget::ScInfoPropWidget(vtkSMProxy *smproxy, vtkSMProperty *smpropert
 ScInfoPropWidget::~ScInfoPropWidget()
 {
 
-    //clean states
-    this->currentGroupList->Delete();
-    this->currentObservatoryList->Delete();
-    this->currentInstrumentList->Delete();
-    this->currentDataSetList->Delete();
-    this->currentVariablesList->Delete();
-
     delete ui;
 }
 
@@ -304,26 +302,6 @@ ScInfoPropWidget::~ScInfoPropWidget()
 void ScInfoPropWidget::apply()
 {
     std::cout << "APPLY CLICKED" << std::endl;
-
-    //save state of Group List
-    this->cleanStateGroupList();
-    this->SaveStateGroupList->SetElements(this->currentGroupList);
-
-    //save state of Observatory List
-    this->cleanStateObservatoryList();
-    this->SaveStateObservatoryList->SetElements(this->currentObservatoryList);
-
-    //Save state of Instrument List
-    this->cleanStateInstrumentList();
-    this->SaveStateInstrumentList->SetElements(this->currentInstrumentList);
-
-    //Save state of Data Set List
-    this->cleanStateDataSetList();
-    this->SaveStateDataSetList->SetElements(this->currentDataSetList);
-
-    //Save state of Variable list
-    this->cleanStateVariableList();
-    this->SaveStateVariablesList->SetElements(this->currentVariablesList);
 
     //gather the requisite selection information
     QMap<QString, QMap<QString, QStringList> > selectionMap;
@@ -608,13 +586,6 @@ bool ScInfoPropWidget::loadGroupListToGUI()
     ui->Group->addItem("--- Select Group ---");
     ui->Group->addItems(this->ObsGroupList);
 
-    //Save current state
-    this->currentGroupList->RemoveAllItems();
-    for(int x = 0; x < this->ObsGroupList.size(); x++)
-    {
-        this->currentGroupList->AddUniqueString(this->ObsGroupList[x].toAscii().data());
-    }
-
     return true;
 }
 
@@ -626,13 +597,6 @@ void ScInfoPropWidget::setObservatoryGUI()
     ui->Observatory->clear();
     ui->Observatory->addItem("--- Select Observatory ---");
     ui->Observatory->addItems(this->ObservatoryList);
-
-    //Save current state
-    this->currentObservatoryList->RemoveAllItems();
-    for(int x = 0; x < this->ObservatoryList.size(); x++)
-    {
-        this->currentObservatoryList->AddUniqueString(this->ObservatoryList[x].toAscii().data());
-    }
 
 }
 
@@ -655,11 +619,6 @@ void ScInfoPropWidget::groupSelectedChanged(QString selection)
     ui->Variables->clear();
     ui->DataSet->clear();
 
-    //clear the downstream states
-    this->currentInstrumentList->RemoveAllItems();
-    this->currentVariablesList->RemoveAllItems();
-    this->currentDataSetList->RemoveAllItems();
-
 }
 
 //==================================================================
@@ -673,7 +632,7 @@ void ScInfoPropWidget::setInstumentGUI()
     this->currentInstrumentObjects = SCInstrumentManager.getFinalOjects();
 
     //get the required list
-    this->getInstrumentList(this->startMJD, this->endMJD);
+    this->getInstrumentList();
 
     //configure the gui for display
     ui->Instruments->clear();
@@ -716,9 +675,6 @@ void ScInfoPropWidget::setInstumentGUI()
             //place in the GUI
             ui->Instruments->addTopLevelItem(newItem);
 
-            //Save the state
-            this->currentInstrumentList->AddUniqueString(QString(InstrumentNames[x] + ";;" + InstrumentDesc[x]).toAscii().data());
-
         }
     }
 }
@@ -728,11 +684,6 @@ void ScInfoPropWidget::observatorySelectionChanged(QString selection)
 
     //clear the Instrument Tracker
     this->InstrumentSelectionTracker->RemoveAllArrays();
-
-    //clear state information
-    this->currentInstrumentList->RemoveAllItems();
-    this->currentDataSetList->RemoveAllItems();
-    this->currentVariablesList->RemoveAllItems();
 
     //clear DataSet and Variables
     this->DataSetSelectionTracker.clear();
@@ -751,6 +702,9 @@ void ScInfoPropWidget::observatorySelectionChanged(QString selection)
 void ScInfoPropWidget::getAllDataSetInfo()
 {
 
+    std::cout << "Number of Instrument Arrays:        " << this->InstrumentSelectionTracker->GetNumberOfArrays() << std::endl;
+    std::cout << "Number of Active Instrument Arrays: " << this->InstrumentSelectionTracker->GetNumberOfArraysEnabled() << std::endl;
+
     for(int x = 0; x < this->InstrumentSelectionTracker->GetNumberOfArrays(); x ++)
     {
         //get name of current array
@@ -765,6 +719,8 @@ void ScInfoPropWidget::getAllDataSetInfo()
         //Download the data
         filterNetworkAccessModule SCDataSetListManager;
         this->getSciDataGroup(SCDataSetListManager, NameOfArray);
+
+        std::cout << "Data Downloaded for: " << NameOfArray.toAscii().data() << std::endl;
 
         //Cache the Data
         this->InstrumentDataSetInfoCache[NameOfArray] = SCDataSetListManager.getFinalOjects();
@@ -870,10 +826,6 @@ void ScInfoPropWidget::buildDataSetGUIObjects()
     //clear out the old
     ui->DataSet->clear();
 
-    //clear state information
-    this->currentDataSetList->RemoveAllItems();
-    this->currentVariablesList->RemoveAllItems();
-
     //build the new
     for(int x = 0; x < Keys.size(); x++)
     {
@@ -906,12 +858,6 @@ void ScInfoPropWidget::buildDataSetGUIObjects()
             {
                 this->VariablesSelectionTracker[Inst][ID] = vtkDataArraySelection::New();
             }
-
-            //Save State
-            this->currentDataSetList->AddUniqueString(QString(headText + "::" + headText2 + ">>" +
-                                                              QString::number(startDT.getMJD(),'g', 12) + "&&" +
-                                                              QString::number(endDT.getMJD(), 'g', 12) + "::" +
-                                                              ID + "^^" + Name ).toAscii().data());
 
             //create the child item
             pqTreeWidgetItem *child = new pqTreeWidgetItem;
@@ -1007,8 +953,6 @@ void ScInfoPropWidget::extractVariableInfo()
 //==================================================================
 void ScInfoPropWidget::buildVariableGUIObjects()
 {
-    //Clear Current State
-    this->currentVariablesList->RemoveAllItems();
 
     //Build Variable GUI objects
     //get Instrument Names:
@@ -1069,7 +1013,6 @@ void ScInfoPropWidget::buildVariableGUIObjects()
 
                 //Save State
                 QString VarState = IHeadState + HeadState + ID + "^^" + Name;
-                this->currentVariablesList->AddUniqueString(VarState.toAscii().data());
 
                 //need a set flag to know if the base object should be displayed.
                 if(this->VariablesSelectionTracker[Instrument[x]][currentDataSet]->ArrayIsEnabled(ID.toAscii().data()))
@@ -1081,7 +1024,6 @@ void ScInfoPropWidget::buildVariableGUIObjects()
                     var->setCheckState(0, Qt::Unchecked);
                 }
                 var->setTextColor(0, QColor("Dark Blue"));
-
 
                 //add var to DataSet
                 DSHead->addChild(var);
@@ -1149,7 +1091,6 @@ void ScInfoPropWidget::updateDataSet()
 //==================================================================
 void ScInfoPropWidget::instrumentSelectionChanged(QTreeWidgetItem* item, int status)
 {
-
     //process the selection change
     if(this->InstrumentSelectionTracker->ArrayIsEnabled(item->text(0).toAscii().data()))
     {
@@ -1433,7 +1374,7 @@ void ScInfoPropWidget::endTimeChanged()
 
 //==================================================================
 //get instrument list for current selections
-bool ScInfoPropWidget::getInstrumentList(double startTimes, double endTime)
+bool ScInfoPropWidget::getInstrumentList()
 {
     this->InstrumentList.clear();
 

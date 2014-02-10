@@ -21,6 +21,7 @@
 #include <vtkSMProxy.h>
 #include <vtkSMProperty.h>
 #include <vtkSMStringVectorProperty.h>
+#include <vtkSMDoubleVectorProperty.h>
 #include <vtkDataArraySelection.h>
 #include <vtkStringList.h>
 #include <vtkNew.h>
@@ -50,6 +51,7 @@ public:
     ~ScInfoPropWidget();
 
     void apply();
+//    void reset();
 
     void updateDataSet();
     void updateVariables();
@@ -127,7 +129,7 @@ protected:
 
 
     //handlers
-    void nonRestoreGUIinit();
+    void setGroupGUI();
     void restoreGUIinit();
 
     bool getSCList(filterNetworkAccessModule &manager);
@@ -141,7 +143,7 @@ protected:
 
     bool loadGroupListToGUI();
 
-    bool getInstrumentList(double startTimes, double endTime);
+    bool getInstrumentList();
 
     void getAllDataSetInfo();
     void getAllVariableSetInfo();
@@ -161,19 +163,10 @@ protected:
     vtkSMStringVectorProperty *SaveStateDataSet;
     vtkSMStringVectorProperty *SaveStateVariables;
 
-    //GUI State
-    vtkSMStringVectorProperty *SaveStateGroupList;
-    vtkSMStringVectorProperty *SaveStateObservatoryList;
-    vtkSMStringVectorProperty *SaveStateInstrumentList;
-    vtkSMStringVectorProperty *SaveStateDataSetList;
-    vtkSMStringVectorProperty *SaveStateVariablesList;
+    //Time State
+    vtkSMDoubleVectorProperty *startTimeState;
+    vtkSMDoubleVectorProperty *endTimeState;
 
-    //Current State
-    vtkStringList* currentGroupList;
-    vtkStringList* currentObservatoryList;
-    vtkStringList* currentInstrumentList;
-    vtkStringList* currentDataSetList;
-    vtkStringList* currentVariablesList;
 
 private:
     Ui::ScInfoPropWidget *ui;
