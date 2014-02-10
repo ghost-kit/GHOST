@@ -309,8 +309,7 @@ void vtkSpaceCraftInfoHandler::LoadCDFData()
     QMap<QString, QString>::Iterator iter;
     for(iter = this->DownloadedFileNames.begin(); iter != this->DownloadedFileNames.end(); ++iter)
     {
-        //        std::cout << "Reading File: " << (*iter).toAscii().data() << " for Data Set: "
-        //                  << this->CacheFileName.key((*iter)).toAscii().data() << std::endl;
+                std::cout << "Reading File: " << (*iter).toAscii().data() << std::endl;
 
         for(int x =0; x < this->timeSteps.size(); x++)
         {
@@ -809,6 +808,8 @@ void vtkSpaceCraftInfoHandler::updateForOvershoot(DateTime &startTime, DateTime 
 //=========================================================================================//
 void vtkSpaceCraftInfoHandler::SetSCIData(const char *group, const char *observatory, const char *list)
 {
+
+    std::cout << "FILTER: " << group << " : " << observatory << " : " << list << std::endl;
     //mark dirty
     this->processed = false;
 

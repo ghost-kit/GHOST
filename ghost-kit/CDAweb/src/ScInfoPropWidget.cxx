@@ -447,6 +447,8 @@ void ScInfoPropWidget::apply()
         }
     }
 
+    std::cout << "Code String: " << CodeString.toAscii().data() << std::endl;
+
     //Add relevent information to ParaView Property
     this->svp->SetElement(0, this->currentGroup.toAscii().data());
     this->SaveStateGroup->SetElement(0, this->currentGroup.toAscii().data());
