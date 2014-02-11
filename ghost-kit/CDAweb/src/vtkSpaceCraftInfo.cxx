@@ -818,8 +818,41 @@ void vtkSpaceCraftInfoHandler::SetSCIData(const char *startTime, const char *sto
     std::cout << "Begin Start Time: " << this->startTime << std::endl;
     std::cout << "Begin Stop  Time: " << this->endTime  << std::endl;
 
-    this->startTime = startMJD;
-    this->endTime = stopMJD;
+    if(this->numInputPorts == 0)
+    {
+        this->startTime = startMJD;
+        this->endTime = stopMJD;
+    }
+    else
+    {
+//        //TODO: Move Time Checking to a common function
+
+//            vtkInformationVector* inInfoVector = super->GetExecutive()->GetInputInformation(0);
+//            vtkInformation* inInfo = inInfoVector->GetInformationObject(0);
+
+//            if(inInfo->Has(vtkStreamingDemandDrivenPipeline::TIME_STEPS()))
+//            {
+//                this->NumberOfTimeSteps = inInfo->Length(vtkStreamingDemandDrivenPipeline::TIME_STEPS());
+//                double *timeValues = inInfo->Get(vtkStreamingDemandDrivenPipeline::TIME_STEPS());
+
+//                std::cout << "Number of time steps: " << this->NumberOfTimeSteps  << std::endl;
+
+//                //push time steps into list
+//                this->timeSteps.clear();
+//                for (int y = 0; y < this->NumberOfTimeSteps; y++)
+//                {
+//                    this->timeSteps.push_back(timeValues[y]);
+//                }
+//                this->TimeRange[0] = this->timeSteps.first();
+//                this->TimeRange[1] = this->timeSteps.last();
+//                this->startTime = this->timeSteps.first();
+//                this->endTime = this->timeSteps.last();
+//            }
+        this->startTime = startMJD;
+        this->endTime   = stopMJD;
+
+        std::cerr << "DEBUG: Filter Time Range: " << this->startTime << "-" << this->endTime << std::endl;
+    }
 
     std::cout << "Restore Start Time: " << this->startTime << std::endl;
     std::cout << "Restore Stop  Time: " << this->endTime  << std::endl;

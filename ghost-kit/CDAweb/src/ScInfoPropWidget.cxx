@@ -141,11 +141,15 @@ void ScInfoPropWidget::restoreGUIinit()
             {
                 activeItemList[0]->setCheckState(0, Qt::Checked);
             }
+            else
+            {
+                std::cerr << "Error Restoring State" << std::endl;
+            }
         }
     }
+
     //TODO: Restore Variables
     //TODO: Restore Active Variables
-    //TODO: Issue Apply if this is a state restore / skip otherwise
 
 }
 
@@ -167,7 +171,6 @@ ScInfoPropWidget::ScInfoPropWidget(vtkSMProxy *smproxy, vtkSMProperty *smpropert
     //intiailize the time state
     this->startTimeState            = vtkSMDoubleVectorProperty::SafeDownCast(this->smProxy->GetProperty("TimeRangeInfoStart"));
     this->endTimeState              = vtkSMDoubleVectorProperty::SafeDownCast(this->smProxy->GetProperty("TimeRangeInfoEnd"));
-
 
     //===============================================================================================
     //DEBUG//
@@ -216,9 +219,6 @@ ScInfoPropWidget::ScInfoPropWidget(vtkSMProxy *smproxy, vtkSMProperty *smpropert
     //get properties
     this->startMJD = this->startTimeState->GetElement(0);
     this->endMJD = this->endTimeState->GetElement(0);
-
-    std::cerr << "Start MJD: " << this->startMJD << std::endl;
-    std::cerr << "End MJD:   " << this->endMJD << std::endl;
 
     //URLs for CDAWeb
     this->baseURL = QString("http://cdaweb.gsfc.nasa.gov/WS/cdasr/1");
