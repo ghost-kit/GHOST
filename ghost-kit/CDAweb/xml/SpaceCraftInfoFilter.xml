@@ -1,7 +1,7 @@
 <ServerManagerConfiguration>
 <!-- Begin SpaceCraftInfo -->
     <ProxyGroup name="filters">
-    <SourceProxy name="NASA CDAweb Space Craft Data over Time (MJD)" class="vtkSpaceCraftInfoFilter">
+    <SourceProxy name="GK CDAweb Alignment" class="vtkSpaceCraftInfoFilter">
 
        <InputProperty name="Input" command="SetInputConnection">
           <ProxyGroupDomain name="groups">

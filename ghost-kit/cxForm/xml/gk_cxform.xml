@@ -2,7 +2,7 @@
 <ServerManagerConfiguration>
 <!-- Begin SpaceCraftInfo -->
     <ProxyGroup name="filters">
-    <SourceProxy name="Ghost Kit Coordiante Transform" class="gk_cxform">
+    <SourceProxy name="GK Transform" class="gk_cxform">
 
        <InputProperty name="Input" command="SetInputConnection">
           <ProxyGroupDomain name="groups">
