@@ -35,7 +35,7 @@
             <IntVectorProperty name="Minutes to Add"
                                command="setOverShoot"
                                number_of_elements="1"
-                               default_values="60"
+                               default_values="10"
                                immediate_update="1"
                                panel_visibility="advanced">
 
@@ -46,7 +46,7 @@
 
             </IntVectorProperty>
 
-           <DoubleVectorProperty name="TimeRangeInfoStart"
+           <DoubleVectorProperty name="TimeStart"
                                   command="getStartTime"
                                   information_only="1"
                                   number_of_elements="1"
@@ -59,7 +59,7 @@
 
             </DoubleVectorProperty>
 
-            <DoubleVectorProperty name="TimeRangeInfoEnd"
+            <DoubleVectorProperty name="TimeEnd"
                                   command="getEndTime"
                                   information_only="1"
                                   number_of_elements="1"
@@ -74,7 +74,9 @@
 
             <IntVectorProperty name="TimeFitHandler"
                                 command="SetTimeFitHandler"
+                                number_of_elements = '1'
                                 number_of_elements_per_command="1"
+                                default_values="0"
                                 label="Time Fit Handler"
                                 panel_visibility="default">
 
@@ -122,7 +124,6 @@
                                 number_of_elements_per_command="5"
                                 number_of_elements = "5"
                                 panel_widget="SpaceCraftInfoProperties"
-                                label = ""
                                 panel_visibility = "default">
 
                 <Documentation>
@@ -134,7 +135,7 @@
 
 <!-- SELECTION STATE -->
 
-            <StringVectorProperty   name="SaveStateGroup"
+            <StringVectorProperty   name="Group"
                                     number_of_elements = "1"
                                     default_values=""
                                     immediate_update="1"
@@ -146,7 +147,7 @@
 
             </StringVectorProperty>
 
-            <StringVectorProperty   name="SaveStateObservatory"
+            <StringVectorProperty   name="Observatory"
                                     number_of_elements = "1"
                                     default_values=""
                                     immediate_update="1"
@@ -158,8 +159,8 @@
 
             </StringVectorProperty>
 
-            <StringVectorProperty   name="SaveStateInstrument"
-                                    number_of_elements = "1"
+            <StringVectorProperty   name="Instruments"
+                                    number_of_elements = "10"
                                     default_values=""
                                     immediate_update="1"
                                     panel_visibility="never">
@@ -170,8 +171,8 @@
 
             </StringVectorProperty>
 
-            <StringVectorProperty   name="SaveStateDataSet"
-                                    number_of_elements = "1"
+            <StringVectorProperty   name="DataSets"
+                                    number_of_elements = "10"
                                     default_values=""
                                     immediate_update="1"
                                     panel_visibility="never">
@@ -182,8 +183,8 @@
 
             </StringVectorProperty>
 
-            <StringVectorProperty   name="SaveStateVariables"
-                                    number_of_elements = "1"
+            <StringVectorProperty   name="Variables"
+                                    number_of_elements = "10"
                                     default_values=""
                                     immediate_update="1"
                                     panel_visibility="never">

@@ -34,11 +34,11 @@
             </IntVectorProperty>
 
 
-            <DoubleVectorProperty name="TimeRangeInfoStart"
+           <DoubleVectorProperty name="TimeStart"
                                   command="getStartTime"
                                   information_only="1"
                                   number_of_elements="1"
-                                  default_values="-1" >
+                                  default_values="1" >
                 <SimpleDoubleInformationHelper/>
 
                 <Documentation>
@@ -47,11 +47,11 @@
 
             </DoubleVectorProperty>
 
-            <DoubleVectorProperty name="TimeRangeInfoEnd"
+            <DoubleVectorProperty name="TimeEnd"
                                   command="getEndTime"
                                   information_only="1"
                                   number_of_elements="1"
-                                  default_values="-1" >
+                                  default_values="1" >
                 <SimpleDoubleInformationHelper/>
 
                 <Documentation>
@@ -75,64 +75,9 @@
 
             </DoubleVectorProperty>
 
-            <StringVectorProperty   name="SaveStateGroup"
-                                    default_values=""
-                                    immediate_update="1"
-                                    panel_visibility="never">
+<!-- SELECTION STATE -->
 
-                <Documentation>
-                    This Property is for Saving the State of the Observatory Group Selection.
-                </Documentation>
-
-            </StringVectorProperty>
-
-            <StringVectorProperty   name="SaveStateObservatory"
-                                    default_values=""
-                                    immediate_update="1"
-                                    panel_visibility="never">
-
-                <Documentation>
-                    This Property is for Saving the State of the Observatory Selection.
-                </Documentation>
-
-            </StringVectorProperty>
-
-            <StringVectorProperty   name="SaveStateInstrument"
-                                    default_values=""
-                                    immediate_update="1"
-                                    panel_visibility="never">
-
-                <Documentation>
-                    This Property is for Saving the State of the Instrument Selection.
-                </Documentation>
-
-            </StringVectorProperty>
-
-            <StringVectorProperty   name="SaveStateDataSet"
-                                    default_values=""
-                                    immediate_update="1"
-                                    panel_visibility="never">
-
-                <Documentation>
-                    This Property is for Saving the State of the DataSet Selection.
-                </Documentation>
-
-            </StringVectorProperty>
-
-            <StringVectorProperty   name="SaveStateVariables"
-                                    default_values=""
-                                    immediate_update="1"
-                                    panel_visibility="never">
-
-                <Documentation>
-                    This Property is for Saving the State of the Variable Selection.
-                </Documentation>
-
-            </StringVectorProperty>
-
-<!-- GUI STATE -->
-
-            <StringVectorProperty   name="SaveStateGroupList"
+            <StringVectorProperty   name="Group"
                                     number_of_elements = "1"
                                     default_values=""
                                     immediate_update="1"
@@ -144,7 +89,7 @@
 
             </StringVectorProperty>
 
-            <StringVectorProperty   name="SaveStateObservatoryList"
+            <StringVectorProperty   name="Observatory"
                                     number_of_elements = "1"
                                     default_values=""
                                     immediate_update="1"
@@ -156,8 +101,8 @@
 
             </StringVectorProperty>
 
-            <StringVectorProperty   name="SaveStateInstrumentList"
-                                    number_of_elements = "1"
+            <StringVectorProperty   name="Instruments"
+                                    number_of_elements = "10"
                                     default_values=""
                                     immediate_update="1"
                                     panel_visibility="never">
@@ -168,8 +113,8 @@
 
             </StringVectorProperty>
 
-            <StringVectorProperty   name="SaveStateDataSetList"
-                                    number_of_elements = "1"
+            <StringVectorProperty   name="DataSets"
+                                    number_of_elements = "10"
                                     default_values=""
                                     immediate_update="1"
                                     panel_visibility="never">
@@ -180,8 +125,8 @@
 
             </StringVectorProperty>
 
-            <StringVectorProperty   name="SaveStateVariablesList"
-                                    number_of_elements = "1"
+            <StringVectorProperty   name="Variables"
+                                    number_of_elements = "10"
                                     default_values=""
                                     immediate_update="1"
                                     panel_visibility="never">
@@ -191,6 +136,8 @@
                 </Documentation>
 
             </StringVectorProperty>
+
+
 
 <!-- Remainder of Filter -->
 

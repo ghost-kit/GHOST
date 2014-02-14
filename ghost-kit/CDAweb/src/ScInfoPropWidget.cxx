@@ -162,15 +162,15 @@ ScInfoPropWidget::ScInfoPropWidget(vtkSMProxy *smproxy, vtkSMProperty *smpropert
     this->smProxy = smproxy;
 
     //make save state selection properties available
-    this->SaveStateGroup       = vtkSMStringVectorProperty::SafeDownCast(this->smProxy->GetProperty("SaveStateGroup"));
-    this->SaveStateObservatory = vtkSMStringVectorProperty::SafeDownCast(this->smProxy->GetProperty("SaveStateObservatory"));
-    this->SaveStateInstrument  = vtkSMStringVectorProperty::SafeDownCast(this->smProxy->GetProperty("SaveStateInstrument"));
-    this->SaveStateDataSet     = vtkSMStringVectorProperty::SafeDownCast(this->smProxy->GetProperty("SaveStateDataSet"));
-    this->SaveStateVariables   = vtkSMStringVectorProperty::SafeDownCast(this->smProxy->GetProperty("SaveStateVariables"));
+    this->SaveStateGroup       = vtkSMStringVectorProperty::SafeDownCast(this->smProxy->GetProperty("Group"));
+    this->SaveStateObservatory = vtkSMStringVectorProperty::SafeDownCast(this->smProxy->GetProperty("Observatory"));
+    this->SaveStateInstrument  = vtkSMStringVectorProperty::SafeDownCast(this->smProxy->GetProperty("Instruments"));
+    this->SaveStateDataSet     = vtkSMStringVectorProperty::SafeDownCast(this->smProxy->GetProperty("DataSets"));
+    this->SaveStateVariables   = vtkSMStringVectorProperty::SafeDownCast(this->smProxy->GetProperty("Variables"));
 
     //intiailize the time state
-    this->startTimeState            = vtkSMDoubleVectorProperty::SafeDownCast(this->smProxy->GetProperty("TimeRangeInfoStart"));
-    this->endTimeState              = vtkSMDoubleVectorProperty::SafeDownCast(this->smProxy->GetProperty("TimeRangeInfoEnd"));
+    this->startTimeState            = vtkSMDoubleVectorProperty::SafeDownCast(this->smProxy->GetProperty("TimeStart"));
+    this->endTimeState              = vtkSMDoubleVectorProperty::SafeDownCast(this->smProxy->GetProperty("TimeEnd"));
 
     //===============================================================================================
     //DEBUG//
