@@ -8,7 +8,7 @@ add_external_project(
     DateTime
 
     BUILD_COMMAND
-        make
+        CXX=${CMAKE_CXX_COMPILER} make
 
     INSTALL_COMMAND
         make install

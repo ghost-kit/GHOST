@@ -10,8 +10,8 @@
 
 
 add_revision(hdf4
-    URL "http://www.hdfgroup.org/ftp/HDF/HDF_Current/src/hdf-4.2.9.tar.gz"
-    URL_MD5 b49f1fd65e4857c6f6d7da151b96f32a)
+    URL "http://www.hdfgroup.org/ftp/HDF/HDF_Current/src/hdf-4.2.10.tar.gz"
+    URL_MD5 5c63e2934778714c7bcd32f0198fbc71)
 
 
 add_revision(jpeg
@@ -168,7 +168,7 @@ if (ParaView_FROM_GIT)
   # Download PV from GIT
   add_revision(paraview
     GIT_REPOSITORY git://paraview.org/ParaView.git
-    GIT_TAG "v4.0.1")
+    GIT_TAG "master")
 else()
   # Variables to hold the URL and MD5 (optional)
   set (ParaView_URL "http://www.paraview.org/files/v4.0/ParaView-v4.0.1-source.tgz" CACHE
