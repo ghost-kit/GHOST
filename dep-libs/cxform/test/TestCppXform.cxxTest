@@ -1,6 +1,6 @@
 
 #include "../cppxform.h"
-#include "String"
+#include "string"
 
 #include <cxxtest/TestSuite.h>
 #include <cxxtest/GlobalFixture.h>
