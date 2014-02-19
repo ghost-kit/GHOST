@@ -7,10 +7,8 @@ endif()
 add_external_project(
     DateTime
 
-    BUILD_COMMAND
-        CXX=${CMAKE_CXX_COMPILER} make
+    CMAKE_ARGS
+        -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
 
-    INSTALL_COMMAND
-        make install
 
 )
