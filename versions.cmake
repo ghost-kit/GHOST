@@ -169,9 +169,9 @@ if (ParaView_FROM_GIT)
     GIT_TAG "master")
 else()
   # Variables to hold the URL and MD5 (optional)
-  set (ParaView_URL "http://www.paraview.org/files/v4.1/ParaView-v4.1.0-source.tar.gz" CACHE
+  set (ParaView_URL "http://www.paraview.org/files/v4.0/ParaView-v4.0.1-source.tgz" CACHE
     STRING "Specify the url for ParaView tarball")
-  set (ParaView_URL_MD5 "1bcdc7abfccee8f0a59db8ae916bfac2" CACHE
+  set (ParaView_URL_MD5 "6a300744eaf32676a3a7e1b42eb642c7" CACHE
     STRING "MD5 of the ParaView tarball")
 
   # Get the length of the URL specified.
