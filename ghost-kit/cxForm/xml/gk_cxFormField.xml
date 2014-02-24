@@ -2,7 +2,7 @@
 <ServerManagerConfiguration>
 <!-- Begin SpaceCraftInfo -->
 <ProxyGroup name="filters">
-<SourceProxy name="GK Transform" class="gk_cxform">
+<SourceProxy name="GK Field Transform" class="gk_cxFormField">
 
     <InputProperty name="Input" command="SetInputConnection">
 
@@ -12,8 +12,8 @@
        </ProxyGroupDomain>
 
        <DataTypeDomain name="input_type">
-            <DataType value="vtkDataSet"/>
-            <DataType value="vtkUnstructuredGrid"/>
+            <DataType value="vtkDataSet"    />
+            <DataType value="vtkTable"      />
        </DataTypeDomain>
 
        <InputArrayDomain name="input_array" attribute_type="point"
@@ -80,6 +80,32 @@
 
     </IntVectorProperty>
 
+    <StringVectorProperty name="Input Field"
+            label="Selected Input Field"
+            command="SetInputVariable"
+            number_of_elements="1"
+            default_values="NULL"
+            panel_visibility="default">
+
+    </StringVectorProperty>
+
+    <DoubleVectorProperty name="ManualInput"
+            label="Manual Data Entry"
+            command="SetManualSource"
+            number_of_elements="3"
+            default_values="0 0 0"
+            panel_visibility="default">
+
+    </DoubleVectorProperty>
+
+    <DoubleVectorProperty name="OutputValue"
+            label="Output Values"
+            command="SetOutputValue"
+            number_of_elements="3"
+            default_values="0 0 0"
+            panel_visibility="never">
+
+    </DoubleVectorProperty>
 
 </SourceProxy>
 </ProxyGroup>

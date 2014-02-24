@@ -31,7 +31,6 @@
 #include "vtkPointData.h"
 #include "vtkCellData.h"
 
-
 #include "ltrDateTime.h"
 #include "cppxform.h"
 #include <math.h>
@@ -87,6 +86,7 @@ int gk_cxform::RequestDataObject(vtkInformation *request, vtkInformationVector *
 //===============================================//
 void gk_cxform::PrintSelf(ostream &os, vtkIndent indent)
 {
+    std::cerr << "Ghost Kit Data Transformation Filter" << std::endl;
 
 }
 
@@ -96,7 +96,7 @@ void gk_cxform::SetSourceSystem(int value)
     this->sourceSystem = value;
     this->Modified();
 
-    std::cerr << "Modified Source System to " << this->systemLookupTable[value] << std::endl;
+//    std::cerr << "Modified Source System to " << this->systemLookupTable[value] << std::endl;
 
 }
 
@@ -107,7 +107,7 @@ void gk_cxform::SetDestSystem(int value)
     this->destSystem = value;
     this->Modified();
 
-    std::cerr << "Modified Destination System to " << this->systemLookupTable[value] << std::endl;
+//    std::cerr << "Modified Destination System to " << this->systemLookupTable[value] << std::endl;
 }
 
 //===============================================//
@@ -288,10 +288,6 @@ int gk_cxform::RequestData(vtkInformation *request, vtkInformationVector **input
                     xyzxform = xform.cxForm(this->systemLookupTable[this->destSystem].c_str());
 
                     OutArray->InsertNextTuple(xyzxform);
-
-                    //                    std::cerr << "IN:  " << xyz[0] << "," << xyz[1] << "," << xyz[2] << std::endl;
-                    //                    std::cerr << "OUT: " << xyzxform[0] << "," << xyzxform[1] << "," << xyzxform[2] << std::endl;
-
                     xform.cleanHandler();
                 }
 
@@ -323,7 +319,6 @@ int gk_cxform::RequestData(vtkInformation *request, vtkInformationVector **input
     }
 
     this->UpdateProgress (.6);
-
 
     //TODO: Transform Cells
     //vtkWarningMacro(<< "We have not yet implemented Cell Data Transformation");

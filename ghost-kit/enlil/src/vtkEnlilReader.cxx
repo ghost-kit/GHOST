@@ -783,6 +783,10 @@ void vtkEnlilReader::getDataID(std::string array, int &dataID)
     {
         dataID = DATA_TYPE::TEMP;
     }
+    else if(arrayName.contains("Radial"))
+    {
+        dataID = DATA_TYPE::RVELOCITY;
+    }
     else if(arrayName.contains("Velocity"))
     {
         dataID = DATA_TYPE::VELOCITY;
@@ -1058,6 +1062,35 @@ int vtkEnlilReader::LoadArrayValues(std::string array, vtkInformationVector* out
 
                 //get the data array from the cache system
                 DataArray = vtkFloatArray::SafeDownCast(this->temperatureCache.getExtentsFromCache(this->current_MJD, subExtents)->data);
+
+            }
+            break;
+
+        case DATA_TYPE::RVELOCITY:
+            std::cerr << "Radial Velocity Entered" << std::endl;
+            if(this->rVelocityCache.getExtentsFromCache(this->current_MJD, subExtents) == NULL)
+            {
+                //                std::cout << "TEMPURATURE" << std::endl;
+
+                DataArray = vtkFloatArray::New();
+                DataArray->SetName(array.c_str());
+                readScalar(Data, DataArray, array, outputVector, dataID);
+
+                if(subExtents < wholeExtents)
+                {
+                    //add the element to the cache
+                    //lets not use the cache yet.. not ready for prime time
+                    //TODO: finish cache system
+
+                    //this->rVelocityCache.addCacheElement(this->current_MJD, subExtents, DataArray);
+
+                }
+
+            }
+            else
+            {
+                //get the data array from the cache system
+                DataArray = vtkFloatArray::SafeDownCast(this->rVelocityCache.getExtentsFromCache(this->current_MJD, subExtents)->data);
 
             }
             break;
@@ -1481,6 +1514,7 @@ int vtkEnlilReader::PopulateArrays()
     this->addPointArray((char*)"D");
     this->addPointArray((char*)"DP");
     this->addPointArray((char*)"T");
+    this->addPointArray((char*)"V1");
     this->addPointArray((char*)"BP");
     this->addPointArray((char*)"B1", (char*)"B2", (char*)"B3");
     this->addPointArray((char*)"V1", (char*)"V2", (char*)"V3");
@@ -1871,8 +1905,17 @@ void vtkEnlilReader::addPointArray(char* name)
     NcFile file(this->FileName);
     try
     {
+
         // look up the "Long Name" of the variable
         std::string varname = file.get_var(name)->get_att("long_name")->as_string(0);
+
+        //Radial Veclocity Hack
+        if(varname == "X1-velocity")
+        {
+            varname = std::string("Radial Velocity");
+        }
+
+        //map the variable
         this->ScalarVariableMap[varname] = std::string(name);
 
         // Add it to the point grid
@@ -1880,6 +1923,7 @@ void vtkEnlilReader::addPointArray(char* name)
         {
             this->PointDataArraySelection->AddArray(varname.c_str());
         }
+
     }
     catch (...)
     {

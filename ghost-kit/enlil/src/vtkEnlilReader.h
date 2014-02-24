@@ -55,7 +55,8 @@ enum dataType{
     TEMP = 2,
     POLARITY = 3,
     BFIELD = 4,
-    VELOCITY = 5
+    VELOCITY = 5,
+    RVELOCITY = 6
 };
 
 
@@ -281,6 +282,7 @@ private:
     RCache::ReaderCache polarityCache;
     RCache::ReaderCache bFieldCache;
     RCache::ReaderCache velocityCache;
+    RCache::ReaderCache rVelocityCache;
 
     void cleanCache();
 

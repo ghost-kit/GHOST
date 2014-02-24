@@ -4,5 +4,10 @@ if(NOT cxformFilter_SOURCE_DIR)
 endif()
 
 
-set(GKcxForm_SM_XML ${cxformFilter_SOURCE_DIR}/xml/gk_cxform.xml)
-set(GKcxForm_SM_SRC ${cxformFilter_SOURCE_DIR}/src/gk_cxform.cpp)
+set(GKcxForm_SM_XML
+    ${cxformFilter_SOURCE_DIR}/xml/gk_cxform.xml
+    ${cxformFilter_SOURCE_DIR}/xml/gk_cxFormField.xml)
+
+set(GKcxForm_SM_SRC
+    ${cxformFilter_SOURCE_DIR}/src/gk_cxform.cpp
+    ${cxformFilter_SOURCE_DIR}/src/gk_cxFormField.cpp)
