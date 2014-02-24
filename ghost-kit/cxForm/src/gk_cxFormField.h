@@ -5,6 +5,7 @@
 #include "vtkFiltersGeneralModule.h"
 #include "vtkTableAlgorithm.h"
 #include "vtkDataSetAlgorithm.h"
+#include "vtkAlgorithm.h"
 #include <vector>
 
 #define UNKOWN  0
@@ -22,11 +23,11 @@
 #define HEEQ    12
 #define HEEQ180 13
 
-class VTKFILTERSGENERAL_EXPORT gk_cxFormField : public vtkDataSetAlgorithm
+class VTKFILTERSGENERAL_EXPORT gk_cxFormField : public vtkTableAlgorithm
 {
 public:
     static gk_cxFormField *New();
-    vtkTypeMacro(gk_cxFormField, vtkDataSetAlgorithm)
+    vtkTypeMacro(gk_cxFormField, vtkTableAlgorithm)
 
     void PrintSelf(ostream &os, vtkIndent indent);
 
