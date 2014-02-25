@@ -29,6 +29,7 @@
 #include "vtkFloatArray.h"
 #include "vtkPointData.h"
 #include "vtkCellData.h"
+#include "vtkDataObjectTypes.h"
 
 #include "ltrDateTime.h"
 #include "cppxform.h"
@@ -97,14 +98,56 @@ gk_cxFormField::gk_cxFormField()
 
 }
 
-
-
+//===============================================//
 int gk_cxFormField::FillInputPortInformation(
     int vtkNotUsed(port), vtkInformation* info)
 {
   info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkDataObject");
   return 1;
 }
+
+//===============================================//
+int gk_cxFormField::RequestDataObject(
+  vtkInformation* vtkNotUsed(request),
+  vtkInformationVector** inputVector,
+  vtkInformationVector* outputVector)
+{
+  // Output type is same as input
+  vtkDataObject *input = vtkDataObject::GetData(inputVector[0], 0);
+  if (input)
+    {
+    const char* outputType = "vtkUnstructuredGrid";
+    if (input->IsA("vtkCompositeDataSet"))
+      {
+      outputType = "vtkMultiBlockDataSet";
+      }
+    else if (input->IsA("vtkTable"))
+      {
+      outputType = "vtkTable";
+      }
+
+    // for each output
+    for (int i=0; i < this->GetNumberOfOutputPorts(); ++i)
+      {
+      vtkInformation* info = outputVector->GetInformationObject(i);
+      vtkDataObject *output = info->Get(vtkDataObject::DATA_OBJECT());
+
+      if (!output || !output->IsA(outputType))
+        {
+        vtkDataObject* newOutput =
+          vtkDataObjectTypes::NewDataObject(outputType);
+        info->Set(vtkDataObject::DATA_OBJECT(), newOutput);
+        newOutput->Delete();
+        this->GetOutputPortInformation(0)->Set(
+          vtkDataObject::DATA_EXTENT_TYPE(), newOutput->GetExtentType());
+        }
+      }
+    return 1;
+    }
+
+  return 0;
+}
+
 
 //===============================================//
 int gk_cxFormField::RequestData(vtkInformation *request, vtkInformationVector **inputVector, vtkInformationVector *outputVector)

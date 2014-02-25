@@ -24,7 +24,7 @@
 #define HEEQ    12
 #define HEEQ180 13
 
-class VTKPVCLIENTSERVERCORECORE_EXPORT gk_cxFormField : public vtkTableAlgorithm
+class  gk_cxFormField : public vtkTableAlgorithm
 {
 public:
     static gk_cxFormField *New();
@@ -43,7 +43,12 @@ public:
 protected:
     gk_cxFormField();
 
+
     virtual int FillInputPortInformation(int port, vtkInformation* info);
+
+    virtual int RequestDataObject(vtkInformation* request,
+                                  vtkInformationVector** inputVector,
+                                  vtkInformationVector* outputVector);
 
     virtual int RequestData(vtkInformation *request,
                             vtkInformationVector **inputVector,

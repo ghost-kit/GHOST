@@ -22,6 +22,9 @@
 
         <DataTypeDomain name="input_type">
           <DataType value="vtkDataSet" />
+          <DataType value="vtkTable" />
+          <DataType value="vtkCompositeDataSet" />
+<!--          <DataType value="vtkMultiBlockDataSet" />-->
         </DataTypeDomain>
 
         <Documentation>Set the input of the filter.</Documentation>
