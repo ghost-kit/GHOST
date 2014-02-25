@@ -97,6 +97,15 @@ gk_cxFormField::gk_cxFormField()
 
 }
 
+
+
+int gk_cxFormField::FillInputPortInformation(
+    int vtkNotUsed(port), vtkInformation* info)
+{
+  info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkDataObject");
+  return 1;
+}
+
 //===============================================//
 int gk_cxFormField::RequestData(vtkInformation *request, vtkInformationVector **inputVector, vtkInformationVector *outputVector)
 {

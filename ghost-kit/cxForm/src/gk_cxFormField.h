@@ -1,6 +1,7 @@
 #ifndef GK_CXFORMFIELD_H
 #define GK_CXFORMFIELD_H
 
+#include "vtkPVClientServerCoreCoreModule.h" //needed for exports
 #include "vtkPointSetAlgorithm.h"
 #include "vtkFiltersGeneralModule.h"
 #include "vtkTableAlgorithm.h"
@@ -23,7 +24,7 @@
 #define HEEQ    12
 #define HEEQ180 13
 
-class VTKFILTERSGENERAL_EXPORT gk_cxFormField : public vtkTableAlgorithm
+class VTKPVCLIENTSERVERCORECORE_EXPORT gk_cxFormField : public vtkTableAlgorithm
 {
 public:
     static gk_cxFormField *New();
@@ -42,7 +43,11 @@ public:
 protected:
     gk_cxFormField();
 
-    int RequestData(vtkInformation *request, vtkInformationVector **inputVector, vtkInformationVector *outputVector);
+    virtual int FillInputPortInformation(int port, vtkInformation* info);
+
+    virtual int RequestData(vtkInformation *request,
+                            vtkInformationVector **inputVector,
+                            vtkInformationVector *outputVector);
 
     int sourceSystem;
     int destSystem;

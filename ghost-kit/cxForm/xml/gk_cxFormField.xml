@@ -2,27 +2,34 @@
 <ServerManagerConfiguration>
 <!-- Begin SpaceCraftInfo -->
 <ProxyGroup name="filters">
-<SourceProxy name="GK Field Transform" class="gk_cxFormField">
 
-    <InputProperty name="Input" command="SetInputConnection">
+    <SourceProxy class="gk_cxFormField"
+                 label="GK Field Transform"
+                 name="GKFieldTransform">
+      <Documentation long_help="This filter provides coordinate transform abuility on Field Data"
+                     short_help="provides coordinate transform abuility on Field Data">
 
-       <ProxyGroupDomain name="groups">
-            <Group name="sources"/>
-            <Group name="filters"/>
-       </ProxyGroupDomain>
+      </Documentation>
 
-       <DataTypeDomain name="input_type">
-           <DataType value="vtkTable"      />
-           <DataType value="vtkDataSet"    />
-       </DataTypeDomain>
+      <InputProperty clean_command="RemoveAllInputs"
+                     command="AddInputConnection"
+                     multiple_input="1"
+                     name="Input">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources" />
+          <Group name="filters" />
+        </ProxyGroupDomain>
 
-       <InputArrayDomain name="input_array" attribute_type="point"
-          number_of_components="1" optional="0"/>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkDataSet" />
+        </DataTypeDomain>
 
-    </InputProperty>
+        <Documentation>Set the input of the filter.</Documentation>
+
+      </InputProperty>
 
     <IntVectorProperty name="SourceCoord"
-       label="Source Coordinate System"
+       label="Source System"
        command="SetSourceSystem"
        number_of_elements="1"
        default_values="12"
@@ -51,7 +58,7 @@
     </IntVectorProperty>
 
     <IntVectorProperty name="DestCoord"
-            label="Destination Coordinate System"
+            label="Destination System"
             command="SetDestSystem"
             number_of_elements="1"
             default_values="6"
@@ -80,14 +87,14 @@
 
     </IntVectorProperty>
 
-    <StringVectorProperty name="Input Field"
-            label="Selected Input Field"
-            command="SetInputVariable"
-            number_of_elements="1"
-            default_values="NULL"
-            panel_visibility="default">
 
-    </StringVectorProperty>
+      <StringVectorProperty command="SetInputVariable"
+                            name="Input Field Variable"
+                            number_of_elements="1">
+        <Documentation>
+        </Documentation>
+      </StringVectorProperty>
+
 
     <DoubleVectorProperty name="ManualInput"
             label="Manual Data Entry"
@@ -107,7 +114,59 @@
 
     </DoubleVectorProperty>
 
-</SourceProxy>
+      <Hints>
+        <Visibility replace_input="0" />
+        <OutputPort index="0"
+                    name="Output-0"
+                    type="text" />
+      </Hints>
+      <!-- End PythonAnnotation -->
+    </SourceProxy>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!--<SourceProxy name="GK Field Transform" class="gk_cxFormField">
+
+    <InputProperty name="Input" command="SetInputConnection">
+
+       <ProxyGroupDomain name="groups">
+            <Group name="sources"/>
+            <Group name="filters"/>
+       </ProxyGroupDomain>
+
+       <DataTypeDomain name="input_type">
+           <DataType value="vtkDataSet"    />
+
+       </DataTypeDomain>
+
+       <InputArrayDomain name="input_array" attribute_type="point"
+          number_of_components="1" optional="0"/>
+
+    </InputProperty>
+
+    <StringVectorProperty name="Input Field"
+            label="Selected Input Field"
+            command="SetInputVariable"
+            number_of_elements="1"
+            default_values="NULL"
+            panel_visibility="default">
+
+    </StringVectorProperty>
+
+
+
+</SourceProxy>-->
 </ProxyGroup>
 
 <!-- End SpaceCraftInfo -->
