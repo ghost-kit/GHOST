@@ -37,8 +37,15 @@ public:
 
     void SetInputVariable(char* name);
 
-    void SetOutputValue(double x, double y, double z);
-    void SetManualSource(double x, double y, double z);
+    void SetManualName(char* name);
+    void SetManualInput(double x, double y, double z);
+    void SetManualOutput(double x, double y, double z);
+
+    void SetSplitFieldName(char* name);
+    void SetSplitX(int x);
+    void SetSplitY(int y);
+    void SetSplitZ(int z);
+
 
 protected:
     gk_cxFormField();

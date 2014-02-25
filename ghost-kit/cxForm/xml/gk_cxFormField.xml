@@ -24,15 +24,14 @@
           <DataType value="vtkDataSet" />
           <DataType value="vtkTable" />
           <DataType value="vtkCompositeDataSet" />
-<!--          <DataType value="vtkMultiBlockDataSet" />-->
         </DataTypeDomain>
 
         <Documentation>Set the input of the filter.</Documentation>
 
       </InputProperty>
 
-    <IntVectorProperty name="SourceCoord"
-       label="Source System"
+    <IntVectorProperty name="Source"
+       label="From"
        command="SetSourceSystem"
        number_of_elements="1"
        default_values="12"
@@ -60,8 +59,8 @@
 
     </IntVectorProperty>
 
-    <IntVectorProperty name="DestCoord"
-            label="Destination System"
+    <IntVectorProperty name="Destination"
+            label="To"
             command="SetDestSystem"
             number_of_elements="1"
             default_values="6"
@@ -92,30 +91,103 @@
 
 
       <StringVectorProperty command="SetInputVariable"
-                            name="Input Field Variable"
+                            label="Input Field Variable"
+                            name="InputFieldVariable"
                             number_of_elements="1">
         <Documentation>
         </Documentation>
       </StringVectorProperty>
 
 
-    <DoubleVectorProperty name="ManualInput"
-            label="Manual Data Entry"
-            command="SetManualSource"
+      <StringVectorProperty command="SetManualName"
+                            label="Output Name for Manual Xform"
+                            name="ManualXformName"
+                            number_of_elements="1"
+                            panel_visibility="advanced">
+        <Documentation>
+        </Documentation>
+      </StringVectorProperty>
+
+    <DoubleVectorProperty name="ManualXform"
+            label="Manual Input"
+            command="SetManualInput"
             number_of_elements="3"
             default_values="0 0 0"
-            panel_visibility="default">
+            panel_visibility="advanced">
 
     </DoubleVectorProperty>
 
-    <DoubleVectorProperty name="OutputValue"
-            label="Output Values"
-            command="SetOutputValue"
+    <DoubleVectorProperty name="ManualOutput"
+            label="Manual Output"
+            command="SetManualOutput"
             number_of_elements="3"
             default_values="0 0 0"
             panel_visibility="never">
 
     </DoubleVectorProperty>
+
+      <StringVectorProperty command="SetSplitFieldName"
+                            name="Output Name for Split Field Xform"
+                            number_of_elements="1"
+                            panel_visibility="advanced">
+        <Documentation>
+        </Documentation>
+      </StringVectorProperty>
+
+      <IntVectorProperty
+         label="X Field"
+         name="SplitFieldX"
+         command="SetSplitX"
+         number_of_elements="1"
+         default_values="0"
+         panel_visibility="advanced">
+        <EnumerationDomain name="enum">
+          <Entry value="0" text="Entry 0"/>
+          <Entry value="1" text="Entry 1"/>
+          <Entry value="2" text="Entry 2"/>
+          <Entry value="3" text="Entry 3"/>
+        </EnumerationDomain>
+        <Documentation>
+            This is a placeholder for the Split Field Transform
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+         label="Y Field"
+         name="SplitFieldY"
+         command="SetSplitY"
+         number_of_elements="1"
+         default_values="0"
+         panel_visibility="advanced">
+        <EnumerationDomain name="enum">
+          <Entry value="0" text="Entry 0"/>
+          <Entry value="1" text="Entry 1"/>
+          <Entry value="2" text="Entry 2"/>
+          <Entry value="3" text="Entry 3"/>
+        </EnumerationDomain>
+        <Documentation>
+            This is a placeholder for the Split Field Transform
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+         label="Z Field"
+         name="SplitFieldZ"
+         command="SetSplitZ"
+         number_of_elements="1"
+         default_values="0"
+         panel_visibility="advanced">
+        <EnumerationDomain name="enum">
+          <Entry value="0" text="Entry 0"/>
+          <Entry value="1" text="Entry 1"/>
+          <Entry value="2" text="Entry 2"/>
+          <Entry value="3" text="Entry 3"/>
+        </EnumerationDomain>
+        <Documentation>
+            This is a placeholder for the Split Field Transform
+        </Documentation>
+      </IntVectorProperty>
+
 
       <Hints>
         <Visibility replace_input="0" />

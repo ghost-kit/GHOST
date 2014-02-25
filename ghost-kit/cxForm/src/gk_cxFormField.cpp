@@ -38,6 +38,30 @@
 //===============================================//
 vtkStandardNewMacro(gk_cxFormField)
 
+
+//===============================================//
+gk_cxFormField::gk_cxFormField()
+{
+    this->systemLookupTable.push_back(std::string("UNKNOWN"));
+    this->systemLookupTable.push_back(std::string("J2000"));
+    this->systemLookupTable.push_back(std::string("GEI"));
+    this->systemLookupTable.push_back(std::string("GEO"));
+    this->systemLookupTable.push_back(std::string("MAG"));
+    this->systemLookupTable.push_back(std::string("GSE"));
+    this->systemLookupTable.push_back(std::string("GSM"));
+    this->systemLookupTable.push_back(std::string("SM"));
+    this->systemLookupTable.push_back(std::string("RTN"));
+    this->systemLookupTable.push_back(std::string("GSEQ"));
+    this->systemLookupTable.push_back(std::string("HEE"));
+    this->systemLookupTable.push_back(std::string("HAE"));
+    this->systemLookupTable.push_back(std::string("HEEQ"));
+    this->systemLookupTable.push_back(std::string("HEEQ180"));
+
+    this->SetNumberOfInputPorts(1);
+    this->SetNumberOfOutputPorts(1);
+
+}
+
 //===============================================//
 void gk_cxFormField::PrintSelf(ostream &os, vtkIndent indent)
 {
@@ -65,38 +89,45 @@ void gk_cxFormField::SetInputVariable(char *name)
 
 }
 
-//===============================================//
-void gk_cxFormField::SetOutputValue(double x, double y, double z)
+void gk_cxFormField::SetManualName(char *name)
 {
 
 }
 
 //===============================================//
-void gk_cxFormField::SetManualSource(double x, double y, double z)
+void gk_cxFormField::SetManualOutput(double x, double y, double z)
+{
+
+}
+
+void gk_cxFormField::SetSplitFieldName(char *name)
+{
+
+}
+
+void gk_cxFormField::SetSplitX(int x)
+{
+
+}
+
+void gk_cxFormField::SetSplitY(int y)
+{
+
+}
+
+void gk_cxFormField::SetSplitZ(int z)
+{
+
+}
+
+//===============================================//
+void gk_cxFormField::SetManualInput(double x, double y, double z)
 {
     std::cerr << "Setting Manual Source" << std::endl;
 
 }
 
-//===============================================//
-gk_cxFormField::gk_cxFormField()
-{
-    this->systemLookupTable.push_back(std::string("UNKNOWN"));
-    this->systemLookupTable.push_back(std::string("J2000"));
-    this->systemLookupTable.push_back(std::string("GEI"));
-    this->systemLookupTable.push_back(std::string("GEO"));
-    this->systemLookupTable.push_back(std::string("MAG"));
-    this->systemLookupTable.push_back(std::string("GSE"));
-    this->systemLookupTable.push_back(std::string("GSM"));
-    this->systemLookupTable.push_back(std::string("SM"));
-    this->systemLookupTable.push_back(std::string("RTN"));
-    this->systemLookupTable.push_back(std::string("GSEQ"));
-    this->systemLookupTable.push_back(std::string("HEE"));
-    this->systemLookupTable.push_back(std::string("HAE"));
-    this->systemLookupTable.push_back(std::string("HEEQ"));
-    this->systemLookupTable.push_back(std::string("HEEQ180"));
 
-}
 
 //===============================================//
 int gk_cxFormField::FillInputPortInformation(

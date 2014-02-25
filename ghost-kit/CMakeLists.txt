@@ -137,7 +137,7 @@ set(SERVER_MAN_XML_LIST ${CDAWebTK_SM_XML}
 
     )
 
-set(GUI_RF_XML_LIST
+set(GUI_RF_XML_LIST     xml/ghost_gui.xml
                         ${ENLIL_GUI_XML}
                         ${LFM_GUI_XML}
     )
