@@ -6,8 +6,10 @@
 #include "vtkFiltersGeneralModule.h"
 #include "vtkTableAlgorithm.h"
 #include "vtkDataSetAlgorithm.h"
+#include "vtkDataArraySelection.h"
 #include "vtkAlgorithm.h"
 #include <vector>
+#include <string>
 
 #define UNKOWN  0
 #define J2000   1
@@ -32,15 +34,30 @@ public:
 
     void PrintSelf(ostream &os, vtkIndent indent);
 
+    //xform setup
     void SetSourceSystem(int value);
     void SetDestSystem(int value);
 
-    void SetInputVariable(char* name);
+    //field selections
+    int GetNumberOfFieldArrays();
+    const char* GetFieldArrayName(int index);
+    int GetFieldArrayStatus(const char* name);
+    void SetFieldArrayStatus(const char* name, int status);
+    void DisableAllFieldArrays();
+    void EnableAllFieldArrays();
 
+    //manual xform
+    void SetManualFromSystem(int system);
+    void SetManualToSystem(int system);
+    void setUseManual(int status);
     void SetManualName(char* name);
     void SetManualInput(double x, double y, double z);
     void SetManualOutput(double x, double y, double z);
 
+    //split fields xform
+    void SetSplitFromSystem(int system);
+    void SetSplitToSystem(int system);
+    void setUseSplit(int status);
     void SetSplitFieldName(char* name);
     void SetSplitX(int x);
     void SetSplitY(int y);
@@ -63,6 +80,27 @@ protected:
 
     int sourceSystem;
     int destSystem;
+
+
+
+    //field selection data structures
+    vtkDataArraySelection* fields;
+
+    int     useSplit;
+    int     splitFrom;
+    int     splitTo;
+    std::string   splitFieldName;
+    std::string   splitXfield;
+    std::string   splitYfield;
+    std::string   splitZfield;
+
+    int     useManual;
+    int     manualFrom;
+    int     manualTo;
+    std::string   manualFieldName;
+    double  manualX;
+    double  manualY;
+    double  manualZ;
 
 private:
     gk_cxFormField(const gk_cxFormField&);   //Not Implemented

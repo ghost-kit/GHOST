@@ -2,7 +2,10 @@
 <ServerManagerConfiguration>
 <!-- Begin SpaceCraftInfo -->
 <ProxyGroup name="filters">
-<SourceProxy name="GK Transform" class="gk_cxform">
+<SourceProxy
+    label="GK Transform"
+    name="GKTransform"
+    class="gk_cxform">
 
     <InputProperty name="Input" command="SetInputConnection">
 

@@ -60,6 +60,12 @@ gk_cxFormField::gk_cxFormField()
     this->SetNumberOfInputPorts(1);
     this->SetNumberOfOutputPorts(1);
 
+    this->fields = vtkDataArraySelection::New();
+    //TEST
+    this->fields->AddArray("Test 1");
+    this->fields->AddArray("Test 2");
+    this->fields->EnableAllArrays();
+
 }
 
 //===============================================//
@@ -72,59 +78,145 @@ void gk_cxFormField::PrintSelf(ostream &os, vtkIndent indent)
 void gk_cxFormField::SetSourceSystem(int value)
 {
 
-    std::cerr << "Setting Source System" << std::endl;
+    this->sourceSystem = value;
 }
 
 //===============================================//
 void gk_cxFormField::SetDestSystem(int value)
 {
 
-    std::cerr << "Setting Destination System" << std::endl;
+    this->destSystem = value;
 }
 
 //===============================================//
-void gk_cxFormField::SetInputVariable(char *name)
+int gk_cxFormField::GetNumberOfFieldArrays()
 {
-    std::cerr << "Set Input Variable" << std::endl;
+    return this->fields->GetNumberOfArrays();
+}
+
+//===============================================//
+const char *gk_cxFormField::GetFieldArrayName(int index)
+{
+    return this->fields->GetArrayName(index);
+}
+
+//===============================================//
+int gk_cxFormField::GetFieldArrayStatus(const char *name)
+{
+    if(this->fields->ArrayIsEnabled(name))
+        return 1;
+    else
+        return 0;
+}
+
+//===============================================//
+void gk_cxFormField::SetFieldArrayStatus(const char *name, int status)
+{
+    if(status)
+    {
+        this->fields->EnableArray(name);
+    }
+    else
+    {
+        this->fields->DisableArray(name);
+    }
 
 }
 
-void gk_cxFormField::SetManualName(char *name)
+//===============================================//
+void gk_cxFormField::DisableAllFieldArrays()
 {
 
+    this->fields->DisableAllArrays();
+
+}
+
+//===============================================//
+void gk_cxFormField::EnableAllFieldArrays()
+{
+    this->fields->EnableAllArrays();
+}
+
+//===============================================//
+void gk_cxFormField::SetManualFromSystem(int system)
+{
+    this->manualFrom = system;
+}
+
+//===============================================//
+void gk_cxFormField::SetManualToSystem(int system)
+{
+    this->manualTo = system;
+}
+
+//===============================================//
+void gk_cxFormField::setUseManual(int status)
+{
+    this->useManual = status;
+}
+
+//===============================================//
+void gk_cxFormField::SetManualName(char *name)
+{
+    this->manualFieldName = std::string(name);
 }
 
 //===============================================//
 void gk_cxFormField::SetManualOutput(double x, double y, double z)
 {
-
+    this->manualX = x;
+    this->manualY = y;
+    this->manualZ = z;
 }
 
+//===============================================//
+void gk_cxFormField::SetSplitFromSystem(int system)
+{
+    this->splitFrom = system;
+}
+
+//===============================================//
+void gk_cxFormField::SetSplitToSystem(int system)
+{
+    this->splitTo = system;
+}
+
+//===============================================//
+void gk_cxFormField::setUseSplit(int status)
+{
+    this->useSplit = status;
+}
+
+//===============================================//
 void gk_cxFormField::SetSplitFieldName(char *name)
 {
-
+    this->splitFieldName = std::string(name);
 }
 
+//===============================================//
 void gk_cxFormField::SetSplitX(int x)
 {
-
+    this->splitXfield = std::string(this->fields->GetArrayName(x));
 }
 
+//===============================================//
 void gk_cxFormField::SetSplitY(int y)
 {
-
+    this->splitYfield = std::string(this->fields->GetArrayName(y));
 }
 
+//===============================================//
 void gk_cxFormField::SetSplitZ(int z)
 {
-
+    this->splitZfield = std::string(this->fields->GetArrayName(z));
 }
 
 //===============================================//
 void gk_cxFormField::SetManualInput(double x, double y, double z)
 {
-    std::cerr << "Setting Manual Source" << std::endl;
-
+    this->manualX = x;
+    this->manualY = y;
+    this->manualZ = z;
 }
 
 
@@ -147,14 +239,10 @@ int gk_cxFormField::RequestDataObject(
   vtkDataObject *input = vtkDataObject::GetData(inputVector[0], 0);
   if (input)
     {
-    const char* outputType = "vtkUnstructuredGrid";
+    const char* outputType = "vtkTable";
     if (input->IsA("vtkCompositeDataSet"))
       {
       outputType = "vtkMultiBlockDataSet";
-      }
-    else if (input->IsA("vtkTable"))
-      {
-      outputType = "vtkTable";
       }
 
     // for each output

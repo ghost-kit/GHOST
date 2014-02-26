@@ -30,8 +30,9 @@
 
       </InputProperty>
 
+<!--Transform Selectors-->
     <IntVectorProperty name="Source"
-       label="From"
+       label="From:"
        command="SetSourceSystem"
        number_of_elements="1"
        default_values="12"
@@ -60,7 +61,7 @@
     </IntVectorProperty>
 
     <IntVectorProperty name="Destination"
-            label="To"
+            label="To:"
             command="SetDestSystem"
             number_of_elements="1"
             default_values="6"
@@ -90,26 +91,63 @@
     </IntVectorProperty>
 
 
-      <StringVectorProperty command="SetInputVariable"
-                            label="Input Field Variable"
-                            name="InputFieldVariable"
-                            number_of_elements="1">
-        <Documentation>
-        </Documentation>
+<!--Field Selections-->
+      <StringVectorProperty
+            name="FieldArrayInfo"
+            information_only="1">
+            <ArraySelectionInformationHelper attribute_name="Field"/>
+
+            <Documentation>
+                This is the Field Selector.
+            </Documentation>
+
+      </StringVectorProperty>
+
+      <StringVectorProperty
+            name="FieldArrayStatus"
+            label="Avaiable Vector Fields"
+            command="SetFieldArrayStatus"
+            number_of_elements="0"
+            repeat_command="1"
+            number_of_elements_per_command="2"
+            element_types = "2 0"
+            information_property="FieldArrayInfo"
+            default_values = "0">
+
+            <ArraySelectionDomain name="array_list">
+                <RequiredProperties>
+                    <Property name="FieldArrayInfo" function="ArrayList"/>
+                </RequiredProperties>
+            </ArraySelectionDomain>
+
+            <Documentation>
+                This is the Fileds Selector.
+            </Documentation>
+
       </StringVectorProperty>
 
 
+<!--Manual Selections-->
+    <IntVectorProperty name="useManual"
+                   label="Use Manual Transform"
+                   command="setUseManual"
+                   number_of_elements="1"
+                   default_values="1"
+                   panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+    </IntVectorProperty>
+
       <StringVectorProperty command="SetManualName"
-                            label="Output Name for Manual Xform"
-                            name="ManualXformName"
+                            label="Output Name:"
+                            name="ManualFieldName"
                             number_of_elements="1"
                             panel_visibility="advanced">
         <Documentation>
         </Documentation>
       </StringVectorProperty>
 
-    <DoubleVectorProperty name="ManualXform"
-            label="Manual Input"
+    <DoubleVectorProperty name="ManualInput"
+            label="Manual Input:"
             command="SetManualInput"
             number_of_elements="3"
             default_values="0 0 0"
@@ -118,7 +156,7 @@
     </DoubleVectorProperty>
 
     <DoubleVectorProperty name="ManualOutput"
-            label="Manual Output"
+            label="Manual Output:"
             command="SetManualOutput"
             number_of_elements="3"
             default_values="0 0 0"
@@ -126,8 +164,79 @@
 
     </DoubleVectorProperty>
 
+    <IntVectorProperty name="manualFrom"
+       label="From:"
+       command="SetManualFromSystem"
+       number_of_elements="1"
+       default_values="0"
+       panel_visibility="never">
+
+          <EnumerationDomain name="enum">
+                <Entry value="0" text="USE MASTER" />
+                <Entry value="1" text="J2000"       />
+                <Entry value="2" text="GEI"         />
+                <Entry value="3" text="GEO"         />
+                <Entry value="4" text="MAG"         />
+                <Entry value="5" text="GSE"         />
+                <Entry value="6" text="GSM"         />
+                <Entry value="7" text="SM"          />
+                <Entry value="8" text="RTN"         />
+                <Entry value="9" text="GSEQ"        />
+                <Entry value="10" text="HEE"        />
+                <Entry value="11" text="HAE"        />
+                <Entry value="12" text="HEEQ"       />
+                <Entry value="13" text="HEEQ+180"   />
+          </EnumerationDomain>
+
+          <Documentation>
+
+          </Documentation>
+
+    </IntVectorProperty>
+
+    <IntVectorProperty name="manualTo"
+       label="To:"
+       command="SetManualToSystem"
+       number_of_elements="1"
+       default_values="0"
+       panel_visibility="never">
+
+          <EnumerationDomain name="enum">
+                <Entry value="0" text="USE MASTER" />
+                <Entry value="1" text="J2000"       />
+                <Entry value="2" text="GEI"         />
+                <Entry value="3" text="GEO"         />
+                <Entry value="4" text="MAG"         />
+                <Entry value="5" text="GSE"         />
+                <Entry value="6" text="GSM"         />
+                <Entry value="7" text="SM"          />
+                <Entry value="8" text="RTN"         />
+                <Entry value="9" text="GSEQ"        />
+                <Entry value="10" text="HEE"        />
+                <Entry value="11" text="HAE"        />
+                <Entry value="12" text="HEEQ"       />
+                <Entry value="13" text="HEEQ+180"   />
+          </EnumerationDomain>
+
+          <Documentation>
+
+          </Documentation>
+
+    </IntVectorProperty>
+
+<!--Split Field Selection-->
+      <IntVectorProperty name="useSplit"
+                   label="Use Split Transform"
+                   command="setUseSplit"
+                   number_of_elements="1"
+                   default_values="1"
+                   panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+      </IntVectorProperty>
+
       <StringVectorProperty command="SetSplitFieldName"
-                            name="Output Name for Split Field Xform"
+                            label="Output Name:"
+                            name="SplitFieldName"
                             number_of_elements="1"
                             panel_visibility="advanced">
         <Documentation>
@@ -135,7 +244,7 @@
       </StringVectorProperty>
 
       <IntVectorProperty
-         label="X Field"
+         label="X Field:"
          name="SplitFieldX"
          command="SetSplitX"
          number_of_elements="1"
@@ -153,7 +262,7 @@
       </IntVectorProperty>
 
       <IntVectorProperty
-         label="Y Field"
+         label="Y Field:"
          name="SplitFieldY"
          command="SetSplitY"
          number_of_elements="1"
@@ -171,7 +280,7 @@
       </IntVectorProperty>
 
       <IntVectorProperty
-         label="Z Field"
+         label="Z Field:"
          name="SplitFieldZ"
          command="SetSplitZ"
          number_of_elements="1"
@@ -189,6 +298,97 @@
       </IntVectorProperty>
 
 
+    <IntVectorProperty name="splitFrom"
+       label="From:"
+       command="SetSplitFromSystem"
+       number_of_elements="1"
+       default_values="0"
+       panel_visibility="never">
+
+          <EnumerationDomain name="enum">
+                <Entry value="0" text="USE MASTER" />
+                <Entry value="1" text="J2000"       />
+                <Entry value="2" text="GEI"         />
+                <Entry value="3" text="GEO"         />
+                <Entry value="4" text="MAG"         />
+                <Entry value="5" text="GSE"         />
+                <Entry value="6" text="GSM"         />
+                <Entry value="7" text="SM"          />
+                <Entry value="8" text="RTN"         />
+                <Entry value="9" text="GSEQ"        />
+                <Entry value="10" text="HEE"        />
+                <Entry value="11" text="HAE"        />
+                <Entry value="12" text="HEEQ"       />
+                <Entry value="13" text="HEEQ+180"   />
+          </EnumerationDomain>
+
+          <Documentation>
+
+          </Documentation>
+
+    </IntVectorProperty>
+
+    <IntVectorProperty name="splitTo"
+       label="To:"
+       command="SetSplitToSystem"
+       number_of_elements="1"
+       default_values="0"
+       panel_visibility="never">
+
+          <EnumerationDomain name="enum">
+                <Entry value="0" text="USE MASTER" />
+                <Entry value="1" text="J2000"       />
+                <Entry value="2" text="GEI"         />
+                <Entry value="3" text="GEO"         />
+                <Entry value="4" text="MAG"         />
+                <Entry value="5" text="GSE"         />
+                <Entry value="6" text="GSM"         />
+                <Entry value="7" text="SM"          />
+                <Entry value="8" text="RTN"         />
+                <Entry value="9" text="GSEQ"        />
+                <Entry value="10" text="HEE"        />
+                <Entry value="11" text="HAE"        />
+                <Entry value="12" text="HEEQ"       />
+                <Entry value="13" text="HEEQ+180"   />
+          </EnumerationDomain>
+
+          <Documentation>
+
+          </Documentation>
+
+    </IntVectorProperty>
+
+      <!-- Define property groups for better readability of panels -->
+      <PropertyGroup label="Master Transform Operation">
+        <Property name="Source" />
+        <Property name="Destination" />
+      </PropertyGroup>
+
+      <PropertyGroup label="Vector Field Transform">
+        <Property name="FieldArrayStatus" />
+      </PropertyGroup>
+
+      <PropertyGroup label="Manual Field Transform">
+        <Property name="useManual" />
+        <Property name="ManualFieldName" />
+        <Property name="ManualInput" />
+        <Property name="ManualOutput" />
+        <Property name="manualFrom" />
+        <Property name="manualTo" />
+
+      </PropertyGroup>
+
+      <PropertyGroup label="Split Field Transform">
+        <Property name="useSplit" />
+        <Property name="SplitFieldName" />
+        <Property name="SplitFieldX" />
+        <Property name="SplitFieldY" />
+        <Property name="SplitFieldZ" />
+        <Property name="splitFrom" />
+        <Property name="splitTo" />
+
+      </PropertyGroup>
+
       <Hints>
         <Visibility replace_input="0" />
         <OutputPort index="0"
@@ -198,50 +398,6 @@
       <!-- End PythonAnnotation -->
     </SourceProxy>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-<!--<SourceProxy name="GK Field Transform" class="gk_cxFormField">
-
-    <InputProperty name="Input" command="SetInputConnection">
-
-       <ProxyGroupDomain name="groups">
-            <Group name="sources"/>
-            <Group name="filters"/>
-       </ProxyGroupDomain>
-
-       <DataTypeDomain name="input_type">
-           <DataType value="vtkDataSet"    />
-
-       </DataTypeDomain>
-
-       <InputArrayDomain name="input_array" attribute_type="point"
-          number_of_components="1" optional="0"/>
-
-    </InputProperty>
-
-    <StringVectorProperty name="Input Field"
-            label="Selected Input Field"
-            command="SetInputVariable"
-            number_of_elements="1"
-            default_values="NULL"
-            panel_visibility="default">
-
-    </StringVectorProperty>
-
-
-
-</SourceProxy>-->
 </ProxyGroup>
 
 <!-- End SpaceCraftInfo -->
