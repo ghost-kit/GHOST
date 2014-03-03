@@ -7,7 +7,10 @@
 #include "vtkTableAlgorithm.h"
 #include "vtkDataSetAlgorithm.h"
 #include "vtkDataArraySelection.h"
+#include "vtkSMStringVectorProperty.h"
 #include "vtkAlgorithm.h"
+#include "vtkStringArray.h"
+#include "vtkStringList.h"
 #include <vector>
 #include <string>
 
@@ -37,14 +40,18 @@ public:
     //xform setup
     void SetSourceSystem(int value);
     void SetDestSystem(int value);
+    void SetDataSource(int value);
+
+    //setup helper methods (for Properties)
+    vtkStringArray *GetDataSourceInfo();
 
     //field selections
-    int GetNumberOfFieldArrays();
-    const char* GetFieldArrayName(int index);
-    int GetFieldArrayStatus(const char* name);
-    void SetFieldArrayStatus(const char* name, int status);
-    void DisableAllFieldArrays();
-    void EnableAllFieldArrays();
+    int GetNumberOfTableArrays();
+    const char* GetTableArrayName(int index);
+    int GetTableArrayStatus(const char* name);
+    void SetTableArrayStatus(const char* name, int status);
+    void DisableAllTableArrays();
+    void EnableAllTableArrays();
 
     //manual xform
     void SetManualFromSystem(int system);
@@ -78,6 +85,9 @@ protected:
                             vtkInformationVector **inputVector,
                             vtkInformationVector *outputVector);
 
+    virtual int RequestInformation(vtkInformation *request,
+                                   vtkInformationVector **inputVector,
+                                   vtkInformationVector *outputVector);
     int sourceSystem;
     int destSystem;
 
@@ -86,18 +96,27 @@ protected:
     //field selection data structures
     vtkDataArraySelection* fields;
 
-    int     useSplit;
-    int     splitFrom;
-    int     splitTo;
+    //Communication Properties
+    vtkSMStringVectorProperty* DataSourceProperty;
+    vtkSMStringVectorProperty* XFormAvailProperty;
+    vtkSMStringVectorProperty* ScalarFieldsListProperty;
+
+
+    //tracking vars
+    //Split XForm
     std::string   splitFieldName;
     std::string   splitXfield;
     std::string   splitYfield;
     std::string   splitZfield;
+    int     useSplit;
+    int     splitFrom;
+    int     splitTo;
 
+    //Manual XForm
+    std::string   manualFieldName;
     int     useManual;
     int     manualFrom;
     int     manualTo;
-    std::string   manualFieldName;
     double  manualX;
     double  manualY;
     double  manualZ;

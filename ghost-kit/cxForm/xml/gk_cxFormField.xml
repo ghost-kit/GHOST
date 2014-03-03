@@ -32,7 +32,7 @@
 
 <!--Transform Selectors-->
     <IntVectorProperty name="Source"
-       label="From:"
+       label="System From:"
        command="SetSourceSystem"
        number_of_elements="1"
        default_values="12"
@@ -61,7 +61,7 @@
     </IntVectorProperty>
 
     <IntVectorProperty name="Destination"
-            label="To:"
+            label="System To:"
             command="SetDestSystem"
             number_of_elements="1"
             default_values="6"
@@ -90,12 +90,41 @@
 
     </IntVectorProperty>
 
+<!--Data Source-->
+    <StringVectorProperty
+          name="DataSourceInfo"
+          command="GetDataSourceInfo"
+          information_only="1"
+          immediate_update="1">
+
+         <StringArrayHelper/>
+
+           <Documentation>
+              This is the provided list of data sources.
+           </Documentation>
+
+    </StringVectorProperty>
+
+    <IntVectorProperty name="DataSourceSelection"
+        label="Data Source:"
+        command="SetDataSource"
+        number_of_elements_per_command="2"
+        immediate_update="1"
+        panel_visibility="default"
+        panel_widget="gk_dropDownBoxWidget"
+        >
+
+            <Documentation>
+                This is the selected data source
+            </Documentation>
+
+      </IntVectorProperty>
 
 <!--Field Selections-->
       <StringVectorProperty
-            name="FieldArrayInfo"
+            name="TableArrayInfo"
             information_only="1">
-            <ArraySelectionInformationHelper attribute_name="Field"/>
+            <ArraySelectionInformationHelper attribute_name="Table"/>
 
             <Documentation>
                 This is the Field Selector.
@@ -104,19 +133,19 @@
       </StringVectorProperty>
 
       <StringVectorProperty
-            name="FieldArrayStatus"
-            label="Avaiable Vector Fields"
-            command="SetFieldArrayStatus"
+            name="TableArrayStatus"
+            label="Select Vector Fields to Transform"
+            command="SetTableArrayStatus"
             number_of_elements="0"
             repeat_command="1"
             number_of_elements_per_command="2"
             element_types = "2 0"
-            information_property="FieldArrayInfo"
+            information_property="TableArrayInfo"
             default_values = "0">
 
             <ArraySelectionDomain name="array_list">
                 <RequiredProperties>
-                    <Property name="FieldArrayInfo" function="ArrayList"/>
+                    <Property name="TableArrayInfo" function="ArrayList"/>
                 </RequiredProperties>
             </ArraySelectionDomain>
 
@@ -132,7 +161,7 @@
                    label="Use Manual Transform"
                    command="setUseManual"
                    number_of_elements="1"
-                   default_values="1"
+                   default_values="0"
                    panel_visibility="advanced">
         <BooleanDomain name="bool"/>
     </IntVectorProperty>
@@ -150,7 +179,7 @@
             label="Manual Input:"
             command="SetManualInput"
             number_of_elements="3"
-            default_values="0 0 0"
+            default_values="0.0 0.0 0.0"
             panel_visibility="advanced">
 
     </DoubleVectorProperty>
@@ -159,7 +188,7 @@
             label="Manual Output:"
             command="SetManualOutput"
             number_of_elements="3"
-            default_values="0 0 0"
+            default_values="0.0 0.0 0.0"
             panel_visibility="never">
 
     </DoubleVectorProperty>
@@ -229,7 +258,7 @@
                    label="Use Split Transform"
                    command="setUseSplit"
                    number_of_elements="1"
-                   default_values="1"
+                   default_values="0"
                    panel_visibility="advanced">
         <BooleanDomain name="bool"/>
       </IntVectorProperty>
@@ -362,10 +391,12 @@
       <PropertyGroup label="Master Transform Operation">
         <Property name="Source" />
         <Property name="Destination" />
+        <Property name="DataSourceSelection" />
+
       </PropertyGroup>
 
       <PropertyGroup label="Vector Field Transform">
-        <Property name="FieldArrayStatus" />
+        <Property name="TableArrayStatus" />
       </PropertyGroup>
 
       <PropertyGroup label="Manual Field Transform">

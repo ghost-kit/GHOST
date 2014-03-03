@@ -31,19 +31,16 @@ INCLUDE_DIRECTORIES(src)
 include(GKcxFormFiles.cmake)
 
 
-
 #plugin (Filter for CDAweb)
 ADD_PARAVIEW_PLUGIN(GK_CXFORM  "1.0.0.beta1"
                     SERVER_MANAGER_XML      ${GKcxForm_SM_XML}
                     GUI_INTERFACES          ${GKcxForm_PROP_IFACES}
                     SERVER_MANAGER_SOURCES  ${GKcxForm_SM_SRC}
-                    SOURCES #${GKcxForm_SRC}
+                    SOURCES ${GKcommon_Sources}
                 )
 
 
 target_link_libraries(GK_CXFORM ${LIBS})
-
-
 
 
 add_custom_target(dist

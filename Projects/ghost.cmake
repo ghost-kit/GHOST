@@ -9,6 +9,7 @@ add_external_project(
     DEPENDS cdf io DateTime boost qt paraview cxform
 
     CMAKE_ARGS
+        -DGK_SOURCE_DIR=${CMAKE_SOURCE_DIR}
         -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}
         -DParaView_DIR=${CMAKE_BINARY_DIR}/paraview/src/paraview-build
         -DDEP_INCLUDE_DIR=${install_location}/include
