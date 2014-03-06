@@ -18,7 +18,7 @@ gk_dropDownBoxWidget::gk_dropDownBoxWidget(vtkSMProxy *smproxy, vtkSMProperty *s
 
     //assign properties
     this->infoProperty = vtkSMStringVectorProperty::SafeDownCast(smproperty->GetInformationProperty());
-    this->outPorperty  = vtkSMIntVectorProperty::SafeDownCast(smproperty);
+    this->outPorperty  = vtkSMStringVectorProperty::SafeDownCast(smproperty);
     this->smProxy = smproxy;
 
     connect(ui->dropDownBox, SIGNAL(activated(QString)), this, SLOT(selectionChanged(QString)));
@@ -69,5 +69,8 @@ void gk_dropDownBoxWidget::updateDropDownList()
 void gk_dropDownBoxWidget::selectionChanged(QString selection)
 {
     std::cout << __FUNCTION__ << " Unimplemented" << std::endl;
+    this->outPorperty->SetImmediateUpdate(1);
+    this->outPorperty->SetElement(0, selection.toAscii().data());
+
 
 }

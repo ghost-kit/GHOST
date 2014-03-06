@@ -41,6 +41,8 @@ public:
     void SetSourceSystem(int value);
     void SetDestSystem(int value);
     void SetDataSource(const char *value);
+    void PopulateVectorArrays();
+    void PopulateScalarArrays();
 
     //setup helper methods (for Properties)
     vtkStringArray *GetDataSourceInfo();

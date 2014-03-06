@@ -32,7 +32,7 @@
 
 <!--Transform Selectors-->
     <IntVectorProperty name="Source"
-       label="System From:"
+       label="From:"
        command="SetSourceSystem"
        number_of_elements="1"
        default_values="12"
@@ -61,7 +61,7 @@
     </IntVectorProperty>
 
     <IntVectorProperty name="Destination"
-            label="System To:"
+            label="To:"
             command="SetDestSystem"
             number_of_elements="1"
             default_values="6"

@@ -63,7 +63,7 @@ protected:
 
     //Information Property
     vtkSMStringVectorProperty *infoProperty;
-    vtkSMIntVectorProperty    *outPorperty;
+    vtkSMStringVectorProperty *outPorperty;
 
     vtkSMProxy  *smProxy;
 

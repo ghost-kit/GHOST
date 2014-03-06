@@ -33,6 +33,8 @@
 
 
 #include <sstream>
+#include <qstring.h>
+#include <qmap.h>
 
 
 #include "ltrDateTime.h"
@@ -114,15 +116,42 @@ void gk_cxFormField::SetDestSystem(int value)
     this->destSystem = value;
 }
 
+//===============================================//
 void gk_cxFormField::SetDataSource(const char* value)
 {
-    std::cerr << __FUNCTION__ << "IMPLEMENTATION IN PROGRESS" << std::endl;
+    std::cerr << __FUNCTION__ << " IMPLEMENTATION IN PROGRESS" << std::endl;
 
-    this->dataSources->DisableAllArrays();
-    this->dataSources->EnableArray(value);
+    if(this->dataSources->ArrayExists(value))
+    {
+        this->dataSources->DisableAllArrays();
+        this->dataSources->EnableArray(value);
+    }
+    else
+    {
+        std::cerr << value << " Not found." << std::endl;
+    }
+
+    this->vectorFields->RemoveAllArrays();
+    this->vectorFields->AddArray("test1");
+    this->vectorFields->AddArray("test2");
+
+    this->Modified();
+    this->Update();
+}
+
+//===============================================//
+void gk_cxFormField::PopulateVectorArrays()
+{
 
 }
 
+//===============================================//
+void gk_cxFormField::PopulateScalarArrays()
+{
+
+}
+
+//===============================================//
 vtkStringArray *gk_cxFormField::GetDataSourceInfo()
 {
     std::cerr << __FUNCTION__ << " IMPLEMENTATION IN PROGRESS" << std::endl;
@@ -336,22 +365,17 @@ int gk_cxFormField::RequestInformation(vtkInformation *request, vtkInformationVe
     vtkSmartPointer<vtkTable>   inputTable  = vtkTable::GetData(inputVector[0]);
     vtkSmartPointer<vtkTable>   output      = vtkTable::GetData(outputVector);
 
-    std::vector<vtkPointData*> pdVector;
-    std::vector<vtkCellData*>  cdVector;
-    std::vector<vtkFieldData*> fdVector;
-    std::vector<vtkTable*>     tdVector;
+    QMap<std::string, vtkPointData*> pdVector;
+    QMap<std::string, vtkCellData*>  cdVector;
+    QMap<std::string, vtkFieldData*> fdVector;
+    QMap<std::string, vtkTable*>     tdVector;
 
     if(input)
     {
-        pdVector.push_back(input->GetPointData());
-        cdVector.push_back(input->GetCellData());
-        fdVector.push_back(input->GetFieldData());
+        pdVector["Point Data"] = input->GetPointData();
+        cdVector["Cell Data"] = input->GetCellData();
+        fdVector["Field Data"] = input->GetFieldData();
 
-        //DEBUG OUTPUT
-        std::cout << "PD: " << pdVector.back()->GetNumberOfArrays()
-                  << " CD: " << cdVector.back()->GetNumberOfArrays()
-                  << " FD: " << fdVector.back()->GetNumberOfArrays()
-                  << std::endl;
     }
     else
     {
@@ -373,19 +397,17 @@ int gk_cxFormField::RequestInformation(vtkInformation *request, vtkInformationVe
 
                 if(input)
                 {
-                    pdVector.push_back(input->GetPointData());
-                    cdVector.push_back(input->GetCellData());
-                    fdVector.push_back(input->GetFieldData());
+                    pdVector["Point Data"] = input->GetPointData();
+                    cdVector["Cell Data"] = input->GetCellData();
+                    fdVector["Field Data"] = input->GetFieldData();
 
-                    std::cout << "Point Arrays: " << input->GetPointData()->GetNumberOfArrays() << std::endl;
-                    std::cout << "Cell Arrays:  " << input->GetCellData()->GetNumberOfArrays() << std::endl;
-                    std::cout << "Field Arrays: " << input->GetFieldData()->GetNumberOfArrays() << std::endl;
                  }
 
                 if(inputTable)
                 {
-                    tdVector.push_back(inputTable);
-                    std::cout << "Table: " << inputTable->GetRowData()->GetNumberOfArrays() << std::endl;
+                    QString name = QString(inMB->GetMetaData(x)->Get(vtkCompositeDataSet::NAME()));
+                    tdVector[name.toStdString()] = inputTable;
+
                 }
 
             }
@@ -401,46 +423,40 @@ int gk_cxFormField::RequestInformation(vtkInformation *request, vtkInformationVe
     std::cout << "Number of input TDs: " << tdVector.size() << std::endl;
 
     //Populate the available data sources
+
+    //remove current items
+    this->dataSources->RemoveAllArrays();
+    this->currentDataSourceList->Reset();
+
     if(pdVector.size() > 0)
     {
-        this->dataSources->AddArray("Point Data");
-        this->currentDataSourceList->InsertNextValue("Point Data");
+        this->dataSources->AddArray(pdVector.keys()[0].c_str());
+        this->currentDataSourceList->InsertNextValue(pdVector.keys()[0]);
     }
 
     if(cdVector.size() > 0)
     {
-        this->dataSources->AddArray("Cell Data");
-        this->currentDataSourceList->InsertNextValue("Cell Data");
+        this->dataSources->AddArray(cdVector.keys()[0].c_str());
+        this->currentDataSourceList->InsertNextValue(cdVector.keys()[0]);
     }
 
     if(fdVector.size() > 0)
     {
-        this->dataSources->AddArray("Field Data");
-        this->currentDataSourceList->InsertNextValue("Field Data");
+        this->dataSources->AddArray(fdVector.keys()[0].c_str());
+        this->currentDataSourceList->InsertNextValue(fdVector.keys()[0]);
     }
 
     if(tdVector.size() > 0)
     {
         for(int x = 0; x < tdVector.size(); x++)
         {
-            std::stringstream tableNames;
-            tableNames << "Table " << x;
 
-            this->dataSources->AddArray(tableNames.str().c_str());
-            this->currentDataSourceList->InsertNextValue(tableNames.str());
+            this->dataSources->AddArray(tdVector.keys()[x].c_str());
+            this->currentDataSourceList->InsertNextValue(tdVector.keys()[x]);
 
         }
     }
 
-
-    //field array maintanence
-    this->vectorFields->RemoveAllArrays();
-
-    this->vectorFields->AddArray("Test 1");
-    this->vectorFields->AddArray("Test 2");
-    this->vectorFields->DisableAllArrays();
-
-    this->Modified();
     return 1;
 }
 
