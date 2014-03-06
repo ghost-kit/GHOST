@@ -143,7 +143,7 @@ set(GUI_RF_XML_LIST     xml/ghost_gui.xml
     )
 
 set(GUI_INTERFACE_LIST  ${CDAWebTK_PROP_IFACES}
-                        ${GKcxFORM_PROP_IFACES}
+                        ${GKcxForm_PROP_IFACES}
     )
 
 set(SERVER_MAN_SRC_LIST ${CDAWebTK_SM_SRC}

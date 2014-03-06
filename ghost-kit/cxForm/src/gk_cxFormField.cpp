@@ -404,16 +404,19 @@ int gk_cxFormField::RequestInformation(vtkInformation *request, vtkInformationVe
     if(pdVector.size() > 0)
     {
         this->dataSources->AddArray("Point Data");
+        this->currentDataSourceList->InsertNextValue("Point Data");
     }
 
     if(cdVector.size() > 0)
     {
         this->dataSources->AddArray("Cell Data");
+        this->currentDataSourceList->InsertNextValue("Cell Data");
     }
 
     if(fdVector.size() > 0)
     {
         this->dataSources->AddArray("Field Data");
+        this->currentDataSourceList->InsertNextValue("Field Data");
     }
 
     if(tdVector.size() > 0)
@@ -424,9 +427,11 @@ int gk_cxFormField::RequestInformation(vtkInformation *request, vtkInformationVe
             tableNames << "Table " << x;
 
             this->dataSources->AddArray(tableNames.str().c_str());
+            this->currentDataSourceList->InsertNextValue(tableNames.str());
 
         }
     }
+
 
     //field array maintanence
     this->vectorFields->RemoveAllArrays();
@@ -435,6 +440,7 @@ int gk_cxFormField::RequestInformation(vtkInformation *request, vtkInformationVe
     this->vectorFields->AddArray("Test 2");
     this->vectorFields->DisableAllArrays();
 
+    this->Modified();
     return 1;
 }
 

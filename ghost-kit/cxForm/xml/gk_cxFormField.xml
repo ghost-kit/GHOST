@@ -105,10 +105,10 @@
     </StringVectorProperty>
 
     <StringVectorProperty name="DataSourceSelection"
-        label="Data Source:"
         command="SetDataSource"
-        number_of_elements_per_command="1"
-        panel_widget="GK_DropDownBox"
+        number_of_elements="1"
+        panel_widget="GkDropDownBox"
+        label="Data Source:"
         immediate_update="1"
         panel_visibility="default"
         information_property="DataSourceInfo">

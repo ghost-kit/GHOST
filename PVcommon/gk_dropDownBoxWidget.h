@@ -5,6 +5,21 @@
 #include "pqPropertyWidget.h"
 #include "pqOutputPort.h"
 
+#include "pqPropertiesPanel.h"
+#include "pqTreeWidgetItem.h"
+#include "pqTreeWidgetSelectionHelper.h"
+#include "pqTreeWidgetCheckHelper.h"
+#include "pqTreeWidgetItemObject.h"
+#include "pqSelectionInspectorWidget.h"
+#include "pqSelectionManager.h"
+#include "pqArrayListDomain.h"
+#include "pqApplicationCore.h"
+#include "pqTreeWidget.h"
+#include <QListWidgetItem>
+#include "qlist.h"
+#include "QStringList"
+#include "qstring.h"
+
 //QT
 #include <QWidget>
 #include <QListWidgetItem>
@@ -50,10 +65,14 @@ protected:
     vtkSMStringVectorProperty *infoProperty;
     vtkSMIntVectorProperty    *outPorperty;
 
+    vtkSMProxy  *smProxy;
+
+
     //helpers
     void updateDropDownList();
 
-
+private slots:
+    void selectionChanged(QString selection);
 private:
     Ui::gk_dropDownBoxWidget *ui;
 };

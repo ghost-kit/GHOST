@@ -9,7 +9,6 @@ if(GK_SOURCE_DIR)
     set(GK_COMMON_SOURCE_DIR ${GK_SOURCE_DIR}/PVcommon)
 endif()
 
-
 message("${GK_COMMON_SOURCE_DIR}")
 
 QT4_WRAP_CPP(
@@ -27,7 +26,7 @@ QT4_WRAP_UI(
 set(GKcxForm_outifaces0)
 set(GKcxForm_outsrcs0)
 ADD_PARAVIEW_PROPERTY_WIDGET(GKcxForm_outifaces0 GKcxForm_outsrcs0
-        TYPE "GK_DropDownBox"
+        TYPE "GkDropDownBox"
         CLASS_NAME "gk_dropDownBoxWidget")
 
 set(GKcxForm_PROP_IFACES
