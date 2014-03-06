@@ -1,6 +1,7 @@
 if(NOT cxformFilter_SOURCE_DIR)
     set(cxformFilter_SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR})
     INCLUDE_DIRECTORIES(${CMAKE_CURRENT_LIST_DIR}/src)
+    INCLUDE_DIRECTORIES(${CMAKE_CURRENT_LIST_DIR}/../../PVCommon)
 endif()
 
 if(GK_SOURCE_DIR)
@@ -26,7 +27,7 @@ QT4_WRAP_UI(
 set(GKcxForm_outifaces0)
 set(GKcxForm_outsrcs0)
 ADD_PARAVIEW_PROPERTY_WIDGET(GKcxForm_outifaces0 GKcxForm_outsrcs0
-        TYPE "gk_dropDownBox"
+        TYPE "GK_DropDownBox"
         CLASS_NAME "gk_dropDownBoxWidget")
 
 set(GKcxForm_PROP_IFACES
@@ -37,17 +38,28 @@ set(GKcxForm_PROP_SRC
         ${GKcxForm_outsrcs0}
     )
 
+message(STATUS "IFACES: ${GKcxForm_PROP_IFACES}")
+message(STATUS "PROP:   ${GKcxForm_PROP_SRC}")
+
+
 set(GKcxForm_SRC
      ${GKcxForm_UI_BUILT_SOURCES}
      ${GKcxForm_MOC_BUILT_SOURCES}
      ${GKcxForm_PROP_SRC}
-     PVcommon/gk_dropDownBoxWidget.cpp
+     ${GK_COMMON_SOURCE_DIR}/gk_dropDownBoxWidget.cpp
     )
+
+message(STATUS "SRC: ${GKcxForm_SRC}")
 
 set(GKcxForm_SM_XML
     ${cxformFilter_SOURCE_DIR}/xml/gk_cxform.xml
     ${cxformFilter_SOURCE_DIR}/xml/gk_cxFormField.xml)
 
+message(STATUS "XML: ${GKcxForm_SM_XML}")
+
 set(GKcxForm_SM_SRC
     ${cxformFilter_SOURCE_DIR}/src/gk_cxform.cpp
     ${cxformFilter_SOURCE_DIR}/src/gk_cxFormField.cpp)
+
+message(STATUS "SM SRC: ${GKcxForm_SM_SRC}")
+

@@ -40,7 +40,7 @@ public:
     //xform setup
     void SetSourceSystem(int value);
     void SetDestSystem(int value);
-    void SetDataSource(int value);
+    void SetDataSource(const char *value);
 
     //setup helper methods (for Properties)
     vtkStringArray *GetDataSourceInfo();
@@ -73,7 +73,7 @@ public:
 
 protected:
     gk_cxFormField();
-
+    ~gk_cxFormField();
 
     virtual int FillInputPortInformation(int port, vtkInformation* info);
 
@@ -94,13 +94,14 @@ protected:
 
 
     //field selection data structures
-    vtkDataArraySelection* fields;
+    vtkDataArraySelection* vectorFields;
+    vtkDataArraySelection* dataSources;
+    vtkDataArraySelection* scalarFields;
+    int DataSource;
 
-    //Communication Properties
-    vtkSMStringVectorProperty* DataSourceProperty;
-    vtkSMStringVectorProperty* XFormAvailProperty;
-    vtkSMStringVectorProperty* ScalarFieldsListProperty;
-
+    //temp strings
+    vtkStringArray* currentDataSourceList;
+    vtkStringArray* currentScalarFieldsList;
 
     //tracking vars
     //Split XForm
@@ -124,6 +125,7 @@ protected:
 private:
     gk_cxFormField(const gk_cxFormField&);   //Not Implemented
     void operator =(const gk_cxFormField&);  //Not Implemented
+
     std::vector<std::string> systemLookupTable;
 
 

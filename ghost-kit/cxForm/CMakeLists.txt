@@ -36,7 +36,7 @@ ADD_PARAVIEW_PLUGIN(GK_CXFORM  "1.0.0.beta1"
                     SERVER_MANAGER_XML      ${GKcxForm_SM_XML}
                     GUI_INTERFACES          ${GKcxForm_PROP_IFACES}
                     SERVER_MANAGER_SOURCES  ${GKcxForm_SM_SRC}
-                    SOURCES ${GKcommon_Sources}
+                    SOURCES ${GKcxForm_SRC}
                 )
 
 

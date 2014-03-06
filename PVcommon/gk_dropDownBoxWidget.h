@@ -35,7 +35,7 @@ class gk_dropDownBoxWidget : public pqPropertyWidget
     typedef pqPropertyWidget Superclass;
 
 public:
-    explicit gk_dropDownBoxWidget(QWidget *parent = 0);
+     gk_dropDownBoxWidget(vtkSMProxy *smproxy, vtkSMProperty *smproperty, QWidget *parentObject = 0);
     ~gk_dropDownBoxWidget();
 
     virtual void apply();
@@ -45,6 +45,14 @@ protected:
     vtkSMStringVectorProperty *availableFieldsNames;
     vtkSMStringVectorProperty *selectedFieldName;
     vtkSMIntVectorProperty    *selectedField;
+
+    //Information Property
+    vtkSMStringVectorProperty *infoProperty;
+    vtkSMIntVectorProperty    *outPorperty;
+
+    //helpers
+    void updateDropDownList();
+
 
 private:
     Ui::gk_dropDownBoxWidget *ui;

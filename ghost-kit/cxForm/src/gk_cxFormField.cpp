@@ -31,6 +31,10 @@
 #include "vtkCellData.h"
 #include "vtkDataObjectTypes.h"
 
+
+#include <sstream>
+
+
 #include "ltrDateTime.h"
 #include "cppxform.h"
 #include <math.h>
@@ -60,12 +64,14 @@ gk_cxFormField::gk_cxFormField()
     this->SetNumberOfInputPorts(1);
     this->SetNumberOfOutputPorts(1);
 
-    this->fields = vtkDataArraySelection::New();
+    this->vectorFields = vtkDataArraySelection::New();
+    this->dataSources  = vtkDataArraySelection::New();
+    this->scalarFields = vtkDataArraySelection::New();
 
-    //initialize Properites to NULL
-    this->DataSourceProperty = NULL;
-    this->XFormAvailProperty = NULL;
-    this->ScalarFieldsListProperty = NULL;
+    this->currentDataSourceList = vtkStringArray::New();
+    this->currentScalarFieldsList = vtkStringArray::New();
+
+
 
     //for some reason, ParaView crashes on a QT error if I don't load an array
     //  immediately when creating the object, so I am creating a blank array here
@@ -73,10 +79,19 @@ gk_cxFormField::gk_cxFormField()
     //
     //The logic of this filter requires periodic reformating of the available ararys,
     //  so this is OK for now.
-    this->fields->AddArray("");
-    this->fields->DisableAllArrays();
+    this->vectorFields->AddArray("");
+    this->vectorFields->DisableAllArrays();
 
+}
 
+gk_cxFormField::~gk_cxFormField()
+{
+    this->vectorFields->Delete();
+    this->dataSources->Delete();
+    this->scalarFields->Delete();
+
+    this->currentDataSourceList->Delete();
+    this->currentScalarFieldsList->Delete();
 }
 
 //===============================================//
@@ -99,32 +114,40 @@ void gk_cxFormField::SetDestSystem(int value)
     this->destSystem = value;
 }
 
-void gk_cxFormField::SetDataSource(int value)
+void gk_cxFormField::SetDataSource(const char* value)
 {
-    std::cerr << __FUNCTION__ << "NOT YET IMPLEMENTED" << std::endl;
+    std::cerr << __FUNCTION__ << "IMPLEMENTATION IN PROGRESS" << std::endl;
+
+    this->dataSources->DisableAllArrays();
+    this->dataSources->EnableArray(value);
+
 }
 
 vtkStringArray *gk_cxFormField::GetDataSourceInfo()
 {
-    return NULL;
+    std::cerr << __FUNCTION__ << " IMPLEMENTATION IN PROGRESS" << std::endl;
+
+    //return the current data source list
+    return this->currentDataSourceList;
+
 }
 
 //===============================================//
 int gk_cxFormField::GetNumberOfTableArrays()
 {
-    return this->fields->GetNumberOfArrays();
+    return this->vectorFields->GetNumberOfArrays();
 }
 
 //===============================================//
 const char *gk_cxFormField::GetTableArrayName(int index)
 {
-    return this->fields->GetArrayName(index);
+    return this->vectorFields->GetArrayName(index);
 }
 
 //===============================================//
 int gk_cxFormField::GetTableArrayStatus(const char *name)
 {
-    if(this->fields->ArrayIsEnabled(name))
+    if(this->vectorFields->ArrayIsEnabled(name))
         return 1;
     else
         return 0;
@@ -135,11 +158,11 @@ void gk_cxFormField::SetTableArrayStatus(const char *name, int status)
 {
     if(status)
     {
-        this->fields->EnableArray(name);
+        this->vectorFields->EnableArray(name);
     }
     else
     {
-        this->fields->DisableArray(name);
+        this->vectorFields->DisableArray(name);
     }
 
 }
@@ -148,14 +171,14 @@ void gk_cxFormField::SetTableArrayStatus(const char *name, int status)
 void gk_cxFormField::DisableAllTableArrays()
 {
 
-    this->fields->DisableAllArrays();
+    this->vectorFields->DisableAllArrays();
 
 }
 
 //===============================================//
 void gk_cxFormField::EnableAllTableArrays()
 {
-    this->fields->EnableAllArrays();
+    this->vectorFields->EnableAllArrays();
 }
 
 //===============================================//
@@ -217,19 +240,19 @@ void gk_cxFormField::SetSplitFieldName(char *name)
 //===============================================//
 void gk_cxFormField::SetSplitX(int x)
 {
-    this->splitXfield = std::string(this->fields->GetArrayName(x));
+    this->splitXfield = std::string(this->vectorFields->GetArrayName(x));
 }
 
 //===============================================//
 void gk_cxFormField::SetSplitY(int y)
 {
-    this->splitYfield = std::string(this->fields->GetArrayName(y));
+    this->splitYfield = std::string(this->vectorFields->GetArrayName(y));
 }
 
 //===============================================//
 void gk_cxFormField::SetSplitZ(int z)
 {
-    this->splitZfield = std::string(this->fields->GetArrayName(z));
+    this->splitZfield = std::string(this->vectorFields->GetArrayName(z));
 }
 
 //===============================================//
@@ -313,10 +336,6 @@ int gk_cxFormField::RequestInformation(vtkInformation *request, vtkInformationVe
     vtkSmartPointer<vtkTable>   inputTable  = vtkTable::GetData(inputVector[0]);
     vtkSmartPointer<vtkTable>   output      = vtkTable::GetData(outputVector);
 
-
-
-
-
     std::vector<vtkPointData*> pdVector;
     std::vector<vtkCellData*>  cdVector;
     std::vector<vtkFieldData*> fdVector;
@@ -382,14 +401,39 @@ int gk_cxFormField::RequestInformation(vtkInformation *request, vtkInformationVe
     std::cout << "Number of input TDs: " << tdVector.size() << std::endl;
 
     //Populate the available data sources
+    if(pdVector.size() > 0)
+    {
+        this->dataSources->AddArray("Point Data");
+    }
 
+    if(cdVector.size() > 0)
+    {
+        this->dataSources->AddArray("Cell Data");
+    }
+
+    if(fdVector.size() > 0)
+    {
+        this->dataSources->AddArray("Field Data");
+    }
+
+    if(tdVector.size() > 0)
+    {
+        for(int x = 0; x < tdVector.size(); x++)
+        {
+            std::stringstream tableNames;
+            tableNames << "Table " << x;
+
+            this->dataSources->AddArray(tableNames.str().c_str());
+
+        }
+    }
 
     //field array maintanence
-    this->fields->RemoveAllArrays();
+    this->vectorFields->RemoveAllArrays();
 
-    this->fields->AddArray("Test 1");
-    this->fields->AddArray("Test 2");
-    this->fields->DisableAllArrays();
+    this->vectorFields->AddArray("Test 1");
+    this->vectorFields->AddArray("Test 2");
+    this->vectorFields->DisableAllArrays();
 
     return 1;
 }

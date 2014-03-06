@@ -94,8 +94,7 @@
     <StringVectorProperty
           name="DataSourceInfo"
           command="GetDataSourceInfo"
-          information_only="1"
-          immediate_update="1">
+          information_only="1">
 
          <StringArrayHelper/>
 
@@ -105,20 +104,20 @@
 
     </StringVectorProperty>
 
-    <IntVectorProperty name="DataSourceSelection"
+    <StringVectorProperty name="DataSourceSelection"
         label="Data Source:"
         command="SetDataSource"
-        number_of_elements_per_command="2"
+        number_of_elements_per_command="1"
+        panel_widget="GK_DropDownBox"
         immediate_update="1"
         panel_visibility="default"
-        panel_widget="gk_dropDownBoxWidget"
-        >
+        information_property="DataSourceInfo">
 
             <Documentation>
                 This is the selected data source
             </Documentation>
 
-      </IntVectorProperty>
+      </StringVectorProperty>
 
 <!--Field Selections-->
       <StringVectorProperty
