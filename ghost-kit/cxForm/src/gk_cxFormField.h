@@ -11,6 +11,7 @@
 #include "vtkAlgorithm.h"
 #include "vtkStringArray.h"
 #include "vtkStringList.h"
+#include "vtkCallbackCommand.h"
 #include <vector>
 #include <string>
 
@@ -123,6 +124,16 @@ protected:
     double  manualX;
     double  manualY;
     double  manualZ;
+
+    //callbacks
+    vtkCallbackCommand* VectorObserver;
+    vtkCallbackCommand* ScalarObserver;
+    vtkCallbackCommand* SourceObserver;
+
+    static void VectorCallback(vtkObject *caller, unsigned long eid, void *clientdata, void *calldata);
+    static void ScalarCallback(vtkObject *caller, unsigned long eid, void *clientdata, void *calldata);
+    static void SourceCallback(vtkObject *caller, unsigned long eid, void *clientdata, void *calldata);
+
 
 private:
     gk_cxFormField(const gk_cxFormField&);   //Not Implemented

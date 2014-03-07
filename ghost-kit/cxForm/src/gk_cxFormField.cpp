@@ -84,6 +84,23 @@ gk_cxFormField::gk_cxFormField()
     this->vectorFields->AddArray("");
     this->vectorFields->DisableAllArrays();
 
+    //Set up callbacks
+    this->SourceObserver = vtkCallbackCommand::New();
+    this->ScalarObserver = vtkCallbackCommand::New();
+    this->VectorObserver = vtkCallbackCommand::New();
+
+    this->SourceObserver->SetCallback(&gk_cxFormField::SourceCallback);
+    this->ScalarObserver->SetCallback(&gk_cxFormField::ScalarCallback);
+    this->VectorObserver->SetCallback(&gk_cxFormField::VectorCallback);
+
+    this->SourceObserver->SetClientData(this);
+    this->ScalarObserver->SetClientData(this);
+    this->VectorObserver->SetClientData(this);
+
+    this->vectorFields->AddObserver(vtkCommand::ModifiedEvent, this->VectorObserver);
+    this->scalarFields->AddObserver(vtkCommand::ModifiedEvent, this->ScalarObserver);
+    this->dataSources->AddObserver(vtkCommand::ModifiedEvent, this->SourceObserver);
+
 }
 
 gk_cxFormField::~gk_cxFormField()
@@ -94,6 +111,10 @@ gk_cxFormField::~gk_cxFormField()
 
     this->currentDataSourceList->Delete();
     this->currentScalarFieldsList->Delete();
+
+    this->SourceObserver->Delete();
+    this->ScalarObserver->Delete();
+    this->VectorObserver->Delete();
 }
 
 //===============================================//
@@ -135,8 +156,7 @@ void gk_cxFormField::SetDataSource(const char* value)
     this->vectorFields->AddArray("test1");
     this->vectorFields->AddArray("test2");
 
-    this->Modified();
-    this->Update();
+    this->UpdateInformation();
 }
 
 //===============================================//
@@ -353,6 +373,8 @@ int gk_cxFormField::RequestData(vtkInformation *request, vtkInformationVector **
 //===============================================//
 int gk_cxFormField::RequestInformation(vtkInformation *request, vtkInformationVector **inputVector, vtkInformationVector *outputVector)
 {
+    this->vectorFields->AddArray("test1");
+
     vtkInformation* outInfo = outputVector->GetInformationObject(0);
     vtkInformation* inInfo  = inputVector[0]->GetInformationObject(0);
 
@@ -461,3 +483,44 @@ int gk_cxFormField::RequestInformation(vtkInformation *request, vtkInformationVe
 }
 
 //===============================================//
+void gk_cxFormField::VectorCallback(vtkObject *caller, unsigned long eid, void *clientdata, void *calldata)
+{
+    std::cerr << __FUNCTION__ << " has been called" << std::endl;
+
+    gk_cxFormField* filter = static_cast<gk_cxFormField*>(clientdata);
+    vtkInformation* inputInfo = filter->GetInputInformation();
+
+    inputInfo->PrintKeys(std::cerr,vtkIndent(0));
+    filter->GetOutputInformation(0)->PrintKeys(std::cout,vtkIndent(0));
+
+    std::cout << "Information Key Count: " << filter->GetInputInformation()->GetNumberOfKeys() << std::endl;
+    filter->Modified();
+//    filter->UpdateInformation();
+}
+
+//===============================================//
+void gk_cxFormField::ScalarCallback(vtkObject *caller, unsigned long eid, void *clientdata, void *calldata)
+{
+    std::cerr << __FUNCTION__ << " has been called" << std::endl;
+
+    gk_cxFormField* filter = static_cast<gk_cxFormField*>(clientdata);
+
+    filter->Modified();
+//    filter->UpdateInformation();
+}
+
+//===============================================//
+void gk_cxFormField::SourceCallback(vtkObject *caller, unsigned long eid, void *clientdata, void *calldata)
+{
+    std::cerr << __FUNCTION__ << " has been called" << std::endl;
+
+    gk_cxFormField* filter = static_cast<gk_cxFormField*>(clientdata);
+
+    filter->Modified();
+//    filter->UpdateInformation();
+
+
+}
+
+//===============================================//
+

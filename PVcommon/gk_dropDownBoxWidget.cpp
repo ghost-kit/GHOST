@@ -22,9 +22,11 @@ gk_dropDownBoxWidget::gk_dropDownBoxWidget(vtkSMProxy *smproxy, vtkSMProperty *s
     this->smProxy = smproxy;
 
     connect(ui->dropDownBox, SIGNAL(activated(QString)), this, SLOT(selectionChanged(QString)));
+    this->addPropertyLink(ui->dropDownBox, smproxy->GetPropertyName(smproperty),SIGNAL(activated(QString)), this->outPorperty);
 
     //update the gui
     this->updateDropDownList();
+
 
 }
 
@@ -50,13 +52,15 @@ void gk_dropDownBoxWidget::updateDropDownList()
 {
     std::cout << __FUNCTION__ << " Unimplemented" << std::endl;
 
+    this->smProxy->UpdateSelfAndAllInputs();
+
     //clear the list
     ui->dropDownBox->clear();
-    this->smProxy->UpdateProperty(this->infoProperty->GetXMLLabel());
+    this->smProxy->UpdateProperty(this->smProxy->GetPropertyName(this->infoProperty));
 
     //update the list from the infoProperty
     int numElements = this->infoProperty->GetNumberOfElements();
-    std::cout << "InfoProperty: " << this->infoProperty->GetXMLLabel() << std::endl;
+    std::cout << "InfoProperty: " << this->smProxy->GetPropertyName(this->infoProperty) << std::endl;
     std::cout << "Number of Elements: " << numElements << std::endl;
 
     for(int x=0; x < numElements; x++)
@@ -71,6 +75,5 @@ void gk_dropDownBoxWidget::selectionChanged(QString selection)
     std::cout << __FUNCTION__ << " Unimplemented" << std::endl;
     this->outPorperty->SetImmediateUpdate(1);
     this->outPorperty->SetElement(0, selection.toAscii().data());
-
 
 }
