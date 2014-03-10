@@ -24,6 +24,8 @@ gk_dropDownBoxWidget::gk_dropDownBoxWidget(vtkSMProxy *smproxy, vtkSMProperty *s
     connect(ui->dropDownBox, SIGNAL(activated(QString)), this, SLOT(selectionChanged(QString)));
     this->addPropertyLink(ui->dropDownBox, smproxy->GetPropertyName(smproperty),SIGNAL(activated(QString)), this->outPorperty);
 
+    connect(this, SIGNAL(changeFinished()), this, SLOT(onChangeFinished()));
+
     //update the gui
     this->updateDropDownList();
 
@@ -98,3 +100,10 @@ void gk_dropDownBoxWidget::selectionChanged(QString selection)
     this->outPorperty->SetElement(0, selection.toAscii().data());
 
 }
+
+void gk_dropDownBoxWidget::onChangeFinished()
+{
+    this->apply();
+}
+
+//

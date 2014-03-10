@@ -2,7 +2,7 @@
 #define GK_DROPDOWNBOXWIDGET_H
 
 //LOCAL
-#include "gkPropertyWidget.h"
+#include "pqPropertyWidget.h"
 #include "pqOutputPort.h"
 
 #include "pqPropertiesPanel.h"
@@ -45,10 +45,10 @@ namespace Ui {
 class gk_dropDownBoxWidget;
 }
 
-class gk_dropDownBoxWidget : public gkPropertyWidget
+class gk_dropDownBoxWidget : public pqPropertyWidget
 {
     Q_OBJECT
-    typedef gkPropertyWidget Superclass;
+    typedef pqPropertyWidget Superclass;
 
 public:
      gk_dropDownBoxWidget(vtkSMProxy *smproxy, vtkSMProperty *smproperty, QWidget *parentObject = 0);
@@ -80,6 +80,7 @@ protected:
 
 private slots:
     void selectionChanged(QString selection);
+    void onChangeFinished();
 private:
     Ui::gk_dropDownBoxWidget *ui;
 };
