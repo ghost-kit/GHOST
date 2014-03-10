@@ -501,6 +501,8 @@ void ScInfoPropWidget::apply()
 void ScInfoPropWidget::reset()
 {
 //    this->restoreGUIinit();
+
+    Superclass::reset();
 }
 
 //==================================================================

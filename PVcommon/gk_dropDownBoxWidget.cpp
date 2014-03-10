@@ -35,12 +35,13 @@ gk_dropDownBoxWidget::gk_dropDownBoxWidget(vtkSMProxy *smproxy, vtkSMProperty *s
 
 }
 
-
+//===============================================//
 gk_dropDownBoxWidget::~gk_dropDownBoxWidget()
 {
     delete ui;
 }
 
+//===============================================//
 void gk_dropDownBoxWidget::apply()
 {
     std::cout << __FUNCTION__ << " entered" << std::endl;
@@ -50,6 +51,7 @@ void gk_dropDownBoxWidget::apply()
 
 }
 
+//===============================================//
 void gk_dropDownBoxWidget::reset()
 {
     std::cout << __FUNCTION__ << " Unimplemented" << std::endl;
@@ -57,7 +59,7 @@ void gk_dropDownBoxWidget::reset()
 }
 
 
-
+//===============================================//
 void gk_dropDownBoxWidget::updateDropDownList()
 {
     std::cout << __FUNCTION__ << " Unimplemented" << std::endl;
@@ -80,6 +82,7 @@ void gk_dropDownBoxWidget::updateDropDownList()
 
 }
 
+//===============================================//
 void gk_dropDownBoxWidget::infoCallback(vtkObject *caller, unsigned long eid, void *clientdata, void *calldata)
 {
     gk_dropDownBoxWidget* filter = static_cast<gk_dropDownBoxWidget*>(clientdata);
@@ -87,6 +90,7 @@ void gk_dropDownBoxWidget::infoCallback(vtkObject *caller, unsigned long eid, vo
 
 }
 
+//===============================================//
 void gk_dropDownBoxWidget::selectionChanged(QString selection)
 {
     std::cout << __FUNCTION__ << " Unimplemented" << std::endl;
