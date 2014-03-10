@@ -27,6 +27,11 @@ gk_dropDownBoxWidget::gk_dropDownBoxWidget(vtkSMProxy *smproxy, vtkSMProperty *s
     //update the gui
     this->updateDropDownList();
 
+    //add information observer
+    this->infoObserver = vtkCallbackCommand::New();
+    this->infoObserver->SetCallback(&gk_dropDownBoxWidget::infoCallback);
+    this->infoObserver->SetClientData(this);
+    this->infoProperty->AddObserver(vtkCommand::ModifiedEvent, this->infoObserver);
 
 }
 
@@ -38,7 +43,10 @@ gk_dropDownBoxWidget::~gk_dropDownBoxWidget()
 
 void gk_dropDownBoxWidget::apply()
 {
-    std::cout << __FUNCTION__ << " Unimplemented" << std::endl;
+    std::cout << __FUNCTION__ << " entered" << std::endl;
+    this->smProxy->UpdatePropertyInformation();
+
+    Superclass::apply();
 
 }
 
@@ -47,6 +55,8 @@ void gk_dropDownBoxWidget::reset()
     std::cout << __FUNCTION__ << " Unimplemented" << std::endl;
 
 }
+
+
 
 void gk_dropDownBoxWidget::updateDropDownList()
 {
@@ -67,6 +77,13 @@ void gk_dropDownBoxWidget::updateDropDownList()
     {
         ui->dropDownBox->addItem(this->infoProperty->GetElement(x));
     }
+
+}
+
+void gk_dropDownBoxWidget::infoCallback(vtkObject *caller, unsigned long eid, void *clientdata, void *calldata)
+{
+    gk_dropDownBoxWidget* filter = static_cast<gk_dropDownBoxWidget*>(clientdata);
+    filter->updateDropDownList();
 
 }
 

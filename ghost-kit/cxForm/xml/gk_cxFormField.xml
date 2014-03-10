@@ -109,7 +109,6 @@
         number_of_elements="1"
         panel_widget="GkDropDownBox"
         label="Data Source:"
-        immediate_update="1"
         panel_visibility="default"
         information_property="DataSourceInfo">
 

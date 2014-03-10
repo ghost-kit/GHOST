@@ -156,7 +156,10 @@ void gk_cxFormField::SetDataSource(const char* value)
     this->vectorFields->AddArray("test1");
     this->vectorFields->AddArray("test2");
 
-    this->UpdateInformation();
+
+    //test
+    this->dataSources->AddArray("test1");
+
 }
 
 //===============================================//
@@ -490,12 +493,8 @@ void gk_cxFormField::VectorCallback(vtkObject *caller, unsigned long eid, void *
     gk_cxFormField* filter = static_cast<gk_cxFormField*>(clientdata);
     vtkInformation* inputInfo = filter->GetInputInformation();
 
-    inputInfo->PrintKeys(std::cerr,vtkIndent(0));
-    filter->GetOutputInformation(0)->PrintKeys(std::cout,vtkIndent(0));
 
-    std::cout << "Information Key Count: " << filter->GetInputInformation()->GetNumberOfKeys() << std::endl;
     filter->Modified();
-//    filter->UpdateInformation();
 }
 
 //===============================================//
@@ -506,7 +505,6 @@ void gk_cxFormField::ScalarCallback(vtkObject *caller, unsigned long eid, void *
     gk_cxFormField* filter = static_cast<gk_cxFormField*>(clientdata);
 
     filter->Modified();
-//    filter->UpdateInformation();
 }
 
 //===============================================//
@@ -516,8 +514,15 @@ void gk_cxFormField::SourceCallback(vtkObject *caller, unsigned long eid, void *
 
     gk_cxFormField* filter = static_cast<gk_cxFormField*>(clientdata);
 
+    filter->currentDataSourceList->Reset();
+    int numArrays = filter->dataSources->GetNumberOfArrays();
+
+    for(int x = 0; x < numArrays; x++)
+    {
+        filter->currentDataSourceList->InsertNextValue(filter->dataSources->GetArrayName(x));
+    }
+
     filter->Modified();
-//    filter->UpdateInformation();
 
 
 }

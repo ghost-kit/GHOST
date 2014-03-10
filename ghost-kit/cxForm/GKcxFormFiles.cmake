@@ -14,6 +14,7 @@ message("${GK_COMMON_SOURCE_DIR}")
 QT4_WRAP_CPP(
     GKcxForm_MOC_BUILT_SOURCES
         ${GK_COMMON_SOURCE_DIR}/gk_dropDownBoxWidget.h
+        ${GK_COMMON_SOURCE_DIR}/gkPropertyWidget.h
     )
 
 QT4_WRAP_UI(
@@ -46,6 +47,7 @@ set(GKcxForm_SRC
      ${GKcxForm_MOC_BUILT_SOURCES}
      ${GKcxForm_PROP_SRC}
      ${GK_COMMON_SOURCE_DIR}/gk_dropDownBoxWidget.cpp
+     ${GK_COMMON_SOURCE_DIR}/gkPropertyWidget.cpp
     )
 
 message(STATUS "SRC: ${GKcxForm_SRC}")
