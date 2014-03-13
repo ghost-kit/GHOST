@@ -21,8 +21,8 @@ gk_dropDownBoxWidget::gk_dropDownBoxWidget(vtkSMProxy *smproxy, vtkSMProperty *s
     this->outPorperty  = vtkSMStringVectorProperty::SafeDownCast(smproperty);
     this->smProxy = smproxy;
 
-    connect(ui->dropDownBox, SIGNAL(activated(QString)), this, SLOT(selectionChanged(QString)));
-    this->addPropertyLink(ui->dropDownBox, smproxy->GetPropertyName(smproperty),SIGNAL(activated(QString)), this->outPorperty);
+    connect(ui->dropDownBox, SIGNAL(currentIndexChanged(QString)), this, SLOT(selectionChanged(QString)));
+    this->addPropertyLink(ui->dropDownBox, smproxy->GetPropertyName(smproperty),SIGNAL(currentIndexChanged(QString)), this->outPorperty);
 
     connect(this, SIGNAL(changeFinished()), this, SLOT(onChangeFinished()));
 
@@ -34,6 +34,7 @@ gk_dropDownBoxWidget::gk_dropDownBoxWidget(vtkSMProxy *smproxy, vtkSMProperty *s
     this->infoObserver->SetCallback(&gk_dropDownBoxWidget::infoCallback);
     this->infoObserver->SetClientData(this);
     this->infoProperty->AddObserver(vtkCommand::ModifiedEvent, this->infoObserver);
+
 
 }
 
@@ -57,6 +58,8 @@ void gk_dropDownBoxWidget::apply()
 void gk_dropDownBoxWidget::reset()
 {
     std::cout << __FUNCTION__ << " Unimplemented" << std::endl;
+
+    Superclass::reset();
 
 }
 
@@ -82,6 +85,8 @@ void gk_dropDownBoxWidget::updateDropDownList()
         ui->dropDownBox->addItem(this->infoProperty->GetElement(x));
     }
 
+    this->changeFinished();
+
 }
 
 //===============================================//
@@ -101,9 +106,11 @@ void gk_dropDownBoxWidget::selectionChanged(QString selection)
 
 }
 
+//===============================================//
 void gk_dropDownBoxWidget::onChangeFinished()
 {
+    //this forces update of the widget immediatly upon change
     this->apply();
 }
 
-//
+

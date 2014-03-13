@@ -14,21 +14,15 @@
 #include "vtkCallbackCommand.h"
 #include <vector>
 #include <string>
+#include <QMap>
+#include <QString>
+#include <QStringList>
 
-#define UNKOWN  0
-#define J2000   1
-#define GEI     2
-#define GEO     3
-#define MAG     4
-#define GSE     5
-#define GSM     6
-#define SM      7
-#define RTN     8
-#define GSEQ    9
-#define HEE     10
-#define HAE     11
-#define HEEQ    12
-#define HEEQ180 13
+
+#define GK_POINTDATASTR "Point Data"
+#define GK_CELLDATASTR  "Cell Data"
+#define GK_FIELDDATASTR "Field Data"
+
 
 class  gk_cxFormField : public vtkTableAlgorithm
 {
@@ -39,13 +33,13 @@ public:
     void PrintSelf(ostream &os, vtkIndent indent);
 
     //xform setup
-    void SetSourceSystem(int value);
-    void SetDestSystem(int value);
-    void SetDataSource(const char *value);
-    void PopulateVectorArrays();
-    void PopulateScalarArrays();
+    void SetSourceSystem(const char *value);
+    vtkStringArray *GetSourceInfo();
 
-    //setup helper methods (for Properties)
+    void SetDestSystem(const char *value);
+    vtkStringArray *GetDestinationInfo();
+
+    void SetDataSource(const char *value);
     vtkStringArray *GetDataSourceInfo();
 
     //field selections
@@ -55,23 +49,25 @@ public:
     void SetTableArrayStatus(const char* name, int status);
     void DisableAllTableArrays();
     void EnableAllTableArrays();
+    vtkStringArray* GetScalarFieldList();
+
 
     //manual xform
-    void SetManualFromSystem(int system);
-    void SetManualToSystem(int system);
+    void SetManualFromSystem(const char *system);
+    void SetManualToSystem(const char *system);
     void setUseManual(int status);
     void SetManualName(char* name);
     void SetManualInput(double x, double y, double z);
     void SetManualOutput(double x, double y, double z);
 
     //split fields xform
-    void SetSplitFromSystem(int system);
-    void SetSplitToSystem(int system);
+    void SetSplitFromSystem(const char *system);
+    void SetSplitToSystem(const char *system);
     void setUseSplit(int status);
     void SetSplitFieldName(char* name);
-    void SetSplitX(int x);
-    void SetSplitY(int y);
-    void SetSplitZ(int z);
+    void SetSplitX(const char*  x);
+    void SetSplitY(const char*  y);
+    void SetSplitZ(const char*  z);
 
 
 protected:
@@ -91,55 +87,68 @@ protected:
     virtual int RequestInformation(vtkInformation *request,
                                    vtkInformationVector **inputVector,
                                    vtkInformationVector *outputVector);
-    int sourceSystem;
-    int destSystem;
 
+
+    void PopulateArrays();
+
+
+
+    //track wich systems we are using
+    vtkStdString sourceSystem;
+    vtkStdString destSystem;
 
 
     //field selection data structures
     vtkDataArraySelection* vectorFields;
     vtkDataArraySelection* dataSources;
     vtkDataArraySelection* scalarFields;
-    int DataSource;
+    vtkStdString           DataSource;
 
-    //temp strings
+    //current lists for GUI
     vtkStringArray* currentDataSourceList;
     vtkStringArray* currentScalarFieldsList;
+    vtkStringArray* currentVectorFieldsList;
 
     //tracking vars
     //Split XForm
-    std::string   splitFieldName;
-    std::string   splitXfield;
-    std::string   splitYfield;
-    std::string   splitZfield;
-    int     useSplit;
-    int     splitFrom;
-    int     splitTo;
+    vtkStdString    splitFieldName;
+    vtkStdString    splitXfield;
+    vtkStdString    splitYfield;
+    vtkStdString    splitZfield;
+    vtkStdString    splitFrom;
+    vtkStdString    splitTo;
+    int             useSplit;
+
 
     //Manual XForm
-    std::string   manualFieldName;
-    int     useManual;
-    int     manualFrom;
-    int     manualTo;
-    double  manualX;
-    double  manualY;
-    double  manualZ;
+    vtkStdString    manualFieldName;
+    vtkStdString    manualFrom;
+    vtkStdString    manualTo;
+    int             useManual;
+    double          manualX;
+    double          manualY;
+    double          manualZ;
 
     //callbacks
     vtkCallbackCommand* VectorObserver;
     vtkCallbackCommand* ScalarObserver;
     vtkCallbackCommand* SourceObserver;
+    vtkCallbackCommand* AvailableSystemObserver;
 
     static void VectorCallback(vtkObject *caller, unsigned long eid, void *clientdata, void *calldata);
     static void ScalarCallback(vtkObject *caller, unsigned long eid, void *clientdata, void *calldata);
     static void SourceCallback(vtkObject *caller, unsigned long eid, void *clientdata, void *calldata);
+    static void AvailableSystemCallback(vtkObject *caller, unsigned long eid, void *clientdata, void *calldata);
 
 
 private:
     gk_cxFormField(const gk_cxFormField&);   //Not Implemented
     void operator =(const gk_cxFormField&);  //Not Implemented
 
-    std::vector<std::string> systemLookupTable;
+    vtkStringArray* availableSystemList;
+
+    QMap<QString, QStringList> AvailableVectorFields;
+    QMap<QString, QStringList> AvailableScalarFields;
 
 
 };

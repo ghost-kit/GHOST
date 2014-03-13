@@ -31,64 +31,63 @@
       </InputProperty>
 
 <!--Transform Selectors-->
-    <IntVectorProperty name="Source"
+
+    <StringVectorProperty
+          name="SourceInfo"
+          command="GetSourceInfo"
+          information_only="1">
+
+         <StringArrayHelper/>
+
+           <Documentation>
+              This is the provided list of data sources.
+           </Documentation>
+
+    </StringVectorProperty>
+
+
+    <StringVectorProperty name="Source"
        label="From:"
        command="SetSourceSystem"
        number_of_elements="1"
+       panel_widget="GkDropDownBox"
        default_values="12"
-       panel_visibility="default">
-
-          <EnumerationDomain name="enum">
-                <Entry value="1" text="J2000"       />
-                <Entry value="2" text="GEI"         />
-                <Entry value="3" text="GEO"         />
-                <Entry value="4" text="MAG"         />
-                <Entry value="5" text="GSE"         />
-                <Entry value="6" text="GSM"         />
-                <Entry value="7" text="SM"          />
-                <Entry value="8" text="RTN"         />
-                <Entry value="9" text="GSEQ"        />
-                <Entry value="10" text="HEE"        />
-                <Entry value="11" text="HAE"        />
-                <Entry value="12" text="HEEQ"       />
-                <Entry value="13" text="HEEQ+180"   />
-          </EnumerationDomain>
+       panel_visibility="default"
+       information_property="SourceInfo">
 
           <Documentation>
 
           </Documentation>
 
-    </IntVectorProperty>
+    </StringVectorProperty>
 
-    <IntVectorProperty name="Destination"
+    <StringVectorProperty
+          name="DestinationInfo"
+          command="GetDestinationInfo"
+          information_only="1">
+
+         <StringArrayHelper/>
+
+           <Documentation>
+              This is the provided list of data sources.
+           </Documentation>
+
+    </StringVectorProperty>
+
+    <StringVectorProperty name="Destination"
             label="To:"
             command="SetDestSystem"
             number_of_elements="1"
+            panel_widget="GkDropDownBox"
             default_values="6"
-            panel_visibility="default">
-
-           <EnumerationDomain name="enum">
-                <Entry value="1" text="J2000"       />
-                <Entry value="2" text="GEI"         />
-                <Entry value="3" text="GEO"         />
-                <Entry value="4" text="MAG"         />
-                <Entry value="5" text="GSE"         />
-                <Entry value="6" text="GSM"         />
-                <Entry value="7" text="SM"          />
-                <Entry value="8" text="RTN"         />
-                <Entry value="9" text="GSEQ"        />
-                <Entry value="10" text="HEE"        />
-                <Entry value="11" text="HAE"        />
-                <Entry value="12" text="HEEQ"       />
-                <Entry value="13" text="HEEQ+180"   />
-
-          </EnumerationDomain>
+            panel_visibility="default"
+            information_property="DestinationInfo">
 
           <Documentation>
 
           </Documentation>
 
-    </IntVectorProperty>
+    </StringVectorProperty>
 
 <!--Data Source-->
     <StringVectorProperty
@@ -191,65 +190,31 @@
 
     </DoubleVectorProperty>
 
-    <IntVectorProperty name="manualFrom"
+    <StringVectorProperty name="manualFrom"
        label="From:"
        command="SetManualFromSystem"
        number_of_elements="1"
-       default_values="0"
+       default_values="UNKNOWN"
        panel_visibility="never">
-
-          <EnumerationDomain name="enum">
-                <Entry value="0" text="USE MASTER" />
-                <Entry value="1" text="J2000"       />
-                <Entry value="2" text="GEI"         />
-                <Entry value="3" text="GEO"         />
-                <Entry value="4" text="MAG"         />
-                <Entry value="5" text="GSE"         />
-                <Entry value="6" text="GSM"         />
-                <Entry value="7" text="SM"          />
-                <Entry value="8" text="RTN"         />
-                <Entry value="9" text="GSEQ"        />
-                <Entry value="10" text="HEE"        />
-                <Entry value="11" text="HAE"        />
-                <Entry value="12" text="HEEQ"       />
-                <Entry value="13" text="HEEQ+180"   />
-          </EnumerationDomain>
 
           <Documentation>
 
           </Documentation>
 
-    </IntVectorProperty>
+    </StringVectorProperty>
 
-    <IntVectorProperty name="manualTo"
+    <StringVectorProperty name="manualTo"
        label="To:"
        command="SetManualToSystem"
        number_of_elements="1"
-       default_values="0"
+       default_values="UNKNOWN"
        panel_visibility="never">
-
-          <EnumerationDomain name="enum">
-                <Entry value="0" text="USE MASTER" />
-                <Entry value="1" text="J2000"       />
-                <Entry value="2" text="GEI"         />
-                <Entry value="3" text="GEO"         />
-                <Entry value="4" text="MAG"         />
-                <Entry value="5" text="GSE"         />
-                <Entry value="6" text="GSM"         />
-                <Entry value="7" text="SM"          />
-                <Entry value="8" text="RTN"         />
-                <Entry value="9" text="GSEQ"        />
-                <Entry value="10" text="HEE"        />
-                <Entry value="11" text="HAE"        />
-                <Entry value="12" text="HEEQ"       />
-                <Entry value="13" text="HEEQ+180"   />
-          </EnumerationDomain>
 
           <Documentation>
 
           </Documentation>
 
-    </IntVectorProperty>
+    </StringVectorProperty>
 
 <!--Split Field Selection-->
       <IntVectorProperty name="useSplit"
@@ -270,120 +235,127 @@
         </Documentation>
       </StringVectorProperty>
 
-      <IntVectorProperty
+
+
+<!--X field Split-->
+<StringVectorProperty
+      name="XInfo"
+      command="GetScalarFieldList"
+      information_only="1">
+
+     <StringArrayHelper/>
+
+       <Documentation>
+          This is the provided list of data sources.
+       </Documentation>
+
+</StringVectorProperty>
+
+
+      <StringVectorProperty
          label="X Field:"
          name="SplitFieldX"
          command="SetSplitX"
+         panel_widget="GkDropDownBox"
          number_of_elements="1"
          default_values="0"
-         panel_visibility="advanced">
-        <EnumerationDomain name="enum">
-          <Entry value="0" text="Entry 0"/>
-          <Entry value="1" text="Entry 1"/>
-          <Entry value="2" text="Entry 2"/>
-          <Entry value="3" text="Entry 3"/>
-        </EnumerationDomain>
+         panel_visibility="advanced"
+         information_property="XInfo">
+
+
         <Documentation>
             This is a placeholder for the Split Field Transform
         </Documentation>
-      </IntVectorProperty>
+      </StringVectorProperty>
 
-      <IntVectorProperty
+<!--Y field Split-->
+<StringVectorProperty
+      name="YInfo"
+      command="GetScalarFieldList"
+      information_only="1">
+
+     <StringArrayHelper/>
+
+       <Documentation>
+          This is the provided list of data sources.
+       </Documentation>
+
+</StringVectorProperty>
+
+
+      <StringVectorProperty
          label="Y Field:"
          name="SplitFieldY"
          command="SetSplitY"
+         panel_widget="GkDropDownBox"
          number_of_elements="1"
          default_values="0"
-         panel_visibility="advanced">
-        <EnumerationDomain name="enum">
-          <Entry value="0" text="Entry 0"/>
-          <Entry value="1" text="Entry 1"/>
-          <Entry value="2" text="Entry 2"/>
-          <Entry value="3" text="Entry 3"/>
-        </EnumerationDomain>
+         panel_visibility="advanced"
+         information_property="YInfo">
+
+
         <Documentation>
             This is a placeholder for the Split Field Transform
         </Documentation>
-      </IntVectorProperty>
+      </StringVectorProperty>
 
-      <IntVectorProperty
+<!--Z field Split-->
+<StringVectorProperty
+      name="ZInfo"
+      command="GetScalarFieldList"
+      information_only="1">
+
+     <StringArrayHelper/>
+
+       <Documentation>
+          This is the provided list of data sources.
+       </Documentation>
+
+</StringVectorProperty>
+
+
+      <StringVectorProperty
          label="Z Field:"
          name="SplitFieldZ"
          command="SetSplitZ"
+         panel_widget="GkDropDownBox"
          number_of_elements="1"
          default_values="0"
-         panel_visibility="advanced">
-        <EnumerationDomain name="enum">
-          <Entry value="0" text="Entry 0"/>
-          <Entry value="1" text="Entry 1"/>
-          <Entry value="2" text="Entry 2"/>
-          <Entry value="3" text="Entry 3"/>
-        </EnumerationDomain>
+         panel_visibility="advanced"
+         information_property="ZInfo">
+
+
         <Documentation>
             This is a placeholder for the Split Field Transform
         </Documentation>
-      </IntVectorProperty>
+      </StringVectorProperty>
 
 
-    <IntVectorProperty name="splitFrom"
+    <StringVectorProperty name="splitFrom"
        label="From:"
        command="SetSplitFromSystem"
        number_of_elements="1"
-       default_values="0"
+       default_values="UNKNOWN"
        panel_visibility="never">
-
-          <EnumerationDomain name="enum">
-                <Entry value="0" text="USE MASTER" />
-                <Entry value="1" text="J2000"       />
-                <Entry value="2" text="GEI"         />
-                <Entry value="3" text="GEO"         />
-                <Entry value="4" text="MAG"         />
-                <Entry value="5" text="GSE"         />
-                <Entry value="6" text="GSM"         />
-                <Entry value="7" text="SM"          />
-                <Entry value="8" text="RTN"         />
-                <Entry value="9" text="GSEQ"        />
-                <Entry value="10" text="HEE"        />
-                <Entry value="11" text="HAE"        />
-                <Entry value="12" text="HEEQ"       />
-                <Entry value="13" text="HEEQ+180"   />
-          </EnumerationDomain>
 
           <Documentation>
 
           </Documentation>
 
-    </IntVectorProperty>
+    </StringVectorProperty>
 
-    <IntVectorProperty name="splitTo"
+    <StringVectorProperty name="splitTo"
        label="To:"
        command="SetSplitToSystem"
        number_of_elements="1"
-       default_values="0"
+       default_values="UNKNOWN"
        panel_visibility="never">
-
-          <EnumerationDomain name="enum">
-                <Entry value="0" text="USE MASTER" />
-                <Entry value="1" text="J2000"       />
-                <Entry value="2" text="GEI"         />
-                <Entry value="3" text="GEO"         />
-                <Entry value="4" text="MAG"         />
-                <Entry value="5" text="GSE"         />
-                <Entry value="6" text="GSM"         />
-                <Entry value="7" text="SM"          />
-                <Entry value="8" text="RTN"         />
-                <Entry value="9" text="GSEQ"        />
-                <Entry value="10" text="HEE"        />
-                <Entry value="11" text="HAE"        />
-                <Entry value="12" text="HEEQ"       />
-                <Entry value="13" text="HEEQ+180"   />
-          </EnumerationDomain>
 
           <Documentation>
 
           </Documentation>
 
-    </IntVectorProperty>
+    </StringVectorProperty>
 
       <!-- Define property groups for better readability of panels -->
       <PropertyGroup label="Master Transform Operation">
