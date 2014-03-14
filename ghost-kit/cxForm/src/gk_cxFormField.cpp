@@ -115,6 +115,30 @@ gk_cxFormField::gk_cxFormField()
 
 }
 
+
+//===============================================//
+void gk_cxFormField::generateVectorStringArray()
+{
+    //clear current list
+    this->currentVectorFieldsList->Reset();
+
+    //generate new list and satuses
+    int numArrays = this->GetNumberOfTableArrays();
+    for(int x = 0; x < numArrays; x++)
+    {
+        int status = this->GetTableArrayStatus(this->GetTableArrayName(x));
+
+
+        this->currentVectorFieldsList->SetNumberOfComponents(2);
+        this->currentVectorFieldsList->InsertNextValue(this->GetTableArrayName(x));
+
+//        this->currentVectorFieldsList->InsertNextValue((status == 0) ? "0" : "1" );
+    }
+
+this->Modified();
+}
+
+
 //===============================================//
 gk_cxFormField::~gk_cxFormField()
 {
@@ -200,6 +224,9 @@ void gk_cxFormField::PopulateArrays()
     this->currentScalarFieldsList->Reset();
     this->currentVectorFieldsList->Reset();
 
+    this->scalarFields->RemoveAllArrays();
+    this->vectorFields->RemoveAllArrays();
+
     //process Scalars
     if(AvailableScalarFields.contains(QString::fromStdString(this->DataSource)))
     {
@@ -207,6 +234,7 @@ void gk_cxFormField::PopulateArrays()
         for(int x = 0; x < this->AvailableScalarFields[QString::fromStdString(this->DataSource)].size(); x++ )
         {
             this->currentScalarFieldsList->InsertNextValue(this->AvailableScalarFields[QString::fromStdString(this->DataSource)][x].toAscii().data());
+            this->scalarFields->AddArray(this->AvailableScalarFields[QString::fromStdString(this->DataSource)][x].toAscii().data());
         }
 
     }
@@ -217,6 +245,8 @@ void gk_cxFormField::PopulateArrays()
         for(int x = 0; x < this->AvailableVectorFields[QString::fromStdString(this->DataSource)].size(); x++ )
         {
             this->currentVectorFieldsList->InsertNextValue(this->AvailableVectorFields[QString::fromStdString(this->DataSource)][x].toAscii().data());
+            this->vectorFields->AddArray(this->AvailableVectorFields[QString::fromStdString(this->DataSource)][x].toAscii().data());
+
         }
     }
 
@@ -425,7 +455,9 @@ int gk_cxFormField::RequestData(vtkInformation *request, vtkInformationVector **
 //===============================================//
 int gk_cxFormField::RequestInformation(vtkInformation *request, vtkInformationVector **inputVector, vtkInformationVector *outputVector)
 {
-    this->vectorFields->AddArray("test1");
+    this->dataSources->RemoveAllArrays();
+    this->AvailableVectorFields.clear();
+    this->AvailableScalarFields.clear();
 
     vtkInformation* outInfo = outputVector->GetInformationObject(0);
     vtkInformation* inInfo  = inputVector[0]->GetInformationObject(0);
@@ -446,9 +478,14 @@ int gk_cxFormField::RequestInformation(vtkInformation *request, vtkInformationVe
 
     if(input)
     {
-        pdVector[QString(GK_POINTDATASTR)] = input->GetPointData();
-        cdVector[QString(GK_CELLDATASTR)] = input->GetCellData();
-        fdVector[QString(GK_FIELDDATASTR)] = input->GetFieldData();
+        if(input->GetPointData()->GetNumberOfArrays() > 0)
+            pdVector[GK_POINTDATASTR] = input->GetPointData();
+
+        if(input->GetCellData()->GetNumberOfArrays() > 0)
+            cdVector[GK_CELLDATASTR] = input->GetCellData();
+
+        if(input->GetFieldData()->GetNumberOfArrays() > 0)
+            fdVector[GK_FIELDDATASTR] = input->GetFieldData();
 
     }
     else
@@ -459,10 +496,13 @@ int gk_cxFormField::RequestInformation(vtkInformation *request, vtkInformationVe
         {
             int numBlocks = inMB->GetNumberOfBlocks();
             std::cout << "Number of Blocks: " << numBlocks << std::endl;
+            QString name;
+
 
             for(int x = 0; x < numBlocks; x++)
             {
                 input = vtkDataSet::GetData(inMB->GetBlock(x)->GetInformation());
+                name = QString(inMB->GetMetaData(x)->Get(vtkCompositeDataSet::NAME()));
 
                 if(!input)
                 {
@@ -471,15 +511,19 @@ int gk_cxFormField::RequestInformation(vtkInformation *request, vtkInformationVe
 
                 if(input)
                 {
-                    pdVector[GK_POINTDATASTR] = input->GetPointData();
-                    cdVector[GK_CELLDATASTR] = input->GetCellData();
-                    fdVector[GK_FIELDDATASTR] = input->GetFieldData();
+                    if(input->GetPointData()->GetNumberOfArrays() > 0)
+                        pdVector[QString(name + GK_POINTDATASTR)] = input->GetPointData();
+
+                    if(input->GetCellData()->GetNumberOfArrays() > 0)
+                        cdVector[QString(name + GK_CELLDATASTR)] = input->GetCellData();
+
+                    if(input->GetFieldData()->GetNumberOfArrays() > 0)
+                        fdVector[QString(name + GK_FIELDDATASTR)] = input->GetFieldData();
 
                  }
 
                 if(inputTable)
                 {
-                    QString name = QString(inMB->GetMetaData(x)->Get(vtkCompositeDataSet::NAME()));
                     tdVector[name] = inputTable;
 
                 }
@@ -490,22 +534,14 @@ int gk_cxFormField::RequestInformation(vtkInformation *request, vtkInformationVe
 
     }
 
-    //Collected Information
-    std::cout << "Number of input PDs: " << pdVector.size() << std::endl;
-    std::cout << "Number of input CDs: " << cdVector.size() << std::endl;
-    std::cout << "Number of input FDs: " << fdVector.size() << std::endl;
-    std::cout << "Number of input TDs: " << tdVector.size() << std::endl;
-
-    //Populate the available data sources
-
     //remove current items
     this->dataSources->RemoveAllArrays();
     this->currentDataSourceList->Reset();
-    this->currentScalarFieldsList->Reset();
-    this->currentVectorFieldsList->Reset();
+
 
     if(pdVector.size() > 0)
     {
+        //TODO: BUG: Fix this to load ALL PD and CD and FD fields from MB data sets
         this->dataSources->AddArray(pdVector.keys()[0].toAscii().data());
         this->currentDataSourceList->InsertNextValue(pdVector.keys()[0].toAscii().data());
 
@@ -530,6 +566,7 @@ int gk_cxFormField::RequestInformation(vtkInformation *request, vtkInformationVe
 
     if(cdVector.size() > 0)
     {
+        //TODO: BUG: Fix this to load ALL PD and CD and FD fields from MB data sets
         this->dataSources->AddArray(cdVector.keys()[0].toAscii().data());
         this->currentDataSourceList->InsertNextValue(cdVector.keys()[0].toAscii().data());
 
@@ -554,6 +591,7 @@ int gk_cxFormField::RequestInformation(vtkInformation *request, vtkInformationVe
 
     if(fdVector.size() > 0)
     {
+        //TODO: BUG: Fix this to load ALL PD and CD and FD fields from MB data sets
         this->dataSources->AddArray(fdVector.keys()[0].toAscii().data());
         this->currentDataSourceList->InsertNextValue(fdVector.keys()[0].toAscii().data());
 
@@ -611,7 +649,6 @@ int gk_cxFormField::RequestInformation(vtkInformation *request, vtkInformationVe
     }
 
 
-
     return 1;
 }
 
@@ -622,6 +659,20 @@ vtkStringArray *gk_cxFormField::GetScalarFieldList()
     return this->currentScalarFieldsList;
 }
 
+
+//===============================================//
+vtkStringArray *gk_cxFormField::GetVectorFieldList()
+{
+    this->generateVectorStringArray();
+    return this->currentVectorFieldsList;
+}
+
+vtkStringArray *gk_cxFormField::GetTableArrayInfo()
+{
+    return this->GetVectorFieldList();
+}
+
+
 //===============================================//
 void gk_cxFormField::VectorCallback(vtkObject *caller, unsigned long eid, void *clientdata, void *calldata)
 {
@@ -630,13 +681,7 @@ void gk_cxFormField::VectorCallback(vtkObject *caller, unsigned long eid, void *
     gk_cxFormField* filter = static_cast<gk_cxFormField*>(clientdata);
 
     filter->currentVectorFieldsList->Reset();
-    int numArrays = filter->vectorFields->GetNumberOfArrays();
-
-    for(int x = 0; x < numArrays; x++)
-    {
-        filter->currentVectorFieldsList->InsertNextValue(filter->vectorFields->GetArrayName(x));
-    }
-
+    filter->generateVectorStringArray();
     filter->Modified();
 }
 

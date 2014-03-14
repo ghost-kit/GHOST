@@ -50,7 +50,8 @@ public:
     void DisableAllTableArrays();
     void EnableAllTableArrays();
     vtkStringArray* GetScalarFieldList();
-
+    vtkStringArray* GetVectorFieldList();
+    vtkStringArray* GetTableArrayInfo();
 
     //manual xform
     void SetManualFromSystem(const char *system);
@@ -149,6 +150,8 @@ private:
 
     QMap<QString, QStringList> AvailableVectorFields;
     QMap<QString, QStringList> AvailableScalarFields;
+
+    void generateVectorStringArray();
 
 
 };

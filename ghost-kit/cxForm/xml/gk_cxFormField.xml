@@ -120,8 +120,10 @@
 <!--Field Selections-->
       <StringVectorProperty
             name="TableArrayInfo"
+            command="GetTableArrayInfo"
             information_only="1">
-            <ArraySelectionInformationHelper attribute_name="Table"/>
+
+         <StringArrayHelper/>
 
             <Documentation>
                 This is the Field Selector.
@@ -133,6 +135,7 @@
             name="TableArrayStatus"
             label="Select Vector Fields to Transform"
             command="SetTableArrayStatus"
+            panel_widget="GKSelectionBox"
             number_of_elements="0"
             repeat_command="1"
             number_of_elements_per_command="2"
@@ -167,6 +170,7 @@
                             label="Output Name:"
                             name="ManualFieldName"
                             number_of_elements="1"
+                            default_values="ManualResult"
                             panel_visibility="advanced">
         <Documentation>
         </Documentation>
@@ -229,6 +233,7 @@
       <StringVectorProperty command="SetSplitFieldName"
                             label="Output Name:"
                             name="SplitFieldName"
+                            default_values="SplitResult"
                             number_of_elements="1"
                             panel_visibility="advanced">
         <Documentation>
