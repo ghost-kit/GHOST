@@ -155,8 +155,7 @@ void gk_selectionBoxWidget::selectionChanged(QTreeWidgetItem *item, int status)
     this->mostRecentSelection = QString(item->text(0));
     this->mostRecentStatus    = item->checkState(0);
 
-     this->apply();
-
+    emit this->changeFinished();
 }
 
 void gk_selectionBoxWidget::onSelectionChangeFinished()
