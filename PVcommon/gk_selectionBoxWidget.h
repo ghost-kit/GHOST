@@ -29,6 +29,7 @@
 #include <QReadWriteLock>
 #include <QTableWidgetItem>
 #include <QComboBox>
+#include <QT>
 
 //VTK
 #include <vtkSMProxy.h>
@@ -69,8 +70,18 @@ protected:
 
     static void infoCallback(vtkObject *caller, unsigned long eid, void *clientdata, void *calldata);
 
+    //these vars track the last changed selection.
+    //initialized to "" and -1
+    QString         mostRecentSelection;
+    int             mostRecentStatus;
+
+private slots:
+    void selectionChanged(QTreeWidgetItem* item, int status);
+    void onSelectionChangeFinished();
+
 private:
     Ui::gk_selectionBoxWidget *ui;
+
 };
 
 #endif // GK_SELECTIONBOXWIDGET_H

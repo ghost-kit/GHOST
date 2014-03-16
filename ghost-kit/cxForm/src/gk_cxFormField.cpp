@@ -283,6 +283,9 @@ int gk_cxFormField::GetTableArrayStatus(const char *name)
 //===============================================//
 void gk_cxFormField::SetTableArrayStatus(const char *name, int status)
 {
+
+    std::cout << __FUNCTION__ << " Name: " << name << " Status: " << status << std::endl;
+
     if(status)
     {
         this->vectorFields->EnableArray(name);

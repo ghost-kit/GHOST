@@ -51,13 +51,23 @@ gk_selectionBoxWidget::gk_selectionBoxWidget(vtkSMProxy *smproxy, vtkSMProperty 
     ui->varList->setColumnCount(COLUMN_COUNT);
     ui->varList->setHeaderLabel(title);
 
-    this->processProperty();
-
     //add information observer
     this->infoObserver = vtkCallbackCommand::New();
     this->infoObserver->SetCallback(&gk_selectionBoxWidget::infoCallback);
     this->infoObserver->SetClientData(this);
     this->inInfoProperty->AddObserver(vtkCommand::ModifiedEvent, this->infoObserver);
+
+    this->mostRecentSelection.clear();
+    this->mostRecentStatus = -1;
+
+    //connection
+    connect(ui->varList, SIGNAL(itemChanged(QTreeWidgetItem*,int)), this, SLOT(selectionChanged(QTreeWidgetItem*,int)));
+    connect(this, SIGNAL(changeFinished()), this, SLOT(onSelectionChangeFinished()));
+
+    this->addPropertyLink(ui->varList, smproxy->GetPropertyName(smproperty), SIGNAL(itemChanged(QTreeWidgetItem*, int)),this->currentProperty);
+
+    // process the properites
+    this->processProperty();
 
     // dont show label
     this->setShowLabel(false);
@@ -70,6 +80,13 @@ gk_selectionBoxWidget::~gk_selectionBoxWidget()
 
 void gk_selectionBoxWidget::apply()
 {
+
+    //configure the output information
+    //this will be called every time the selection changes
+    //therefore we only need send what changes with its status
+    this->currentProperty->SetElement(0, this->mostRecentSelection.toAscii().data());
+    this->currentProperty->SetElement(1, QString::number(this->mostRecentStatus).toAscii().data());
+
     proxy()->UpdatePropertyInformation();
     Superclass::apply();
 
@@ -121,6 +138,7 @@ void gk_selectionBoxWidget::processProperty()
         std::cerr << "Error Parsing Selection Box Widget Information Property\nThe Format of the property should be odd Row: name, even Row: State" << std::endl;
 
     }
+
 }
 
 void gk_selectionBoxWidget::infoCallback(vtkObject *caller, unsigned long eid, void *clientdata, void *calldata)
@@ -128,4 +146,20 @@ void gk_selectionBoxWidget::infoCallback(vtkObject *caller, unsigned long eid, v
     gk_selectionBoxWidget* filter = static_cast<gk_selectionBoxWidget*>(clientdata);
     filter->processProperty();
 
+}
+
+
+//slots
+void gk_selectionBoxWidget::selectionChanged(QTreeWidgetItem *item, int status)
+{
+    this->mostRecentSelection = QString(item->text(0));
+    this->mostRecentStatus    = item->checkState(0);
+
+     this->apply();
+
+}
+
+void gk_selectionBoxWidget::onSelectionChangeFinished()
+{
+    this->apply();
 }
