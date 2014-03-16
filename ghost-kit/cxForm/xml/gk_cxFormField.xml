@@ -136,18 +136,12 @@
             label="Select Vector Fields to Transform"
             command="SetTableArrayStatus"
             panel_widget="GKSelectionBox"
+            default_values="2"
             number_of_elements="0"
             repeat_command="1"
             number_of_elements_per_command="2"
             element_types = "2 0"
-            information_property="TableArrayInfo"
-            default_values = "0">
-
-            <ArraySelectionDomain name="array_list">
-                <RequiredProperties>
-                    <Property name="TableArrayInfo" function="ArrayList"/>
-                </RequiredProperties>
-            </ArraySelectionDomain>
+            information_property="TableArrayInfo">
 
             <Documentation>
                 This is the Fileds Selector.
@@ -397,9 +391,7 @@
 
       <Hints>
         <Visibility replace_input="0" />
-        <OutputPort index="0"
-                    name="Output-0"
-                    type="text" />
+
       </Hints>
       <!-- End PythonAnnotation -->
     </SourceProxy>

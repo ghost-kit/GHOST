@@ -127,12 +127,8 @@ void gk_cxFormField::generateVectorStringArray()
     for(int x = 0; x < numArrays; x++)
     {
         int status = this->GetTableArrayStatus(this->GetTableArrayName(x));
-
-
-        this->currentVectorFieldsList->SetNumberOfComponents(2);
         this->currentVectorFieldsList->InsertNextValue(this->GetTableArrayName(x));
-
-//        this->currentVectorFieldsList->InsertNextValue((status == 0) ? "0" : "1" );
+        this->currentVectorFieldsList->InsertNextValue((status == 0) ? "0" : "1" );
     }
 
 this->Modified();

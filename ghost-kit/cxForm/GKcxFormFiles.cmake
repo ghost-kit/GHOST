@@ -14,13 +14,16 @@ message("${GK_COMMON_SOURCE_DIR}")
 QT4_WRAP_CPP(
     GKcxForm_MOC_BUILT_SOURCES
         ${GK_COMMON_SOURCE_DIR}/gk_dropDownBoxWidget.h
-        ${GK_COMMON_SOURCE_DIR}/gk_SelectionBoxWidget.h
+        ${GK_COMMON_SOURCE_DIR}/gk_selectionBoxWidget.h
+
 
     )
 
 QT4_WRAP_UI(
     GKcxForm_UI_BUILT_SOURCES
         ${GK_COMMON_SOURCE_DIR}/gk_dropDownBoxWidget.ui
+        ${GK_COMMON_SOURCE_DIR}/gk_selectionBoxWidget.ui
+
 
     )
 
@@ -35,7 +38,7 @@ set(GKcxForm_outifaces1)
 set(GKcxForm_outsrcs1)
 ADD_PARAVIEW_PROPERTY_WIDGET(GKcxForm_outifaces1 GKcxForm_outsrcs1
         TYPE "GKSelectionBox"
-        CLASS_NAME "gk_SelectionBoxWidget")
+        CLASS_NAME "gk_selectionBoxWidget")
 
 
 set(GKcxForm_PROP_IFACES
@@ -57,7 +60,8 @@ set(GKcxForm_SRC
      ${GKcxForm_MOC_BUILT_SOURCES}
      ${GKcxForm_PROP_SRC}
      ${GK_COMMON_SOURCE_DIR}/gk_dropDownBoxWidget.cpp
-     ${GK_COMMON_SOURCE_DIR}/gk_SelectionBoxWidget.cpp
+     ${GK_COMMON_SOURCE_DIR}/gk_selectionBoxWidget.cpp
+
 
 
     )
