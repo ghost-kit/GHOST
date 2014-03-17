@@ -82,16 +82,6 @@ gk_cxFormField::gk_cxFormField()
     this->currentScalarFieldsList = vtkStringArray::New();
     this->currentVectorFieldsList = vtkStringArray::New();
 
-
-    //for some reason, ParaView crashes on a QT error if I don't load an array
-    //  immediately when creating the object, so I am creating a blank array here
-    //  and later delete it when running RequestInformation().
-    //
-    //The logic of this filter requires periodic reformating of the available ararys,
-    //  so this is OK for now.
-    this->vectorFields->AddArray("");
-    this->vectorFields->DisableAllArrays();
-
     //Set up callbacks
     this->SourceObserver = vtkCallbackCommand::New();
     this->ScalarObserver = vtkCallbackCommand::New();
@@ -131,7 +121,7 @@ void gk_cxFormField::generateVectorStringArray()
         this->currentVectorFieldsList->InsertNextValue((status == 0) ? "0" : "1" );
     }
 
-this->Modified();
+    this->Modified();
 }
 
 
@@ -166,7 +156,6 @@ void gk_cxFormField::SetSourceSystem(const char* value)
 //===============================================//
 vtkStringArray *gk_cxFormField::GetSourceInfo()
 {
-    std::cerr << __FUNCTION__ << " IMPLEMENTATION IN PROGRESS" << std::endl;
 
     return this->availableSystemList;
 }
@@ -181,7 +170,6 @@ void gk_cxFormField::SetDestSystem(const char* value)
 //===============================================//
 vtkStringArray *gk_cxFormField::GetDestinationInfo()
 {
-    std::cerr << __FUNCTION__ << " IMPLEMENTATION IN PROGRESS" << std::endl;
 
     return this->availableSystemList;
 }
@@ -189,7 +177,6 @@ vtkStringArray *gk_cxFormField::GetDestinationInfo()
 //===============================================//
 void gk_cxFormField::SetDataSource(const char* value)
 {
-    std::cerr << __FUNCTION__ << " IMPLEMENTATION IN PROGRESS" << std::endl;
 
     //set the data source we are using
     this->DataSource = vtkStdString(value);
@@ -252,7 +239,6 @@ void gk_cxFormField::PopulateArrays()
 //===============================================//
 vtkStringArray *gk_cxFormField::GetDataSourceInfo()
 {
-    std::cerr << __FUNCTION__ << " IMPLEMENTATION IN PROGRESS" << std::endl;
 
     //return the current data source list
     return this->currentDataSourceList;
@@ -281,20 +267,20 @@ int gk_cxFormField::GetTableArrayStatus(const char *name)
 }
 
 //===============================================//
-void gk_cxFormField::SetTableArrayStatus(const char *name, int status)
+void gk_cxFormField::SetArraySelectionStatus(const char *name, int status)
 {
 
-    std::cout << __FUNCTION__ << " Name: " << name << " Status: " << status << std::endl;
-
-    if(status)
+    if(vectorFields->ArrayExists(name))
     {
-        this->vectorFields->EnableArray(name);
+        if(status)
+        {
+            this->vectorFields->EnableArray(name);
+        }
+        else
+        {
+            this->vectorFields->DisableArray(name);
+        }
     }
-    else
-    {
-        this->vectorFields->DisableArray(name);
-    }
-
 }
 
 //===============================================//
@@ -461,11 +447,6 @@ int gk_cxFormField::RequestInformation(vtkInformation *request, vtkInformationVe
     vtkInformation* outInfo = outputVector->GetInformationObject(0);
     vtkInformation* inInfo  = inputVector[0]->GetInformationObject(0);
 
-    std::cout << "Input Information Keys: " << inInfo->GetNumberOfKeys() << std::endl;
-    std::cout << "Output Information Keys: " << outInfo->GetNumberOfKeys() << std::endl;
-
-    std::cout << "Getting Input Data..." << std::endl;
-
     vtkSmartPointer<vtkDataSet> input       = vtkDataSet::GetData(inputVector[0]);
     vtkSmartPointer<vtkTable>   inputTable  = vtkTable::GetData(inputVector[0]);
     vtkSmartPointer<vtkTable>   output      = vtkTable::GetData(outputVector);
@@ -489,12 +470,10 @@ int gk_cxFormField::RequestInformation(vtkInformation *request, vtkInformationVe
     }
     else
     {
-        std::cout << "MultiBlock Dataset" << std::endl;
         vtkMultiBlockDataSet* inMB = vtkMultiBlockDataSet::GetData(inputVector[0]);
         if(inMB)
         {
             int numBlocks = inMB->GetNumberOfBlocks();
-            std::cout << "Number of Blocks: " << numBlocks << std::endl;
             QString name;
 
 
@@ -519,7 +498,7 @@ int gk_cxFormField::RequestInformation(vtkInformation *request, vtkInformationVe
                     if(input->GetFieldData()->GetNumberOfArrays() > 0)
                         fdVector[QString(name + GK_FIELDDATASTR)] = input->GetFieldData();
 
-                 }
+                }
 
                 if(inputTable)
                 {
@@ -554,7 +533,7 @@ int gk_cxFormField::RequestInformation(vtkInformation *request, vtkInformationVe
             }
             else if(pdVector[GK_POINTDATASTR]->GetAbstractArray(x)->GetNumberOfComponents() == 1
                     && (pdVector[GK_POINTDATASTR]->GetAbstractArray(x)->GetDataType() == VTK_DOUBLE
-                    || pdVector[GK_POINTDATASTR]->GetAbstractArray(x)->GetDataType() == VTK_FLOAT))
+                        || pdVector[GK_POINTDATASTR]->GetAbstractArray(x)->GetDataType() == VTK_FLOAT))
             {
                 //component we can use for scalar
                 this->AvailableScalarFields[GK_POINTDATASTR].push_back(QString(pdVector[GK_POINTDATASTR]->GetAbstractArray(x)->GetName()));
@@ -579,7 +558,7 @@ int gk_cxFormField::RequestInformation(vtkInformation *request, vtkInformationVe
             }
             else if(cdVector[GK_CELLDATASTR]->GetAbstractArray(x)->GetNumberOfComponents() == 1
                     && (cdVector[GK_CELLDATASTR]->GetAbstractArray(x)->GetDataType() == VTK_DOUBLE
-                    || cdVector[GK_CELLDATASTR]->GetAbstractArray(x)->GetDataType() == VTK_FLOAT))
+                        || cdVector[GK_CELLDATASTR]->GetAbstractArray(x)->GetDataType() == VTK_FLOAT))
             {
                 //component we can use for scalar
                 this->AvailableScalarFields[GK_CELLDATASTR].push_back(QString(cdVector[GK_CELLDATASTR]->GetAbstractArray(x)->GetName()));
@@ -604,7 +583,7 @@ int gk_cxFormField::RequestInformation(vtkInformation *request, vtkInformationVe
             }
             else if(fdVector[GK_FIELDDATASTR]->GetAbstractArray(x)->GetNumberOfComponents() == 1
                     && (fdVector[GK_FIELDDATASTR]->GetAbstractArray(x)->GetDataType() == VTK_DOUBLE
-                    || fdVector[GK_FIELDDATASTR]->GetAbstractArray(x)->GetDataType() == VTK_FLOAT))
+                        || fdVector[GK_FIELDDATASTR]->GetAbstractArray(x)->GetDataType() == VTK_FLOAT))
             {
                 //component we can use for scalar
                 this->AvailableScalarFields[GK_FIELDDATASTR].push_back(QString(fdVector[GK_FIELDDATASTR]->GetAbstractArray(x)->GetName()));
@@ -636,7 +615,7 @@ int gk_cxFormField::RequestInformation(vtkInformation *request, vtkInformationVe
                 }
                 else if(tdVector[currentTable]->GetColumn(y)->GetNumberOfComponents() == 1
                         && (tdVector[currentTable]->GetColumn(y)->GetDataType() == VTK_DOUBLE
-                        || tdVector[currentTable]->GetColumn(y)->GetDataType() == VTK_FLOAT))
+                            || tdVector[currentTable]->GetColumn(y)->GetDataType() == VTK_FLOAT))
                 {
                     //component we can use for scalar
                     this->AvailableScalarFields[currentTable].push_back(QString(tdVector[currentTable]->GetColumn(y)->GetName()));

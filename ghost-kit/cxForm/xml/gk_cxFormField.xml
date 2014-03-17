@@ -134,7 +134,7 @@
       <StringVectorProperty
             name="TableArrayStatus"
             label="Select Vector Fields to Transform"
-            command="SetTableArrayStatus"
+            command="SetArraySelectionStatus"
             panel_widget="GKSelectionBox"
             default_values="2"
             number_of_elements="0"

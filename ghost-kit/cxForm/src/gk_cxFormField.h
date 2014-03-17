@@ -46,7 +46,7 @@ public:
     int GetNumberOfTableArrays();
     const char* GetTableArrayName(int index);
     int GetTableArrayStatus(const char* name);
-    void SetTableArrayStatus(const char* name, int status);
+    void SetArraySelectionStatus(const char* name, int status);
     void DisableAllTableArrays();
     void EnableAllTableArrays();
     vtkStringArray* GetScalarFieldList();

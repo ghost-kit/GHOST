@@ -57,6 +57,9 @@ gk_selectionBoxWidget::gk_selectionBoxWidget(vtkSMProxy *smproxy, vtkSMProperty 
     this->infoObserver->SetClientData(this);
     this->inInfoProperty->AddObserver(vtkCommand::ModifiedEvent, this->infoObserver);
 
+    //this cuases a slight problem... it will return a null selection with a -1 status to the
+    //  calling program if nothing has changed.  This needs to be checked for in the
+    //  calling program.
     this->mostRecentSelection.clear();
     this->mostRecentStatus = -1;
 
@@ -81,15 +84,27 @@ gk_selectionBoxWidget::~gk_selectionBoxWidget()
 void gk_selectionBoxWidget::apply()
 {
 
+    //if no current selection, need to choose one, else we get undefined behavoir.
+    if(this->mostRecentSelection == "")
+    {
+        if(ui->varList->topLevelItemCount())
+        {
+            this->mostRecentSelection = QString(ui->varList->topLevelItem(0)->text(0));
+            this->mostRecentStatus    = ui->varList->topLevelItem(0)->checkState(0);
+        }
+    }
+
     //configure the output information
     //this will be called every time the selection changes
     //therefore we only need send what changes with its status
     this->currentProperty->SetElement(0, this->mostRecentSelection.toAscii().data());
     this->currentProperty->SetElement(1, QString::number(this->mostRecentStatus).toAscii().data());
 
-    proxy()->UpdatePropertyInformation();
-    Superclass::apply();
-
+    if(ui->varList->topLevelItemCount())
+    {
+        proxy()->UpdatePropertyInformation();
+        Superclass::apply();
+    }
 }
 
 void gk_selectionBoxWidget::reset()
