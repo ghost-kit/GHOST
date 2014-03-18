@@ -12,6 +12,13 @@
 #include "vtkStringArray.h"
 #include "vtkStringList.h"
 #include "vtkCallbackCommand.h"
+#include "vtkFloatArray.h"
+#include "vtkPointData.h"
+#include "vtkCellData.h"
+#include "vtkDataObjectTypes.h"
+
+#include "ltrDateTime.h"
+
 #include <vector>
 #include <string>
 #include <QMap>
@@ -69,7 +76,6 @@ public:
     void SetSplitX(const char*  x);
     void SetSplitY(const char*  y);
     void SetSplitZ(const char*  z);
-
 
 protected:
     gk_cxFormField();
@@ -142,6 +148,19 @@ protected:
     static void AvailableSystemCallback(vtkObject *caller, unsigned long eid, void *clientdata, void *calldata);
 
 
+    //conversion routines
+    void convertVectorData(DateTime inputDate, QString name, vtkTable* outputTable, vtkFieldData *currentData);
+    void convertVectorData(DateTime inputDate, QString name, vtkTable* outputTable, vtkTable *currentData);
+
+    void convertSplitData(DateTime inputDate, QString nameX, QString nameY, QString nameZ, vtkTable* outputTable, vtkFieldData *currentData);
+    void convertSplitData(DateTime inputDate, QString nameX, QString nameY, QString nameZ, vtkTable* outputTable, vtkTable *currentData);
+
+    vtkDoubleArray* convertDoubleData(QString name, vtkDoubleArray* oldData, DateTime inputDate);
+    vtkFloatArray*  convertFloatData( QString name, vtkFloatArray* oldData, DateTime inputDate);
+
+    vtkDoubleArray* getAsDouble(QString ArrayName, vtkFieldData* dataSource);
+    vtkDoubleArray* getAsDouble(QString ArrayName, vtkTable *dataSource);
+
 private:
     gk_cxFormField(const gk_cxFormField&);   //Not Implemented
     void operator =(const gk_cxFormField&);  //Not Implemented
@@ -152,6 +171,12 @@ private:
     QMap<QString, QStringList> AvailableScalarFields;
 
     void generateVectorStringArray();
+
+    //data pointers
+    QMap<QString, vtkPointData*> pdVector;
+    QMap<QString, vtkCellData*>  cdVector;
+    QMap<QString, vtkFieldData*> fdVector;
+    QMap<QString, vtkTable*>     tdVector;
 
 
 };

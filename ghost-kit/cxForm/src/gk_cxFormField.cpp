@@ -429,10 +429,336 @@ int gk_cxFormField::RequestDataObject(
 
 
 //===============================================//
+vtkDoubleArray* gk_cxFormField::convertDoubleData(QString name, vtkDoubleArray* oldData, DateTime inputDate)
+{
+    vtkNew<vtkDoubleArray> newData;
+    newData->SetName(name.toAscii().data());
+    newData->SetNumberOfComponents(3);
+    //convert the data
+    int numElements = oldData->GetNumberOfTuples();
+
+    std::cout << "Num Elements: " << name.toAscii().data() << " " << __FUNCTION__ << std::endl << std::flush;
+
+    for(int y = 0; y < numElements; y++)
+    {
+        std::cout << "Element: " << name.toAscii().data() << ":" << y << " " << __FUNCTION__ << std::endl << std::flush;
+
+        //get element
+        double* tuple = new double[3];
+        tuple = oldData->GetTuple3(y);
+
+        double* xtuple = new double[3];
+
+
+        //convert element
+        cppForm::cppxform xform(inputDate, this->sourceSystem.c_str(), tuple);
+        xtuple = xform.cxForm(this->destSystem.c_str());
+        newData->InsertNextTuple(xtuple);
+
+    }
+
+    return newData.GetPointer();
+}
+
+vtkFloatArray* gk_cxFormField::convertFloatData(QString name, vtkFloatArray* oldData, DateTime inputDate)
+{
+    vtkNew<vtkFloatArray> newData;
+    newData->SetName(name.toAscii().data());
+    newData->SetNumberOfComponents(3);
+    //convert the data
+    int numElements = oldData->GetNumberOfTuples();
+
+    std::cout << "Num Elements: " << numElements << " " << __FUNCTION__ << std::endl << std::flush;
+
+    for(int y = 0; y < numElements; y++)
+    {
+        //get element
+        double* tuple = new double[3];
+        tuple = oldData->GetTuple3(y);
+
+        double* xtuple = new double[3];
+
+
+        //convert element
+        cppForm::cppxform xform(inputDate, this->sourceSystem.c_str(), tuple);
+        xtuple = xform.cxForm(this->destSystem.c_str());
+        newData->InsertNextTuple(xtuple);
+
+    }
+
+    return newData.GetPointer();
+}
+
+vtkDoubleArray *gk_cxFormField::getAsDouble(QString ArrayName, vtkFieldData *dataSource)
+{
+    vtkSmartPointer<vtkDoubleArray> data = vtkDoubleArray::SafeDownCast(dataSource->GetAbstractArray(ArrayName.toAscii().data()));
+
+    if(data) return data.GetPointer();
+
+    vtkSmartPointer<vtkFloatArray> floatData = vtkFloatArray::SafeDownCast(dataSource->GetAbstractArray(ArrayName.toAscii().data()));
+
+    if(floatData)
+    {
+        vtkNew<vtkDoubleArray> outData;
+        outData->SetName(ArrayName.toAscii().data());
+        outData->SetNumberOfComponents(floatData->GetNumberOfComponents());
+
+        int numberTuples = floatData->GetNumberOfTuples();
+        for(int x = 0; x < numberTuples; x++)
+        {
+            double tuple[3] = {0,0,0};
+            floatData->GetTuple(x, tuple);
+            outData->InsertNextTuple(tuple);
+        }
+
+        return outData.GetPointer();
+
+    }
+
+    return NULL;
+
+}
+
+vtkDoubleArray *gk_cxFormField::getAsDouble(QString ArrayName, vtkTable *dataSource)
+{
+    vtkSmartPointer<vtkDoubleArray> data = vtkDoubleArray::SafeDownCast(dataSource->GetColumnByName(ArrayName.toAscii().data()));
+
+    if(data) return data.GetPointer();
+
+    vtkSmartPointer<vtkFloatArray> floatData = vtkFloatArray::SafeDownCast(dataSource->GetColumnByName(ArrayName.toAscii().data()));
+
+    if(floatData)
+    {
+        vtkNew<vtkDoubleArray> outData;
+        outData->SetName(ArrayName.toAscii().data());
+        outData->SetNumberOfComponents(floatData->GetNumberOfComponents());
+
+        int numberTuples = floatData->GetNumberOfTuples();
+        for(int x = 0; x < numberTuples; x++)
+        {
+            double tuple[3] = {0,0,0};
+            floatData->GetTuple(x, tuple);
+            outData->InsertNextTuple(tuple);
+        }
+
+        return outData.GetPointer();
+
+    }
+
+    return NULL;
+}
+
+void gk_cxFormField::convertVectorData(DateTime inputDate, QString name, vtkTable* outputTable, vtkFieldData* currentData)
+{
+    vtkSmartPointer<vtkDoubleArray> oldData;
+    oldData = vtkDoubleArray::SafeDownCast(currentData->GetAbstractArray(name.toAscii().data()));
+
+    if(oldData)
+    {
+        //double arrays
+        vtkDoubleArray* newData = convertDoubleData(name, oldData, inputDate);
+        outputTable->AddColumn(newData);
+    }
+    else
+    {
+        //float arrays
+        vtkSmartPointer<vtkFloatArray> oldData;
+        oldData = vtkFloatArray::SafeDownCast(currentData->GetAbstractArray(name.toAscii().data()));
+
+        if(oldData)
+        {
+            vtkFloatArray* newData = convertFloatData(name, oldData, inputDate);
+            outputTable->AddColumn(newData);
+
+        }
+    }
+}
+
+void gk_cxFormField::convertVectorData(DateTime inputDate, QString name, vtkTable *outputTable, vtkTable *currentData)
+{
+    vtkSmartPointer<vtkDoubleArray> oldData;
+    oldData = vtkDoubleArray::SafeDownCast(currentData->GetColumnByName(name.toAscii().data()));
+
+    if(oldData)
+    {
+        //double arrays
+        vtkDoubleArray* newData = convertDoubleData(name, oldData, inputDate);
+        outputTable->AddColumn(newData);
+    }
+    else
+    {
+        //float arrays
+        vtkSmartPointer<vtkFloatArray> oldData;
+        oldData = vtkFloatArray::SafeDownCast(currentData->GetColumnByName(name.toAscii().data()));
+
+        if(oldData)
+        {
+            vtkFloatArray* newData = convertFloatData(name, oldData, inputDate);
+            outputTable->AddColumn(newData);
+
+        }
+    }
+}
+
+void gk_cxFormField::convertSplitData(DateTime inputDate, QString nameX, QString nameY, QString nameZ, vtkTable *outputTable, vtkFieldData *currentData)
+{
+    vtkDoubleArray* X = this->getAsDouble(nameX, currentData);
+    vtkDoubleArray* Y = this->getAsDouble(nameY, currentData);
+    vtkDoubleArray* Z = this->getAsDouble(nameZ, currentData);
+
+    //build new array
+    vtkNew<vtkDoubleArray> newVector;
+    newVector->SetName(this->splitFieldName.c_str());
+    newVector->SetNumberOfComponents(3);
+
+    int numElements = 0;
+    if(X && Y && Z)
+    {
+        numElements = X->GetNumberOfTuples();
+
+        for(int x = 0; x < numElements; x++)
+        {
+            newVector->InsertNextTuple3(X->GetValue(x), Y->GetValue(x), Z->GetValue(x));
+        }
+
+        vtkDoubleArray* xformd = this->convertDoubleData(QString(this->splitFieldName), newVector.GetPointer(), inputDate);
+        outputTable->AddColumn(xformd);
+    }
+
+}
+
+void gk_cxFormField::convertSplitData(DateTime inputDate, QString nameX, QString nameY, QString nameZ, vtkTable *outputTable, vtkTable *currentData)
+{
+
+}
+
 int gk_cxFormField::RequestData(vtkInformation *request, vtkInformationVector **inputVector, vtkInformationVector *outputVector)
 {
 
-    std::cerr << "Requesting Data..." << std::endl;
+    //get inpput and output inforamation
+    vtkInformation* outInfo = outputVector->GetInformationObject(0);
+    vtkInformation* inInfo  = inputVector[0]->GetInformationObject(0);
+
+    std::cout << "Output: " << __FUNCTION__ << std::endl;
+
+    vtkTable* outputTable = vtkTable::GetData(outputVector);
+
+    double mjd = 0.0;
+
+    //get time request data
+    if(inInfo->Has(vtkStreamingDemandDrivenPipeline::UPDATE_TIME_STEP()))
+    {
+        mjd = inInfo->Get(vtkStreamingDemandDrivenPipeline::UPDATE_TIME_STEP());
+    }
+
+    std::cout << "MJD: " << __FUNCTION__ << std::endl;
+
+    //create data time element
+    DateTime inputDate(mjd);
+
+    //get active data set names
+    QStringList pdKeys = this->pdVector.keys();
+    QStringList cdKeys = this->cdVector.keys();
+    QStringList fdKeys = this->fdVector.keys();
+    QStringList tdKeys = this->tdVector.keys();
+
+    std::cout << "keys: " << __FUNCTION__ << std::endl;
+
+
+    //check pointData for active data set
+    if(pdKeys.contains(QString(this->DataSource)))
+    {
+        vtkPointData* currentData = this->pdVector[QString(this->DataSource)];
+
+        std::cout << "currentData: " << __FUNCTION__ << std::endl;
+
+        //check vectors
+        int numVectors = this->vectorFields->GetNumberOfArrays();
+        for(int x = 0; x < numVectors; x++)
+        {
+            QString name = QString(this->vectorFields->GetArrayName(x));
+
+            //skip if array not enabled
+            if(!this->vectorFields->ArrayIsEnabled(name.toAscii().data())) continue;
+            std::cout << "Name: " << name.toAscii().data() << " " << __FUNCTION__ << std::endl;
+
+            //get the data from the variable and convert to new variable
+            this->convertVectorData(inputDate, name, outputTable, currentData);
+        }
+
+        //check for split transform
+//        if(this->useSplit)
+//        {
+//            this->convertSplitData(inputDate, QString(this->splitXfield), QString(this->splitYfield), QString(this->splitZfield), outputTable, currentData);
+
+//        }
+
+
+    }
+
+    //check cell data for active data set
+    if(cdKeys.contains(QString(this->DataSource)))
+    {
+        vtkCellData* currentData = this->cdVector[QString(this->DataSource)];
+
+        int numVectors = this->vectorFields->GetNumberOfArrays();
+        for(int x = 0; x < numVectors; x++)
+        {
+            QString name = QString(this->vectorFields->GetArrayName(x));
+
+            //skip if array not enabled
+            if(!this->vectorFields->ArrayIsEnabled(name.toAscii().data())) continue;
+            std::cout << "Name: " << name.toAscii().data() << " " << __FUNCTION__ << std::endl;
+
+            //get the data from the variable and convert to new variable
+            this->convertVectorData(inputDate, name, outputTable, currentData);
+
+        }
+
+    }
+
+    //check field data for active data set
+    if(fdKeys.contains(QString(this->DataSource)))
+    {
+        vtkFieldData* currentData = this->fdVector[QString(this->DataSource)];
+
+        int numVectors = this->vectorFields->GetNumberOfArrays();
+        for(int x = 0; x < numVectors; x++)
+        {
+            QString name = QString(this->vectorFields->GetArrayName(x));
+
+            //skip if array not enabled
+            if(!this->vectorFields->ArrayIsEnabled(name.toAscii().data())) continue;
+            std::cout << "Name: " << name.toAscii().data() << " " << __FUNCTION__ << std::endl;
+
+            //get the data from the variable and convert to new variable
+            this->convertVectorData(inputDate, name, outputTable, currentData);
+
+        }
+    }
+
+    //check table data for active data set
+    if(tdKeys.contains(QString(this->DataSource)))
+    {
+        vtkTable* currentData = this->tdVector[QString(this->DataSource)];
+
+        int numVectors = this->vectorFields->GetNumberOfArrays();
+        for(int x = 0; x < numVectors; x++)
+        {
+            QString name = QString(this->vectorFields->GetArrayName(x));
+
+            //skip if array not enabled
+            if(!this->vectorFields->ArrayIsEnabled(name.toAscii().data())) continue;
+            std::cout << "Name: " << name.toAscii().data() << " " << __FUNCTION__ << std::endl;
+
+            //get the data from the variable and convert to new variable
+            this->convertVectorData(inputDate, name, outputTable, currentData);
+
+        }
+
+    }
+
+
 
     return 1;
 }
@@ -444,17 +770,19 @@ int gk_cxFormField::RequestInformation(vtkInformation *request, vtkInformationVe
     this->AvailableVectorFields.clear();
     this->AvailableScalarFields.clear();
 
+    //clear out old gathered information
+    this->pdVector.clear();
+    this->cdVector.clear();
+    this->fdVector.clear();
+    this->tdVector.clear();
+
+    //get inpput and output inforamation
     vtkInformation* outInfo = outputVector->GetInformationObject(0);
     vtkInformation* inInfo  = inputVector[0]->GetInformationObject(0);
 
     vtkSmartPointer<vtkDataSet> input       = vtkDataSet::GetData(inputVector[0]);
     vtkSmartPointer<vtkTable>   inputTable  = vtkTable::GetData(inputVector[0]);
     vtkSmartPointer<vtkTable>   output      = vtkTable::GetData(outputVector);
-
-    QMap<QString, vtkPointData*> pdVector;
-    QMap<QString, vtkCellData*>  cdVector;
-    QMap<QString, vtkFieldData*> fdVector;
-    QMap<QString, vtkTable*>     tdVector;
 
     if(input)
     {

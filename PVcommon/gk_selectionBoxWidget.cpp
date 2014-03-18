@@ -126,6 +126,7 @@ void gk_selectionBoxWidget::processProperty()
     int numElements = this->inInfoProperty->GetNumberOfElements();
     if(numElements % 2 == 0)
     {
+        std::cout << "Number of Elements: " << numElements << std::endl;
         for(int x=0; x < numElements; x += 2 )
         {
 
