@@ -2,14 +2,14 @@ if(NOT cxformFilter_SOURCE_DIR)
     set(cxformFilter_SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR})
     INCLUDE_DIRECTORIES(${CMAKE_CURRENT_LIST_DIR}/src)
     INCLUDE_DIRECTORIES(${CMAKE_CURRENT_LIST_DIR}/../../PVCommon)
+    if(NOT ${GK_SOURCE_DIR})
+        set(GK_SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/../..)
+    endif()
 endif()
 
-if(GK_SOURCE_DIR)
-    message(STATUS "Found GK_SOURCE_DIR... setting GK_COMMON_SOURCE_DIR")
-    set(GK_COMMON_SOURCE_DIR ${GK_SOURCE_DIR}/PVcommon)
-endif()
+set(GK_COMMON_SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/../../PVcommon)
 
-message("${GK_COMMON_SOURCE_DIR}")
+message(STATUS "${GK_COMMON_SOURCE_DIR}")
 
 QT4_WRAP_CPP(
     GKcxForm_MOC_BUILT_SOURCES

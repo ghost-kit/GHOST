@@ -5,10 +5,9 @@ if(NOT PREFIX)
  set(PREFIX /Volumes/Data/Development/GHOST-Kit/build/install/)
 endif()
 
-if( PREFIX )
-  set( CMAKE_INCLUDE_PATH /usr/include ${PREFIX}/include ${CMAKE_INCLUDE_PATH} )
-  set( CMAKE_LIBRARY_PATH /usr/lib ${PREFIX}/lib ${CMAKE_LIBRARY_PATH} )
-endif( PREFIX)
+set( CMAKE_INCLUDE_PATH /usr/include ${PREFIX}/include ${CMAKE_INCLUDE_PATH} )
+set( CMAKE_LIBRARY_PATH /usr/lib ${PREFIX}/lib ${CMAKE_LIBRARY_PATH} )
+set( ParaView_DIR ${PREFIX}/../paraview/src/paraview-build)
 
 #Configure needed librarires
 set(LIBS ${PREFIX}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}ltrDateTime${CMAKE_STATIC_LIBRARY_SUFFIX}
