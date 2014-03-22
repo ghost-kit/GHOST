@@ -12,6 +12,8 @@
 #include<vector>
 #include<QString>
 
+#include "enlilControlFile.h"
+
 
 class vtkDataArraySelection;
 class vtkCallbackCommand;
@@ -107,6 +109,8 @@ public:
     vtkSetVector6Macro(SubExtent, int)
     vtkGetVector6Macro(SubExtent, int)
 
+    void setUseControlFile(int status);
+
     // Description:
     // The following methods allow selective reading of solutions fields.
     int GetNumberOfPointArrays();
@@ -148,6 +152,12 @@ protected:
     int DataUnits;
     bool gridClean;
     int numberOfArrays;
+    int useControlFile;
+
+    //control file
+    enlilControlFile *controlFile;
+    QString controlFileName;
+    int findControlFile();
 
     // Extent information
     vtkIdType NumberOfTuples;  // Number of tuples in subextent

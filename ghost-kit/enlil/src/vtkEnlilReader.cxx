@@ -92,6 +92,7 @@ vtkEnlilReader::vtkEnlilReader()
     this->PointDataArraySelection->AddObserver(vtkCommand::ModifiedEvent, this->SelectionObserver);
     this->CellDataArraySelection->AddObserver(vtkCommand::ModifiedEvent, this->SelectionObserver);
 
+    this->controlFile = NULL;
 
 }
 
@@ -102,7 +103,19 @@ vtkEnlilReader::~vtkEnlilReader()
     this->CellDataArraySelection->Delete();
     this->SelectionObserver->Delete();
 
+    if(this->controlFile)
+    {
+        delete this->controlFile;
+    }
+}
 
+int vtkEnlilReader::findControlFile()
+{
+    //TODO: find the control file in the current file directory.
+    //  if cannot find it, deactivate useControlFile and throw
+    //  A vtkErrorMacro()
+
+    return 0;
 }
 
 //---------------------------------------------------------------------------------------------
@@ -2110,4 +2123,37 @@ int vtkEnlilReader::FillOutputPortInformation(int port, vtkInformation* info)
 void vtkEnlilReader::PrintSelf(ostream &os, vtkIndent indent)
 {
     this->Superclass::PrintSelf(os, indent);
+}
+
+void vtkEnlilReader::setUseControlFile(int status)
+{
+
+    if(status)
+    {
+       if(this->findControlFile())
+       {
+           //control file found
+           this->controlFile = new enlilControlFile(this->controlFileName.toAscii().data());
+           this->useControlFile = 1;
+       }
+       else
+       {
+           //control file not found
+           if(this->controlFile) delete this->controlFile;
+           this->controlFile = NULL;
+           this->controlFileName.clear();
+           this->useControlFile = 0;
+       }
+
+    }
+    else
+    {
+        //remove control file
+        if(this->controlFile) delete this->controlFile;
+        this->controlFile = NULL;
+        this->controlFileName.clear();
+        this->useControlFile = 0;
+    }
+
+    this->Modified();
 }

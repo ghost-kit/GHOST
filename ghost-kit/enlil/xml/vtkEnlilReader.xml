@@ -125,6 +125,16 @@
         </Documentation>
       </StringVectorProperty>
 
+       <IntVectorProperty name="useControlFile"
+                          label="Load Control File [must be in current directory]"
+                          command="setUseControlFile"
+                          immediate_update="1"
+                          panel_visibility="advanced">
+
+            <BooleanDomain name="bool"/>
+        </IntVectorProperty>
+
+
       <!-- This exposes the Timestep Values to the ParaView UI.  Must be implemented in reader to get the time step values -->
 
       <DoubleVectorProperty name="TimestepValues"
