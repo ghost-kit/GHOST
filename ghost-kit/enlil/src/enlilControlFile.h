@@ -18,6 +18,9 @@ class enlilControlFile
 public:
     enlilControlFile(const char* FileName);
 
+    void clear();
+    void open(const char* FileName);
+
     //FileName
     QString getFileName();
 
@@ -99,6 +102,8 @@ protected:
 
 private:
     void zeroAll();
+    void processControlFile(const char* FileName);
+
 };
 
 #endif // ENLILCONTROLFILE_H

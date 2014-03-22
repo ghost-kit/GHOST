@@ -4,7 +4,7 @@
 #include "enlilControlFile.h"
 
 //Constructor... pretty much everything happens here...
-enlilControlFile::enlilControlFile(const char* FileName)
+void enlilControlFile::processControlFile(const char* FileName)
 {
     QMap<QString, QStringList> controlFile;
     this->FileName = QString(FileName);
@@ -44,9 +44,6 @@ enlilControlFile::enlilControlFile(const char* FileName)
 
     //close the file
     inFile.close();
-
-    //zero out the starting values
-    this->zeroAll();
 
     //use input string to populate the object
     //global components
@@ -191,12 +188,25 @@ enlilControlFile::enlilControlFile(const char* FileName)
             this->radCav.push_back(controlFile["radcav"][x].toDouble());
         }
     }
+}
 
-
+enlilControlFile::enlilControlFile(const char* FileName)
+{
+    //initialize the control file
+    this->open(FileName);
 
 }
 
+void enlilControlFile::clear()
+{
+    this->zeroAll();
+}
 
+void enlilControlFile::open(const char *FileName)
+{
+    this->clear();
+    this->processControlFile(FileName);
+}
 
 
 //Accessors
