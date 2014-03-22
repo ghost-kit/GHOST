@@ -96,6 +96,9 @@ protected:
     QVector<double> nCloud;
     QVector<double> radCav;
 
+
+private:
+    void zeroAll();
 };
 
 #endif // ENLILCONTROLFILE_H

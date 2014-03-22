@@ -45,6 +45,9 @@ enlilControlFile::enlilControlFile(const char* FileName)
     //close the file
     inFile.close();
 
+    //zero out the starting values
+    this->zeroAll();
+
     //use input string to populate the object
     //global components
     if(controlFile.contains("project")) this->cfProject = controlFile["project"][0].trimmed();
@@ -349,6 +352,50 @@ double enlilControlFile::getCmeNCloud(int index) const
 double enlilControlFile::getCmeRadCloud(int index) const
 {
     return this->radCav[index];
+}
+
+void enlilControlFile::zeroAll()
+{
+    //zero out all starting vars
+
+    this->FileName.clear();
+    this->cfProject.clear();
+    this->cfDataDir.clear();
+    this->cfInData.clear();
+    this->startDate.clear();
+
+    this->carringtonRotation = 0;
+    this->grid[0] = 0;
+    this->grid[1] = 0;
+    this->grid[2] = 0;
+
+    this->x1l = 0;
+    this->x1r = 0;
+    this->x2l = 0;
+    this->x2r = 0;
+
+    this->vuTime = 0;
+    this->tStart = 0;
+    this->tStop = 0;
+    this->ttFrom = 0;
+    this->ttTo = 0;
+    this->ttStep = 0;
+
+    this->dFast = 0;
+    this->tFast = 0;
+    this->vFast = 0;
+
+    this->nCME = 0;
+    this->cmeDates.clear();
+    this->latCloud.clear();
+    this->lonCloud.clear();
+    this->rCloud.clear();
+    this->velCloud.clear();
+    this->dCloud.clear();
+    this->tCloud.clear();
+    this->xCloud.clear();
+    this->nCloud.clear();
+    this->radCav.clear();
 }
 
 
