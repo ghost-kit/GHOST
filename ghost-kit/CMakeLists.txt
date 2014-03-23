@@ -126,7 +126,7 @@ if(GHOST_BUILD_CXFORM)
     message(STATUS "Building CXForm Transform Module")
 
     #Need CDAweb
-    include(cxform/GKcxFormFiles.cmake)
+    include(cxForm/GKcxFormFiles.cmake)
 endif()
 
 ##gather all built files
