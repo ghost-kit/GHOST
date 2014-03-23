@@ -516,11 +516,12 @@ const char* vtkEnlilReader::GetFileName(unsigned int idx)
 
 void vtkEnlilReader::RemoveAllFileNames()
 {
-    //    std::cerr << "Cleared all File Names" << std::endl;
+    std::cerr << "Cleared all File Names" << std::endl;
     this->fileNames.clear();
     this->numberOfArrays = 0;
     this->timesCalulated = false;
     this->NumberOfTimeSteps = 0;
+    this->TimeSteps.clear();
     this->gridClean = false;
 
     this->FileName = NULL;
@@ -1627,6 +1628,9 @@ int vtkEnlilReader::LoadMetaData(vtkInformationVector *outputVector)
         //control file
         if(this->useControlFile)
         {
+            //update control file
+            this->updateControlFile(true);
+
             //path
             vtkNew<vtkStringArray> controlFilePath;
             controlFilePath->SetName("Control File Path");
@@ -1640,6 +1644,26 @@ int vtkEnlilReader::LoadMetaData(vtkInformationVector *outputVector)
             CFgrid->SetNumberOfComponents(3);
             CFgrid->InsertNextTuple3(this->controlFile->getGrid(0), this->controlFile->getGrid(1), this->controlFile->getGrid(2));
             Data->GetFieldData()->AddArray(CFgrid.GetPointer());
+
+            //Fast Solar Wind Parameters
+            vtkNew<vtkDoubleArray> dFast;
+            dFast->SetName("FSW Density (CF)");
+            dFast->SetNumberOfComponents(1);
+            dFast->InsertNextValue(this->controlFile->getDFast());
+            Data->GetFieldData()->AddArray(dFast.GetPointer());
+
+            vtkNew<vtkDoubleArray> tFast;
+            tFast->SetName("FSW Temperature (CF)");
+            tFast->SetNumberOfComponents(1);
+            tFast->InsertNextValue(this->controlFile->getTFast());
+            Data->GetFieldData()->AddArray(tFast.GetPointer());
+
+            vtkNew<vtkDoubleArray> vFast;
+            vFast->SetName("FSW Velocity (CF)");
+            vFast->SetNumberOfComponents(1);
+            vFast->InsertNextValue(this->controlFile->getVFast());
+            Data->GetFieldData()->AddArray(vFast.GetPointer());
+
 
             //Number of CMEs
             vtkNew<vtkIntArray> nCME;
@@ -1834,8 +1858,8 @@ int vtkEnlilReader::calculateTimeSteps()
         //calculate number of time steps
         //  This is easy, as there is one time step per file.
         this->NumberOfTimeSteps = this->fileNames.size();
-
-        //        std::cout << "Number of Time Steps: " << this->NumberOfTimeSteps << std::endl;
+        this->TimeSteps.clear();
+        this->time2fileMap.clear();
 
         //the hard part... open all of the files, map them to their calculated times
 
@@ -1863,7 +1887,6 @@ int vtkEnlilReader::calculateTimeSteps()
             //populate datestring map
             this->time2datestringMap[this->TimeSteps[x]].assign(refDate.getDateTimeString());
 
-            //            std::cout << "[" << x << "] MJD: " << this->TimeSteps[x] << std::endl;
         }
 
         //calculate time range
@@ -2196,16 +2219,15 @@ void vtkEnlilReader::PrintSelf(ostream &os, vtkIndent indent)
     this->Superclass::PrintSelf(os, indent);
 }
 
-void vtkEnlilReader::setUseControlFile(int status)
+void vtkEnlilReader::updateControlFile(int status)
 {
-
-    std::cerr << "Entering Control File Activate" << std::endl;
     if(status)
     {
         if(this->findControlFile())
         {
             std::cerr << "Control file located" << std::endl;
             //control file found
+            if(this->controlFile) delete this->controlFile;
             this->controlFile = new enlilControlFile(this->controlFileName.toAscii().data());
             this->useControlFile = 1;
         }
@@ -2228,6 +2250,16 @@ void vtkEnlilReader::setUseControlFile(int status)
         this->controlFile = NULL;
         this->controlFileName.clear();
         this->useControlFile = 0;
+    }
+}
+
+void vtkEnlilReader::setUseControlFile(int status)
+{
+    this->useControlFile = status;
+    if(!status)
+    {
+        //this will deactivate the control file
+        this->updateControlFile(false);
     }
 
     this->Modified();

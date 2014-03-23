@@ -142,6 +142,7 @@ public:
     void readVector(std::string array, vtkFloatArray *DataArray, vtkInformationVector* outputVector, const int &dataID);
     void readScalar(vtkStructuredGrid *Data, vtkFloatArray *DataArray, std::string array, vtkInformationVector* outputVector, int dataID);
     void getDataID(std::string array, int &dataID);
+    void updateControlFile(int status);
 protected:
 
     vtkEnlilReader();
