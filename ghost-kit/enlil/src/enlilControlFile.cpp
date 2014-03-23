@@ -83,20 +83,33 @@ void enlilControlFile::processControlFile(const char* FileName)
         int numDates = controlFile["dates"].size();
         for(int x = 0; x < numDates; x++)
         {
+            std::cerr << "Dates Found: " << controlFile["dates"][x].toAscii().data() << std::endl;
+
             //create a new dateTime object
             DateTime newDate;
 
             //split date from time
-            QStringList DateTimeList = controlFile["dates"][x].split("T");
+            QString TimeStamp = controlFile["dates"][x];
+            TimeStamp.remove('\'');
+            TimeStamp.remove('"');
+
+            QStringList DateTimeList = TimeStamp.split("T");
 
             //configure newDate
             QStringList DateList = DateTimeList[0].split("-");
             QStringList TimeList = DateTimeList[1].split(":");
-            newDate.setDay(DateList[2].toInt());
-            newDate.setMonth(DateList[1].toInt());
             newDate.setYear(DateList[0].toInt());
+            newDate.setMonth(DateList[1].toInt());
+            newDate.setDay(DateList[2].toInt());
+
             newDate.setHours(TimeList[0].toInt());
             newDate.setMinutes(TimeList[1].toInt());
+
+            std::cerr << "Year:  " << DateList[0].toStdString() << std::endl;
+            std::cerr << "Month: " << DateList[1].toStdString() << std::endl;
+            std::cerr << "Day:   " << DateList[2].toStdString() << std::endl;
+            std::cerr << "Hour:  " << TimeList[0].toStdString() << std::endl;
+            std::cerr << "Min:   " << TimeList[1].toStdString() << std::endl;
 
             //assign to Array
             this->cmeDates.push_back(newDate);

@@ -32,6 +32,7 @@
 #include <string>
 #include <sstream>
 #include <iostream>
+#include <fstream>
 
 #include "vtkMultiProcessController.h"
 #include "vtkToolkits.h"
@@ -115,7 +116,33 @@ int vtkEnlilReader::findControlFile()
     //  if cannot find it, deactivate useControlFile and throw
     //  A vtkErrorMacro()
 
-    return 0;
+    //Look in current directory for control file with the name of "control_file"
+    QStringList directory = QString(this->CurrentFileName).split("/");
+    directory[directory.size()-1] = QString("control_file");
+
+    QString CFPath = directory.join("/");
+
+    std::cerr << "Control File Guess: " << CFPath.toAscii().data() << std::endl;
+
+    //check existence
+    std::ifstream file(CFPath.toAscii().data());
+    if (file.good())
+    {
+        std::cerr << "File Located" << std::endl;
+
+        file.close();
+        this->controlFileName.clear();
+        this->controlFileName = CFPath;
+
+        return true;
+    }
+
+    std::cerr << "File Not Found " << std::endl;
+
+    file.close();
+    this->controlFileName.clear();
+
+    return false;
 }
 
 //---------------------------------------------------------------------------------------------
@@ -1597,6 +1624,86 @@ int vtkEnlilReader::LoadMetaData(vtkInformationVector *outputVector)
             std::cerr << "Cannot Parse Directory" << std::endl;
         }
 
+        //control file
+        if(this->useControlFile)
+        {
+            //path
+            vtkNew<vtkStringArray> controlFilePath;
+            controlFilePath->SetName("Control File Path");
+            controlFilePath->SetNumberOfComponents(1);
+            controlFilePath->InsertNextValue(this->controlFileName.toAscii().data());
+            Data->GetFieldData()->AddArray(controlFilePath.GetPointer());
+
+            //grid size
+            vtkNew<vtkIntArray> CFgrid;
+            CFgrid->SetName("Grid Dimensions (CF)");
+            CFgrid->SetNumberOfComponents(3);
+            CFgrid->InsertNextTuple3(this->controlFile->getGrid(0), this->controlFile->getGrid(1), this->controlFile->getGrid(2));
+            Data->GetFieldData()->AddArray(CFgrid.GetPointer());
+
+            //Number of CMEs
+            vtkNew<vtkIntArray> nCME;
+            nCME->SetName("Number of CMEs");
+            nCME->SetNumberOfComponents(1);
+            nCME->InsertNextValue(this->controlFile->getNCME());
+            Data->GetFieldData()->AddArray(nCME.GetPointer());
+
+            //CME information
+            for(int x = 0; x < this->controlFile->getNCME(); x++)
+            {
+                //create arrays
+                vtkNew<vtkDoubleArray> coneAngle;
+                vtkNew<vtkDoubleArray> cloudVel;
+                vtkNew<vtkDoubleArray> cloudLat;
+                vtkNew<vtkDoubleArray> cloudLon;
+                vtkNew<vtkDoubleArray> cloudStartMJD;
+                vtkNew<vtkStringArray> cloudStartString;
+
+                //build names
+                QString cmeName = QString("CME ") + QString::number(x);
+                QString CAname = cmeName + QString(" cone angle");
+                QString CVname = cmeName + QString(" Velocity");
+                QString CLatName = cmeName + QString(" Lat");
+                QString CLonName = cmeName + QString(" Lon");
+                QString CSmjdName = cmeName + QString(" Start Time (MJD)");
+                QString CSstringName = cmeName + QString(" Start Time (string)");
+
+                //assign names
+                coneAngle->SetName(CAname.toAscii().data());
+                cloudVel->SetName(CVname.toAscii().data());
+                cloudLat->SetName(CLatName.toAscii().data());
+                cloudLon->SetName(CLonName.toAscii().data());
+                cloudStartMJD->SetName(CSmjdName.toAscii().data());
+                cloudStartString->SetName(CSstringName.toAscii().data());
+
+                //set number of components
+                coneAngle->SetNumberOfComponents(1);
+                cloudVel->SetNumberOfComponents(1);
+                cloudLat->SetNumberOfComponents(1);
+                cloudLon->SetNumberOfComponents(1);
+                cloudStartMJD->SetNumberOfComponents(1);
+                cloudStartString->SetNumberOfComponents(1);
+
+                //populate the arrays
+                coneAngle->InsertNextValue(this->controlFile->getCmeRCloud(x));
+                cloudVel->InsertNextValue(this->controlFile->getCmeVelCloud(x));
+                cloudLat->InsertNextValue(this->controlFile->getCmeLatCloud(x));
+                cloudLon->InsertNextValue(this->controlFile->getCmeLonCloud(x));
+                cloudStartMJD->InsertNextValue(this->controlFile->getCmeDateCloud(x).getMJD());
+                cloudStartString->InsertNextValue(this->controlFile->getCmeDateCloud(x).getDateTimeString().c_str());
+
+                //Add to Paraview
+                Data->GetFieldData()->AddArray(coneAngle.GetPointer());
+                Data->GetFieldData()->AddArray(cloudVel.GetPointer());
+                Data->GetFieldData()->AddArray(cloudLat.GetPointer());
+                Data->GetFieldData()->AddArray(cloudLon.GetPointer());
+                Data->GetFieldData()->AddArray(cloudStartMJD.GetPointer());
+                Data->GetFieldData()->AddArray(cloudStartString.GetPointer());
+
+
+            }
+        }
+
 
         //date string
         vtkNew<vtkStringArray> DateString;
@@ -1706,42 +1813,6 @@ int vtkEnlilReader::checkStatus(void *Object, char *name)
     return 1;
 }
 
-//---------------------------------------------------------------------------------------------
-//this function calculates the positions of artifacts in the system
-//void vtkEnlilReader::calculateArtifacts()
-//{
-//    DateTime time;
-
-//    int retError;
-//    int es;
-
-//    double jd;
-//    Vec pos_in, pos_out;
-
-//    pos_in[0] = -1;
-//    pos_in[1] = 0;
-//    pos_in[2] = 0;
-
-//    //lets calculate all positions, just once (TODO: check we do this only once)
-//    for(int x=0; x < this->NumberOfTimeSteps; x++)
-//    {
-//        time.setMJD(this->TimeSteps[x]);
-//        jd = gregorian_calendar_to_jd(time.getYear(),
-//                                      time.getMonth(),
-//                                      time.getDay(),
-//                                      time.getHour(),
-//                                      time.getMinute(),
-//                                      time.getSecond());
-
-//        es = date2es(time.getYear(),
-//                     time.getMonth(),
-//                     time.getDay(),
-//                     time.getHour(),
-//                     time.getMinute(),
-//                     time.getSecond());
-
-//    }
-//}
 
 //---------------------------------------------------------------------------------------------
 //-- Return 0 for failure, 1 for success --//
@@ -2128,26 +2199,30 @@ void vtkEnlilReader::PrintSelf(ostream &os, vtkIndent indent)
 void vtkEnlilReader::setUseControlFile(int status)
 {
 
+    std::cerr << "Entering Control File Activate" << std::endl;
     if(status)
     {
-       if(this->findControlFile())
-       {
-           //control file found
-           this->controlFile = new enlilControlFile(this->controlFileName.toAscii().data());
-           this->useControlFile = 1;
-       }
-       else
-       {
-           //control file not found
-           if(this->controlFile) delete this->controlFile;
-           this->controlFile = NULL;
-           this->controlFileName.clear();
-           this->useControlFile = 0;
-       }
+        if(this->findControlFile())
+        {
+            std::cerr << "Control file located" << std::endl;
+            //control file found
+            this->controlFile = new enlilControlFile(this->controlFileName.toAscii().data());
+            this->useControlFile = 1;
+        }
+        else
+        {
+            std::cerr << "Control file NOT located" << std::endl;
+            //control file not found
+            if(this->controlFile) delete this->controlFile;
+            this->controlFile = NULL;
+            this->controlFileName.clear();
+            this->useControlFile = 0;
+        }
 
     }
     else
     {
+        std::cerr << "Unloading control file" << std::endl;
         //remove control file
         if(this->controlFile) delete this->controlFile;
         this->controlFile = NULL;

@@ -128,8 +128,11 @@
        <IntVectorProperty name="useControlFile"
                           label="Load Control File [must be in current directory]"
                           command="setUseControlFile"
+                          number_of_elements_per_command="1"
+                          number_of_elements="1"
                           immediate_update="1"
-                          panel_visibility="advanced">
+                          panel_visibility="advanced"
+                          default_values="0">
 
             <BooleanDomain name="bool"/>
         </IntVectorProperty>
