@@ -29,7 +29,7 @@
 #include <QReadWriteLock>
 #include <QTableWidgetItem>
 #include <QComboBox>
-#include <QT>
+#include <Qt>
 
 //VTK
 #include <vtkSMProxy.h>
