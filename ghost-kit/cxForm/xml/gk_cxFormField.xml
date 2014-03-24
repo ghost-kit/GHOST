@@ -236,6 +236,37 @@
 
 
 
+ <!--Split Time-->
+ <StringVectorProperty
+       name="SplitTimeInfo"
+       command="GetScalarFieldList"
+       information_only="1">
+
+      <StringArrayHelper/>
+
+        <Documentation>
+           This is the provided list of data sources.
+        </Documentation>
+
+ </StringVectorProperty>
+
+
+ <StringVectorProperty name="SplitTime"
+    label="Time Field:"
+    command="SetSplitTime"
+    number_of_elements="1"
+    panel_widget="GkDropDownBox"
+    default_values="0"
+    panel_visibility="default"
+    information_property="SplitTimeInfo">
+
+       <Documentation>
+            Provides the XFORM system with needed Date time field information.
+            Please select the field that contains a Modified Julian Date.
+       </Documentation>
+
+ </StringVectorProperty>
+
 <!--X field Split-->
 <StringVectorProperty
       name="XInfo"
@@ -381,6 +412,7 @@
       <PropertyGroup label="Split Field Transform">
         <Property name="useSplit" />
         <Property name="SplitFieldName" />
+        <Property name="SplitTime" />
         <Property name="SplitFieldX" />
         <Property name="SplitFieldY" />
         <Property name="SplitFieldZ" />

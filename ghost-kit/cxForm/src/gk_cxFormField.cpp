@@ -329,6 +329,11 @@ void gk_cxFormField::SetManualOutput(double x, double y, double z)
     this->manualZ = z;
 }
 
+void gk_cxFormField::SetSplitTime(const char *timeArray)
+{
+    this->splitTimeField = vtkStdString(timeArray);
+}
+
 //===============================================//
 void gk_cxFormField::SetSplitFromSystem(const char*  system)
 {

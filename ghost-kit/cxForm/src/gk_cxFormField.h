@@ -69,6 +69,7 @@ public:
     void SetManualOutput(double x, double y, double z);
 
     //split fields xform
+    void SetSplitTime(const char *timeArray);
     void SetSplitFromSystem(const char *system);
     void SetSplitToSystem(const char *system);
     void setUseSplit(int status);
@@ -118,6 +119,7 @@ protected:
 
     //tracking vars
     //Split XForm
+    vtkStdString    splitTimeField;
     vtkStdString    splitFieldName;
     vtkStdString    splitXfield;
     vtkStdString    splitYfield;
