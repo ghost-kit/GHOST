@@ -29,6 +29,7 @@
 #define GK_POINTDATASTR "Point Data"
 #define GK_CELLDATASTR  "Cell Data"
 #define GK_FIELDDATASTR "Field Data"
+#define GK_MODELTIMESTR "Model Time Data"
 
 
 class  gk_cxFormField : public vtkTableAlgorithm
@@ -48,6 +49,16 @@ public:
 
     void SetDataSource(const char *value);
     vtkStringArray *GetDataSourceInfo();
+
+    //Time Selection Array
+    //  Mode 0) only Model Time
+    //  Mode 1) only Scalar Arrays
+    //  Mode 2) Scalar Arrays and Model time
+    void setTimeArray(int mode);
+    void setUseModelTime(int status);
+    void setManualDate(int MM, int DD, int YYYY);
+    void setManualTime(int hour, int min, int sec);
+    vtkStringArray* GetTimeFields();
 
     //field selections
     int GetNumberOfTableArrays();
@@ -69,7 +80,7 @@ public:
     void SetManualOutput(double x, double y, double z);
 
     //split fields xform
-    void SetSplitTime(const char *timeArray);
+    void SetXformTime(const char *timeArray);
     void SetSplitFromSystem(const char *system);
     void SetSplitToSystem(const char *system);
     void setUseSplit(int status);
@@ -105,12 +116,12 @@ protected:
     vtkStdString sourceSystem;
     vtkStdString destSystem;
 
-
     //field selection data structures
     vtkDataArraySelection* vectorFields;
     vtkDataArraySelection* dataSources;
     vtkDataArraySelection* scalarFields;
     vtkStdString           DataSource;
+    int                    useModelTime;
 
     //current lists for GUI
     vtkStringArray* currentDataSourceList;
@@ -119,7 +130,7 @@ protected:
 
     //tracking vars
     //Split XForm
-    vtkStdString    splitTimeField;
+    vtkStdString    xformTimeField;
     vtkStdString    splitFieldName;
     vtkStdString    splitXfield;
     vtkStdString    splitYfield;
@@ -133,6 +144,7 @@ protected:
     vtkStdString    manualFieldName;
     vtkStdString    manualFrom;
     vtkStdString    manualTo;
+    DateTime        manualDate;
     int             useManual;
     double          manualX;
     double          manualY;
@@ -143,22 +155,27 @@ protected:
     vtkCallbackCommand* ScalarObserver;
     vtkCallbackCommand* SourceObserver;
     vtkCallbackCommand* AvailableSystemObserver;
+    vtkCallbackCommand* AvailableTimeFieldsObserver;
 
     static void VectorCallback(vtkObject *caller, unsigned long eid, void *clientdata, void *calldata);
     static void ScalarCallback(vtkObject *caller, unsigned long eid, void *clientdata, void *calldata);
     static void SourceCallback(vtkObject *caller, unsigned long eid, void *clientdata, void *calldata);
     static void AvailableSystemCallback(vtkObject *caller, unsigned long eid, void *clientdata, void *calldata);
+    static void AvailableTimeFieldsCallback(vtkObject *caller, unsigned long eid, void *clientdata, void *calldata);
 
 
     //conversion routines
     void convertVectorData(DateTime inputDate, QString name, vtkTable* outputTable, vtkFieldData *currentData);
     void convertVectorData(DateTime inputDate, QString name, vtkTable* outputTable, vtkTable *currentData);
 
-    void convertSplitData(DateTime inputDate, QString nameX, QString nameY, QString nameZ, vtkTable* outputTable, vtkFieldData *currentData);
-    void convertSplitData(DateTime inputDate, QString nameX, QString nameY, QString nameZ, vtkTable* outputTable, vtkTable *currentData);
+    void convertSplitData(QString time, QString nameX, QString nameY, QString nameZ, vtkTable* outputTable, vtkFieldData *currentData);
+    void convertSplitData(QString time, QString nameX, QString nameY, QString nameZ, vtkTable* outputTable, vtkTable *currentData);
 
     vtkDoubleArray* convertDoubleData(QString name, vtkDoubleArray* oldData, DateTime inputDate);
+    vtkDoubleArray* convertDoubleData(QString name, vtkDoubleArray* oldData, vtkDoubleArray* inputDate);
+
     vtkFloatArray*  convertFloatData( QString name, vtkFloatArray* oldData, DateTime inputDate);
+    vtkFloatArray*  convertFloatData( QString name, vtkFloatArray* oldData, vtkDoubleArray* inputDate);
 
     vtkDoubleArray* getAsDouble(QString ArrayName, vtkFieldData* dataSource);
     vtkDoubleArray* getAsDouble(QString ArrayName, vtkTable *dataSource);
@@ -168,6 +185,7 @@ private:
     void operator =(const gk_cxFormField&);  //Not Implemented
 
     vtkStringArray* availableSystemList;
+    vtkStringArray* availableScalarsForTimeSelection;
 
     QMap<QString, QStringList> AvailableVectorFields;
     QMap<QString, QStringList> AvailableScalarFields;
@@ -179,6 +197,8 @@ private:
     QMap<QString, vtkCellData*>  cdVector;
     QMap<QString, vtkFieldData*> fdVector;
     QMap<QString, vtkTable*>     tdVector;
+
+    double currentMJD;
 
 
 };

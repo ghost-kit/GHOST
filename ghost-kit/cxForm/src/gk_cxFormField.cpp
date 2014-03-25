@@ -53,7 +53,7 @@ gk_cxFormField::gk_cxFormField()
     //set up systems
     this->availableSystemList = vtkStringArray::New();
 
-    this->availableSystemList->InsertNextValue("UNKNOWN");
+    this->availableSystemList->InsertNextValue("Please Select a Coordinate System");
     this->availableSystemList->InsertNextValue("J2000");
     this->availableSystemList->InsertNextValue("GEI");
     this->availableSystemList->InsertNextValue("GEO");
@@ -72,6 +72,9 @@ gk_cxFormField::gk_cxFormField()
     this->SetNumberOfInputPorts(1);
     this->SetNumberOfOutputPorts(1);
 
+    //initial values
+    this->setUseModelTime(false);
+
     //initialize array selectors
     this->vectorFields = vtkDataArraySelection::New();
     this->dataSources  = vtkDataArraySelection::New();
@@ -81,27 +84,33 @@ gk_cxFormField::gk_cxFormField()
     this->currentDataSourceList = vtkStringArray::New();
     this->currentScalarFieldsList = vtkStringArray::New();
     this->currentVectorFieldsList = vtkStringArray::New();
+    this->availableScalarsForTimeSelection = vtkStringArray::New();
 
     //Set up callbacks
     this->SourceObserver = vtkCallbackCommand::New();
     this->ScalarObserver = vtkCallbackCommand::New();
     this->VectorObserver = vtkCallbackCommand::New();
     this->AvailableSystemObserver = vtkCallbackCommand::New();
+    this->AvailableTimeFieldsObserver = vtkCallbackCommand::New();
 
     this->SourceObserver->SetCallback(&gk_cxFormField::SourceCallback);
     this->ScalarObserver->SetCallback(&gk_cxFormField::ScalarCallback);
     this->VectorObserver->SetCallback(&gk_cxFormField::VectorCallback);
     this->AvailableSystemObserver->SetCallback(&gk_cxFormField::AvailableSystemCallback);
+    this->AvailableTimeFieldsObserver->SetCallback(&gk_cxFormField::AvailableTimeFieldsCallback);
 
     this->SourceObserver->SetClientData(this);
     this->ScalarObserver->SetClientData(this);
     this->VectorObserver->SetClientData(this);
     this->AvailableSystemObserver->SetClientData(this);
+    this->AvailableTimeFieldsObserver->SetClientData(this);
 
     this->vectorFields->AddObserver(vtkCommand::ModifiedEvent, this->VectorObserver);
     this->scalarFields->AddObserver(vtkCommand::ModifiedEvent, this->ScalarObserver);
     this->dataSources->AddObserver(vtkCommand::ModifiedEvent, this->SourceObserver);
     this->availableSystemList->AddObserver(vtkCommand::ModifiedEvent, this->AvailableSystemObserver);
+    this->availableScalarsForTimeSelection->AddObserver(vtkCommand::ModifiedEvent, this->AvailableTimeFieldsObserver);
+
 
 }
 
@@ -134,6 +143,7 @@ gk_cxFormField::~gk_cxFormField()
 
     this->currentDataSourceList->Delete();
     this->currentScalarFieldsList->Delete();
+    this->availableScalarsForTimeSelection->Delete();
 
     this->SourceObserver->Delete();
     this->ScalarObserver->Delete();
@@ -194,9 +204,26 @@ void gk_cxFormField::SetDataSource(const char* value)
         std::cerr << value << " Not found." << std::endl;
     }
 
-
     //populate the data arrays
     this->PopulateArrays();
+
+
+    //now populate time fields
+    if(QString(value) == GK_POINTDATASTR || QString(value) == GK_CELLDATASTR)
+    {
+        //set the time arrays for point/cell data
+        this->setTimeArray(0);
+    }
+    else if(QString(value) == GK_FIELDDATASTR)
+    {
+        //set the time arrays for Field Data
+        this->setTimeArray(2);
+    }
+    else
+    {
+        this->setTimeArray(1);
+    }
+
 
 }
 
@@ -243,6 +270,68 @@ vtkStringArray *gk_cxFormField::GetDataSourceInfo()
     //return the current data source list
     return this->currentDataSourceList;
 
+}
+
+//===============================================//
+void gk_cxFormField::setTimeArray(int mode)
+{
+    //configure the time Arrays for population
+    std::cerr << "Setting Time Array - Mode: " << mode << std::endl;
+
+    switch(mode)
+    {
+    case 0:
+        this->availableScalarsForTimeSelection->Reset();
+        this->availableScalarsForTimeSelection->InsertNextValue(GK_MODELTIMESTR);
+        break;
+    case 1:
+        this->availableScalarsForTimeSelection->Reset();
+        this->availableScalarsForTimeSelection->DeepCopy(this->currentScalarFieldsList);
+        break;
+    case 2:
+        this->availableScalarsForTimeSelection->Reset();
+        this->availableScalarsForTimeSelection->DeepCopy(this->currentScalarFieldsList);
+        this->availableScalarsForTimeSelection->InsertNextValue(GK_MODELTIMESTR);
+        break;
+    default:
+        this->availableScalarsForTimeSelection->Reset();
+        break;
+    }
+
+    this->Modified();
+}
+
+//===============================================//
+void gk_cxFormField::setUseModelTime(int status)
+{
+    this->useModelTime = status;
+
+    //adjustments...
+    std::cout << "Updated Use Model Time to: " << status << std::endl;
+}
+
+//===============================================//
+void gk_cxFormField::setManualDate(int MM, int DD, int YYYY)
+{
+    this->manualDate.setMonth(MM);
+    this->manualDate.setDay(DD);
+    this->manualDate.setYear(YYYY);
+
+}
+
+//===============================================//
+void gk_cxFormField::setManualTime(int hour, int min, int sec)
+{
+
+    this->manualDate.setHours(hour);
+    this->manualDate.setMinutes(min);
+    this->manualDate.setSeconds(sec);
+}
+
+//===============================================//
+vtkStringArray *gk_cxFormField::GetTimeFields()
+{
+    return this->availableScalarsForTimeSelection;
 }
 
 //===============================================//
@@ -329,9 +418,17 @@ void gk_cxFormField::SetManualOutput(double x, double y, double z)
     this->manualZ = z;
 }
 
-void gk_cxFormField::SetSplitTime(const char *timeArray)
+//===============================================//
+void gk_cxFormField::SetXformTime(const char *timeArray)
 {
-    this->splitTimeField = vtkStdString(timeArray);
+    if(QString(timeArray) != GK_MODELTIMESTR)
+    {
+        this->xformTimeField = vtkStdString(timeArray);
+    }
+    else
+    {
+        this->setUseModelTime(true);
+    }
 }
 
 //===============================================//
@@ -450,13 +547,14 @@ vtkDoubleArray* gk_cxFormField::convertDoubleData(QString name, vtkDoubleArray* 
         //get element
         double* tuple = new double[3];
         tuple = oldData->GetTuple3(y);
-
         double* xtuple = new double[3];
 
 
         //convert element
         cppForm::cppxform xform(inputDate, this->sourceSystem.c_str(), tuple);
         xtuple = xform.cxForm(this->destSystem.c_str());
+
+        //store result
         newData->InsertNextTuple(xtuple);
 
     }
@@ -464,6 +562,48 @@ vtkDoubleArray* gk_cxFormField::convertDoubleData(QString name, vtkDoubleArray* 
     return newData;
 }
 
+vtkDoubleArray *gk_cxFormField::convertDoubleData(QString name, vtkDoubleArray *oldData, vtkDoubleArray *inputDate)
+{
+    vtkDoubleArray* newData = vtkDoubleArray::New();
+    newData->SetName(name.toAscii().data());
+    newData->SetNumberOfComponents(3);
+    //convert the data
+    int numElements = oldData->GetNumberOfTuples();
+
+    std::cout << "Num Elements: " << numElements << " " << __FUNCTION__ << std::endl << std::flush;
+
+    for(int y = 0; y < numElements; y++)
+    {
+
+        //build date/time element
+        DateTime inDate(inputDate->GetValue(y));
+        std::cerr << "Date: " << inDate.getDateTimeString() << std::endl;
+
+        //get element
+        double* tuple = new double[3];
+        tuple = oldData->GetTuple3(y);
+
+        std::cerr << "XFORM INPUT: " << tuple[0] << ":" << tuple[1] << ":" << tuple[2] << std::endl;
+
+        double* xtuple = new double[3];
+
+
+        //convert element
+        cppForm::cppxform xform(inDate, this->sourceSystem.c_str(), tuple);
+        xtuple = xform.cxForm(this->destSystem.c_str());
+
+        std::cerr << "XFORM OUTPUT: " << xtuple[0] << ":" << xtuple[1] << ":" << xtuple[2] << std::endl;
+
+
+        //store result
+        newData->InsertNextTuple(xtuple);
+
+    }
+
+    return newData;
+}
+
+//===============================================//
 vtkFloatArray* gk_cxFormField::convertFloatData(QString name, vtkFloatArray* oldData, DateTime inputDate)
 {
     vtkFloatArray* newData = vtkFloatArray::New();
@@ -486,6 +626,8 @@ vtkFloatArray* gk_cxFormField::convertFloatData(QString name, vtkFloatArray* old
         //convert element
         cppForm::cppxform xform(inputDate, this->sourceSystem.c_str(), tuple);
         xtuple = xform.cxForm(this->destSystem.c_str());
+
+        //store result
         newData->InsertNextTuple(xtuple);
 
     }
@@ -493,24 +635,79 @@ vtkFloatArray* gk_cxFormField::convertFloatData(QString name, vtkFloatArray* old
     return newData;
 }
 
+vtkFloatArray *gk_cxFormField::convertFloatData(QString name, vtkFloatArray *oldData, vtkDoubleArray *inputDate)
+{
+    vtkFloatArray* newData = vtkFloatArray::New();
+    newData->SetName(name.toAscii().data());
+    newData->SetNumberOfComponents(3);
+    //convert the data
+    int numElements = oldData->GetNumberOfTuples();
+
+    std::cout << "Num Elements: " << numElements << " " << __FUNCTION__ << std::endl << std::flush;
+
+    for(int y = 0; y < numElements; y++)
+    {
+
+        //build date/time element
+        DateTime inDate(inputDate->GetValue(y));
+
+        //get element
+        double* tuple = new double[3];
+        tuple = oldData->GetTuple3(y);
+
+        double* xtuple = new double[3];
+
+
+        //convert element
+        cppForm::cppxform xform(inDate, this->sourceSystem.c_str(), tuple);
+        xtuple = xform.cxForm(this->destSystem.c_str());
+
+        //store result
+        newData->InsertNextTuple(xtuple);
+
+    }
+
+    return newData;
+}
+
+//===============================================//
 vtkDoubleArray *gk_cxFormField::getAsDouble(QString ArrayName, vtkFieldData *dataSource)
 {
-    vtkSmartPointer<vtkDoubleArray> data = vtkDoubleArray::SafeDownCast(dataSource->GetAbstractArray(ArrayName.toAscii().data()));
+    vtkDoubleArray* outData = vtkDoubleArray::New();
+    outData->SetName(ArrayName.toAscii().data());
 
-    if(data) return data.GetPointer();
+    int numComponents=0;
+
+    vtkSmartPointer<vtkDoubleArray> data = vtkDoubleArray::SafeDownCast(dataSource->GetAbstractArray(ArrayName.toAscii().data()));
+    if(data)
+    {
+        std::cerr << "Returning Double Data" << std::endl;
+
+        numComponents = data->GetNumberOfComponents();
+        outData->SetNumberOfComponents(numComponents);
+
+        int numberTuples = data->GetNumberOfTuples();
+        for(int x = 0; x < numberTuples; x++)
+        {
+            double *tuple = new double[numComponents];
+            data->GetTuple(x, tuple);
+            outData->InsertNextTuple(tuple);
+        }
+
+        return outData;
+
+    }
 
     vtkSmartPointer<vtkFloatArray> floatData = vtkFloatArray::SafeDownCast(dataSource->GetAbstractArray(ArrayName.toAscii().data()));
-
     if(floatData)
     {
-        vtkDoubleArray* outData = vtkDoubleArray::New();
-        outData->SetName(ArrayName.toAscii().data());
-        outData->SetNumberOfComponents(floatData->GetNumberOfComponents());
+        numComponents = floatData->GetNumberOfComponents();
+        outData->SetNumberOfComponents(numComponents);
 
         int numberTuples = floatData->GetNumberOfTuples();
         for(int x = 0; x < numberTuples; x++)
         {
-            double tuple[3] = {0,0,0};
+            double *tuple = new double[numComponents];
             floatData->GetTuple(x, tuple);
             outData->InsertNextTuple(tuple);
         }
@@ -523,24 +720,46 @@ vtkDoubleArray *gk_cxFormField::getAsDouble(QString ArrayName, vtkFieldData *dat
 
 }
 
+//===============================================//
 vtkDoubleArray *gk_cxFormField::getAsDouble(QString ArrayName, vtkTable *dataSource)
 {
+
+    vtkDoubleArray* outData = vtkDoubleArray::New();
+    outData->SetName(ArrayName.toAscii().data());
+
+    int numComponents=0;
+
     vtkSmartPointer<vtkDoubleArray> data = vtkDoubleArray::SafeDownCast(dataSource->GetColumnByName(ArrayName.toAscii().data()));
+    if(data)
+    {
+        std::cerr << "Returning Double Data" << std::endl;
 
-    if(data) return data.GetPointer();
+        numComponents = data->GetNumberOfComponents();
+        outData->SetNumberOfComponents(numComponents);
 
+        int numberTuples = data->GetNumberOfTuples();
+        for(int x = 0; x < numberTuples; x++)
+        {
+            double *tuple = new double[numComponents];
+            data->GetTuple(x, tuple);
+            outData->InsertNextTuple(tuple);
+        }
+
+        return outData;
+
+    }
+
+    //if float data
     vtkSmartPointer<vtkFloatArray> floatData = vtkFloatArray::SafeDownCast(dataSource->GetColumnByName(ArrayName.toAscii().data()));
-
     if(floatData)
     {
-        vtkDoubleArray* outData = vtkDoubleArray::New();
-        outData->SetName(ArrayName.toAscii().data());
-        outData->SetNumberOfComponents(floatData->GetNumberOfComponents());
+        numComponents = floatData->GetNumberOfComponents();
+        outData->SetNumberOfComponents(numComponents);
 
         int numberTuples = floatData->GetNumberOfTuples();
         for(int x = 0; x < numberTuples; x++)
         {
-            double tuple[3] = {0,0,0};
+            double *tuple = new double[numComponents];
             floatData->GetTuple(x, tuple);
             outData->InsertNextTuple(tuple);
         }
@@ -552,6 +771,7 @@ vtkDoubleArray *gk_cxFormField::getAsDouble(QString ArrayName, vtkTable *dataSou
     return NULL;
 }
 
+//===============================================//
 void gk_cxFormField::convertVectorData(DateTime inputDate, QString name, vtkTable* outputTable, vtkFieldData* currentData)
 {
     vtkSmartPointer<vtkDoubleArray> oldData;
@@ -578,6 +798,7 @@ void gk_cxFormField::convertVectorData(DateTime inputDate, QString name, vtkTabl
     }
 }
 
+//===============================================//
 void gk_cxFormField::convertVectorData(DateTime inputDate, QString name, vtkTable *outputTable, vtkTable *currentData)
 {
     vtkSmartPointer<vtkDoubleArray> oldData;
@@ -609,11 +830,13 @@ void gk_cxFormField::convertVectorData(DateTime inputDate, QString name, vtkTabl
     }
 }
 
-void gk_cxFormField::convertSplitData(DateTime inputDate, QString nameX, QString nameY, QString nameZ, vtkTable *outputTable, vtkFieldData *currentData)
+//===============================================//
+void gk_cxFormField::convertSplitData(QString time, QString nameX, QString nameY, QString nameZ, vtkTable *outputTable, vtkFieldData *currentData)
 {
     vtkDoubleArray* X = this->getAsDouble(nameX, currentData);
     vtkDoubleArray* Y = this->getAsDouble(nameY, currentData);
     vtkDoubleArray* Z = this->getAsDouble(nameZ, currentData);
+    vtkDoubleArray* inputMJD;
 
     //build new array
     vtkDoubleArray* newVector = vtkDoubleArray::New();
@@ -625,12 +848,28 @@ void gk_cxFormField::convertSplitData(DateTime inputDate, QString nameX, QString
     {
         numElements = X->GetNumberOfTuples();
 
+        if(!this->useModelTime)
+        {
+            inputMJD = this->getAsDouble(time, currentData);
+        }
+        else
+        {
+            inputMJD = vtkDoubleArray::New();
+            inputMJD->SetName("Time");
+            inputMJD->SetNumberOfComponents(1);
+
+            for(int d = 0; d < numElements; d++)
+            {
+                inputMJD->InsertNextValue(this->currentMJD);
+            }
+
+        }
         for(int x = 0; x < numElements; x++)
         {
             newVector->InsertNextTuple3(X->GetValue(x), Y->GetValue(x), Z->GetValue(x));
         }
 
-        vtkDoubleArray* xformd = this->convertDoubleData(QString(this->splitFieldName), newVector, inputDate);
+        vtkDoubleArray* xformd = this->convertDoubleData(QString(this->splitFieldName), newVector, inputMJD);
         outputTable->AddColumn(xformd);
         xformd->Delete();
     }
@@ -639,11 +878,13 @@ void gk_cxFormField::convertSplitData(DateTime inputDate, QString nameX, QString
 
 }
 
-void gk_cxFormField::convertSplitData(DateTime inputDate, QString nameX, QString nameY, QString nameZ, vtkTable *outputTable, vtkTable *currentData)
+//===============================================//
+void gk_cxFormField::convertSplitData(QString time, QString nameX, QString nameY, QString nameZ, vtkTable *outputTable, vtkTable *currentData)
 {
     vtkDoubleArray* X = this->getAsDouble(nameX, currentData);
     vtkDoubleArray* Y = this->getAsDouble(nameY, currentData);
     vtkDoubleArray* Z = this->getAsDouble(nameZ, currentData);
+    vtkDoubleArray* inputMJD;
 
     //build new array
     vtkDoubleArray* newVector = vtkDoubleArray::New();
@@ -655,12 +896,33 @@ void gk_cxFormField::convertSplitData(DateTime inputDate, QString nameX, QString
     {
         numElements = X->GetNumberOfTuples();
 
+        if(!this->useModelTime)
+        {
+            std::cerr << "getting Time Array from Table" << std::endl;
+            std::cerr << "Time Column: " << time.toAscii().data() << std::endl;
+            inputMJD = this->getAsDouble(time, currentData);
+        }
+        else
+        {
+            std::cerr << "Building Time Array from Model Time" << std::endl;
+            inputMJD = vtkDoubleArray::New();
+            inputMJD->SetName("Time");
+            inputMJD->SetNumberOfComponents(1);
+
+            for(int d = 0; d < numElements; d++)
+            {
+                inputMJD->InsertNextValue(this->currentMJD);
+            }
+
+        }
+
         for(int x = 0; x < numElements; x++)
         {
+            std::cerr << "Input Tuple: " << X->GetValue(x) << ":" << Y->GetValue(x) << ":" << Z->GetValue(x) << std::endl;
             newVector->InsertNextTuple3(X->GetValue(x), Y->GetValue(x), Z->GetValue(x));
         }
 
-        vtkDoubleArray* xformd = this->convertDoubleData(QString(this->splitFieldName), newVector, inputDate);
+        vtkDoubleArray* xformd = this->convertDoubleData(QString(this->splitFieldName), newVector, inputMJD);
         outputTable->AddColumn(xformd);
         xformd->Delete();
     }
@@ -669,6 +931,7 @@ void gk_cxFormField::convertSplitData(DateTime inputDate, QString nameX, QString
 
 }
 
+//===============================================//
 int gk_cxFormField::RequestData(vtkInformation *request, vtkInformationVector **inputVector, vtkInformationVector *outputVector)
 {
 
@@ -676,22 +939,17 @@ int gk_cxFormField::RequestData(vtkInformation *request, vtkInformationVector **
     vtkInformation* outInfo = outputVector->GetInformationObject(0);
     vtkInformation* inInfo  = inputVector[0]->GetInformationObject(0);
 
-    std::cout << "Output: " << __FUNCTION__ << std::endl;
-
     vtkTable* outputTable = vtkTable::GetData(outputVector);
 
-    double mjd = 0.0;
 
     //get time request data
     if(inInfo->Has(vtkStreamingDemandDrivenPipeline::UPDATE_TIME_STEP()))
     {
-        mjd = inInfo->Get(vtkStreamingDemandDrivenPipeline::UPDATE_TIME_STEP());
+        this->currentMJD = inInfo->Get(vtkStreamingDemandDrivenPipeline::UPDATE_TIME_STEP());
     }
 
-    std::cout << "MJD: " << __FUNCTION__ << std::endl;
-
     //create data time element
-    DateTime inputDate(mjd);
+    DateTime inputDate(this->currentMJD);
 
     //get active data set names
     QStringList pdKeys = this->pdVector.keys();
@@ -699,15 +957,10 @@ int gk_cxFormField::RequestData(vtkInformation *request, vtkInformationVector **
     QStringList fdKeys = this->fdVector.keys();
     QStringList tdKeys = this->tdVector.keys();
 
-    std::cout << "keys: " << __FUNCTION__ << std::endl;
-
-
     //check pointData for active data set
     if(pdKeys.contains(QString(this->DataSource)))
     {
         vtkPointData* currentData = this->pdVector[QString(this->DataSource)];
-
-        std::cout << "currentData: " << __FUNCTION__ << std::endl;
 
         //check vectors
         int numVectors = this->vectorFields->GetNumberOfArrays();
@@ -717,7 +970,6 @@ int gk_cxFormField::RequestData(vtkInformation *request, vtkInformationVector **
 
             //skip if array not enabled
             if(!this->vectorFields->ArrayIsEnabled(name.toAscii().data())) continue;
-            std::cout << "Name: " << name.toAscii().data() << " " << __FUNCTION__ << std::endl;
 
             //get the data from the variable and convert to new variable
             this->convertVectorData(inputDate, name, outputTable, currentData);
@@ -726,7 +978,7 @@ int gk_cxFormField::RequestData(vtkInformation *request, vtkInformationVector **
         //check for split transform
         if(this->useSplit)
         {
-            this->convertSplitData(inputDate, QString(this->splitXfield), QString(this->splitYfield), QString(this->splitZfield), outputTable, currentData);
+            this->convertSplitData(QString(this->xformTimeField), QString(this->splitXfield), QString(this->splitYfield), QString(this->splitZfield), outputTable, currentData);
 
         }
 
@@ -745,7 +997,6 @@ int gk_cxFormField::RequestData(vtkInformation *request, vtkInformationVector **
 
             //skip if array not enabled
             if(!this->vectorFields->ArrayIsEnabled(name.toAscii().data())) continue;
-            std::cout << "Name: " << name.toAscii().data() << " " << __FUNCTION__ << std::endl;
 
             //get the data from the variable and convert to new variable
             this->convertVectorData(inputDate, name, outputTable, currentData);
@@ -755,7 +1006,7 @@ int gk_cxFormField::RequestData(vtkInformation *request, vtkInformationVector **
         //check for split transform
         if(this->useSplit)
         {
-            this->convertSplitData(inputDate, QString(this->splitXfield), QString(this->splitYfield), QString(this->splitZfield), outputTable, currentData);
+            this->convertSplitData(QString(this->xformTimeField), QString(this->splitXfield), QString(this->splitYfield), QString(this->splitZfield), outputTable, currentData);
 
         }
 
@@ -773,9 +1024,9 @@ int gk_cxFormField::RequestData(vtkInformation *request, vtkInformationVector **
 
             //skip if array not enabled
             if(!this->vectorFields->ArrayIsEnabled(name.toAscii().data())) continue;
-            std::cout << "Name: " << name.toAscii().data() << " " << __FUNCTION__ << std::endl;
 
             //get the data from the variable and convert to new variable
+            //TODO: Fix fd to use the proper date/time fields
             this->convertVectorData(inputDate, name, outputTable, currentData);
 
         }
@@ -783,7 +1034,7 @@ int gk_cxFormField::RequestData(vtkInformation *request, vtkInformationVector **
         //check for split transform
         if(this->useSplit)
         {
-            this->convertSplitData(inputDate, QString(this->splitXfield), QString(this->splitYfield), QString(this->splitZfield), outputTable, currentData);
+            this->convertSplitData(QString(this->xformTimeField), QString(this->splitXfield), QString(this->splitYfield), QString(this->splitZfield), outputTable, currentData);
 
         }
     }
@@ -800,9 +1051,9 @@ int gk_cxFormField::RequestData(vtkInformation *request, vtkInformationVector **
 
             //skip if array not enabled
             if(!this->vectorFields->ArrayIsEnabled(name.toAscii().data())) continue;
-            std::cout << "Name: " << name.toAscii().data() << " " << __FUNCTION__ << std::endl;
 
             //get the data from the variable and convert to new variable
+            //TODO: Fix this to use the selected Date/Time Field
             this->convertVectorData(inputDate, name, outputTable, currentData);
 
         }
@@ -810,7 +1061,9 @@ int gk_cxFormField::RequestData(vtkInformation *request, vtkInformationVector **
         //check for split transform
         if(this->useSplit)
         {
-            this->convertSplitData(inputDate, QString(this->splitXfield), QString(this->splitYfield), QString(this->splitZfield), outputTable, currentData);
+
+            std::cerr << "Using Table Split Transform" << std::endl;
+            this->convertSplitData(QString(this->xformTimeField), QString(this->splitXfield), QString(this->splitYfield), QString(this->splitZfield), outputTable, currentData);
 
         }
     }
@@ -828,8 +1081,8 @@ int gk_cxFormField::RequestData(vtkInformation *request, vtkInformationVector **
         //get the input vector
         double inputVector[3] = {this->manualX, this->manualY, this->manualZ};
 
-        //setup the xform
-        cppForm::cppxform xform(inputDate, this->sourceSystem.c_str(), inputVector);
+        //setup the xform -- this uses the manual date input
+        cppForm::cppxform xform(this->manualDate, this->sourceSystem.c_str(), inputVector);
 
         //configure and add value to output array
         newArray->SetName(this->manualFieldName.c_str());
@@ -840,8 +1093,6 @@ int gk_cxFormField::RequestData(vtkInformation *request, vtkInformationVector **
         outputTable->AddColumn(newArray);
 
     }
-
-
     return 1;
 }
 
@@ -1055,6 +1306,8 @@ vtkStringArray *gk_cxFormField::GetVectorFieldList()
     return this->currentVectorFieldsList;
 }
 
+
+//===============================================//
 vtkStringArray *gk_cxFormField::GetTableArrayInfo()
 {
     return this->GetVectorFieldList();
@@ -1115,7 +1368,14 @@ void gk_cxFormField::SourceCallback(vtkObject *caller, unsigned long eid, void *
 void gk_cxFormField::AvailableSystemCallback(vtkObject *caller, unsigned long eid, void *clientdata, void *calldata)
 {
     std::cerr << __FUNCTION__ << " has been called" << std::endl;
+    gk_cxFormField* filter = static_cast<gk_cxFormField*>(clientdata);
+    filter->Modified();
+}
 
+void gk_cxFormField::AvailableTimeFieldsCallback(vtkObject *caller, unsigned long eid, void *clientdata, void *calldata)
+{
+    gk_cxFormField* filter = static_cast<gk_cxFormField*>(clientdata);
+    filter->Modified();
 }
 
 //===============================================//

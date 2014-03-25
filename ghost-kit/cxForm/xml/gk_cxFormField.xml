@@ -1,6 +1,5 @@
 <!-- Ghost Kit CXform Module -->
 <ServerManagerConfiguration>
-<!-- Begin SpaceCraftInfo -->
 <ProxyGroup name="filters">
 
     <SourceProxy class="gk_cxFormField"
@@ -117,6 +116,47 @@
 
       </StringVectorProperty>
 
+ <!--Time Selection-->
+<!-- <IntVectorProperty name="useModelTime"
+                label="Use Model Time"
+                command="setUseModelTime"
+                number_of_elements="1"
+                default_values="0"
+                panel_visibility="default"
+                immediate_update="1">
+     <BooleanDomain name="bool"/>
+ </IntVectorProperty>-->
+
+ <StringVectorProperty
+       name="xformTimeInfo"
+       command="GetTimeFields"
+       information_only="1">
+
+      <StringArrayHelper/>
+
+        <Documentation>
+           This is the provided list of data sources.
+        </Documentation>
+
+ </StringVectorProperty>
+
+
+ <StringVectorProperty name="xformTime"
+    label="Time Field:"
+    command="SetXformTime"
+    number_of_elements="1"
+    panel_widget="GkDropDownBox"
+    default_values="0"
+    panel_visibility="default"
+    information_property="xformTimeInfo">
+
+       <Documentation>
+            Provides the XFORM system with needed Date time field information.
+            Please select the field that contains a Modified Julian Date.
+       </Documentation>
+
+ </StringVectorProperty>
+
 <!--Field Selections-->
       <StringVectorProperty
             name="TableArrayInfo"
@@ -159,6 +199,25 @@
                    panel_visibility="advanced">
         <BooleanDomain name="bool"/>
     </IntVectorProperty>
+
+    <IntVectorProperty name="manualDate"
+                   label="MM DD YYYY"
+                   command="setManualDate"
+                   number_of_elements="3"
+                   default_values="1 1 2013"
+                   panel_visibility="advanced">
+
+    </IntVectorProperty>
+
+    <IntVectorProperty name="manualTime"
+                   label="HH MM SS"
+                   command="setManualTime"
+                   number_of_elements="3"
+                   default_values="23 59 59"
+                   panel_visibility="advanced">
+
+    </IntVectorProperty>
+
 
       <StringVectorProperty command="SetManualName"
                             label="Output Name:"
@@ -233,39 +292,6 @@
         <Documentation>
         </Documentation>
       </StringVectorProperty>
-
-
-
- <!--Split Time-->
- <StringVectorProperty
-       name="SplitTimeInfo"
-       command="GetScalarFieldList"
-       information_only="1">
-
-      <StringArrayHelper/>
-
-        <Documentation>
-           This is the provided list of data sources.
-        </Documentation>
-
- </StringVectorProperty>
-
-
- <StringVectorProperty name="SplitTime"
-    label="Time Field:"
-    command="SetSplitTime"
-    number_of_elements="1"
-    panel_widget="GkDropDownBox"
-    default_values="0"
-    panel_visibility="default"
-    information_property="SplitTimeInfo">
-
-       <Documentation>
-            Provides the XFORM system with needed Date time field information.
-            Please select the field that contains a Modified Julian Date.
-       </Documentation>
-
- </StringVectorProperty>
 
 <!--X field Split-->
 <StringVectorProperty
@@ -392,8 +418,9 @@
         <Property name="Source" />
         <Property name="Destination" />
         <Property name="DataSourceSelection" />
-
+        <Property name="xformTime" />
       </PropertyGroup>
+
 
       <PropertyGroup label="Vector Field Transform">
         <Property name="TableArrayStatus" />
@@ -402,6 +429,8 @@
       <PropertyGroup label="Manual Field Transform">
         <Property name="useManual" />
         <Property name="ManualFieldName" />
+        <Property name="manualDate" />
+        <Property name="manualTime" />
         <Property name="ManualInput" />
         <Property name="ManualOutput" />
         <Property name="manualFrom" />
@@ -412,7 +441,6 @@
       <PropertyGroup label="Split Field Transform">
         <Property name="useSplit" />
         <Property name="SplitFieldName" />
-        <Property name="SplitTime" />
         <Property name="SplitFieldX" />
         <Property name="SplitFieldY" />
         <Property name="SplitFieldZ" />
@@ -425,7 +453,6 @@
         <Visibility replace_input="0" />
 
       </Hints>
-      <!-- End PythonAnnotation -->
     </SourceProxy>
 
 </ProxyGroup>
