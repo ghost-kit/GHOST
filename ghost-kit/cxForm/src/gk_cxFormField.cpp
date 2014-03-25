@@ -74,6 +74,7 @@ gk_cxFormField::gk_cxFormField()
 
     //initial values
     this->setUseModelTime(false);
+    this->currentMJD=0;
 
     //initialize array selectors
     this->vectorFields = vtkDataArraySelection::New();
@@ -287,6 +288,10 @@ void gk_cxFormField::setTimeArray(int mode)
     case 1:
         this->availableScalarsForTimeSelection->Reset();
         this->availableScalarsForTimeSelection->DeepCopy(this->currentScalarFieldsList);
+        if(this->currentMJD != 0)
+        {
+            this->availableScalarsForTimeSelection->InsertNextValue(GK_MODELTIMESTR);
+        }
         break;
     case 2:
         this->availableScalarsForTimeSelection->Reset();
