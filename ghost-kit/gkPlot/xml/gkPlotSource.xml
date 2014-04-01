@@ -1,0 +1,37 @@
+<ServerManagerConfiguration>
+    <ProxyGroup name="sources">
+    <SourceProxy
+        label="GK Plot Source"
+        name="GKPlotSource"
+        class="gkPlotSource">
+
+           <DoubleVectorProperty  name="PlotData"
+                                  command="getPlotData"
+                                  information_only="1"
+                                  number_of_elements="4"
+                                  default_values="0 0 0 0" >
+                <ArrayHelper/>
+
+                <Documentation>
+                    Information on Start Time to Property panel
+                </Documentation>
+
+            </DoubleVectorProperty>
+
+
+           <DoubleVectorProperty  name="PlotGrid"
+                                  command="getPlotGrid"
+                                  information_only="1"
+                                  number_of_elements="3"
+                                  default_values="0 0 0 " >
+                <ArrayHelper/>
+
+                <Documentation>
+                    Information on Start Time to Property panel
+                </Documentation>
+
+            </DoubleVectorProperty>
+
+    </SourceProxy>
+    </ProxyGroup>
+</ServerManagerConfiguration>
