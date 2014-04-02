@@ -5,32 +5,49 @@
         name="GKPlotSource"
         class="gkPlotSource">
 
-           <DoubleVectorProperty  name="PlotData"
-                                  command="getPlotData"
-                                  information_only="1"
-                                  number_of_elements="4"
-                                  default_values="0 0 0 0" >
-                <ArrayHelper/>
+
+           <StringVectorProperty  name="setGridExtents"
+                                  command="setGridExtents"
+                                  panel_widget="GKStringBox"
+                                  default_values="-90,90,-90,90,0,0"
+                                  number_of_elements="1"
+                                  number_of_elements_per_command="1"
+                                  panel_visibility="never">
 
                 <Documentation>
-                    Information on Start Time to Property panel
+                    To clear and reset the grid, use this property.
                 </Documentation>
 
-            </DoubleVectorProperty>
+            </StringVectorProperty>
 
 
-           <DoubleVectorProperty  name="PlotGrid"
-                                  command="getPlotGrid"
-                                  information_only="1"
-                                  number_of_elements="3"
-                                  default_values="0 0 0 " >
-                <ArrayHelper/>
+           <StringVectorProperty  name="setGridPoint"
+                                  label="Set Grid Point"
+                                  command="setGridPoint"
+                                  panel_widget="GKStringBox"
+                                  default_values="0,0,0,0"
+                                  number_of_elements="1"
+                                  number_of_elements_per_command="1">
 
                 <Documentation>
-                    Information on Start Time to Property panel
+                    Use this property to cange the value of a point
                 </Documentation>
 
-            </DoubleVectorProperty>
+            </StringVectorProperty>
+
+           <StringVectorProperty  name="setGridRange"
+                                  command="setGridRange"
+                                  panel_widget="GKStringBox"
+                                  default_values="-1800,1800"
+                                  number_of_elements="1"
+                                  number_of_elements_per_command="1"
+                                  panel_visibility="never">
+
+                <Documentation>
+                    To clear and reset the grid, use this property.
+                </Documentation>
+
+            </StringVectorProperty>
 
     </SourceProxy>
     </ProxyGroup>

@@ -28,6 +28,7 @@ set(XML_FILES xml/gkPlotSource.xml)
 #plugin
 ADD_PARAVIEW_PLUGIN(gkPlotSource  "1.0.0.beta1"
                     SERVER_MANAGER_XML      ${GKplotSource_SM_XML}
+                    GUI_INTERFACES          ${GKplotSource_PROP_IFACES}
                     SERVER_MANAGER_SOURCES  ${GKplotSource_SM_SRC}
                     SOURCES ${GKplotSource_SRC} ${XML_FILES}
                 )

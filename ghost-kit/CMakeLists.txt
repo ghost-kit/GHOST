@@ -14,6 +14,8 @@ option(GHOST_BUILD_LFM "Build the ParaView LFM Reader" ON)
 option(GHOST_BUILD_ENLIL "Build the ParaView ENLIL Reader" ON)
 option(GHOST_BUILD_CDAWEB "Build the ParaView CDAweb Tool Kit" ON)
 option(GHOST_BUILD_CXFORM "Build the cxForm Tranform Filter" ON)
+option(GHOST_BUILD_PLOTS "Build the Plots Source" ON)
+
 option(GHOST_MASTER_BUILD "Plugin Being being built as Master Build (DO NOT SET MANUALLY)" OFF)
 
 #Set Output Direcotries
@@ -129,11 +131,18 @@ if(GHOST_BUILD_CXFORM)
     include(cxForm/GKcxFormFiles.cmake)
 endif()
 
+#Plots
+if(GHOST_BUILD_PLOTS)
+    message(STATUS "Building Plots Module")
+    include(gkPlot/GKplotSourceFiles.cmake)
+endif()
+
 ##gather all built files
 set(SERVER_MAN_XML_LIST ${CDAWebTK_SM_XML}
                         ${ENLIL_SM_XML}
                         ${LFM_SM_XML}
                         ${GKcxForm_SM_XML}
+                        ${GKplotSource_SM_XML}
 
     )
 
@@ -144,18 +153,21 @@ set(GUI_RF_XML_LIST     xml/ghost_gui.xml
 
 set(GUI_INTERFACE_LIST  ${CDAWebTK_PROP_IFACES}
                         ${GKcxForm_PROP_IFACES}
+                        ${GKplotSource_PROP_IFACES}
     )
 
 set(SERVER_MAN_SRC_LIST ${CDAWebTK_SM_SRC}
                         ${ENLIL_SM_SRC}
                         ${LFM_SM_SRC}
                         ${GKcxForm_SM_SRC}
+                        ${GKplotSource_SM_SRC}
     )
 
 set(ADD_SRC_LIST        ${CDAWebTK_SRC}
                         ${CDAWeb_PROP_SRC}
                         ${ENLIL_SRC}
                         ${GKcxForm_SRC}
+                        ${GKplotSource_SRC}
 
     )
 
