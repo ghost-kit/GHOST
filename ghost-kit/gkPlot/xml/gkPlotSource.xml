@@ -9,7 +9,7 @@
            <StringVectorProperty  name="setGridExtents"
                                   command="setGridExtents"
                                   panel_widget="GKStringBox"
-                                  default_values="-90,90,-90,90,0,0"
+                                  default_values="-10,10,-5,5,0,0"
                                   number_of_elements="1"
                                   number_of_elements_per_command="1"
                                   panel_visibility="never">

@@ -14,6 +14,7 @@ public:
 
     void setGridExtents(const char *extents);
     void setGridPoint(const char *value);
+    void setGridPoint(int x, int y, int z, double data);
     void setGridRange(const char *range);
 
 protected:

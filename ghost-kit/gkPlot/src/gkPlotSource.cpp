@@ -1,5 +1,6 @@
 #include "gkPlotSource.h"
 
+#include <limits>
 
 #include "vtkCommand.h"
 #include "vtkAbstractArray.h"
@@ -67,7 +68,7 @@ void gkPlotSource::setGridExtents(const char* extents)
             for(int x = this->extents[0]; x <= this->extents[1]; x++)
             {
 
-                this->data[x][y][z] = 0.0;
+                this->data[x][y][z] = std::numeric_limits<double>::quiet_NaN();
                 this->PlotGrid->InsertNextPoint(double(x), double(y), double(z));
             }
         }
@@ -90,6 +91,13 @@ void gkPlotSource::setGridPoint(const char* value)
         this->Modified();
 
     }
+}
+
+void gkPlotSource::setGridPoint(int x, int y, int z, double data)
+{
+    this->data[x][y][z] = data;
+    this->updateData();
+    this->Modified();
 }
 
 void gkPlotSource::setGridRange(const char* range)
@@ -188,7 +196,7 @@ void gkPlotSource::updateData()
             {
                 this->PlotData->InsertValue(count,this->data[x][y][z]);
                 count++;
-                std::cout << "[" << x << "," << y << "," << z << "]:" << this->PlotData->GetValue(count-1) << std::endl;
+//                std::cout << "[" << x << "," << y << "," << z << "]:" << this->PlotData->GetValue(count-1) << std::endl;
             }
         }
     }
