@@ -1,4 +1,4 @@
-#include "src/SwFTdockPanel.h"
+#include "SwFTdockPanel.h"
 #include "ui_SwFTdockPanel.h"
 
 

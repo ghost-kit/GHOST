@@ -27,32 +27,18 @@ include(ParaViewPlugins)
 #get file list
 INCLUDE_DIRECTORIES(src)
 
-include(GKSwFTSourceFiles.cmake)
-
-#set(XML_FILES xml/*.xml)
-
-
-###Make it work first code###
 IF(PARAVIEW_BUILD_QT_GUI)
-  IF (PARAVIEW_QT_VERSION VERSION_GREATER "4")
-    QT5_WRAP_CPP(MOC_SRCS src/SwFTdockPanel.h)
-    QT5_WRAP_UI(UI_SRCS ui/SwFTdockPanel.ui)
-  ELSE ()
-    QT4_WRAP_CPP(MOC_SRCS src/SwFTdockPanel.h)
-    QT4_WRAP_UI(UI_SRCS ui/SwFTdockPanel.ui)
-  ENDIF ()
-ADD_PARAVIEW_DOCK_WINDOW(
-    OUTIFACES
-    OUTSRCS
-    CLASS_NAME SwFTdockPanel
-    DOCK_AREA Right)
 
-  ADD_PARAVIEW_PLUGIN(SwFTdockPanel "1.0"
-                      GUI_INTERFACES ${OUTIFACES}
-                      GUI_SOURCES ${OUTSRCS} ${MOC_SRCS} ${UI_SRCS} src/SwFTdockPanel.cpp)
+    include(GKSwFTSourceFiles.cmake)
+
+    ADD_PARAVIEW_PLUGIN(SwFTdockPanel "1.0b"
+                      GUI_INTERFACES ${SW_OUTIFACES_1}
+                      GUI_SOURCES ${SW_OUTSRCS_1} ${SW_MOC_SRCS} ${SW_UI_SRCS} src/SwFTdockPanel.cpp)
 ENDIF(PARAVIEW_BUILD_QT_GUI)
 
 
+
+###Fix up code
 add_custom_target(dist
     COMMAND ${CMAKE_COMMAND}  -E make_directory ${CMAKE_INSTALL_PREFIX}/release &&
             ${CMAKE_COMMAND}  -DBINARY_DIR:PATH=${CMAKE_CURRENT_BINARY_DIR}

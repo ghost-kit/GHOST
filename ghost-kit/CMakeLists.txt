@@ -15,6 +15,7 @@ option(GHOST_BUILD_ENLIL "Build the ParaView ENLIL Reader" ON)
 option(GHOST_BUILD_CDAWEB "Build the ParaView CDAweb Tool Kit" ON)
 option(GHOST_BUILD_CXFORM "Build the cxForm Tranform Filter" ON)
 option(GHOST_BUILD_PLOTS "Build the Plots Source" ON)
+option(GHOST_BUILD_SWFT "Build SwFT Panels" ON)
 
 option(GHOST_MASTER_BUILD "Plugin Being being built as Master Build (DO NOT SET MANUALLY)" OFF)
 
@@ -137,6 +138,12 @@ if(GHOST_BUILD_PLOTS)
     include(gkPlot/GKplotSourceFiles.cmake)
 endif()
 
+#SwFT Panels
+if(GHOST_BUILD_SWFT)
+    message(STATUS "Building SwFT Panels")
+    include(SwFT/GKSwFTSourceFiles.cmake)
+endif()
+
 ##gather all built files
 set(SERVER_MAN_XML_LIST ${CDAWebTK_SM_XML}
                         ${ENLIL_SM_XML}
@@ -154,6 +161,7 @@ set(GUI_RF_XML_LIST     xml/ghost_gui.xml
 set(GUI_INTERFACE_LIST  ${CDAWebTK_PROP_IFACES}
                         ${GKcxForm_PROP_IFACES}
                         ${GKplotSource_PROP_IFACES}
+                        ${GK_SWFT_INTERFACES}
     )
 
 set(SERVER_MAN_SRC_LIST ${CDAWebTK_SM_SRC}
@@ -171,12 +179,15 @@ set(ADD_SRC_LIST        ${CDAWebTK_SRC}
 
     )
 
+set(GUI_SOURCES_LIST  ${GK_SWFT_GUI_SOURCES}
+    )
 
 ## Add the Plugin Definitions
 ADD_PARAVIEW_PLUGIN(GhostKit                ${GHOST_VERSION_FULL}
                     SERVER_MANAGER_XML      ${SERVER_MAN_XML_LIST}
                     GUI_RESOURCE_FILES      ${GUI_RF_XML_LIST}
                     GUI_INTERFACES          ${GUI_INTERFACE_LIST}
+                    GUI_SOURCES             ${GUI_SOURCES_LIST}
                     SERVER_MANAGER_SOURCES  ${SERVER_MAN_SRC_LIST}
                     SOURCES                 ${ADD_SRC_LIST}
                    )
