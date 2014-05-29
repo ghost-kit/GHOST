@@ -32,8 +32,9 @@ IF(PARAVIEW_BUILD_QT_GUI)
     include(GKSwFTSourceFiles.cmake)
 
     ADD_PARAVIEW_PLUGIN(SwFTdockPanel "1.0b"
-                      GUI_INTERFACES ${SW_OUTIFACES_1}
-                      GUI_SOURCES ${SW_OUTSRCS_1} ${SW_MOC_SRCS} ${SW_UI_SRCS} src/SwFTdockPanel.cpp)
+                      GUI_INTERFACES ${GK_SWFT_INTERFACES}
+                      GUI_SOURCES ${GK_SWFT_GUI_SOURCES}
+                      SOURCES ${GK_SWFT_SOURCES})
 ENDIF(PARAVIEW_BUILD_QT_GUI)
 
 

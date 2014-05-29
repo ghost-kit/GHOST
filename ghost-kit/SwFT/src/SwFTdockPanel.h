@@ -6,8 +6,10 @@
 #include <QString>
 #include <QMap>
 #include <QList>
+#include <QGridLayout>
 #include <QStringList>
 #include "gkSwftControlWidget.h"
+#include "pqPythonManager.h"
 
 namespace Ui {
 class SwFTdockPanel;
@@ -19,16 +21,14 @@ class SwFTdockPanel : public QDockWidget
     typedef QDockWidget Superclass;
 
 public:
-     SwFTdockPanel(const QString &t, QWidget* p = 0, Qt::WindowFlags f=0): Superclass(t, p, f)
-     { this->constructor(); }
+     SwFTdockPanel(const QString &t, QWidget* p = 0, Qt::WindowFlags f=0);
 
-     SwFTdockPanel(QWidget *p=0, Qt::WindowFlags f=0): Superclass(p, f)
-     { this->constructor(); }
+     SwFTdockPanel(QWidget *p=0, Qt::WindowFlags f=0);
 
     ~SwFTdockPanel();
 
      //Function Control
-     void addAnalysisFunction(QString name, QString command);
+     void addAnalysisFunction(QString name, QString command, QLayout *layout);
      void removeAnalysisFunction(QString name);
      void attatchMasterScript(QString script);
 
@@ -39,9 +39,16 @@ private:
 
     //helpers
     void initializePython();
+    void populateActions();
 
     //data
     QMap<QString, QString> commandMap;
+    QString attatchedScript;
+
+    //python interpreter
+    pqPythonManager* pythonManager;
+    pqPythonDialog* pythonDialog;
+
 
 private slots:
    void updateModelDirectory(QString modelSourceDir);
