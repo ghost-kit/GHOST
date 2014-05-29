@@ -176,7 +176,7 @@ set(ADD_SRC_LIST        ${CDAWebTK_SRC}
                         ${ENLIL_SRC}
                         ${GKcxForm_SRC}
                         ${GKplotSource_SRC}
-
+                        ${GK_SWFT_SOURCES}
     )
 
 set(GUI_SOURCES_LIST  ${GK_SWFT_GUI_SOURCES}

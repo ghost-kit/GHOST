@@ -25,7 +25,7 @@
                                   label="Set Grid Point"
                                   command="setGridPoint"
                                   panel_widget="GKStringBox"
-                                  default_values="0,0,0,0"
+                                  default_values=""
                                   number_of_elements="1"
                                   number_of_elements_per_command="1">
 

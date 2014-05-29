@@ -15,8 +15,16 @@ include_directories(${gkSwFTpanels_SOURCE_DIR}/src)
 #    QT5_WRAP_CPP(SW_MOC_SRCS src/SwFTdockPanel.h)
 #    QT5_WRAP_UI(SW_UI_SRCS ui/SwFTdockPanel.ui)
 #ELSE ()
-    QT4_WRAP_CPP(SW_MOC_SRCS ${gkSwFTpanels_SOURCE_DIR}/src/SwFTdockPanel.h)
-    QT4_WRAP_UI(SW_UI_SRCS ${gkSwFTpanels_SOURCE_DIR}/ui/SwFTdockPanel.ui)
+    QT4_WRAP_CPP(SW_MOC_SRCS
+                ${gkSwFTpanels_SOURCE_DIR}/src/SwFTdockPanel.h
+                ${gkSwFTpanels_SOURCE_DIR}/src/gkSwftControlWidget.h
+
+                )
+    QT4_WRAP_UI(SW_UI_SRCS
+                ${gkSwFTpanels_SOURCE_DIR}/ui/SwFTdockPanel.ui
+                ${gkSwFTpanels_SOURCE_DIR}/ui/gkSwftControlWidget.ui
+
+                )
 #ENDIF ()
 
 ADD_PARAVIEW_DOCK_WINDOW(
@@ -30,8 +38,13 @@ set(GK_SWFT_GUI_SOURCES
         ${SW_MOC_SRCS}
         ${SW_UI_SRCS}
         ${gkSwFTpanels_SOURCE_DIR}/src/SwFTdockPanel.cpp
+
     )
 
 set(GK_SWFT_INTERFACES
         ${SW_OUTIFACES_1}
+    )
+
+set(GK_SWFT_SOURCES
+        ${gkSwFTpanels_SOURCE_DIR}/src/gkSwftControlWidget.cpp
     )
