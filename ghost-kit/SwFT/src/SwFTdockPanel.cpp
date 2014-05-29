@@ -21,6 +21,36 @@ SwFTdockPanel::SwFTdockPanel(QWidget *p, Qt::WindowFlags f)
 }
 
 //===============================================//
+void SwFTdockPanel::hideHeliospherParms()
+{
+    ui->CMECone->hide();
+    ui->CMEConeLabel->hide();
+    ui->CMELat->hide();
+    ui->CMELatLabel->hide();
+    ui->CMELon->hide();
+    ui->CMELonLabel->hide();
+    ui->CMEStartTime->hide();
+    ui->CMEStartTimeLabel->hide();
+    ui->CMEVel->hide();
+    ui->CMEVelLabel->hide();
+}
+
+//===============================================//
+void SwFTdockPanel::showHeliospherParms()
+{
+    ui->CMECone->show();
+    ui->CMEConeLabel->show();
+    ui->CMELat->show();
+    ui->CMELatLabel->show();
+    ui->CMELon->show();
+    ui->CMELonLabel->show();
+    ui->CMEStartTime->show();
+    ui->CMEStartTimeLabel->show();
+    ui->CMEVel->show();
+    ui->CMEVelLabel->show();
+}
+
+//===============================================//
 void SwFTdockPanel::constructor()
 {
     this->setWindowTitle("Space Weather Forecasting Toolkit");
@@ -32,6 +62,9 @@ void SwFTdockPanel::constructor()
     connect(this->ui->loadModel, SIGNAL(filenameChanged(QString)), this, SLOT(updateModelDirectory(QString)));
 
 
+    //hide Control File Info until needed
+    hideHeliospherParms();
+    this->controlFile = NULL;
 
     //start python manager
     this->pythonManager = new pqPythonManager();
@@ -101,18 +134,108 @@ void SwFTdockPanel::populateActions()
     //this is where actions will be defined.
     this->addAnalysisFunction("Reset All Views", "void", CGlayout);
 
-    ui->modelType->setText("Enlil");
     ui->spaceWeatherControls->setLayout(CGlayout);
 }
 
 //===============================================//
 void SwFTdockPanel::updateModelDirectory(QString modelSourceDir)
 {
-    std::cerr << __FUNCTION__ << " Has Fired" << std::endl;
+    std::cout << __FUNCTION__ << " Has Fired" << std::endl;
+    this->fileList = ui->loadModel->filenames();
+
+    //extract the directory of the model:
+    QStringList filePath = this->fileList[0].split("/");
+    filePath[filePath.length()-1] = "";
+    QString Path = filePath.join("/");
+    ui->dir->setText(filePath[filePath.length()-2]);
+
+    this->currentDirectory = Path;
+
+
+    //look for control file
+
+    if(this->findControlFile())
+    {
+
+        ui->modelType->setText("ENLIL");
+        ui->ControlFile->setText(QString("./") + this->controlFileName.split("/").last());
+
+        QStringList CMElat;
+        QStringList CMElon;
+        QStringList CMEcone;
+        QStringList CMEvel;
+        QStringList CMEstartDate;
+
+        //open control file
+        if(this->controlFile)
+        {
+            delete this->controlFile;
+        }
+
+        this->controlFile = new enlilControlFile(this->controlFileName.toAscii().data());
+
+        //populate the correct fields
+        int nCME = this->controlFile->getNCME();
+
+        for(int x = 0; x < nCME; x++)
+        {
+            CMElat.push_back(QString::number(this->controlFile->getCmeLatCloud(x)));
+            CMElon.push_back(QString::number(this->controlFile->getCmeLonCloud(x)));
+            CMEcone.push_back(QString::number(this->controlFile->getCmeRCloud(x)));
+            CMEvel.push_back(QString::number(this->controlFile->getCmeVelCloud(x)));
+            CMEstartDate.push_back(QString::fromStdString(this->controlFile->getCmeDateCloud(x).getDateTimeString()));
+        }
+
+        //update GUI params
+        ui->CMECone->setText(CMEcone.join(";"));
+        ui->CMELat->setText(CMElat.join(";"));
+        ui->CMELon->setText(CMElon.join(";"));
+        ui->CMEVel->setText(CMEvel.join(";"));
+        ui->CMEStartTime->setText(CMEstartDate.join(";"));
+
+        //show heliospheric info
+        this->showHeliospherParms();
+    }
+    else
+    {
+        //no control file
+        ui->modelType->setText("UNKNOWN");
+        std::cout << "No Control File Found... not providing control information." << std::endl;
+
+    }
+
+
+
 }
 
 //===============================================//
 void SwFTdockPanel::executeAnalysisCommand(QString name)
 {
 
+}
+
+int SwFTdockPanel::findControlFile()
+{
+    //Look in current directory for control file with the name of "control_file"
+    QString CFPath = this->currentDirectory + "/control_file";
+
+    //check existence
+    std::ifstream file(CFPath.toAscii().data());
+    if (file.good())
+    {
+        std::cerr << "File Located" << std::endl;
+
+        file.close();
+        this->controlFileName.clear();
+        this->controlFileName = CFPath;
+
+        return true;
+    }
+
+    std::cerr << "File Not Found " << std::endl;
+
+    file.close();
+    this->controlFileName.clear();
+
+    return false;
 }

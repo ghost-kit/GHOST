@@ -10,6 +10,7 @@
 #include <QStringList>
 #include "gkSwftControlWidget.h"
 #include "pqPythonManager.h"
+#include "enlilControlFile.h"
 
 namespace Ui {
 class SwFTdockPanel;
@@ -33,6 +34,9 @@ public:
      void attatchMasterScript(QString script);
 
 
+     void hideHeliospherParms();
+     void showHeliospherParms();
+
 private:
     void constructor();
     Ui::SwFTdockPanel *ui;
@@ -40,10 +44,17 @@ private:
     //helpers
     void initializePython();
     void populateActions();
+    int findControlFile();
 
     //data
     QMap<QString, QString> commandMap;
     QString attatchedScript;
+    QStringList fileList;
+
+    //control file info
+    QString currentDirectory;
+    QString controlFileName;
+    enlilControlFile *controlFile;
 
     //python interpreter
     pqPythonManager* pythonManager;

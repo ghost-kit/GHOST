@@ -85,9 +85,9 @@
           <widget class="pqFileChooserWidget" name="loadModel" native="true"/>
          </item>
          <item row="1" column="1">
-          <widget class="QToolButton" name="toolButton">
+          <widget class="QToolButton" name="Process">
            <property name="text">
-            <string>Open</string>
+            <string>Process</string>
            </property>
           </widget>
          </item>
@@ -158,55 +158,6 @@
           <widget class="QLabel" name="ControlFileLabel">
            <property name="text">
             <string>Control File:</string>
-           </property>
-          </widget>
-         </item>
-         <item row="3" column="1">
-          <widget class="QDateTimeEdit" name="CMEStartTime">
-           <property name="enabled">
-            <bool>true</bool>
-           </property>
-           <property name="frame">
-            <bool>false</bool>
-           </property>
-           <property name="readOnly">
-            <bool>true</bool>
-           </property>
-           <property name="buttonSymbols">
-            <enum>QAbstractSpinBox::NoButtons</enum>
-           </property>
-           <property name="keyboardTracking">
-            <bool>false</bool>
-           </property>
-           <property name="dateTime">
-            <datetime>
-             <hour>20</hour>
-             <minute>0</minute>
-             <second>0</second>
-             <year>2014</year>
-             <month>1</month>
-             <day>1</day>
-            </datetime>
-           </property>
-           <property name="date">
-            <date>
-             <year>2014</year>
-             <month>1</month>
-             <day>1</day>
-            </date>
-           </property>
-           <property name="time">
-            <time>
-             <hour>20</hour>
-             <minute>0</minute>
-             <second>0</second>
-            </time>
-           </property>
-           <property name="displayFormat">
-            <string>yyyy-MMM-dd  HH:mm:ss UTC</string>
-           </property>
-           <property name="timeSpec">
-            <enum>Qt::UTC</enum>
            </property>
           </widget>
          </item>
@@ -293,11 +244,18 @@
            </property>
           </widget>
          </item>
+         <item row="3" column="1">
+          <widget class="QLabel" name="CMEStartTime">
+           <property name="text">
+            <string>DateTime Strings</string>
+           </property>
+          </widget>
+         </item>
         </layout>
        </widget>
       </item>
       <item row="0" column="0">
-       <widget class="QLabel" name="label_9">
+       <widget class="QLabel" name="ModelFileLabel">
         <property name="text">
          <string>Model Files:</string>
         </property>

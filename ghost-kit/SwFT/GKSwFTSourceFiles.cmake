@@ -10,6 +10,7 @@ endif()
 set(GK_COMMON_SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/../../PVcommon)
 
 include_directories(${gkSwFTpanels_SOURCE_DIR}/src)
+include_directories(${gkSwFTpanels_SOURCE_DIR}/../enlil/src)
 
 #IF (PARAVIEW_QT_VERSION VERSION_GREATER "4")
 #    QT5_WRAP_CPP(SW_MOC_SRCS src/SwFTdockPanel.h)
@@ -47,4 +48,6 @@ set(GK_SWFT_INTERFACES
 
 set(GK_SWFT_SOURCES
         ${gkSwFTpanels_SOURCE_DIR}/src/gkSwftControlWidget.cpp
+        ${gkSwFTpanels_SOURCE_DIR}/../enlil/src/enlilControlFile.cpp
+
     )
