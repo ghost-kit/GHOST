@@ -70,7 +70,7 @@ void SwFTdockPanel::constructor()
     this->controlFile = NULL;
 
     //start python manager
-    this->pythonManager = new pqPythonManager();
+    this->pythonInterp = vtkPythonInterpreter::New();
 
     //attatch script test
     this->attatchMasterScript("");
@@ -83,7 +83,7 @@ void SwFTdockPanel::constructor()
 SwFTdockPanel::~SwFTdockPanel()
 {
     delete ui;
-    delete this->pythonManager;
+    this->pythonInterp->Delete();
 }
 
 //===============================================//
@@ -203,12 +203,37 @@ void SwFTdockPanel::updateModelDirectory(QString modelSourceDir)
 
 }
 
+bool SwFTdockPanel::initSwFT()
+{
+    this->pythonInterp->SetProgramName("SwFT");
+
+    return(this->pythonInterp->Initialize());
+}
+
 void SwFTdockPanel::processModel()
 {
     std::cout << __FUNCTION__ << " Has Fired." << std::endl;
     emit this->processScriptRun(true);
 
-    //this needs to execute the processing script
+    //Initialize the Python Interpreter with the program name of SwFT
+    bool status = initSwFT();
+
+    if(status)
+    {
+        std::cout << "SwFT initialized" << std::endl;
+    }
+    else
+    {
+        std::cout << "Python already running" << std::endl;
+    }
+
+    //test
+    vtksys_ios::ostringstream stream;
+    stream << "newStuf = Cone()" << endl
+           << endl
+           << "newStufRep = Show()" << endl;
+
+    vtkPythonInterpreter::RunSimpleString(stream.str().c_str());
 
 
 }

@@ -9,8 +9,9 @@
 #include <QGridLayout>
 #include <QStringList>
 #include "gkSwftControlWidget.h"
-#include "pqPythonManager.h"
+#include "vtkPythonInterpreter.h"
 #include "enlilControlFile.h"
+#include "vtksys/ios/iostream"
 
 namespace Ui {
 class SwFTdockPanel;
@@ -37,6 +38,7 @@ public:
      void hideHeliospherParms();
      void showHeliospherParms();
 
+     bool initSwFT();
 signals:
      void processScriptRun(bool state);
 
@@ -60,8 +62,9 @@ private:
     enlilControlFile *controlFile;
 
     //python interpreter
-    pqPythonManager* pythonManager;
-    pqPythonDialog* pythonDialog;
+    vtkPythonInterpreter* pythonInterp;
+
+
 
 
 private slots:
