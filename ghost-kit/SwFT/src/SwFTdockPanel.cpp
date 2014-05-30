@@ -60,7 +60,10 @@ void SwFTdockPanel::constructor()
     this->setWidget(t_widget);
 
     connect(this->ui->loadModel, SIGNAL(filenameChanged(QString)), this, SLOT(updateModelDirectory(QString)));
+    connect(this->ui->Process, SIGNAL(pressed()), this, SLOT(processModel()));
+    connect(this, SIGNAL(processScriptRun(bool)), this, SLOT(processScriptDone(bool)));
 
+    this->processed = false;
 
     //hide Control File Info until needed
     hideHeliospherParms();
@@ -118,13 +121,6 @@ void SwFTdockPanel::attatchMasterScript(QString script)
 }
 
 
-
-//===============================================//
-void SwFTdockPanel::initializePython()
-{
-
-}
-
 //===============================================//
 void SwFTdockPanel::populateActions()
 {
@@ -153,7 +149,6 @@ void SwFTdockPanel::updateModelDirectory(QString modelSourceDir)
 
 
     //look for control file
-
     if(this->findControlFile())
     {
 
@@ -204,6 +199,16 @@ void SwFTdockPanel::updateModelDirectory(QString modelSourceDir)
 
     }
 
+    emit this->processScriptRun(false);
+
+}
+
+void SwFTdockPanel::processModel()
+{
+    std::cout << __FUNCTION__ << " Has Fired." << std::endl;
+    emit this->processScriptRun(true);
+
+    //this needs to execute the processing script
 
 
 }
@@ -212,6 +217,11 @@ void SwFTdockPanel::updateModelDirectory(QString modelSourceDir)
 void SwFTdockPanel::executeAnalysisCommand(QString name)
 {
 
+}
+
+void SwFTdockPanel::processScriptDone(bool state)
+{
+    this->ui->Process->setDisabled(state);
 }
 
 int SwFTdockPanel::findControlFile()

@@ -37,12 +37,14 @@ public:
      void hideHeliospherParms();
      void showHeliospherParms();
 
+signals:
+     void processScriptRun(bool state);
+
 private:
     void constructor();
     Ui::SwFTdockPanel *ui;
 
     //helpers
-    void initializePython();
     void populateActions();
     int findControlFile();
 
@@ -50,6 +52,7 @@ private:
     QMap<QString, QString> commandMap;
     QString attatchedScript;
     QStringList fileList;
+    bool processed;
 
     //control file info
     QString currentDirectory;
@@ -63,7 +66,9 @@ private:
 
 private slots:
    void updateModelDirectory(QString modelSourceDir);
+   void processModel();
    void executeAnalysisCommand(QString name);
+   void processScriptDone(bool state);
 
 };
 
