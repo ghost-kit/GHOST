@@ -35,6 +35,8 @@ IF(PARAVIEW_BUILD_QT_GUI)
                       GUI_INTERFACES ${GK_SWFT_INTERFACES}
                       GUI_SOURCES ${GK_SWFT_GUI_SOURCES}
                       SOURCES ${GK_SWFT_SOURCES})
+
+    target_link_libraries(SwFTdockPanel ${PREFIX}/lib/libltrDateTime.a)
 ENDIF(PARAVIEW_BUILD_QT_GUI)
 
 
