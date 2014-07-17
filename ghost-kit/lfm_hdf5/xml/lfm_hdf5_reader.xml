@@ -1,0 +1,39 @@
+<ServerManagerConfiguration>
+
+  <ProxyGroup name="sources">
+    <SourceProxy name="LFM HDF5 Reader"
+      class="lfm_hdf5_reader"
+      file_name_method="AddFileName">
+
+      <StringVectorProperty name="FileNames"
+        clean_command="RemoveAllFileNames"
+        command="AddFileName"
+        animateable="0"
+        number_of_elements="0"
+        repeat_command="1">
+        <FileListDomain name="files" />
+        <Documentation>
+          The file or list of files to be read by the reader.
+          A list of files will be sequenced over time.
+        </Documentation>
+      </StringVectorProperty>
+
+      <DoubleVectorProperty name="TimestepValues"
+        repeatable="1"
+        information_only="1">
+        <TimeStepsInformationHelper />
+        <Documentation>
+          Available timestep values.
+        </Documentation>
+      </DoubleVectorProperty>
+
+
+      <Hints>
+        <ReaderFactory
+        extensions="hdf5"
+        file_description="LFM HDF5 Data File"/>
+      </Hints>
+
+      </SourceProxy>
+    </ProxyGroup>
+  </ServerManagerConfiguration>

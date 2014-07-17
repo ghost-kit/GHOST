@@ -87,13 +87,6 @@
       </Documentation>
 
 
-      <Hints>
-        <ReaderFactory
-        extensions="enc nc"
-        file_description="Enlil Model Data File"/>
-      </Hints>
-
-
         <ExposedProperties>
 <!-- exposed components -->
           <Property name="GridScaleFactor" />
