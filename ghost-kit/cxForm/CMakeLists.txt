@@ -2,7 +2,7 @@ project(cxformFilter)
 cmake_minimum_required(VERSION 2.8.9 FATAL_ERROR)
 
 if(NOT PREFIX)
- set(PREFIX /Volumes/Data/Development/GHOST-Kit/build/install/)
+ set(PREFIX "/home/ubuntu/Developer/ghost-kit/build-401/install")
 endif()
 
 set( CMAKE_INCLUDE_PATH /usr/include ${PREFIX}/include ${CMAKE_INCLUDE_PATH} )

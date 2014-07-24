@@ -257,27 +257,27 @@ int gk_cxform::RequestData(vtkInformation *request, vtkInformationVector **input
         for(int h = 0; h < numArrays; h++)
         {
 
-            std::cerr << "Inside of array loop" << std::endl << std::flush;
+//            std::cerr << "Inside of array loop" << std::endl << std::flush;
             //configure arrays
             vtkDataArray* InArray = pd->GetArray(h);
             vtkDoubleArray* OutArray = vtkDoubleArray::New();
 
-            std::cerr << "Array's Defined and created" << std::endl;
+//            std::cerr << "Array's Defined and created" << std::endl;
 
             int numElements = InArray->GetNumberOfTuples();
             int numComponents = InArray->GetNumberOfComponents();
 
-            std::cerr << "Computed Number of elements" << std::endl;
+//            std::cerr << "Computed Number of elements" << std::endl;
 
             OutArray->SetNumberOfComponents(numComponents);
             OutArray->Allocate(numComponents*numElements);
             OutArray->SetName(InArray->GetName());
 
-            std::cerr << "Configured output satistics" << std::endl;
+//            std::cerr << "Configured output satistics" << std::endl;
 
             if(pd->GetArray(h)->GetNumberOfComponents() == 3)
             {
-                std::cerr << "Verified dealing with a vector" << std::endl;
+//                std::cerr << "Verified dealing with a vector" << std::endl;
 
                 double zero[3] = {0,0,0};
                 cppForm::cppxform xform(xformDate, this->systemLookupTable[this->sourceSystem].c_str(), zero);
@@ -294,7 +294,7 @@ int gk_cxform::RequestData(vtkInformation *request, vtkInformationVector **input
             }
             else if(pd->GetArray(h)->GetNumberOfComponents() == 1)
             {
-                std::cerr << "Scalar Array - unimplemented as yet" << std::endl;
+//                std::cerr << "Scalar Array - unimplemented as yet" << std::endl;
 
                 //TODO: copy scalar arrays
                 double inValue;
@@ -306,14 +306,14 @@ int gk_cxform::RequestData(vtkInformation *request, vtkInformationVector **input
             }
             else
             {
-                std::cerr << "only scalar and 3-vectors are supported at this point" << std::endl;
+//                std::cerr << "only scalar and 3-vectors are supported at this point" << std::endl;
             }
 
             //update the array
             outPD->AddArray(OutArray);
             OutArray->Delete();
 
-            std::cerr << "Deleted Tempoary Memory" << std::endl;
+//            std::cerr << "Deleted Tempoary Memory" << std::endl;
         }
 
     }
@@ -326,7 +326,7 @@ int gk_cxform::RequestData(vtkInformation *request, vtkInformationVector **input
     this->UpdateProgress (.8);
 
 
-    std::cerr << "Cleaning up ... " << std::endl;
+//    std::cerr << "Cleaning up ... " << std::endl;
 
 
     if (newNormals)
