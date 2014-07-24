@@ -122,13 +122,10 @@ int vtkEnlilReader::findControlFile()
 
     QString CFPath = directory.join("/");
 
-    std::cerr << "Control File Guess: " << CFPath.toAscii().data() << std::endl;
-
     //check existence
     std::ifstream file(CFPath.toAscii().data());
     if (file.good())
     {
-        std::cerr << "File Located" << std::endl;
 
         file.close();
         this->controlFileName.clear();
@@ -270,8 +267,6 @@ void vtkEnlilReader::DisableAllPointArrays()
 {
     this->PointDataArraySelection->DisableAllArrays();
 
-    std::cout << __FUNCTION__ << " Called " << std::endl;
-
     this->Modified();
 }
 
@@ -283,9 +278,6 @@ void vtkEnlilReader::DisableAllPointArrays()
 void vtkEnlilReader::DisableAllCellArrays()
 {
     this->CellDataArraySelection->DisableAllArrays();
-
-    std::cout << __FUNCTION__ << " Called " << std::endl;
-
 
     this->Modified();
 }
@@ -299,9 +291,6 @@ void vtkEnlilReader::EnableAllPointArrays()
 {
     this->PointDataArraySelection->EnableAllArrays();
 
-    std::cout << __FUNCTION__ << " Called " << std::endl;
-
-
     this->Modified();
 }
 
@@ -313,9 +302,6 @@ void vtkEnlilReader::EnableAllPointArrays()
 void vtkEnlilReader::EnableAllCellArrays()
 {
     this->CellDataArraySelection->EnableAllArrays();
-
-    std::cout << __FUNCTION__ << " Called " << std::endl;
-
     this->Modified();
 }
 //=============== END SELECTIVE READER METHODS================
@@ -358,7 +344,6 @@ int vtkEnlilReader::RequestInformation(
     this->CurrentFileName = (char*) this->fileNames[0].c_str();
     this->FileName = CurrentFileName;
 
-    std::cerr << "GetINFO filename processing: " << this->FileName << std::endl;
     if(status)
     {
         //Work Around for restore state problems
@@ -516,7 +501,6 @@ const char* vtkEnlilReader::GetFileName(unsigned int idx)
 
 void vtkEnlilReader::RemoveAllFileNames()
 {
-    std::cerr << "Cleared all File Names" << std::endl;
     this->fileNames.clear();
     this->numberOfArrays = 0;
     this->timesCalulated = false;
@@ -1108,7 +1092,6 @@ int vtkEnlilReader::LoadArrayValues(std::string array, vtkInformationVector* out
             break;
 
         case DATA_TYPE::RVELOCITY:
-            std::cerr << "Radial Velocity Entered" << std::endl;
             if(this->rVelocityCache.getExtentsFromCache(this->current_MJD, subExtents) == NULL)
             {
                 //                std::cout << "TEMPURATURE" << std::endl;
@@ -2177,8 +2160,6 @@ int vtkEnlilReader::GenerateGrid()
 void vtkEnlilReader::cleanCache()
 {
 
-    std::cout << "Cleaning Cache..." << std::endl;
-
     this->pDensityCache.cleanCache();
     this->cDensityCache.cleanCache();
     this->polarityCache.cleanCache();
@@ -2225,7 +2206,6 @@ void vtkEnlilReader::updateControlFile(int status)
     {
         if(this->findControlFile())
         {
-            std::cerr << "Control file located" << std::endl;
             //control file found
             if(this->controlFile) delete this->controlFile;
             this->controlFile = new enlilControlFile(this->controlFileName.toAscii().data());
@@ -2244,7 +2224,6 @@ void vtkEnlilReader::updateControlFile(int status)
     }
     else
     {
-        std::cerr << "Unloading control file" << std::endl;
         //remove control file
         if(this->controlFile) delete this->controlFile;
         this->controlFile = NULL;

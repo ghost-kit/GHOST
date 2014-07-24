@@ -3,14 +3,15 @@ PROJECT("ENLIL")
 
 if(TMLMP8)
     set(PREFIX "/Users/developer/Developer/GK/GHOST-build/install")
-    set(ParaView_DIR "/Users/developer/Developer/GK/build3/paraview/src/paraview-build")
-    set(CMAKE_INSTALL_PREFIX "/Users/developer/Developer/GK/Install")
-    set(PV_SUPERBUILD_LIST_DIR "/Users/developer/Developer/GK/GHOST")
+
 endif()
 
 if( PREFIX )
   set( CMAKE_INCLUDE_PATH /usr/include ${PREFIX}/include ${CMAKE_INCLUDE_PATH} )
   set( CMAKE_LIBRARY_PATH /usr/lib ${PREFIX}/lib ${CMAKE_LIBRARY_PATH} )
+  set(ParaView_DIR ${PREFIX}/../paraview/src/paraview-build)
+  set(CMAKE_INSTALL_PREFIX ${PREFIX})
+  set(PV_SUPERBUILD_LIST_DIR ${PREFIX}/../../GHOST)
 endif( PREFIX )
 
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_LIST_DIR}/src)

@@ -44,7 +44,6 @@ void gkPlotSource::setGridExtents(const char* extents)
 
     if(extentList.size() == 6)
     {
-        std::cout << "Extents: " << extents << std::endl;
         //set the extents
         this->extents[0] = extentList[0].toInt();
         this->extents[1] = extentList[1].toInt();
@@ -85,7 +84,6 @@ void gkPlotSource::setGridPoint(const char* value)
 
     if(valueList.size() == 4)
     {
-        std::cout << "x: " << valueList[0].toInt() << " y: " << valueList[1].toInt() << " z: " <<valueList[2].toInt() <<  ":: " << valueList[3].toDouble() << std::endl;
         this->data[valueList[0].toInt()][valueList[1].toInt()][valueList[2].toInt()] = valueList[3].toDouble();
         this->updateData();
         this->Modified();
@@ -104,7 +102,6 @@ void gkPlotSource::setGridRange(const char* range)
 {
     QString StringRange(range);
     QStringList parts = StringRange.split(",");
-    std::cout << "Range: " << range << std::endl;
 
     this->range[0] = parts[0].toDouble();
     this->range[1] = parts[1].toDouble();
@@ -159,15 +156,10 @@ int gkPlotSource::RequestData(vtkInformation *request, vtkInformationVector **in
 
     output->SetExtent(this->extents);
 
-    std::cout << "Extents have been set..." << std::endl << std::flush;
 
     output->SetPoints(this->PlotGrid);
-    std::cout << "Grid has been set..." << std::endl << std::flush;
 
     output->GetPointData()->AddArray(this->PlotData);
-    std::cout << "DataTest: " << this->PlotData->GetValue(0) << std::endl;
-    std::cout << "Data has been set..." << std::endl << std::flush;
-
 
     return 1;
 }
@@ -196,15 +188,12 @@ void gkPlotSource::updateData()
             {
                 this->PlotData->InsertValue(count,this->data[x][y][z]);
                 count++;
-//                std::cout << "[" << x << "," << y << "," << z << "]:" << this->PlotData->GetValue(count-1) << std::endl;
             }
         }
     }
-    std::cout << "PlotData Size: " << this->PlotData->GetMaxId() << std::endl;
 
     double range[2];
     this->PlotData->GetValueRange(range);
-    std::cout << "PlotData Range: " << range[0] << " - " << range[1] << std::endl;
     this->Modified();
     this->Update(0);
 
