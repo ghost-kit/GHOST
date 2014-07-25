@@ -1,0 +1,9 @@
+ <ParaViewFilters>
+    <Category name="GhostKit" menu_label="GHOSTkit">
+      <!-- adds a new category and then adds our filter to it -->
+      <Filter name="GKFieldTransform" />
+      <Filter name="GKTransform" />
+      <Filter name="GKCDAwebAlignment" />
+
+    </Category>
+  </ParaViewFilters>

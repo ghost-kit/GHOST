@@ -1,0 +1,461 @@
+<!-- Ghost Kit CXform Module -->
+<ServerManagerConfiguration>
+<ProxyGroup name="filters">
+
+    <SourceProxy class="gk_cxFormField"
+                 label="GK Field Transform"
+                 name="GKFieldTransform">
+      <Documentation long_help="This filter provides coordinate transform abuility on Field Data"
+                     short_help="provides coordinate transform abuility on Field Data">
+
+      </Documentation>
+
+      <InputProperty clean_command="RemoveAllInputs"
+                     command="AddInputConnection"
+                     multiple_input="1"
+                     name="Input">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources" />
+          <Group name="filters" />
+        </ProxyGroupDomain>
+
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkDataSet" />
+          <DataType value="vtkTable" />
+          <DataType value="vtkCompositeDataSet" />
+        </DataTypeDomain>
+
+        <Documentation>Set the input of the filter.</Documentation>
+
+      </InputProperty>
+
+<!--Transform Selectors-->
+
+    <StringVectorProperty
+          name="SourceInfo"
+          command="GetSourceInfo"
+          information_only="1">
+
+         <StringArrayHelper/>
+
+           <Documentation>
+              This is the provided list of data sources.
+           </Documentation>
+
+    </StringVectorProperty>
+
+
+    <StringVectorProperty name="Source"
+       label="From:"
+       command="SetSourceSystem"
+       number_of_elements="1"
+       panel_widget="GkDropDownBox"
+       default_values="12"
+       panel_visibility="default"
+       information_property="SourceInfo">
+
+          <Documentation>
+
+          </Documentation>
+
+    </StringVectorProperty>
+
+    <StringVectorProperty
+          name="DestinationInfo"
+          command="GetDestinationInfo"
+          information_only="1">
+
+         <StringArrayHelper/>
+
+           <Documentation>
+              This is the provided list of data sources.
+           </Documentation>
+
+    </StringVectorProperty>
+
+    <StringVectorProperty name="Destination"
+            label="To:"
+            command="SetDestSystem"
+            number_of_elements="1"
+            panel_widget="GkDropDownBox"
+            default_values="6"
+            panel_visibility="default"
+            information_property="DestinationInfo">
+
+          <Documentation>
+
+          </Documentation>
+
+    </StringVectorProperty>
+
+<!--Data Source-->
+    <StringVectorProperty
+          name="DataSourceInfo"
+          command="GetDataSourceInfo"
+          information_only="1">
+
+         <StringArrayHelper/>
+
+           <Documentation>
+              This is the provided list of data sources.
+           </Documentation>
+
+    </StringVectorProperty>
+
+    <StringVectorProperty name="DataSourceSelection"
+        command="SetDataSource"
+        number_of_elements="1"
+        panel_widget="GkDropDownBox"
+        label="Data Source:"
+        panel_visibility="default"
+        information_property="DataSourceInfo">
+
+            <Documentation>
+                This is the selected data source
+            </Documentation>
+
+      </StringVectorProperty>
+
+ <!--Time Selection-->
+<!-- <IntVectorProperty name="useModelTime"
+                label="Use Model Time"
+                command="setUseModelTime"
+                number_of_elements="1"
+                default_values="0"
+                panel_visibility="default"
+                immediate_update="1">
+     <BooleanDomain name="bool"/>
+ </IntVectorProperty>-->
+
+ <StringVectorProperty
+       name="xformTimeInfo"
+       command="GetTimeFields"
+       information_only="1">
+
+      <StringArrayHelper/>
+
+        <Documentation>
+           This is the provided list of data sources.
+        </Documentation>
+
+ </StringVectorProperty>
+
+
+ <StringVectorProperty name="xformTime"
+    label="Time Field:"
+    command="SetXformTime"
+    number_of_elements="1"
+    panel_widget="GkDropDownBox"
+    default_values="0"
+    panel_visibility="default"
+    information_property="xformTimeInfo">
+
+       <Documentation>
+            Provides the XFORM system with needed Date time field information.
+            Please select the field that contains a Modified Julian Date.
+       </Documentation>
+
+ </StringVectorProperty>
+
+<!--Field Selections-->
+      <StringVectorProperty
+            name="TableArrayInfo"
+            command="GetTableArrayInfo"
+            information_only="1">
+
+         <StringArrayHelper/>
+
+            <Documentation>
+                This is the Field Selector.
+            </Documentation>
+
+      </StringVectorProperty>
+
+      <StringVectorProperty
+            name="TableArrayStatus"
+            label="Select Vector Fields to Transform"
+            command="SetArraySelectionStatus"
+            panel_widget="GKSelectionBox"
+            default_values="2"
+            number_of_elements="0"
+            repeat_command="1"
+            number_of_elements_per_command="2"
+            element_types = "2 0"
+            information_property="TableArrayInfo">
+
+            <Documentation>
+                This is the Fileds Selector.
+            </Documentation>
+
+      </StringVectorProperty>
+
+
+<!--Manual Selections-->
+    <IntVectorProperty name="useManual"
+                   label="Use Manual Transform"
+                   command="setUseManual"
+                   number_of_elements="1"
+                   default_values="0"
+                   panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+    </IntVectorProperty>
+
+    <IntVectorProperty name="manualDate"
+                   label="MM DD YYYY"
+                   command="setManualDate"
+                   number_of_elements="3"
+                   default_values="1 1 2013"
+                   panel_visibility="advanced">
+
+    </IntVectorProperty>
+
+    <IntVectorProperty name="manualTime"
+                   label="HH MM SS"
+                   command="setManualTime"
+                   number_of_elements="3"
+                   default_values="23 59 59"
+                   panel_visibility="advanced">
+
+    </IntVectorProperty>
+
+
+      <StringVectorProperty command="SetManualName"
+                            label="Output Name:"
+                            name="ManualFieldName"
+                            number_of_elements="1"
+                            default_values="ManualResult"
+                            panel_visibility="advanced">
+        <Documentation>
+        </Documentation>
+      </StringVectorProperty>
+
+    <DoubleVectorProperty name="ManualInput"
+            label="Manual Input:"
+            command="SetManualInput"
+            number_of_elements="3"
+            default_values="0.0 0.0 0.0"
+            panel_visibility="advanced">
+
+    </DoubleVectorProperty>
+
+    <DoubleVectorProperty name="ManualOutput"
+            label="Manual Output:"
+            command="SetManualOutput"
+            number_of_elements="3"
+            default_values="0.0 0.0 0.0"
+            panel_visibility="never">
+
+    </DoubleVectorProperty>
+
+    <StringVectorProperty name="manualFrom"
+       label="From:"
+       command="SetManualFromSystem"
+       number_of_elements="1"
+       default_values="UNKNOWN"
+       panel_visibility="never">
+
+          <Documentation>
+
+          </Documentation>
+
+    </StringVectorProperty>
+
+    <StringVectorProperty name="manualTo"
+       label="To:"
+       command="SetManualToSystem"
+       number_of_elements="1"
+       default_values="UNKNOWN"
+       panel_visibility="never">
+
+          <Documentation>
+
+          </Documentation>
+
+    </StringVectorProperty>
+
+<!--Split Field Selection-->
+      <IntVectorProperty name="useSplit"
+                   label="Use Split Transform"
+                   command="setUseSplit"
+                   number_of_elements="1"
+                   default_values="0"
+                   panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+      </IntVectorProperty>
+
+      <StringVectorProperty command="SetSplitFieldName"
+                            label="Output Name:"
+                            name="SplitFieldName"
+                            default_values="SplitResult"
+                            number_of_elements="1"
+                            panel_visibility="advanced">
+        <Documentation>
+        </Documentation>
+      </StringVectorProperty>
+
+<!--X field Split-->
+<StringVectorProperty
+      name="XInfo"
+      command="GetScalarFieldList"
+      information_only="1">
+
+     <StringArrayHelper/>
+
+       <Documentation>
+          This is the provided list of data sources.
+       </Documentation>
+
+</StringVectorProperty>
+
+
+      <StringVectorProperty
+         label="X Field:"
+         name="SplitFieldX"
+         command="SetSplitX"
+         panel_widget="GkDropDownBox"
+         number_of_elements="1"
+         default_values="0"
+         panel_visibility="advanced"
+         information_property="XInfo">
+
+
+        <Documentation>
+            This is a placeholder for the Split Field Transform
+        </Documentation>
+      </StringVectorProperty>
+
+<!--Y field Split-->
+<StringVectorProperty
+      name="YInfo"
+      command="GetScalarFieldList"
+      information_only="1">
+
+     <StringArrayHelper/>
+
+       <Documentation>
+          This is the provided list of data sources.
+       </Documentation>
+
+</StringVectorProperty>
+
+
+      <StringVectorProperty
+         label="Y Field:"
+         name="SplitFieldY"
+         command="SetSplitY"
+         panel_widget="GkDropDownBox"
+         number_of_elements="1"
+         default_values="0"
+         panel_visibility="advanced"
+         information_property="YInfo">
+
+
+        <Documentation>
+            This is a placeholder for the Split Field Transform
+        </Documentation>
+      </StringVectorProperty>
+
+<!--Z field Split-->
+<StringVectorProperty
+      name="ZInfo"
+      command="GetScalarFieldList"
+      information_only="1">
+
+     <StringArrayHelper/>
+
+       <Documentation>
+          This is the provided list of data sources.
+       </Documentation>
+
+</StringVectorProperty>
+
+
+      <StringVectorProperty
+         label="Z Field:"
+         name="SplitFieldZ"
+         command="SetSplitZ"
+         panel_widget="GkDropDownBox"
+         number_of_elements="1"
+         default_values="0"
+         panel_visibility="advanced"
+         information_property="ZInfo">
+
+
+        <Documentation>
+            This is a placeholder for the Split Field Transform
+        </Documentation>
+      </StringVectorProperty>
+
+
+    <StringVectorProperty name="splitFrom"
+       label="From:"
+       command="SetSplitFromSystem"
+       number_of_elements="1"
+       default_values="UNKNOWN"
+       panel_visibility="never">
+
+          <Documentation>
+
+          </Documentation>
+
+    </StringVectorProperty>
+
+    <StringVectorProperty name="splitTo"
+       label="To:"
+       command="SetSplitToSystem"
+       number_of_elements="1"
+       default_values="UNKNOWN"
+       panel_visibility="never">
+
+          <Documentation>
+
+          </Documentation>
+
+    </StringVectorProperty>
+
+      <!-- Define property groups for better readability of panels -->
+      <PropertyGroup label="Master Transform Operation">
+        <Property name="Source" />
+        <Property name="Destination" />
+        <Property name="DataSourceSelection" />
+        <Property name="xformTime" />
+      </PropertyGroup>
+
+
+      <PropertyGroup label="Vector Field Transform">
+        <Property name="TableArrayStatus" />
+      </PropertyGroup>
+
+      <PropertyGroup label="Manual Field Transform">
+        <Property name="useManual" />
+        <Property name="ManualFieldName" />
+        <Property name="manualDate" />
+        <Property name="manualTime" />
+        <Property name="ManualInput" />
+        <Property name="ManualOutput" />
+        <Property name="manualFrom" />
+        <Property name="manualTo" />
+
+      </PropertyGroup>
+
+      <PropertyGroup label="Split Field Transform">
+        <Property name="useSplit" />
+        <Property name="SplitFieldName" />
+        <Property name="SplitFieldX" />
+        <Property name="SplitFieldY" />
+        <Property name="SplitFieldZ" />
+        <Property name="splitFrom" />
+        <Property name="splitTo" />
+
+      </PropertyGroup>
+
+      <Hints>
+        <Visibility replace_input="0" />
+
+      </Hints>
+    </SourceProxy>
+
+</ProxyGroup>
+
+<!-- End SpaceCraftInfo -->
+</ServerManagerConfiguration>

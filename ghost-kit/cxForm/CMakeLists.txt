@@ -2,13 +2,12 @@ project(cxformFilter)
 cmake_minimum_required(VERSION 2.8.9 FATAL_ERROR)
 
 if(NOT PREFIX)
- set(PREFIX /Volumes/Data/Development/GHOST-Kit/build/install/)
+ set(PREFIX "/home/ubuntu/Developer/ghost-kit/build-401/install")
 endif()
 
-if( PREFIX )
-  set( CMAKE_INCLUDE_PATH /usr/include ${PREFIX}/include ${CMAKE_INCLUDE_PATH} )
-  set( CMAKE_LIBRARY_PATH /usr/lib ${PREFIX}/lib ${CMAKE_LIBRARY_PATH} )
-endif( PREFIX)
+set( CMAKE_INCLUDE_PATH /usr/include ${PREFIX}/include ${CMAKE_INCLUDE_PATH} )
+set( CMAKE_LIBRARY_PATH /usr/lib ${PREFIX}/lib ${CMAKE_LIBRARY_PATH} )
+set( ParaView_DIR ${PREFIX}/../paraview/src/paraview-build)
 
 #Configure needed librarires
 set(LIBS ${PREFIX}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}ltrDateTime${CMAKE_STATIC_LIBRARY_SUFFIX}
@@ -30,6 +29,7 @@ INCLUDE_DIRECTORIES(src)
 
 include(GKcxFormFiles.cmake)
 
+set(XML_FILES xml/gk_cxform.xml xml/gk_cxFormField.xml)
 
 
 #plugin (Filter for CDAweb)
@@ -37,13 +37,11 @@ ADD_PARAVIEW_PLUGIN(GK_CXFORM  "1.0.0.beta1"
                     SERVER_MANAGER_XML      ${GKcxForm_SM_XML}
                     GUI_INTERFACES          ${GKcxForm_PROP_IFACES}
                     SERVER_MANAGER_SOURCES  ${GKcxForm_SM_SRC}
-                    SOURCES #${GKcxForm_SRC}
+                    SOURCES ${GKcxForm_SRC} ${XML_FILES}
                 )
 
 
 target_link_libraries(GK_CXFORM ${LIBS})
-
-
 
 
 add_custom_target(dist

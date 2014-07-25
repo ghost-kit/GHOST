@@ -161,6 +161,9 @@ ScInfoPropWidget::ScInfoPropWidget(vtkSMProxy *smproxy, vtkSMProperty *smpropert
     this->smProperty = smproperty;
     this->smProxy = smproxy;
 
+    //dont show label
+    this->setShowLabel(false);
+
     //make save state selection properties available
     this->SaveStateGroup       = vtkSMStringVectorProperty::SafeDownCast(this->smProxy->GetProperty("Group"));
     this->SaveStateObservatory = vtkSMStringVectorProperty::SafeDownCast(this->smProxy->GetProperty("Observatory"));
@@ -288,6 +291,8 @@ ScInfoPropWidget::ScInfoPropWidget(vtkSMProxy *smproxy, vtkSMProperty *smpropert
     {
         this->restoreGUIinit();
     }
+
+
 
 }
 
@@ -501,6 +506,8 @@ void ScInfoPropWidget::apply()
 void ScInfoPropWidget::reset()
 {
 //    this->restoreGUIinit();
+
+    Superclass::reset();
 }
 
 //==================================================================

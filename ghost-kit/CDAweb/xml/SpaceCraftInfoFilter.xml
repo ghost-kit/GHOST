@@ -1,7 +1,10 @@
 <ServerManagerConfiguration>
 <!-- Begin SpaceCraftInfo -->
     <ProxyGroup name="filters">
-    <SourceProxy name="GK CDAweb Alignment" class="vtkSpaceCraftInfoFilter">
+    <SourceProxy
+        label="GK CDAweb Alignment"
+        name="GKCDAwebAlignment"
+        class="vtkSpaceCraftInfoFilter">
 
        <InputProperty name="Input" command="SetInputConnection">
           <ProxyGroupDomain name="groups">

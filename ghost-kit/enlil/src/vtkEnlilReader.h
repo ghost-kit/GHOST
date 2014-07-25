@@ -12,6 +12,8 @@
 #include<vector>
 #include<QString>
 
+#include "enlilControlFile.h"
+
 
 class vtkDataArraySelection;
 class vtkCallbackCommand;
@@ -55,7 +57,8 @@ enum dataType{
     TEMP = 2,
     POLARITY = 3,
     BFIELD = 4,
-    VELOCITY = 5
+    VELOCITY = 5,
+    RVELOCITY = 6
 };
 
 
@@ -106,6 +109,8 @@ public:
     vtkSetVector6Macro(SubExtent, int)
     vtkGetVector6Macro(SubExtent, int)
 
+    void setUseControlFile(int status);
+
     // Description:
     // The following methods allow selective reading of solutions fields.
     int GetNumberOfPointArrays();
@@ -137,6 +142,7 @@ public:
     void readVector(std::string array, vtkFloatArray *DataArray, vtkInformationVector* outputVector, const int &dataID);
     void readScalar(vtkStructuredGrid *Data, vtkFloatArray *DataArray, std::string array, vtkInformationVector* outputVector, int dataID);
     void getDataID(std::string array, int &dataID);
+    void updateControlFile(int status);
 protected:
 
     vtkEnlilReader();
@@ -147,6 +153,12 @@ protected:
     int DataUnits;
     bool gridClean;
     int numberOfArrays;
+    int useControlFile;
+
+    //control file
+    enlilControlFile *controlFile;
+    QString controlFileName;
+    int findControlFile();
 
     // Extent information
     vtkIdType NumberOfTuples;  // Number of tuples in subextent
@@ -281,6 +293,7 @@ private:
     RCache::ReaderCache polarityCache;
     RCache::ReaderCache bFieldCache;
     RCache::ReaderCache velocityCache;
+    RCache::ReaderCache rVelocityCache;
 
     void cleanCache();
 

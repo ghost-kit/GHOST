@@ -32,6 +32,7 @@
 #include <string>
 #include <sstream>
 #include <iostream>
+#include <fstream>
 
 #include "vtkMultiProcessController.h"
 #include "vtkToolkits.h"
@@ -92,6 +93,7 @@ vtkEnlilReader::vtkEnlilReader()
     this->PointDataArraySelection->AddObserver(vtkCommand::ModifiedEvent, this->SelectionObserver);
     this->CellDataArraySelection->AddObserver(vtkCommand::ModifiedEvent, this->SelectionObserver);
 
+    this->controlFile = NULL;
 
 }
 
@@ -102,7 +104,42 @@ vtkEnlilReader::~vtkEnlilReader()
     this->CellDataArraySelection->Delete();
     this->SelectionObserver->Delete();
 
+    if(this->controlFile)
+    {
+        delete this->controlFile;
+    }
+}
 
+int vtkEnlilReader::findControlFile()
+{
+    //TODO: find the control file in the current file directory.
+    //  if cannot find it, deactivate useControlFile and throw
+    //  A vtkErrorMacro()
+
+    //Look in current directory for control file with the name of "control_file"
+    QStringList directory = QString(this->CurrentFileName).split("/");
+    directory[directory.size()-1] = QString("control_file");
+
+    QString CFPath = directory.join("/");
+
+    //check existence
+    std::ifstream file(CFPath.toAscii().data());
+    if (file.good())
+    {
+
+        file.close();
+        this->controlFileName.clear();
+        this->controlFileName = CFPath;
+
+        return true;
+    }
+
+    std::cerr << "File Not Found " << std::endl;
+
+    file.close();
+    this->controlFileName.clear();
+
+    return false;
 }
 
 //---------------------------------------------------------------------------------------------
@@ -230,8 +267,6 @@ void vtkEnlilReader::DisableAllPointArrays()
 {
     this->PointDataArraySelection->DisableAllArrays();
 
-    std::cout << __FUNCTION__ << " Called " << std::endl;
-
     this->Modified();
 }
 
@@ -243,9 +278,6 @@ void vtkEnlilReader::DisableAllPointArrays()
 void vtkEnlilReader::DisableAllCellArrays()
 {
     this->CellDataArraySelection->DisableAllArrays();
-
-    std::cout << __FUNCTION__ << " Called " << std::endl;
-
 
     this->Modified();
 }
@@ -259,9 +291,6 @@ void vtkEnlilReader::EnableAllPointArrays()
 {
     this->PointDataArraySelection->EnableAllArrays();
 
-    std::cout << __FUNCTION__ << " Called " << std::endl;
-
-
     this->Modified();
 }
 
@@ -273,9 +302,6 @@ void vtkEnlilReader::EnableAllPointArrays()
 void vtkEnlilReader::EnableAllCellArrays()
 {
     this->CellDataArraySelection->EnableAllArrays();
-
-    std::cout << __FUNCTION__ << " Called " << std::endl;
-
     this->Modified();
 }
 //=============== END SELECTIVE READER METHODS================
@@ -318,7 +344,6 @@ int vtkEnlilReader::RequestInformation(
     this->CurrentFileName = (char*) this->fileNames[0].c_str();
     this->FileName = CurrentFileName;
 
-    std::cerr << "GetINFO filename processing: " << this->FileName << std::endl;
     if(status)
     {
         //Work Around for restore state problems
@@ -476,11 +501,11 @@ const char* vtkEnlilReader::GetFileName(unsigned int idx)
 
 void vtkEnlilReader::RemoveAllFileNames()
 {
-    //    std::cerr << "Cleared all File Names" << std::endl;
     this->fileNames.clear();
     this->numberOfArrays = 0;
     this->timesCalulated = false;
     this->NumberOfTimeSteps = 0;
+    this->TimeSteps.clear();
     this->gridClean = false;
 
     this->FileName = NULL;
@@ -783,6 +808,10 @@ void vtkEnlilReader::getDataID(std::string array, int &dataID)
     {
         dataID = DATA_TYPE::TEMP;
     }
+    else if(arrayName.contains("Radial"))
+    {
+        dataID = DATA_TYPE::RVELOCITY;
+    }
     else if(arrayName.contains("Velocity"))
     {
         dataID = DATA_TYPE::VELOCITY;
@@ -1058,6 +1087,34 @@ int vtkEnlilReader::LoadArrayValues(std::string array, vtkInformationVector* out
 
                 //get the data array from the cache system
                 DataArray = vtkFloatArray::SafeDownCast(this->temperatureCache.getExtentsFromCache(this->current_MJD, subExtents)->data);
+
+            }
+            break;
+
+        case DATA_TYPE::RVELOCITY:
+            if(this->rVelocityCache.getExtentsFromCache(this->current_MJD, subExtents) == NULL)
+            {
+                //                std::cout << "TEMPURATURE" << std::endl;
+
+                DataArray = vtkFloatArray::New();
+                DataArray->SetName(array.c_str());
+                readScalar(Data, DataArray, array, outputVector, dataID);
+
+                if(subExtents < wholeExtents)
+                {
+                    //add the element to the cache
+                    //lets not use the cache yet.. not ready for prime time
+                    //TODO: finish cache system
+
+                    //this->rVelocityCache.addCacheElement(this->current_MJD, subExtents, DataArray);
+
+                }
+
+            }
+            else
+            {
+                //get the data array from the cache system
+                DataArray = vtkFloatArray::SafeDownCast(this->rVelocityCache.getExtentsFromCache(this->current_MJD, subExtents)->data);
 
             }
             break;
@@ -1481,6 +1538,7 @@ int vtkEnlilReader::PopulateArrays()
     this->addPointArray((char*)"D");
     this->addPointArray((char*)"DP");
     this->addPointArray((char*)"T");
+    this->addPointArray((char*)"V1");
     this->addPointArray((char*)"BP");
     this->addPointArray((char*)"B1", (char*)"B2", (char*)"B3");
     this->addPointArray((char*)"V1", (char*)"V2", (char*)"V3");
@@ -1548,6 +1606,109 @@ int vtkEnlilReader::LoadMetaData(vtkInformationVector *outputVector)
         else
         {
             std::cerr << "Cannot Parse Directory" << std::endl;
+        }
+
+        //control file
+        if(this->useControlFile)
+        {
+            //update control file
+            this->updateControlFile(true);
+
+            //path
+            vtkNew<vtkStringArray> controlFilePath;
+            controlFilePath->SetName("Control File Path");
+            controlFilePath->SetNumberOfComponents(1);
+            controlFilePath->InsertNextValue(this->controlFileName.toAscii().data());
+            Data->GetFieldData()->AddArray(controlFilePath.GetPointer());
+
+            //grid size
+            vtkNew<vtkIntArray> CFgrid;
+            CFgrid->SetName("Grid Dimensions (CF)");
+            CFgrid->SetNumberOfComponents(3);
+            CFgrid->InsertNextTuple3(this->controlFile->getGrid(0), this->controlFile->getGrid(1), this->controlFile->getGrid(2));
+            Data->GetFieldData()->AddArray(CFgrid.GetPointer());
+
+            //Fast Solar Wind Parameters
+            vtkNew<vtkDoubleArray> dFast;
+            dFast->SetName("FSW Density (CF)");
+            dFast->SetNumberOfComponents(1);
+            dFast->InsertNextValue(this->controlFile->getDFast());
+            Data->GetFieldData()->AddArray(dFast.GetPointer());
+
+            vtkNew<vtkDoubleArray> tFast;
+            tFast->SetName("FSW Temperature (CF)");
+            tFast->SetNumberOfComponents(1);
+            tFast->InsertNextValue(this->controlFile->getTFast());
+            Data->GetFieldData()->AddArray(tFast.GetPointer());
+
+            vtkNew<vtkDoubleArray> vFast;
+            vFast->SetName("FSW Velocity (CF)");
+            vFast->SetNumberOfComponents(1);
+            vFast->InsertNextValue(this->controlFile->getVFast());
+            Data->GetFieldData()->AddArray(vFast.GetPointer());
+
+
+            //Number of CMEs
+            vtkNew<vtkIntArray> nCME;
+            nCME->SetName("Number of CMEs");
+            nCME->SetNumberOfComponents(1);
+            nCME->InsertNextValue(this->controlFile->getNCME());
+            Data->GetFieldData()->AddArray(nCME.GetPointer());
+
+            //CME information
+            for(int x = 0; x < this->controlFile->getNCME(); x++)
+            {
+                //create arrays
+                vtkNew<vtkDoubleArray> coneAngle;
+                vtkNew<vtkDoubleArray> cloudVel;
+                vtkNew<vtkDoubleArray> cloudLat;
+                vtkNew<vtkDoubleArray> cloudLon;
+                vtkNew<vtkDoubleArray> cloudStartMJD;
+                vtkNew<vtkStringArray> cloudStartString;
+
+                //build names
+                QString cmeName = QString("CME ") + QString::number(x);
+                QString CAname = cmeName + QString(" cone angle");
+                QString CVname = cmeName + QString(" Velocity");
+                QString CLatName = cmeName + QString(" Lat");
+                QString CLonName = cmeName + QString(" Lon");
+                QString CSmjdName = cmeName + QString(" Start Time (MJD)");
+                QString CSstringName = cmeName + QString(" Start Time (string)");
+
+                //assign names
+                coneAngle->SetName(CAname.toAscii().data());
+                cloudVel->SetName(CVname.toAscii().data());
+                cloudLat->SetName(CLatName.toAscii().data());
+                cloudLon->SetName(CLonName.toAscii().data());
+                cloudStartMJD->SetName(CSmjdName.toAscii().data());
+                cloudStartString->SetName(CSstringName.toAscii().data());
+
+                //set number of components
+                coneAngle->SetNumberOfComponents(1);
+                cloudVel->SetNumberOfComponents(1);
+                cloudLat->SetNumberOfComponents(1);
+                cloudLon->SetNumberOfComponents(1);
+                cloudStartMJD->SetNumberOfComponents(1);
+                cloudStartString->SetNumberOfComponents(1);
+
+                //populate the arrays
+                coneAngle->InsertNextValue(this->controlFile->getCmeRCloud(x));
+                cloudVel->InsertNextValue(this->controlFile->getCmeVelCloud(x));
+                cloudLat->InsertNextValue(this->controlFile->getCmeLatCloud(x));
+                cloudLon->InsertNextValue(this->controlFile->getCmeLonCloud(x));
+                cloudStartMJD->InsertNextValue(this->controlFile->getCmeDateCloud(x).getMJD());
+                cloudStartString->InsertNextValue(this->controlFile->getCmeDateCloud(x).getDateTimeString().c_str());
+
+                //Add to Paraview
+                Data->GetFieldData()->AddArray(coneAngle.GetPointer());
+                Data->GetFieldData()->AddArray(cloudVel.GetPointer());
+                Data->GetFieldData()->AddArray(cloudLat.GetPointer());
+                Data->GetFieldData()->AddArray(cloudLon.GetPointer());
+                Data->GetFieldData()->AddArray(cloudStartMJD.GetPointer());
+                Data->GetFieldData()->AddArray(cloudStartString.GetPointer());
+
+
+            }
         }
 
 
@@ -1659,42 +1820,6 @@ int vtkEnlilReader::checkStatus(void *Object, char *name)
     return 1;
 }
 
-//---------------------------------------------------------------------------------------------
-//this function calculates the positions of artifacts in the system
-//void vtkEnlilReader::calculateArtifacts()
-//{
-//    DateTime time;
-
-//    int retError;
-//    int es;
-
-//    double jd;
-//    Vec pos_in, pos_out;
-
-//    pos_in[0] = -1;
-//    pos_in[1] = 0;
-//    pos_in[2] = 0;
-
-//    //lets calculate all positions, just once (TODO: check we do this only once)
-//    for(int x=0; x < this->NumberOfTimeSteps; x++)
-//    {
-//        time.setMJD(this->TimeSteps[x]);
-//        jd = gregorian_calendar_to_jd(time.getYear(),
-//                                      time.getMonth(),
-//                                      time.getDay(),
-//                                      time.getHour(),
-//                                      time.getMinute(),
-//                                      time.getSecond());
-
-//        es = date2es(time.getYear(),
-//                     time.getMonth(),
-//                     time.getDay(),
-//                     time.getHour(),
-//                     time.getMinute(),
-//                     time.getSecond());
-
-//    }
-//}
 
 //---------------------------------------------------------------------------------------------
 //-- Return 0 for failure, 1 for success --//
@@ -1716,8 +1841,8 @@ int vtkEnlilReader::calculateTimeSteps()
         //calculate number of time steps
         //  This is easy, as there is one time step per file.
         this->NumberOfTimeSteps = this->fileNames.size();
-
-        //        std::cout << "Number of Time Steps: " << this->NumberOfTimeSteps << std::endl;
+        this->TimeSteps.clear();
+        this->time2fileMap.clear();
 
         //the hard part... open all of the files, map them to their calculated times
 
@@ -1745,7 +1870,6 @@ int vtkEnlilReader::calculateTimeSteps()
             //populate datestring map
             this->time2datestringMap[this->TimeSteps[x]].assign(refDate.getDateTimeString());
 
-            //            std::cout << "[" << x << "] MJD: " << this->TimeSteps[x] << std::endl;
         }
 
         //calculate time range
@@ -1871,8 +1995,17 @@ void vtkEnlilReader::addPointArray(char* name)
     NcFile file(this->FileName);
     try
     {
+
         // look up the "Long Name" of the variable
         std::string varname = file.get_var(name)->get_att("long_name")->as_string(0);
+
+        //Radial Veclocity Hack
+        if(varname == "X1-velocity")
+        {
+            varname = std::string("Radial Velocity");
+        }
+
+        //map the variable
         this->ScalarVariableMap[varname] = std::string(name);
 
         // Add it to the point grid
@@ -1880,6 +2013,7 @@ void vtkEnlilReader::addPointArray(char* name)
         {
             this->PointDataArraySelection->AddArray(varname.c_str());
         }
+
     }
     catch (...)
     {
@@ -2026,8 +2160,6 @@ int vtkEnlilReader::GenerateGrid()
 void vtkEnlilReader::cleanCache()
 {
 
-    std::cout << "Cleaning Cache..." << std::endl;
-
     this->pDensityCache.cleanCache();
     this->cDensityCache.cleanCache();
     this->polarityCache.cleanCache();
@@ -2066,4 +2198,48 @@ int vtkEnlilReader::FillOutputPortInformation(int port, vtkInformation* info)
 void vtkEnlilReader::PrintSelf(ostream &os, vtkIndent indent)
 {
     this->Superclass::PrintSelf(os, indent);
+}
+
+void vtkEnlilReader::updateControlFile(int status)
+{
+    if(status)
+    {
+        if(this->findControlFile())
+        {
+            //control file found
+            if(this->controlFile) delete this->controlFile;
+            this->controlFile = new enlilControlFile(this->controlFileName.toAscii().data());
+            this->useControlFile = 1;
+        }
+        else
+        {
+            std::cerr << "Control file NOT located" << std::endl;
+            //control file not found
+            if(this->controlFile) delete this->controlFile;
+            this->controlFile = NULL;
+            this->controlFileName.clear();
+            this->useControlFile = 0;
+        }
+
+    }
+    else
+    {
+        //remove control file
+        if(this->controlFile) delete this->controlFile;
+        this->controlFile = NULL;
+        this->controlFileName.clear();
+        this->useControlFile = 0;
+    }
+}
+
+void vtkEnlilReader::setUseControlFile(int status)
+{
+    this->useControlFile = status;
+    if(!status)
+    {
+        //this will deactivate the control file
+        this->updateControlFile(false);
+    }
+
+    this->Modified();
 }

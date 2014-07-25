@@ -1,0 +1,54 @@
+<ServerManagerConfiguration>
+    <ProxyGroup name="sources">
+    <SourceProxy
+        label="GK Plot Source"
+        name="GKPlotSource"
+        class="gkPlotSource">
+
+
+           <StringVectorProperty  name="setGridExtents"
+                                  command="setGridExtents"
+                                  panel_widget="GKStringBox"
+                                  default_values="-10,10,-5,5,0,0"
+                                  number_of_elements="1"
+                                  number_of_elements_per_command="1"
+                                  panel_visibility="never">
+
+                <Documentation>
+                    To clear and reset the grid, use this property.
+                </Documentation>
+
+            </StringVectorProperty>
+
+
+           <StringVectorProperty  name="setGridPoint"
+                                  label="Set Grid Point"
+                                  command="setGridPoint"
+                                  panel_widget="GKStringBox"
+                                  default_values=""
+                                  number_of_elements="1"
+                                  number_of_elements_per_command="1">
+
+                <Documentation>
+                    Use this property to cange the value of a point
+                </Documentation>
+
+            </StringVectorProperty>
+
+           <StringVectorProperty  name="setGridRange"
+                                  command="setGridRange"
+                                  panel_widget="GKStringBox"
+                                  default_values="-1800,1800"
+                                  number_of_elements="1"
+                                  number_of_elements_per_command="1"
+                                  panel_visibility="never">
+
+                <Documentation>
+                    To clear and reset the grid, use this property.
+                </Documentation>
+
+            </StringVectorProperty>
+
+    </SourceProxy>
+    </ProxyGroup>
+</ServerManagerConfiguration>

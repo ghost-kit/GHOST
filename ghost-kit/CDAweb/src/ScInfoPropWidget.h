@@ -26,6 +26,10 @@
 #include <vtkStringList.h>
 #include <vtkNew.h>
 
+namespace Ui {
+class ScInfoPropWidget;
+}
+
 class DataSetInfo {
 public:
     QString Name;
@@ -37,9 +41,6 @@ public:
     DateTime EndTime;
 };
 
-namespace Ui {
-class ScInfoPropWidget;
-}
 
 class ScInfoPropWidget : public pqPropertyWidget
 {

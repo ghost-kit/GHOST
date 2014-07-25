@@ -1,89 +1,91 @@
 <!-- Ghost Kit CXform Module -->
 <ServerManagerConfiguration>
 <!-- Begin SpaceCraftInfo -->
-    <ProxyGroup name="filters">
-    <SourceProxy name="GK Transform" class="gk_cxform">
+<ProxyGroup name="filters">
+<SourceProxy
+    label="GK Transform"
+    name="GKTransform"
+    class="gk_cxform">
 
-       <InputProperty name="Input" command="SetInputConnection">
-          <ProxyGroupDomain name="groups">
+    <InputProperty name="Input" command="SetInputConnection">
+
+       <ProxyGroupDomain name="groups">
             <Group name="sources"/>
             <Group name="filters"/>
-          </ProxyGroupDomain>
-          <DataTypeDomain name="input_type">
+       </ProxyGroupDomain>
+
+       <DataTypeDomain name="input_type">
             <DataType value="vtkDataSet"/>
-<!--            <DataType value="vtkUnstructuredGrid"/>-->
-          </DataTypeDomain>
+            <DataType value="vtkUnstructuredGrid"/>
+       </DataTypeDomain>
 
-          <InputArrayDomain name="input_array" attribute_type="point"
-                            number_of_components="1" optional="0"/>
+       <InputArrayDomain name="input_array" attribute_type="point"
+          number_of_components="1" optional="0"/>
 
-       </InputProperty>
+    </InputProperty>
 
+    <IntVectorProperty name="SourceCoord"
+       label="Source Coordinate System"
+       command="SetSourceSystem"
+       number_of_elements="1"
+       default_values="12"
+       panel_visibility="default">
 
-            <IntVectorProperty name="SourceCoord"
-                                label="Source Coordinate System"
-                                command="SetSourceSystem"
-                                number_of_elements="1"
-                                default_values="12"
-                                panel_visibility="default">
+          <EnumerationDomain name="enum">
+                <Entry value="1" text="J2000"       />
+                <Entry value="2" text="GEI"         />
+                <Entry value="3" text="GEO"         />
+                <Entry value="4" text="MAG"         />
+                <Entry value="5" text="GSE"         />
+                <Entry value="6" text="GSM"         />
+                <Entry value="7" text="SM"          />
+                <Entry value="8" text="RTN"         />
+                <Entry value="9" text="GSEQ"        />
+                <Entry value="10" text="HEE"        />
+                <Entry value="11" text="HAE"        />
+                <Entry value="12" text="HEEQ"       />
+                <Entry value="13" text="HEEQ+180"   />
+          </EnumerationDomain>
 
-                <EnumerationDomain name="enum">
-                    <Entry value="1" text="J2000"/>
-                    <Entry value="2" text="GEI"/>
-                    <Entry value="3" text="GEO"/>
-                    <Entry value="4" text="MAG"/>
-                    <Entry value="5" text="GSE"/>
-                    <Entry value="6" text="GSM"/>
-                    <Entry value="7" text="SM"/>
-                    <Entry value="8" text="RTN"/>
-                    <Entry value="9" text="GSEQ"/>
-                    <Entry value="10" text="HEE"/>
-                    <Entry value="11" text="HAE"/>
-                    <Entry value="12" text="HEEQ"/>
-                    <Entry value="13" text="HEEQ + 180 (Enlil)"/>
+          <Documentation>
 
-                </EnumerationDomain>
+          </Documentation>
 
-                <Documentation>
+    </IntVectorProperty>
 
-                </Documentation>
+    <IntVectorProperty name="DestCoord"
+            label="Destination Coordinate System"
+            command="SetDestSystem"
+            number_of_elements="1"
+            default_values="6"
+            panel_visibility="default">
 
-            </IntVectorProperty>
+           <EnumerationDomain name="enum">
+                <Entry value="1" text="J2000"       />
+                <Entry value="2" text="GEI"         />
+                <Entry value="3" text="GEO"         />
+                <Entry value="4" text="MAG"         />
+                <Entry value="5" text="GSE"         />
+                <Entry value="6" text="GSM"         />
+                <Entry value="7" text="SM"          />
+                <Entry value="8" text="RTN"         />
+                <Entry value="9" text="GSEQ"        />
+                <Entry value="10" text="HEE"        />
+                <Entry value="11" text="HAE"        />
+                <Entry value="12" text="HEEQ"       />
+                <Entry value="13" text="HEEQ+180"   />
 
-            <IntVectorProperty name="DestCoord"
-                                label="Destination Coordinate System"
-                                command="SetDestSystem"
-                                number_of_elements="1"
-                                default_values="6"
-                                panel_visibility="default">
+          </EnumerationDomain>
 
-                <EnumerationDomain name="enum">
-                <Entry value="1" text="J2000"/>
-                <Entry value="2" text="GEI"/>
-                <Entry value="3" text="GEO"/>
-                <Entry value="4" text="MAG"/>
-                <Entry value="5" text="GSE"/>
-                <Entry value="6" text="GSM"/>
-                <Entry value="7" text="SM"/>
-                <Entry value="8" text="RTN"/>
-                <Entry value="9" text="GSEQ"/>
-                <Entry value="10" text="HEE"/>
-                <Entry value="11" text="HAE"/>
-                <Entry value="12" text="HEEQ"/>
-                <Entry value="13" text="HEEQ + 180 (Enlil)"/>
+          <Documentation>
 
-                </EnumerationDomain>
+          </Documentation>
 
-                <Documentation>
-
-                </Documentation>
-
-            </IntVectorProperty>
+    </IntVectorProperty>
 
 
-    </SourceProxy>
-    </ProxyGroup>
-    <!-- End SpaceCraftInfo -->
+</SourceProxy>
+</ProxyGroup>
 
-
+<!-- End SpaceCraftInfo -->
 </ServerManagerConfiguration>
