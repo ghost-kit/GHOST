@@ -5,7 +5,7 @@
 #include "vtkTableAlgorithm.h"
 #include "vtkMultiBlockDataSetAlgorithm.h"
 
-class  VTKFILTERSEXTRACTION_EXPORT vtkSpaceCraftInfoSource : public vtkMultiBlockDataSetAlgorithm
+class vtkSpaceCraftInfoSource : public vtkMultiBlockDataSetAlgorithm
 {
 public:
     static vtkSpaceCraftInfoSource *New();

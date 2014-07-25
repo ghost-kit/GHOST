@@ -1,7 +1,10 @@
 <ServerManagerConfiguration>
 <!-- Begin SpaceCraftInfo -->
     <ProxyGroup name="sources">
-    <SourceProxy name="GK CDAweb Source" class="vtkSpaceCraftInfoSource">
+    <SourceProxy
+        label="GK CDAweb Source"
+        name="GKCDAwebSource"
+        class="vtkSpaceCraftInfoSource">
 
             <StringVectorProperty name="Temp File Path"
                                   command="setTempPath"

@@ -136,7 +136,7 @@ int vtkLFMReader::RequestInformation (vtkInformation* request,
                                       vtkInformationVector* outputVector)
 { 
     Io *io = Io::extensionSelector("hdf");
-    io->openRead(this->GetFileName());
+    io->openRead(this->GetActiveFileName());
 
     list<string> variables = io->getVariableNames();
     list<string> attributes = io->getAttributeNames();
@@ -452,7 +452,7 @@ int vtkLFMReader::RequestData(vtkInformation* request,
 
 
     Io *io = Io::extensionSelector("hdf");
-    io->openRead(string( this->GetFileName() ));
+    io->openRead(string( this->GetActiveFileName() ));
     array_info_t lfmGridInfo = io->getArrayInfo("X_grid");
 
     const int nPoints = lfmGridInfo.globalDims[0] * lfmGridInfo.globalDims[1] * lfmGridInfo.globalDims[2];

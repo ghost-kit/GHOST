@@ -12,7 +12,7 @@ RCache::ReaderCache::~ReaderCache()
 {
     if(this->cache.size() > 0)
     {
-        std::cout << __FUNCTION__ << " Reader Cache Destructor... "  << std::flush << std::endl;
+//        std::cout << __FUNCTION__ << " Reader Cache Destructor... "  << std::flush << std::endl;
         this->cleanCache();
     }
 }
@@ -31,21 +31,21 @@ void RCache::ReaderCache::addCacheElement( double time,  RCache::extents xtents,
 {
     //if the time doesn't exist, we are going to add it anyway, so lets just do it.
 
-    std::cout << __FUNCTION__ << std::endl;
+//    std::cout << __FUNCTION__ << std::endl;
 
     //create the element if time not available
     if(!this->cache.contains(time))
     {
-        std::cout << "Adding Time Level... " << std::endl;
+//        std::cout << "Adding Time Level... " << std::endl;
         addTimeLevel(time);
     }
 
     //add the element
-    std::cout << "Reference Count Prior to add: " << array->GetReferenceCount() << std::endl;
+//    std::cout << "Reference Count Prior to add: " << array->GetReferenceCount() << std::endl;
     cacheMap* currentMap = &this->cache[time];
     currentMap->addCacheElement(xtents, array);
-    std::cout << "Reference Count After Add: " << array->GetReferenceCount() << std::endl;
-    std::cout << "Map Size: " << currentMap->getNumberElments() << std::endl;
+//    std::cout << "Reference Count After Add: " << array->GetReferenceCount() << std::endl;
+//    std::cout << "Map Size: " << currentMap->getNumberElments() << std::endl;
 
 }
 
@@ -82,7 +82,7 @@ void RCache::ReaderCache::cleanCache()
     //kill the cache map
     if(this->cache.size() > 0)
     {
-        std::cout << __FUNCTION__ << " Killing Entire Map... " <<  std::flush << std::endl;
+//        std::cout << __FUNCTION__ << " Killing Entire Map... " <<  std::flush << std::endl;
         this->cache.clear();
     }
 }
@@ -383,7 +383,7 @@ void RCache::cacheMap::addCacheElement(RCache::extents xtents, vtkAbstractArray 
     {
         if(this->cacheStack[index].xtents == xtents)
         {
-            std::cout << "Found Existing Element ... promoting" << std::endl;
+//            std::cout << "Found Existing Element ... promoting" << std::endl;
 
             //delete from current position and place on top of stack
             //this->cacheStack.move(index, 0);
@@ -393,7 +393,7 @@ void RCache::cacheMap::addCacheElement(RCache::extents xtents, vtkAbstractArray 
     }
 
 
-    std::cout << "ADDING NEW ELEMENT" << std::endl;
+//    std::cout << "ADDING NEW ELEMENT" << std::endl;
     RCache::cacheElement newElement;
     newElement.xtents = xtents;
     newElement.data = data;
@@ -415,11 +415,11 @@ RCache::cacheElement *RCache::cacheMap::getCacheElement(RCache::extents xtents)
         tempEl = &*iter;
         if(tempEl->xtents == xtents)
         {
-            std::cout << "Element Found ... Returning" << std::endl;
+//            std::cout << "Element Found ... Returning" << std::endl;
             return tempEl;
         }
     }
-    std::cout << "Element NOT found" << std::endl;
+//    std::cout << "Element NOT found" << std::endl;
 
     return NULL;
 }
@@ -481,7 +481,7 @@ void RCache::cacheMap::clearCacheMap()
 {
     // since we are using vtkSmartPointer and we don't have to do much for
     // cleanup, except the following:
-    std::cout <<  __FUNCTION__ << " Clearing Cache... " << std::flush << std::endl;
+//    std::cout <<  __FUNCTION__ << " Clearing Cache... " << std::flush << std::endl;
     this->cacheStack.clear();
 
 }

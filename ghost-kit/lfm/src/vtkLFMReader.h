@@ -70,7 +70,7 @@ public:
 
 
 
-  virtual char *GetFileName() { return this->GetHdfFileName(); }
+  virtual char *GetActiveFileName() { return this->GetHdfFileName(); }
 
   /// SetGridScaleType must match property in vtkLFMReader.xml
   vtkSetMacro(GridScaleType, int);

@@ -8,6 +8,15 @@ if(TMLMP8)
     set(PV_SUPERBUILD_LIST_DIR "/Users/developer/Developer/GK/GHOST")
 endif()
 
+
+if(HAL)
+    set(PREFIX "/home/jjm390/Developer/gkbuild/install")
+    set(ParaView_DIR "${PREFIX}/../paraview/src/paraview-build")
+    set(CMAKE_INSTALL_PREFIX "/home/jjm390/Developer/gkbuild/install")
+    set(PV_SUPERBUILD_LIST_DIR "/home/jjm390/Developer/GHOST")
+endif()
+
+
 if( PREFIX )
   set( CMAKE_INCLUDE_PATH /usr/include ${PREFIX}/include ${CMAKE_INCLUDE_PATH} )
   set( CMAKE_LIBRARY_PATH /usr/lib ${PREFIX}/lib ${CMAKE_LIBRARY_PATH} )
@@ -23,6 +32,7 @@ ADD_PARAVIEW_PLUGIN(LFMreader   "1.0.1"
         SERVER_MANAGER_XML      ${LFM_SM_XML}
         SERVER_MANAGER_SOURCES  ${LFM_SM_SRC}
         GUI_RESOURCE_FILES      ${LFM_GUI_XML}
+        SOURCES                 ${LFM_SM_XML} ${LFM_GUI_XML}
     )
 
 Target_LINK_LIBRARIES(LFMreader

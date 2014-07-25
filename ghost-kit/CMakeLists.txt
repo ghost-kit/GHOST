@@ -14,6 +14,9 @@ option(GHOST_BUILD_LFM "Build the ParaView LFM Reader" ON)
 option(GHOST_BUILD_ENLIL "Build the ParaView ENLIL Reader" ON)
 option(GHOST_BUILD_CDAWEB "Build the ParaView CDAweb Tool Kit" ON)
 option(GHOST_BUILD_CXFORM "Build the cxForm Tranform Filter" ON)
+option(GHOST_BUILD_PLOTS "Build the Plots Source" ON)
+option(GHOST_BUILD_SWFT "Build SwFT Panels" OFF)
+
 option(GHOST_MASTER_BUILD "Plugin Being being built as Master Build (DO NOT SET MANUALLY)" OFF)
 
 #Set Output Direcotries
@@ -126,7 +129,19 @@ if(GHOST_BUILD_CXFORM)
     message(STATUS "Building CXForm Transform Module")
 
     #Need CDAweb
-    include(cxform/GKcxFormFiles.cmake)
+    include(cxForm/GKcxFormFiles.cmake)
+endif()
+
+#Plots
+if(GHOST_BUILD_PLOTS)
+    message(STATUS "Building Plots Module")
+    include(gkPlot/GKplotSourceFiles.cmake)
+endif()
+
+#SwFT Panels
+if(GHOST_BUILD_SWFT)
+    message(STATUS "Building SwFT Panels")
+    include(SwFT/GKSwFTSourceFiles.cmake)
 endif()
 
 ##gather all built files
@@ -134,35 +149,45 @@ set(SERVER_MAN_XML_LIST ${CDAWebTK_SM_XML}
                         ${ENLIL_SM_XML}
                         ${LFM_SM_XML}
                         ${GKcxForm_SM_XML}
+                        ${GKplotSource_SM_XML}
 
     )
 
-set(GUI_RF_XML_LIST
+set(GUI_RF_XML_LIST     xml/ghost_gui.xml
                         ${ENLIL_GUI_XML}
                         ${LFM_GUI_XML}
     )
 
 set(GUI_INTERFACE_LIST  ${CDAWebTK_PROP_IFACES}
+                        ${GKcxForm_PROP_IFACES}
+                        ${GKplotSource_PROP_IFACES}
+                        ${GK_SWFT_INTERFACES}
     )
 
 set(SERVER_MAN_SRC_LIST ${CDAWebTK_SM_SRC}
                         ${ENLIL_SM_SRC}
                         ${LFM_SM_SRC}
                         ${GKcxForm_SM_SRC}
+                        ${GKplotSource_SM_SRC}
     )
 
 set(ADD_SRC_LIST        ${CDAWebTK_SRC}
                         ${CDAWeb_PROP_SRC}
                         ${ENLIL_SRC}
-
+                        ${GKcxForm_SRC}
+                        ${GKplotSource_SRC}
+                        ${GK_SWFT_SOURCES}
     )
 
+set(GUI_SOURCES_LIST  ${GK_SWFT_GUI_SOURCES}
+    )
 
 ## Add the Plugin Definitions
 ADD_PARAVIEW_PLUGIN(GhostKit                ${GHOST_VERSION_FULL}
                     SERVER_MANAGER_XML      ${SERVER_MAN_XML_LIST}
                     GUI_RESOURCE_FILES      ${GUI_RF_XML_LIST}
                     GUI_INTERFACES          ${GUI_INTERFACE_LIST}
+                    GUI_SOURCES             ${GUI_SOURCES_LIST}
                     SERVER_MANAGER_SOURCES  ${SERVER_MAN_SRC_LIST}
                     SOURCES                 ${ADD_SRC_LIST}
                    )
