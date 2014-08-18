@@ -874,10 +874,10 @@ void vtkSpaceCraftInfoHandler::SetSCIData(const char *startTime, const char *sto
     this->group = QString(group);
     this->observatory = QString(observatory);
 
-    Status statusBar;
-    statusBar.setStatusBarMessage(("Downloading "));
-    statusBar.setWindowTitle("Downloading Data...");
-    statusBar.show();
+//    Status statusBar;
+//    statusBar.setStatusBarMessage(("Downloading "));
+//    statusBar.setWindowTitle("Downloading Data...");
+//    statusBar.show();
 
     int count = 1;
     int totalcount = requestedData.size();
@@ -900,8 +900,8 @@ void vtkSpaceCraftInfoHandler::SetSCIData(const char *startTime, const char *sto
             QStringList::Iterator iter;
             for(iter = DataSets.begin(); iter != DataSets.end(); ++iter)
             {
-                statusBar.setStatus(count/totalSets * 100);
-                statusBar.show();
+//                statusBar.setStatus(count/totalSets * 100);
+//                statusBar.show();
 
                 // split the Instrument request
                 QStringList parts = (*iter).split("~");
@@ -910,9 +910,9 @@ void vtkSpaceCraftInfoHandler::SetSCIData(const char *startTime, const char *sto
                 QString DSet = parts[0];
                 QStringList VarSet;
 
-                statusBar.setStatusBarMessage(("Downloading " + DSet));
-                statusBar.setStatusCount(QString("Gathering Information..."));
-                statusBar.updateAll();
+//                statusBar.setStatusBarMessage(("Downloading " + DSet));
+//                statusBar.setStatusCount(QString("Gathering Information..."));
+//                statusBar.updateAll();
 
                 //get the variables we need to get data on
                 if(parts[1] != "")
@@ -973,8 +973,8 @@ void vtkSpaceCraftInfoHandler::SetSCIData(const char *startTime, const char *sto
                     {
                         filterNetworkObject* currentObject = (*iter);
                         count++;
-                        statusBar.setStatus(count/totalSets * 100);
-                        statusBar.show();
+//                        statusBar.setStatus(count/totalSets * 100);
+//                        statusBar.show();
 
                         if(currentObject->contains("Name"))
                         {
@@ -985,10 +985,10 @@ void vtkSpaceCraftInfoHandler::SetSCIData(const char *startTime, const char *sto
 //                            std::cout << "Size of Map: " << this->urlMap.size() << std::endl;
 
                             //Download the actual files
-                            statusBar.setStatusBarMessage(("Downloading " + DSet));
-                            statusBar.setStatusCount(QString("Getting " + QString::number(this->urlMap[DSet]->operator []("Length").toDouble()/1e6) + " MBs"));
+//                            statusBar.setStatusBarMessage(("Downloading " + DSet));
+//                            statusBar.setStatusCount(QString("Getting " + QString::number(this->urlMap[DSet]->operator []("Length").toDouble()/1e6) + " MBs"));
 
-                            statusBar.show();
+//                            statusBar.show();
 
                             FileDownloader recievedFile(this->urlMap[DSet]->operator []("Name") );
 
@@ -1018,8 +1018,8 @@ void vtkSpaceCraftInfoHandler::SetSCIData(const char *startTime, const char *sto
                 else
                 {
                     count++;
-                    statusBar.setStatus(count/totalSets * 100);
-                    statusBar.show();
+//                    statusBar.setStatus(count/totalSets * 100);
+//                    statusBar.show();
                 }
 
             }
@@ -1029,10 +1029,10 @@ void vtkSpaceCraftInfoHandler::SetSCIData(const char *startTime, const char *sto
     }
 
 
-    statusBar.setStatus(100);
-    statusBar.show();
+//    statusBar.setStatus(100);
+//    statusBar.show();
 
-    statusBar.hide();
+//    statusBar.hide();
 }
 
 //=========================================================================================//
