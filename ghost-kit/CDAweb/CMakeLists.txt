@@ -1,17 +1,20 @@
 PROJECT("CDAWebTK")
 cmake_minimum_required(VERSION 2.8.9 FATAL_ERROR)
 
-if( PREFIX )
-  set( CMAKE_INCLUDE_PATH /usr/include ${PREFIX}/include ${CMAKE_INCLUDE_PATH} )
-  set( CMAKE_LIBRARY_PATH /usr/lib ${PREFIX}/lib ${CMAKE_LIBRARY_PATH} )
-endif( PREFIX )
+if(NOT PREFIX)
+ set(PREFIX "/home/ubuntu/Developer/ghost-kit/build-401/install")
+endif()
+
+set( CMAKE_INCLUDE_PATH /usr/include ${PREFIX}/include ${CMAKE_INCLUDE_PATH} )
+set( CMAKE_LIBRARY_PATH /usr/lib ${PREFIX}/lib ${CMAKE_LIBRARY_PATH} )
+set( ParaView_DIR ${PREFIX}/../paraview/src/paraview-build)
 
 #Configure needed librarires
-set(LIBS ${PREFIX}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}cdf${CMAKE_STATIC_LIBRARY_SUFFIX}
-         ${PREFIX}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}CDFreader${CMAKE_STATIC_LIBRARY_SUFFIX}
-         ${PREFIX}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}boost_date_time${CMAKE_STATIC_LIBRARY_SUFFIX}
-         ${PREFIX}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}ltrDateTime${CMAKE_STATIC_LIBRARY_SUFFIX}
+set(LIBS ${PREFIX}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}ltrDateTime${CMAKE_STATIC_LIBRARY_SUFFIX}
+         ${PREFIX}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}cppForm${CMAKE_STATIC_LIBRARY_SUFFIX}
+
     )
+
 
 if(NOT ParaView_BINARY_DIR)
   find_package(ParaView REQUIRED)
