@@ -41,6 +41,7 @@
 #include <vtknetcdf/cxx/netcdfcpp.h>
 #include <iostream>
 
+#include "enlilEvoFile.h"
 
 #include "ltrDateTime.h"
 #include "readerCache.h"
@@ -94,6 +95,9 @@ vtkEnlilReader::vtkEnlilReader()
     this->CellDataArraySelection->AddObserver(vtkCommand::ModifiedEvent, this->SelectionObserver);
 
     this->controlFile = NULL;
+
+    //testing file evo file reader
+    enlilEvoFile testFile("/ModelData/Enlil/2014/pStudy/Con20-Test/Joshua_Murphy_082814_SH_18/evo.Earth.nc");
 
 }
 
