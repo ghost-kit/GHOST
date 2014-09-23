@@ -42,6 +42,7 @@
 #include <iostream>
 
 #include "enlilEvoFile.h"
+#include "vtkMultiBlockDataSet.h"
 
 #include "ltrDateTime.h"
 #include "readerCache.h"
@@ -60,7 +61,7 @@ vtkEnlilReader::vtkEnlilReader()
     this->FileName = NULL;
 
     //set the number of output ports you will need
-    this->SetNumberOfOutputPorts(1);
+    this->SetNumberOfOutputPorts(2);
 
     //set the number of input ports (Default 0)
     this->SetNumberOfInputPorts(0);
@@ -95,9 +96,12 @@ vtkEnlilReader::vtkEnlilReader()
     this->CellDataArraySelection->AddObserver(vtkCommand::ModifiedEvent, this->SelectionObserver);
 
     this->controlFile = NULL;
+    this->useEvoFiles = false;
+    this->useControlFile = false;
+    this->EvoFilesLoaded = false;
 
     //testing file evo file reader
-    enlilEvoFile testFile("/ModelData/Enlil/2014/pStudy/Con20-Test/Joshua_Murphy_082814_SH_18/evo.Earth.nc");
+    //enlilEvoFile testFile("/ModelData/Enlil/2014/pStudy/Con20-Test/Joshua_Murphy_082814_SH_18/evo.Earth.nc");
 
 }
 
@@ -416,6 +420,11 @@ int vtkEnlilReader::RequestData(
 
     //Import the actual Data
     this->LoadVariableData(outputVector);
+
+    //Import EVO file data
+    this->locateAndLoadEvoFiles();
+    this->processEVOFiles(outputVector);
+
 
     this->SetProgress(1.00);
 
@@ -1906,8 +1915,8 @@ void vtkEnlilReader::PopulateGridData()
     //Populate Extents
     this->setMyExtents(this->WholeExtent,
                        0, this->Dimension[0]-1,
-            0, this->Dimension[1]-1,
-            0, this->Dimension[2]-1);
+                       0, this->Dimension[1]-1,
+                       0, this->Dimension[2]-1);
 
     //done with grid, thus we now close it
     grid.close();
@@ -2172,6 +2181,183 @@ void vtkEnlilReader::cleanCache()
     this->bFieldCache.cleanCache();
 }
 
+void vtkEnlilReader::addEvoFile(const char *FileName, const char *refName)
+{
+
+    this->evoFiles[refName] = new enlilEvoFile(FileName);
+}
+
+void vtkEnlilReader::locateAndLoadEvoFiles()
+{
+
+    QStringList directory = QString(this->CurrentFileName).split("/");
+    directory[directory.size()-1] = QString("evo.");
+    QString evoPath = directory.join("/");
+
+    //find each file
+    QString evoEarth = evoPath + "Earth.nc";
+    QString evoJuno = evoPath + "Juno.nc";
+    QString evoMars = evoPath + "Mars.nc";
+    QString evoMercury = evoPath + "Mercury.nc";
+    QString evoSpitzer = evoPath + "Spitzer.nc";
+    QString evoStereoA = evoPath + "Stereo_A.nc";
+    QString evoStereoB = evoPath + "Stereo_B.nc";
+    QString evoUlysses = evoPath + "Ulysses.nc";
+    QString evoVenus = evoPath + "Venus.nc";
+
+    //process files
+    {
+        std::cout << "Processing Earth" << std::endl;
+        std::ifstream file(evoEarth.toAscii().data());
+        if(file.good())
+        {
+            file.close();
+            this->addEvoFile(evoEarth.toAscii().data(), "earth");
+        }
+    }
+    {
+        std::cout << "Processing Juno" << std::endl;
+        std::ifstream file(evoJuno.toAscii().data());
+        if(file.good())
+        {
+            file.close();
+            this->addEvoFile(evoJuno.toAscii().data(), "juno");
+        }
+    }
+
+    {
+        std::cout << "Processing Mars" << std::endl;
+        std::ifstream file(evoMars.toAscii().data());
+        if(file.good())
+        {
+            file.close();
+            this->addEvoFile(evoMars.toAscii().data(), "mars");
+        }
+    }
+
+    {
+        std::cout << "Processing Mercury" << std::endl;
+        std::ifstream file(evoMercury.toAscii().data());
+        if(file.good())
+        {
+            file.close();
+            this->addEvoFile(evoMercury.toAscii().data(), "mercury");
+        }
+    }
+
+    {
+        std::cout << "Processing Spitzer" << std::endl;
+        std::ifstream file(evoSpitzer.toAscii().data());
+        if(file.good())
+        {
+            file.close();
+            this->addEvoFile(evoSpitzer.toAscii().data(), "spitzer");
+        }
+    }
+
+    {
+        std::cout << "Processing StereoA" << std::endl;
+        std::ifstream file(evoStereoA.toAscii().data());
+        if(file.good())
+        {
+            file.close();
+            this->addEvoFile(evoStereoA.toAscii().data(), "stereoA");
+        }
+    }
+
+    {
+        std::cout << "Processing StereoB" << std::endl;
+        std::ifstream file(evoStereoB.toAscii().data());
+        if(file.good())
+        {
+            file.close();
+            this->addEvoFile(evoStereoB.toAscii().data(), "stereoB");
+        }
+    }
+
+
+    {
+        std::cout << "Processing Ulysses" << std::endl;
+        std::ifstream file(evoUlysses.toAscii().data());
+        if(file.good())
+        {
+            file.close();
+            this->addEvoFile(evoUlysses.toAscii().data(), "ulysses");
+        }
+    }
+
+    {
+        std::cout << "Processing Venus" << std::endl;
+        std::ifstream file(evoVenus.toAscii().data());
+        if(file.good())
+        {
+            file.close();
+            this->addEvoFile(evoVenus.toAscii().data(), "venus");
+        }
+    }
+}
+
+void vtkEnlilReader::processEVOFiles(vtkInformationVector* &outputVector)
+{
+    std::cout << "Processing EVO Files" << std::flush << std::endl;
+
+    vtkInformation* info = outputVector->GetInformationObject(1);
+    vtkDataObject* doOutput = info->Get(vtkDataObject::DATA_OBJECT());
+    vtkMultiBlockDataSet* mb = vtkMultiBlockDataSet::SafeDownCast(doOutput);
+
+    std::cout << "Dataset loaded..." << std::endl;
+
+    if(!mb)
+    {
+        std::cerr << "Failed to create multi-block dataset... think again...  this way doesn't work..." << std::endl;
+    }
+
+    //add the evo files
+    int numCurrBlocks = mb->GetNumberOfBlocks();
+    if(numCurrBlocks > 0)
+    {
+        for(int x = 0; x < numCurrBlocks; x++)
+        {
+            mb->RemoveBlock(x);
+        }
+    }
+
+    mb->SetNumberOfBlocks(this->evoFiles.count());
+
+    QStringList evoList = this->evoFiles.keys();
+    for(int x = 0; x < evoList.size(); x++)
+    {
+        std::cout << "Processing File: " << evoList[x].toAscii().data() << std::endl;
+        enlilEvoFile* currentFile = this->evoFiles[evoList[x]];
+
+        vtkTable* output = vtkTable::New();
+
+        //Table creations
+
+        QStringList columnNames = currentFile->getVarNames();
+        for(int y = 0; y < columnNames.size(); y++)
+        {
+            vtkDoubleArray *Column = vtkDoubleArray::New();
+            Column->SetName(columnNames[y].toAscii().data());
+            Column->SetNumberOfComponents(1);
+            QVector<double> currentColumn = currentFile->getVar(columnNames[y].toAscii().data());
+            for(int z = 0; z < currentFile->getStepCount(); z++)
+            {
+                Column->InsertNextValue(currentColumn[z]);
+            }
+
+            output->AddColumn(Column);
+            Column->Delete();
+        }
+
+        mb->GetMetaData(x)->Set(vtkCompositeDataSet::NAME(), evoList[x].toAscii().data());
+        mb->SetBlock(x,output);
+
+
+    }
+
+}
+
 
 
 //---------------------------------------------------------------------------------------------
@@ -2184,12 +2370,15 @@ int vtkEnlilReader::FillOutputPortInformation(int port, vtkInformation* info)
     if (port==0)
     {
         info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkStructuredGrid");
-
-        return this->Superclass::FillInputPortInformation(port, info);
-
     }
 
-    return 1;
+    if(port==1)
+    {
+        std::cout << "EVO Files (Multi-block)" << std::endl;
+        info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkMultiBlockDataSet");
+    }
+
+    return this->Superclass::FillInputPortInformation(port, info);;
 }
 
 //---------------------------------------------------------------------------------------------
@@ -2243,6 +2432,7 @@ void vtkEnlilReader::setUseControlFile(int status)
     {
         //this will deactivate the control file
         this->updateControlFile(false);
+
     }
 
     this->Modified();

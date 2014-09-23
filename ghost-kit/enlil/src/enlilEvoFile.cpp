@@ -38,7 +38,10 @@ enlilEvoFile::enlilEvoFile(const char *FileName)
     {
         std::cout << "Loading Var: " << vars[x].toAscii().data() << std::endl;
         this->_loadVariable(vars[x]);
-        QStringList varAtts = this->_getAttListForVar(vars[x]);
+
+
+        /** This section causes segfault.... must fix before uncommenting **/
+//        QStringList varAtts = this->_getAttListForVar(vars[x]);
 //        for(int y=0; y < varAtts.size();y++)
 //        {
 //            std::cout << "getting var attributes.." << std::flush << std::endl;
@@ -56,12 +59,16 @@ enlilEvoFile::enlilEvoFile(const char *FileName)
         this->_loadMetaData(atts[x]);
     }
 
+    std::cout << "Initialization finished..." << std::endl;
+
+    this->file->close();
+
 }
 
 
 enlilEvoFile::~enlilEvoFile()
 {
-    this->file->close();
+    //this->file->close();
 }
 
 void enlilEvoFile::setFileName(const char *FileName)
@@ -99,7 +106,7 @@ QStringList enlilEvoFile::getMeataDataNames()
     return this->fileMetaData.keys();
 }
 
-QVector<float> enlilEvoFile::getVar(const char *name)
+QVector<double> enlilEvoFile::getVar(const char *name)
 {
     return this->variables[QString(name)];
 }
@@ -121,14 +128,24 @@ QVariant enlilEvoFile::getMetaData(const char *name)
 
 void enlilEvoFile::_loadVariable(QString name)
 {
-    float* vals = new float(this->stepCount);
+
+    std::cout << "Loading Variable..." << name.toAscii().data() << std::endl;
+    long readStart[2] = {0,0};
 
     NcVar *variable = this->file->get_var(name.toAscii().data());
-    size_t readDims[2] = {1,1};
-    readDims[1] = this->stepCount;
+    variable->set_cur(readStart);
+
+    NcDim *varDim0 = this->file->get_dim(0);
+    NcDim *varDim1 = this->file->get_dim(1);
+
+    int numElem0 = varDim0->size();
+    int numElem1 = varDim1->size();
+
+    std::cout << "numElem: " << numElem1 << std::endl;
+    double* vals = new double(numElem1*numElem0);
 
     //read the entire variable
-    bool status = variable->get(vals, readDims);
+    bool status = variable->get(vals);
 
     if(!status)
     {
@@ -136,10 +153,11 @@ void enlilEvoFile::_loadVariable(QString name)
     }
     else
     {
-        QVector<float> qVals;
-        for(int x=0; x < this->stepCount; x++)
+        QVector<double> qVals;
+        for(int x=0; x < numElem1; x++)
         {
-            qVals.push_back(vals[x]);
+           qVals.push_back(vals[x]);
+           //std::cout << "[" << x << "]: " << vals[x] << std::endl;
         }
 
         //save the variable
@@ -160,24 +178,36 @@ void enlilEvoFile::_loadMetaData(QString name)
     switch(attType)
     {
     case ncChar:
+    {
         std::cout << "String Value..." << std::endl;
-        variant.fromValue(QString(attribute->as_string(0)));
+        QVariant value(QString(attribute->as_string(0)));
+        variant = value;
         break;
+    }
 
     case ncInt:
+    {
         std::cout << "Int Value..." << std::endl;
-        variant.fromValue(attribute->as_int(0));
+        QVariant value(attribute->as_int(0));
+        variant = value;
         break;
+    }
 
     case ncFloat:
+    {
         std::cout << "Float Value..."<< std::endl;
-        variant.fromValue(attribute->as_float(0));
+        QVariant value(attribute->as_float(0));
+        variant = value;
         break;
+    }
 
     case ncDouble:
+    {
         std::cout << "Double Value..."<< std::endl;
-        variant.fromValue(attribute->as_double(0));
+        QVariant value(attribute->as_double(0));
+        variant = value;
         break;
+    }
 
     default:
         std::cerr << "Requested conversion from unknown type" << std::endl;
@@ -189,6 +219,7 @@ void enlilEvoFile::_loadMetaData(QString name)
 
     std::cout << "Value is: " << variant.toString().toAscii().data() << std::flush << std::endl;
 
+    std::cout << "Returning to calling..." << std::endl;
 }
 
 QStringList enlilEvoFile::_getVaribleList()

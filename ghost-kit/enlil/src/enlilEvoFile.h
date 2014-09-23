@@ -27,7 +27,7 @@ public:
     QStringList getVarNames();
     QStringList getMeataDataNames();
 
-    QVector<float> getVar(const char* name);
+    QVector<double> getVar(const char* name);
     QString getVarUnits(const char* name);
     QString getVarLongName(const char* name);
 
@@ -40,7 +40,7 @@ protected:
     long stepCount;
 
     // data variables
-    QMap<QString, QVector<float> > variables;
+    QMap<QString, QVector<double> > variables;
     QMap<QString, QString> units;
     QMap<QString, QString> longNames;
 
