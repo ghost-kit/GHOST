@@ -41,14 +41,14 @@ enlilEvoFile::enlilEvoFile(const char *FileName)
 
 
         /** This section causes segfault.... must fix before uncommenting **/
-//        QStringList varAtts = this->_getAttListForVar(vars[x]);
-//        for(int y=0; y < varAtts.size();y++)
-//        {
-//            std::cout << "getting var attributes.." << std::flush << std::endl;
-//            //get specified vars if they exist
-//            if(varAtts[y] == QString("units") || varAtts[y] == QString("long_name"))
-//                this->_loadAttFromVar(vars[x], varAtts[y]);
-//        }
+        //        QStringList varAtts = this->_getAttListForVar(vars[x]);
+        //        for(int y=0; y < varAtts.size();y++)
+        //        {
+        //            std::cout << "getting var attributes.." << std::flush << std::endl;
+        //            //get specified vars if they exist
+        //            if(varAtts[y] == QString("units") || varAtts[y] == QString("long_name"))
+        //                this->_loadAttFromVar(vars[x], varAtts[y]);
+        //        }
 
     }
 
@@ -135,38 +135,26 @@ void enlilEvoFile::_loadVariable(QString name)
     NcVar *variable = this->file->get_var(name.toAscii().data());
     variable->set_cur(readStart);
 
-    NcDim *varDim0 = this->file->get_dim(0);
-    NcDim *varDim1 = this->file->get_dim(1);
 
-    int numElem0 = varDim0->size();
-    int numElem1 = varDim1->size();
+    //get the values from file
+    NcValues* values = variable->values();
+    int numElem = values->num();
 
-    std::cout << "numElem: " << numElem1 << std::endl;
-    double* vals = new double(numElem1*numElem0);
+    std::cout << "numElem: " << numElem << std::endl;
 
-    //read the entire variable
-    bool status = variable->get(vals);
-
-    if(!status)
+    //create a data structure for storage
+    QVector<double> qVals;
+    for(int x=0; x < numElem; x++)
     {
-        std::cerr << "Error Reading variable: " << name.toAscii().data() << std::endl;
+        qVals.push_back(values->as_double(x));
+        if(x%100 == 0) std::cout << "[" << x << "]: " << values->as_double(x) << std::endl;
     }
-    else
-    {
-        QVector<double> qVals;
-        for(int x=0; x < numElem1; x++)
-        {
-           qVals.push_back(vals[x]);
-           //std::cout << "[" << x << "]: " << vals[x] << std::endl;
-        }
 
-        //save the variable
-        this->variables[name] = qVals;
-
-    }
+    //save the variable
+    this->variables[name] = qVals;
 
     //free the memory
-    delete [] vals;
+    delete values;
 }
 
 void enlilEvoFile::_loadMetaData(QString name)
