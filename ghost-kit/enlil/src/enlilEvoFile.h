@@ -20,6 +20,7 @@ public:
 
     void setFileName(const char *FileName);
     void setName(const char* name);
+    void setScaleFactor(double factor);
 
     QString getFileName();
     QString getName();
@@ -48,6 +49,9 @@ protected:
     QMap<QString, QVariant> fileMetaData;
 
 private:
+    //setup
+    void _initializeFiles();
+
     //file level
     void _loadVariable(QString name);
     void _loadMetaData(QString name);
@@ -57,6 +61,20 @@ private:
     //var level
     void _loadAttFromVar(QString VarName, QString AttName);
     QStringList _getAttListForVar(QString varName);
+
+    //data processing
+    void _processLocation();
+
+
+    //coordinate transforms (the basic ones)
+    //these vectors MUST be 3 tuples
+    //it is the responsibility of the calling function to
+    //   free the memory associated with these conversions
+    double *_gridSphere2Cart(const double rtp[], double scale=0);
+    double *_sphere2Cart(const double rtp[], const double rtpOrigin[]);
+
+    // how much to scale the grid
+    double __scale_factor;
 
     //file manipulations
     NcFile *file;

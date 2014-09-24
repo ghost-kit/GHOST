@@ -2,10 +2,26 @@
 #include <iostream>
 #include <QString>
 #include <QStringList>
+#include <vtkMath.h>
 
 enlilEvoFile::enlilEvoFile(const char *FileName)
 {
+    //setup the object
     this->setFileName(FileName);
+    this->__scale_factor = 1;
+
+
+    //load the data from the file
+    this->_initializeFiles();
+
+    //process location
+    this->_processLocation();
+
+}
+
+void enlilEvoFile::_initializeFiles()
+{
+    char* FileName = this->fileName.toAscii().data();
 
     //open the file
     std::cout << "Opening file: " << FileName << std::endl;
@@ -40,7 +56,7 @@ enlilEvoFile::enlilEvoFile(const char *FileName)
         this->_loadVariable(vars[x]);
 
 
-        /** This section causes segfault.... must fix before uncommenting **/
+        /** TODO::This section causes segfault.... must fix before uncommenting **/
         //        QStringList varAtts = this->_getAttListForVar(vars[x]);
         //        for(int y=0; y < varAtts.size();y++)
         //        {
@@ -65,7 +81,6 @@ enlilEvoFile::enlilEvoFile(const char *FileName)
 
 }
 
-
 enlilEvoFile::~enlilEvoFile()
 {
     //this->file->close();
@@ -79,6 +94,11 @@ void enlilEvoFile::setFileName(const char *FileName)
 void enlilEvoFile::setName(const char *name)
 {
     this->name = QString(name);
+}
+
+void enlilEvoFile::setScaleFactor(double factor)
+{
+    this->__scale_factor = factor;
 }
 
 QString enlilEvoFile::getFileName()
@@ -276,4 +296,77 @@ QStringList enlilEvoFile::_getAttListForVar(QString varName)
         NcAtt* att = var->get_att(x);
         vals.push_back(att->name());
     }
+}
+
+void enlilEvoFile::_processLocation()
+{
+    //check existance of the position values
+    QStringList vars = this->getVarNames();
+
+    if(vars.contains("X1") && vars.contains("X2") && vars.contains("X3"))
+    {
+        QVector<double> x1 = this->getVar("X1");
+        QVector<double> x2 = this->getVar("X2");
+        QVector<double> x3 = this->getVar("X3");
+
+        QVector<double> X;
+        QVector<double> Y;
+        QVector<double> Z;
+
+        double* rtp = new double[3];
+        double* xyz = NULL;
+
+        for(int a = 0; a < this->stepCount; a++)
+        {
+
+            rtp[0] = x1[a];
+            rtp[1] = x2[a];
+            rtp[2] = x3[a];
+
+           xyz = this->_gridSphere2Cart(rtp);
+
+            X.push_back(xyz[0]);
+            Y.push_back(xyz[1]);
+            Z.push_back(xyz[2]);
+
+            delete [] xyz;
+
+        }
+
+        delete [] rtp;
+
+        this->variables["_posX"] = X;
+        this->variables["_posY"] = Y;
+        this->variables["_posZ"] = Z;
+
+    }
+
+}
+
+double* enlilEvoFile::_gridSphere2Cart(const double rtp[], double scale)
+{
+    double sf = 0;
+
+    //fix scale factor
+    if(!scale) sf = this->__scale_factor;
+    else sf = scale;
+
+    //calculate
+    double* xyz = new double[3];
+    xyz[0] = rtp[0] * sin(rtp[1]) * cos(rtp[2])/this->__scale_factor;
+    xyz[1] = rtp[0] * sin(rtp[1]) * sin(rtp[2])/this->__scale_factor;
+    xyz[2] = rtp[0] * cos(rtp[1])/this->__scale_factor;
+
+    return xyz;
+
+}
+
+double *enlilEvoFile::_sphere2Cart(const double rtp[], const double rtpOrigin[])
+{
+    double *vector = new double[3];
+
+    //TODO: Finish this conversion
+
+
+    return vector;
 }
