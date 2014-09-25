@@ -66,14 +66,16 @@ void enlilEvoFile::_initializeFiles()
 
 
         /** TODO::This section causes segfault.... must fix before uncommenting **/
-        //        QStringList varAtts = this->_getAttListForVar(vars[x]);
-        //        for(int y=0; y < varAtts.size();y++)
-        //        {
-        //            std::cout << "getting var attributes.." << std::flush << std::endl;
-        //            //get specified vars if they exist
-        //            if(varAtts[y] == QString("units") || varAtts[y] == QString("long_name"))
-        //                this->_loadAttFromVar(vars[x], varAtts[y]);
-        //        }
+        QStringList varAtts = this->_getAttListForVar(vars[x]);
+
+                std::cout << "reading attributes" << std::endl;
+                for(int y=0; y < varAtts.size();y++)
+                {
+                    std::cout << "getting var attributes.." << std::flush << std::endl;
+                    //get specified vars if they exist
+                    if(varAtts[y] == QString("units") || varAtts[y] == QString("long_name"));
+                        this->_loadAttFromVar(vars[x], varAtts[y]);
+                }
 
     }
 
@@ -296,16 +298,29 @@ void enlilEvoFile::_loadAttFromVar(QString VarName, QString AttName)
 
 QStringList enlilEvoFile::_getAttListForVar(QString varName)
 {
-    QStringList vals;
-    NcVar* var = this->file->get_var(varName.toAscii().data());
 
-    int numAtts = var->num_atts();
+    QStringList values;
+    QStringList variables = this->getVarNames();
 
-    for(int x = 0; x < numAtts; x++)
+    // IF data not available, return empty values
+    if(!variables.contains(varName)) return values;
+
+    NcVar* var = this->file->get_var(qPrintable(varName));
+    qint64 numAtts = var->num_atts();
+
+    for(int x=0; x<numAtts; x++)
     {
+        std::cout << "Getting Attribute: " << x << std::endl;
+
         NcAtt* att = var->get_att(x);
-        vals.push_back(att->name());
+        if(att->is_valid()) values.push_back(QString(att->name()));
+
+        std::cout << "Name: " << att->name() << std::flush << std::endl;
     }
+
+    std::cout << "Returning to calling function..." << std::endl;
+    return values;
+
 }
 
 void enlilEvoFile::_processLocation()

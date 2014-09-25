@@ -19,7 +19,7 @@
 #include <vtkSMProxy.h>
 #include <vtkSMProperty.h>
 #include <vtkSMSessionProxyManager.h>
-#include <vtkSMGlobalPropertiesManager.h>
+//#include <vtkSMGlobalPropertiesManager.h>
 #include <vtkSMStringVectorProperty.h>
 #include <vtkSMDoubleVectorProperty.h>
 #include <iomanip>
