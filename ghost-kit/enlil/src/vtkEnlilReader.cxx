@@ -49,6 +49,9 @@
 #include "vtkNew.h"
 #include <QString>
 #include <QStringList>
+
+#include <QDir>
+
 vtkStandardNewMacro(vtkEnlilReader)
 
 
@@ -2192,121 +2195,58 @@ void vtkEnlilReader::locateAndLoadEvoFiles()
 {
 
     QStringList directory = QString(this->CurrentFileName).split("/");
-    directory[directory.size()-1] = QString("evo.");
-    QString evoPath = directory.join("/");
+    directory[directory.size()-1] = QString("");
+    QString path = directory.join("/");
 
-    //find each file
-    QString evoEarth = evoPath + "Earth.nc";
-    QString evoJuno = evoPath + "Juno.nc";
-    QString evoMars = evoPath + "Mars.nc";
-    QString evoMercury = evoPath + "Mercury.nc";
-    QString evoSpitzer = evoPath + "Spitzer.nc";
-    QString evoStereoA = evoPath + "Stereo_A.nc";
-    QString evoStereoB = evoPath + "Stereo_B.nc";
-    QString evoUlysses = evoPath + "Ulysses.nc";
-    QString evoVenus = evoPath + "Venus.nc";
+    //find list of evo files
+    QDir dir(path);
+    dir.setFilter(QDir::Files|QDir::NoSymLinks);
 
-    //process files
-    {
-        std::cout << "Processing Earth" << std::endl;
-        std::ifstream file(evoEarth.toAscii().data());
-        if(file.good())
-        {
-            file.close();
-            this->addEvoFile(evoEarth.toAscii().data(), "earth");
-        }
-    }
-    {
-        std::cout << "Processing Juno" << std::endl;
-        std::ifstream file(evoJuno.toAscii().data());
-        if(file.good())
-        {
-            file.close();
-            this->addEvoFile(evoJuno.toAscii().data(), "juno");
-        }
-    }
+    QFileInfoList fileList = dir.entryInfoList();
+    QMap<QString, QString> evoFiles;
 
+    //find the correct files
+    for(int i=0; i<fileList.size(); i++)
     {
-        std::cout << "Processing Mars" << std::endl;
-        std::ifstream file(evoMars.toAscii().data());
-        if(file.good())
-        {
-            file.close();
-            this->addEvoFile(evoMars.toAscii().data(), "mars");
-        }
-    }
+        QFileInfo fileInfo = fileList.at(i);
 
-    {
-        std::cout << "Processing Mercury" << std::endl;
-        std::ifstream file(evoMercury.toAscii().data());
-        if(file.good())
+        if(fileInfo.fileName().contains("evo."))
         {
-            file.close();
-            this->addEvoFile(evoMercury.toAscii().data(), "mercury");
-        }
-    }
 
-    {
-        std::cout << "Processing Spitzer" << std::endl;
-        std::ifstream file(evoSpitzer.toAscii().data());
-        if(file.good())
-        {
-            file.close();
-            this->addEvoFile(evoSpitzer.toAscii().data(), "spitzer");
-        }
-    }
+            QString name(fileInfo.fileName());
+            QStringList nameSplit = name.split(".");
 
-    {
-        std::cout << "Processing StereoA" << std::endl;
-        std::ifstream file(evoStereoA.toAscii().data());
-        if(file.good())
-        {
-            file.close();
-            this->addEvoFile(evoStereoA.toAscii().data(), "stereoA");
-        }
-    }
+            evoFiles[nameSplit[1]] = name;
 
-    {
-        std::cout << "Processing StereoB" << std::endl;
-        std::ifstream file(evoStereoB.toAscii().data());
-        if(file.good())
-        {
-            file.close();
-            this->addEvoFile(evoStereoB.toAscii().data(), "stereoB");
+            std::cout << "Found File: " << qPrintable(name) << std::endl;
         }
     }
 
 
+    //add the files to the active list
+    //TODO && BUG: Something is causing a sporadic bug here giving a netCDF error.
+    //      NetCDF: Not a valid ID
+
+    QStringList evoFileNames = evoFiles.keys();
+    for(int x = 0; x < evoFileNames.count(); x++)
     {
-        std::cout << "Processing Ulysses" << std::endl;
-        std::ifstream file(evoUlysses.toAscii().data());
-        if(file.good())
-        {
-            file.close();
-            this->addEvoFile(evoUlysses.toAscii().data(), "ulysses");
-        }
+        std::cout << std::endl;
+        QString current = evoFileNames[x];
+        QString filePathName = path + evoFiles[current];
+        this->addEvoFile(qPrintable(filePathName), qPrintable(current));
     }
 
-    {
-        std::cout << "Processing Venus" << std::endl;
-        std::ifstream file(evoVenus.toAscii().data());
-        if(file.good())
-        {
-            file.close();
-            this->addEvoFile(evoVenus.toAscii().data(), "venus");
-        }
-    }
 }
 
 void vtkEnlilReader::processEVOFiles(vtkInformationVector* &outputVector)
 {
-    std::cout << "Processing EVO Files" << std::flush << std::endl;
+//    std::cout << "Processing EVO Files" << std::flush << std::endl;
 
     vtkInformation* info = outputVector->GetInformationObject(1);
     vtkDataObject* doOutput = info->Get(vtkDataObject::DATA_OBJECT());
     vtkMultiBlockDataSet* mb = vtkMultiBlockDataSet::SafeDownCast(doOutput);
 
-    std::cout << "Dataset loaded..." << std::endl;
+//    std::cout << "Dataset loaded..." << std::endl;
 
     if(!mb)
     {
@@ -2329,7 +2269,7 @@ void vtkEnlilReader::processEVOFiles(vtkInformationVector* &outputVector)
     QStringList evoList = this->evoFiles.keys();
     for(int x = 0; x < evoList.size(); x++)
     {
-        std::cout << "Processing File: " << evoList[x].toAscii().data() << std::endl;
+//        std::cout << "Processing File: " << evoList[x].toAscii().data() << std::endl;
         enlilEvoFile* currentFile = this->evoFiles[evoList[x]];
 
         //switch to proccessed data
@@ -2437,7 +2377,7 @@ int vtkEnlilReader::FillOutputPortInformation(int port, vtkInformation* info)
 
     if(port==1)
     {
-        std::cout << "EVO Files (Multi-block)" << std::endl;
+//        std::cout << "EVO Files (Multi-block)" << std::endl;
         info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkMultiBlockDataSet");
     }
 

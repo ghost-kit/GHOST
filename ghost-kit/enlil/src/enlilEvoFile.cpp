@@ -30,16 +30,16 @@ enlilEvoFile::enlilEvoFile(const char *FileName, double scaleFactor)
 
 void enlilEvoFile::_initializeFiles()
 {
-    char* FileName = this->fileName.toAscii().data();
 
     //open the file
-    std::cout << "Opening file: " << FileName << std::endl;
-    this->file = new NcFile(FileName);
+    std::cout << "Opening file: " << qPrintable(this->fileName) << std::endl;
+    this->file = new NcFile(qPrintable(this->fileName));
 
-    if(this->file->is_valid())
-        std::cout << "File Loaded..." << std::flush << std::endl;
-    else
-        std::cout << "File Failed to open..." << std::flush << std::endl;
+    if(!this->file->is_valid())
+    {
+        std::cerr << "Error loading file " << qPrintable(this->fileName) << std::endl;
+        return;
+    }
 
     //get number of entries
     NcDim *dims = this->file->get_dim("nevo");
@@ -80,11 +80,11 @@ void enlilEvoFile::_initializeFiles()
     //process atts
     for(int x=0; x < atts.size(); x++)
     {
-        std::cout << "Loading Attribute: " << atts[x].toAscii().data() << std::endl;
+//        std::cout << "Loading Attribute: " << atts[x].toAscii().data() << std::endl;
         this->_loadMetaData(atts[x]);
     }
 
-    std::cout << "Initialization finished..." << std::endl;
+//    std::cout << "Initialization finished..." << std::endl;
 
     this->file->close();
 
@@ -92,7 +92,7 @@ void enlilEvoFile::_initializeFiles()
 
 enlilEvoFile::~enlilEvoFile()
 {
-    this->file->close();
+//    this->file->close();
 }
 
 void enlilEvoFile::setFileName(const char *FileName)
@@ -159,7 +159,7 @@ void enlilEvoFile::switchOutput()
 void enlilEvoFile::_loadVariable(QString name)
 {
 
-    std::cout << "Loading Variable..." << name.toAscii().data() << std::endl;
+//    std::cout << "Loading Variable..." << name.toAscii().data() << std::endl;
     long readStart[2] = {0,0};
 
     NcVar *variable = this->file->get_var(name.toAscii().data());
@@ -170,14 +170,14 @@ void enlilEvoFile::_loadVariable(QString name)
     NcValues* values = variable->values();
     int numElem = values->num();
 
-    std::cout << "numElem: " << numElem << std::endl;
+//    std::cout << "numElem: " << numElem << std::endl;
 
     //create a data structure for storage
     QVector<double> qVals;
     for(int x=0; x < numElem; x++)
     {
         qVals.push_back(values->as_double(x));
-        if(x%100 == 0) std::cout << "[" << x << "]: " << values->as_double(x) << std::endl;
+//        if(x%100 == 0) std::cout << "[" << x << "]: " << values->as_double(x) << std::endl;
     }
 
     //save the variable
@@ -197,7 +197,7 @@ void enlilEvoFile::_loadMetaData(QString name)
     {
     case ncChar:
     {
-        std::cout << "String Value..." << std::endl;
+//        std::cout << "String Value..." << std::endl;
         QVariant value(QString(attribute->as_string(0)));
         variant = value;
         break;
@@ -205,7 +205,7 @@ void enlilEvoFile::_loadMetaData(QString name)
 
     case ncInt:
     {
-        std::cout << "Int Value..." << std::endl;
+//        std::cout << "Int Value..." << std::endl;
         QVariant value(attribute->as_int(0));
         variant = value;
         break;
@@ -213,7 +213,7 @@ void enlilEvoFile::_loadMetaData(QString name)
 
     case ncFloat:
     {
-        std::cout << "Float Value..."<< std::endl;
+//        std::cout << "Float Value..."<< std::endl;
         QVariant value(attribute->as_float(0));
         variant = value;
         break;
@@ -221,7 +221,7 @@ void enlilEvoFile::_loadMetaData(QString name)
 
     case ncDouble:
     {
-        std::cout << "Double Value..."<< std::endl;
+//        std::cout << "Double Value..."<< std::endl;
         QVariant value(attribute->as_double(0));
         variant = value;
         break;
@@ -232,47 +232,47 @@ void enlilEvoFile::_loadMetaData(QString name)
         break;
     }
 
-    std::cout << "saving value..."<< std::flush<<std::endl;
+//    std::cout << "saving value..."<< std::flush<<std::endl;
     this->fileMetaData[name] = variant;
 
-    std::cout << "Value is: " << variant.toString().toAscii().data() << std::flush << std::endl;
+//    std::cout << "Value is: " << variant.toString().toAscii().data() << std::flush << std::endl;
 
-    std::cout << "Returning to calling..." << std::endl;
+//    std::cout << "Returning to calling..." << std::endl;
 }
 
 QStringList enlilEvoFile::_getVaribleList()
 {
-    std::cout << "Getting number of Vars" << std::flush <<std::endl;
+    //std::cout << "Getting number of Vars" << std::flush <<std::endl;
     qint64 numVars = this->file->num_vars();
     QStringList values;
 
     for(int x=0; x<numVars; x++)
     {
-        std::cout << "Getting Variable: " << x << std::flush << std::endl;
+//        std::cout << "Getting Variable: " << x << std::flush << std::endl;
         NcVar* var = this->file->get_var(x);
-        std::cout << "Name: " << var->name() << std::endl;
+//        std::cout << "Name: " << var->name() << std::endl;
         values.push_back(QString(var->name()));
     }
 
-    std::cout << "Returning to call function..." << std::flush << std::endl;
+//    std::cout << "Returning to call function..." << std::flush << std::endl;
     return values;
 }
 
 QStringList enlilEvoFile::_getAttributeList()
 {
-    std::cout << "Getting number of Attributes" << std::flush <<std::endl;
+   // std::cout << "Getting number of Attributes" << std::flush <<std::endl;
     qint64 numAtts = this->file->num_atts();
     QStringList values;
 
     for(int x=0; x<numAtts; x++)
     {
-        std::cout << "Getting Attribute: " << x << std::endl;
+//        std::cout << "Getting Attribute: " << x << std::endl;
         NcAtt* att = this->file->get_att(x);
         values.push_back(QString(att->name()));
-        std::cout << "Name: " << att->name() << std::flush << std::endl;
+//        std::cout << "Name: " << att->name() << std::flush << std::endl;
     }
 
-    std::cout << "Returning to calling function..." << std::endl;
+//    std::cout << "Returning to calling function..." << std::endl;
     return values;
 }
 
@@ -378,7 +378,7 @@ void enlilEvoFile::_processSphericalVectors()
         }
     }
     vectors.removeDuplicates();
-    std::cout << "Number of Vectors Found: " << vectors.count() << std::endl;
+//    std::cout << "Number of Vectors Found: " << vectors.count() << std::endl;
 
     //if we don't have position data, we cannot convert.
     if(!vectors.contains("X")) return;
@@ -455,12 +455,12 @@ void enlilEvoFile::_processScalars()
     //get list of scalars
     for(int x = 0; x < vars.size(); x++)
     {
-        std::cout << "Var: " << var.toAscii().data() << std::endl;
+//        std::cout << "Var: " << var.toAscii().data() << std::endl;
         var = vars[x];
         //get the scalar name
         if(var.endsWith("1") || var.endsWith("2") || var.endsWith("3")) continue;
 
-        std::cout << "Active Var: " << var.toAscii().data() << std::endl;
+//        std::cout << "Active Var: " << var.toAscii().data() << std::endl;
 
         scalars.push_back(var);
     }
