@@ -15,12 +15,11 @@
 class enlilEvoFile
 {
 public:
-    enlilEvoFile(const char *FileName);
+    enlilEvoFile(const char *FileName, double scaleFactor);
     ~enlilEvoFile();
 
     void setFileName(const char *FileName);
     void setName(const char* name);
-    void setScaleFactor(double factor);
 
     QString getFileName();
     QString getName();
@@ -34,6 +33,10 @@ public:
 
     QVariant getMetaData(const char* name);
 
+    //switch between raw and processed data
+    void switchOutput();
+
+
 protected:
     //basic info
     QString name;
@@ -42,6 +45,7 @@ protected:
 
     // data variables
     QMap<QString, QVector<double> > variables;
+    QMap<QString, QVector<double> > _variables;
     QMap<QString, QString> units;
     QMap<QString, QString> longNames;
 
@@ -64,13 +68,16 @@ private:
 
     //data processing
     void _processLocation();
+    void _processSphericalVectors();
+    void _processScalars();
+    void _processTime();
 
 
     //coordinate transforms (the basic ones)
     //these vectors MUST be 3 tuples
     //it is the responsibility of the calling function to
     //   free the memory associated with these conversions
-    double *_gridSphere2Cart(const double rtp[], double scale=0);
+    double *_gridSphere2Cart(const double rtp[], double scale);
     double *_sphere2Cart(const double rtp[], const double rtpOrigin[]);
 
     // how much to scale the grid

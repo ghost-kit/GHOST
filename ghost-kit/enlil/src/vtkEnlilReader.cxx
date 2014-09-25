@@ -2184,7 +2184,8 @@ void vtkEnlilReader::cleanCache()
 void vtkEnlilReader::addEvoFile(const char *FileName, const char *refName)
 {
 
-    this->evoFiles[refName] = new enlilEvoFile(FileName);
+    //TODO: make sure this changes if we change the scale factor
+    this->evoFiles[refName] = new enlilEvoFile(FileName, GRID_SCALE::ScaleFactor[this->GetGridScaleType()]);
 }
 
 void vtkEnlilReader::locateAndLoadEvoFiles()
@@ -2324,23 +2325,51 @@ void vtkEnlilReader::processEVOFiles(vtkInformationVector* &outputVector)
 
     mb->SetNumberOfBlocks(this->evoFiles.count());
 
+    QString currentEvo;
     QStringList evoList = this->evoFiles.keys();
     for(int x = 0; x < evoList.size(); x++)
     {
         std::cout << "Processing File: " << evoList[x].toAscii().data() << std::endl;
         enlilEvoFile* currentFile = this->evoFiles[evoList[x]];
 
+        //switch to proccessed data
+        currentFile->switchOutput();
+
         vtkTable* output = vtkTable::New();
 
         //Table creations
 
         QStringList columnNames = currentFile->getVarNames();
-        for(int y = 0; y < columnNames.size(); y++)
+
+        //get lists of scalars and vectors
+        QStringList scalars;
+        QStringList vectors;
+
+        for(int y=0; y<columnNames.size(); y++)
         {
+            QString current = columnNames[y];
+            if(current.contains("_"))
+            {
+                QStringList split = current.split("_");
+                vectors.push_back(split[0]);
+            }
+            else
+            {
+                scalars.push_back(current);
+            }
+        }
+
+        //remove duplicate entries
+        vectors.removeDuplicates();
+
+        //process for scalar
+        for(int y = 0; y < scalars.size(); y++)
+        {
+
             vtkDoubleArray *Column = vtkDoubleArray::New();
-            Column->SetName(columnNames[y].toAscii().data());
+            Column->SetName(scalars[y].toAscii().data());
             Column->SetNumberOfComponents(1);
-            QVector<double> currentColumn = currentFile->getVar(columnNames[y].toAscii().data());
+            QVector<double> currentColumn = currentFile->getVar(scalars[y].toAscii().data());
             for(int z = 0; z < currentFile->getStepCount(); z++)
             {
                 Column->InsertNextValue(currentColumn[z]);
@@ -2348,6 +2377,40 @@ void vtkEnlilReader::processEVOFiles(vtkInformationVector* &outputVector)
 
             output->AddColumn(Column);
             Column->Delete();
+        }
+
+        //process vectors
+        for(int y=0; y< vectors.size();y++)
+        {
+            vtkDoubleArray *ColumnXYZ = vtkDoubleArray::New();
+            ColumnXYZ->SetName(QString(vectors[y]+"_XYZ").toAscii().data());
+            ColumnXYZ->SetNumberOfComponents(3);
+
+            vtkDoubleArray *ColumnRTP = vtkDoubleArray::New();
+            ColumnRTP->SetName(QString(vectors[y]+"_RTP").toAscii().data());
+            ColumnRTP->SetNumberOfComponents(3);
+
+            QVector<double> X = currentFile->getVar(QString(vectors[y] + "_X").toAscii().data());
+            QVector<double> Y = currentFile->getVar(QString(vectors[y] + "_Y").toAscii().data());
+            QVector<double> Z = currentFile->getVar(QString(vectors[y] + "_Z").toAscii().data());
+
+            QVector<double> R = currentFile->getVar(QString(vectors[y] + "_R").toAscii().data());
+            QVector<double> T = currentFile->getVar(QString(vectors[y] + "_T").toAscii().data());
+            QVector<double> P = currentFile->getVar(QString(vectors[y] + "_P").toAscii().data());
+
+
+            for(int z=0; z < X.count(); z++)
+            {
+                ColumnXYZ->InsertNextTuple3(X[z], Y[z], Z[z]);
+                ColumnRTP->InsertNextTuple3(R[z], T[z], P[z]);
+            }
+
+            output->AddColumn(ColumnXYZ);
+            output->AddColumn(ColumnRTP);
+
+            ColumnXYZ->Delete();
+            ColumnRTP->Delete();
+
         }
 
         mb->GetMetaData(x)->Set(vtkCompositeDataSet::NAME(), evoList[x].toAscii().data());
