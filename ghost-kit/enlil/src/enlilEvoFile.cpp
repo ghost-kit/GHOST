@@ -64,8 +64,6 @@ void enlilEvoFile::_initializeFiles()
         std::cout << "Loading Var: " << vars[x].toAscii().data() << std::endl;
         this->_loadVariable(vars[x]);
 
-
-        /** TODO::This section causes segfault.... must fix before uncommenting **/
         QStringList varAtts = this->_getAttListForVar(vars[x]);
 
                 std::cout << "reading attributes" << std::endl;
@@ -81,11 +79,8 @@ void enlilEvoFile::_initializeFiles()
     //process atts
     for(int x=0; x < atts.size(); x++)
     {
-//        std::cout << "Loading Attribute: " << atts[x].toAscii().data() << std::endl;
         this->_loadMetaData(atts[x]);
     }
-
-//    std::cout << "Initialization finished..." << std::endl;
 
     this->file->close();
 
@@ -93,7 +88,6 @@ void enlilEvoFile::_initializeFiles()
 
 enlilEvoFile::~enlilEvoFile()
 {
-//    this->file->close();
 }
 
 void enlilEvoFile::setFileName(const char *FileName)
@@ -104,6 +98,11 @@ void enlilEvoFile::setFileName(const char *FileName)
 void enlilEvoFile::setName(const char *name)
 {
     this->name = QString(name);
+}
+
+void enlilEvoFile::addUnitConversion(const char *baseUnits, const char *newUnits, double divisor)
+{
+    this->_addConversion(QString(baseUnits), QString(newUnits), divisor);
 }
 
 
@@ -139,7 +138,7 @@ QVector<double> enlilEvoFile::getVar(const char *name)
 
 QString enlilEvoFile::getVarUnits(const char *name)
 {
-    return this->units[QString(name)];
+    return this->varUnitsMap[QString(name)];
 }
 
 QString enlilEvoFile::getVarLongName(const char *name)
@@ -155,12 +154,13 @@ QVariant enlilEvoFile::getMetaData(const char *name)
 void enlilEvoFile::switchOutput()
 {
     this->variables.swap(this->_variables);
+    this->varUnitsMap.swap(this->_varUnitsMap);
+    this->longNames.swap(this->_longNames);
 }
 
 void enlilEvoFile::_loadVariable(QString name)
 {
 
-//    std::cout << "Loading Variable..." << name.toAscii().data() << std::endl;
     long readStart[2] = {0,0};
 
     NcVar *variable = this->file->get_var(name.toAscii().data());
@@ -171,14 +171,11 @@ void enlilEvoFile::_loadVariable(QString name)
     NcValues* values = variable->values();
     int numElem = values->num();
 
-//    std::cout << "numElem: " << numElem << std::endl;
-
     //create a data structure for storage
     QVector<double> qVals;
     for(int x=0; x < numElem; x++)
     {
         qVals.push_back(values->as_double(x));
-//        if(x%100 == 0) std::cout << "[" << x << "]: " << values->as_double(x) << std::endl;
     }
 
     //save the variable
@@ -198,7 +195,6 @@ void enlilEvoFile::_loadMetaData(QString name)
     {
     case ncChar:
     {
-//        std::cout << "String Value..." << std::endl;
         QVariant value(QString(attribute->as_string(0)));
         variant = value;
         break;
@@ -206,7 +202,6 @@ void enlilEvoFile::_loadMetaData(QString name)
 
     case ncInt:
     {
-//        std::cout << "Int Value..." << std::endl;
         QVariant value(attribute->as_int(0));
         variant = value;
         break;
@@ -214,7 +209,6 @@ void enlilEvoFile::_loadMetaData(QString name)
 
     case ncFloat:
     {
-//        std::cout << "Float Value..."<< std::endl;
         QVariant value(attribute->as_float(0));
         variant = value;
         break;
@@ -222,7 +216,6 @@ void enlilEvoFile::_loadMetaData(QString name)
 
     case ncDouble:
     {
-//        std::cout << "Double Value..."<< std::endl;
         QVariant value(attribute->as_double(0));
         variant = value;
         break;
@@ -233,47 +226,35 @@ void enlilEvoFile::_loadMetaData(QString name)
         break;
     }
 
-//    std::cout << "saving value..."<< std::flush<<std::endl;
     this->fileMetaData[name] = variant;
 
-//    std::cout << "Value is: " << variant.toString().toAscii().data() << std::flush << std::endl;
-
-//    std::cout << "Returning to calling..." << std::endl;
 }
 
 QStringList enlilEvoFile::_getVaribleList()
 {
-    //std::cout << "Getting number of Vars" << std::flush <<std::endl;
     qint64 numVars = this->file->num_vars();
     QStringList values;
 
     for(int x=0; x<numVars; x++)
     {
-//        std::cout << "Getting Variable: " << x << std::flush << std::endl;
         NcVar* var = this->file->get_var(x);
-//        std::cout << "Name: " << var->name() << std::endl;
         values.push_back(QString(var->name()));
     }
 
-//    std::cout << "Returning to call function..." << std::flush << std::endl;
     return values;
 }
 
 QStringList enlilEvoFile::_getAttributeList()
 {
-   // std::cout << "Getting number of Attributes" << std::flush <<std::endl;
     qint64 numAtts = this->file->num_atts();
     QStringList values;
 
     for(int x=0; x<numAtts; x++)
     {
-//        std::cout << "Getting Attribute: " << x << std::endl;
         NcAtt* att = this->file->get_att(x);
         values.push_back(QString(att->name()));
-//        std::cout << "Name: " << att->name() << std::flush << std::endl;
     }
 
-//    std::cout << "Returning to calling function..." << std::endl;
     return values;
 }
 
@@ -287,7 +268,7 @@ void enlilEvoFile::_loadAttFromVar(QString VarName, QString AttName)
 
     if(AttName == "units")
     {
-        this->units[VarName] = value;
+        this->varUnitsMap[VarName] = value;
     }
     else if(AttName == "long_name")
     {
@@ -374,6 +355,9 @@ void enlilEvoFile::_processLocation()
 
 void enlilEvoFile::_processSphericalVectors()
 {
+    double divisor = 1;
+    QString newUnits;
+
     QStringList vars = this->getVarNames();
     QStringList vectors;
     QString var;
@@ -392,7 +376,6 @@ void enlilEvoFile::_processSphericalVectors()
         }
     }
     vectors.removeDuplicates();
-//    std::cout << "Number of Vectors Found: " << vectors.count() << std::endl;
 
     //if we don't have position data, we cannot convert.
     if(!vectors.contains("X")) return;
@@ -408,10 +391,16 @@ void enlilEvoFile::_processSphericalVectors()
         //skip the location variable
         if(vectors[x] == "X") continue;
 
+        //get the units for the FIRST part of the vector... so as not to get radians
+        QPair<QString, double> conversion = this->_getConvDivForVar(vectors[x]+"1");
+        divisor = conversion.second;
+        newUnits = conversion.first;
+
         //get variables to process
         QVector<double> DR = this->getVar(QString(vectors[x] + "1").toAscii().data());
         QVector<double> DT = this->getVar(QString(vectors[x] + "2").toAscii().data());
         QVector<double> DP = this->getVar(QString(vectors[x] + "3").toAscii().data());
+        QVector<double> DRc;
 
         QVector<double> X;
         QVector<double> Y;
@@ -436,9 +425,11 @@ void enlilEvoFile::_processSphericalVectors()
             //convert
             xyz = this->_sphere2Cart(rtp, rtpOrigin);
 
-            X.push_back(xyz[0]);
-            Y.push_back(xyz[1]);
-            Z.push_back(xyz[2]);
+            DRc.push_back(DR[y]/divisor);
+
+            X.push_back(xyz[0]/divisor);
+            Y.push_back(xyz[1]/divisor);
+            Z.push_back(xyz[2]/divisor);
 
             delete [] xyz;
         }
@@ -451,10 +442,20 @@ void enlilEvoFile::_processSphericalVectors()
         this->_variables[QString(vectors[x]+"_Y")] = Y;
         this->_variables[QString(vectors[x]+"_Z")] = Z;
 
+        this->_varUnitsMap[QString(vectors[x]+"_X")] = newUnits;
+        this->_varUnitsMap[QString(vectors[x]+"_Y")] = newUnits;
+        this->_varUnitsMap[QString(vectors[x]+"_Z")] = newUnits;
+
+
+        //TODO: Fix conversion on RTP
         //save processed data (RTP)
         this->_variables[QString(vectors[x]+"_R")] = DR;
         this->_variables[QString(vectors[x]+"_T")] = DT;
         this->_variables[QString(vectors[x]+"_P")] = DP;
+
+        this->_varUnitsMap[QString(vectors[x]+"_R")] = newUnits;
+        this->_varUnitsMap[QString(vectors[x]+"_T")] = QString("Radians");
+        this->_varUnitsMap[QString(vectors[x]+"_P")] = QString("Radians");
 
     }
 
@@ -462,6 +463,8 @@ void enlilEvoFile::_processSphericalVectors()
 
 void enlilEvoFile::_processScalars()
 {
+    double divisor=1;
+    QString newUnits;
     QStringList vars = this->getVarNames();
     QStringList scalars;
     QString var;
@@ -469,21 +472,32 @@ void enlilEvoFile::_processScalars()
     //get list of scalars
     for(int x = 0; x < vars.size(); x++)
     {
-//        std::cout << "Var: " << var.toAscii().data() << std::endl;
         var = vars[x];
+        QPair<QString, double> conversion = this->_getConvDivForVar(var);
+        divisor = conversion.second;
+        newUnits = conversion.first;
+
         //get the scalar name
         if(var.endsWith("1") || var.endsWith("2") || var.endsWith("3")) continue;
-
-//        std::cout << "Active Var: " << var.toAscii().data() << std::endl;
 
         scalars.push_back(var);
     }
 
-    //TODO: if was want to change units, we should do it here.
-    //copy to proccessed
+    //convert as necessary
     for(int x = 0; x < scalars.count(); x++)
     {
-        this->_variables[scalars[x]] = this->getVar(scalars[x].toAscii().data());
+        QVector<double> oldValues = this->getVar(scalars[x].toAscii().data());
+        QVector<double> newValues;
+
+        for(int y = 0; y < oldValues.count(); y++)
+        {
+            newValues.push_back(oldValues[y]/divisor);
+        }
+
+
+        this->_variables[scalars[x]] = newValues;
+        this->_varUnitsMap[scalars[x]] = newUnits;
+        this->_longNames[scalars[x]] = this->longNames[scalars[x]];
     }
 
 }
@@ -512,6 +526,36 @@ void enlilEvoFile::_processTime()
 
 }
 
+void enlilEvoFile::_addConversion(QString baseUnits, QString newUnits, double divisor)
+{
+    this->_convMap[baseUnits] = qMakePair(newUnits, divisor);
+    this->_processSphericalVectors();
+    this->_processScalars();
+}
+
+QPair<QString,double> enlilEvoFile::_getConvDivForVar(QString var)
+{
+    QString base;
+    QPair<QString,double> divisor;
+    if(this->varUnitsMap.contains(var))
+    {
+        base = this->varUnitsMap[var];
+    }
+
+    if(this->_convMap.contains(base))
+    {
+        //if there is a conversion loaded, use it
+        return _convMap[base];
+    }
+    else
+    {
+        //else use the original
+        return qMakePair(base, 1.0);
+    }
+
+
+}
+
 double* enlilEvoFile::_gridSphere2Cart(const double rtp[], double scale)
 {
     double sf = 0;
@@ -519,8 +563,6 @@ double* enlilEvoFile::_gridSphere2Cart(const double rtp[], double scale)
     //fix scale factor
     if(scale == 0) sf = this->__scale_factor;
     else sf = scale;
-
-    //std::cout << "Scale: " << scale << std::endl;
 
     //calculate
     double* xyz = new double[3];

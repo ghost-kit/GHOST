@@ -2271,6 +2271,8 @@ void vtkEnlilReader::processEVOFiles(vtkInformationVector* &outputVector)
     {
 //        std::cout << "Processing File: " << evoList[x].toAscii().data() << std::endl;
         enlilEvoFile* currentFile = this->evoFiles[evoList[x]];
+        currentFile->addUnitConversion("m/s", "km/s", UNITS::km2m);
+        currentFile->addUnitConversion("kg/m3", "N/cm^3", UNITS::emu * UNITS::km2cm);
 
         //switch to proccessed data
         currentFile->switchOutput();
@@ -2355,6 +2357,8 @@ void vtkEnlilReader::processEVOFiles(vtkInformationVector* &outputVector)
 
         mb->GetMetaData(x)->Set(vtkCompositeDataSet::NAME(), evoList[x].toAscii().data());
         mb->SetBlock(x,output);
+
+        //TODO: LOAD UNITS TO FIELD Data
 
 
     }

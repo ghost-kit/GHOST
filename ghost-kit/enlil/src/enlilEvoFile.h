@@ -11,7 +11,6 @@
 #include <vtknetcdf/cxx/netcdfcpp.h>
 
 
-
 class enlilEvoFile
 {
 public:
@@ -20,6 +19,7 @@ public:
 
     void setFileName(const char *FileName);
     void setName(const char* name);
+    void addUnitConversion(const char* baseUnits, const char* newUnits, double divisor);
 
     QString getFileName();
     QString getName();
@@ -46,8 +46,14 @@ protected:
     // data variables
     QMap<QString, QVector<double> > variables;
     QMap<QString, QVector<double> > _variables;
-    QMap<QString, QString> units;
+
+    // units variables
+    QMap<QString, QString> varUnitsMap;
+    QMap<QString, QString> _varUnitsMap;
+
+    //long name variables
     QMap<QString, QString> longNames;
+    QMap<QString, QString> _longNames;
 
     // MetaData
     QMap<QString, QVariant> fileMetaData;
@@ -71,6 +77,12 @@ private:
     void _processSphericalVectors();
     void _processScalars();
     void _processTime();
+
+    //data conversions
+    //convMap holds conversions: form convMap[rawUnits][newUnits]=divisor
+    QMap<QString, QPair<QString, double> > _convMap;
+    void _addConversion(QString baseUnits, QString newUnits, double divisor);
+    QPair<QString, double> _getConvDivForVar(QString var);
 
 
     //coordinate transforms (the basic ones)
