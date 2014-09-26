@@ -76,7 +76,6 @@ void enlilEvoFile::_initializeFiles()
                     if(varAtts[y] == QString("units") || varAtts[y] == QString("long_name"));
                         this->_loadAttFromVar(vars[x], varAtts[y]);
                 }
-
     }
 
     //process atts
