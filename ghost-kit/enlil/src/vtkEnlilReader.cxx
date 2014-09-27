@@ -545,6 +545,7 @@ void vtkEnlilReader::RemoveAllFileNames()
     this->NumberOfTimeSteps = 0;
     this->TimeSteps.clear();
     this->gridClean = false;
+    this->EvoFilesLoaded = false;
 
     this->FileName = NULL;
     this->Modified();
