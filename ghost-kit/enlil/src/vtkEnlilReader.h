@@ -305,6 +305,7 @@ private:
     void processEVOFiles(vtkInformationVector* &outputVector);
     bool useEvoFiles;
     bool EvoFilesLoaded;
+    bool EvoFilesProcessed;
 
 
     vtkEnlilReader(const vtkEnlilReader&);  // Not implemented.

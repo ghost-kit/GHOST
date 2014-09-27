@@ -34,7 +34,7 @@ public:
     QVariant getMetaData(const char* name);
 
     //switch between raw and processed data
-    void switchOutput();
+    void selectOutput(int version);
 
 
 protected:
@@ -42,18 +42,22 @@ protected:
     QString name;
     QString fileName;
     long stepCount;
+    bool outputRaw;
 
     // data variables
-    QMap<QString, QVector<double> > variables;
-    QMap<QString, QVector<double> > _variables;
+    QMap<QString, QVector<double> > varOutput;
+    QMap<QString, QVector<double> > _variablesRaw;
+    QMap<QString, QVector<double> > _variablesProcessed;
 
     // units variables
-    QMap<QString, QString> varUnitsMap;
-    QMap<QString, QString> _varUnitsMap;
+    QMap<QString, QString> varUnitsOutput;
+    QMap<QString, QString> _varUnitsRaw;
+    QMap<QString, QString> _varUnitsProcessed;
 
     //long name variables
-    QMap<QString, QString> longNames;
-    QMap<QString, QString> _longNames;
+    QMap<QString, QString> longNamesOutput;
+    QMap<QString, QString> _longNamesRaw;
+    QMap<QString, QString> _longNamesProcessed;
 
     // MetaData
     QMap<QString, QVariant> fileMetaData;
@@ -89,7 +93,7 @@ private:
     //these vectors MUST be 3 tuples
     //it is the responsibility of the calling function to
     //   free the memory associated with these conversions
-    double *_gridSphere2Cart(const double rtp[], double scale);
+    double *_gridSphere2Cart(const double rtp[]);
     double *_sphere2Cart(const double rtp[], const double rtpOrigin[]);
 
     // how much to scale the grid

@@ -102,6 +102,7 @@ vtkEnlilReader::vtkEnlilReader()
     this->useEvoFiles = false;
     this->useControlFile = false;
     this->EvoFilesLoaded = false;
+    this->EvoFilesProcessed = false;
 
     //testing file evo file reader
     //enlilEvoFile testFile("/ModelData/Enlil/2014/pStudy/Con20-Test/Joshua_Murphy_082814_SH_18/evo.Earth.nc");
@@ -389,6 +390,32 @@ int vtkEnlilReader::RequestInformation(
 
 
     }
+
+
+    //we need port 1 to be only one time step.
+    DataOutputInfo = outputVector->GetInformationObject(1);
+    status = this->checkStatus(
+                DataOutputInfo,
+                (char*)" Array Name: Data Info Output Information");
+
+    if(status)
+    {
+
+        double timeRange[2] = {0,0};
+        double timeValue=0;
+
+        DataOutputInfo->Set(
+                    vtkStreamingDemandDrivenPipeline::TIME_STEPS(),
+                    &timeValue,
+                    1);
+
+        DataOutputInfo->Set(
+                    vtkStreamingDemandDrivenPipeline::TIME_RANGE(),
+                    timeRange,
+                    2);
+
+    }
+
     return 1;
 }
 
@@ -406,8 +433,6 @@ int vtkEnlilReader::RequestData(
     //need to determine the current requested file
     double requestedTimeValue = this->getRequestedTime(outputVector);
 
-    //    std::cout << "Requested Time Value in Request Data: " << requestedTimeValue << std::endl;
-
     this->CurrentFileName = (char*)this->time2fileMap[requestedTimeValue].c_str();
     this->CurrentPhysicalTime = this->time2physicaltimeMap[requestedTimeValue];
     this->CurrentDateTimeString = (char*) this->time2datestringMap[requestedTimeValue].c_str();
@@ -418,7 +443,6 @@ int vtkEnlilReader::RequestData(
     //Import the MetaData
     this->LoadMetaData(outputVector);
 
-    //    std::cout << __FUNCTION__ <<  " Loaded MetaData" << std::endl;
     this->SetProgress(.05);
 
     //Import the actual Data
@@ -428,10 +452,8 @@ int vtkEnlilReader::RequestData(
     this->locateAndLoadEvoFiles();
     this->processEVOFiles(outputVector);
 
-
     this->SetProgress(1.00);
 
-    //    std::cout << __FUNCTION__ << " Stop" << std::endl;
     return 1;
 
 }
@@ -2193,6 +2215,8 @@ void vtkEnlilReader::addEvoFile(const char *FileName, const char *refName)
 
 void vtkEnlilReader::locateAndLoadEvoFiles()
 {
+    //skip if already processed
+    if(this->EvoFilesLoaded) return;
 
     QStringList directory = QString(this->CurrentFileName).split("/");
     directory[directory.size()-1] = QString("");
@@ -2224,9 +2248,6 @@ void vtkEnlilReader::locateAndLoadEvoFiles()
 
 
     //add the files to the active list
-    //TODO && BUG: Something is causing a sporadic bug here giving a netCDF error.
-    //      NetCDF: Not a valid ID
-
     QStringList evoFileNames = evoFiles.keys();
     for(int x = 0; x < evoFileNames.count(); x++)
     {
@@ -2236,17 +2257,21 @@ void vtkEnlilReader::locateAndLoadEvoFiles()
         this->addEvoFile(qPrintable(filePathName), qPrintable(current));
     }
 
+
+    this->EvoFilesLoaded = true;
 }
 
 void vtkEnlilReader::processEVOFiles(vtkInformationVector* &outputVector)
 {
-//    std::cout << "Processing EVO Files" << std::flush << std::endl;
+
+    //TODO: REFACTOR this to seperate the processing from the loading
+
+    //if we have already proscessed this, skip
+    //if(this->EvoFilesProcessed) return;
 
     vtkInformation* info = outputVector->GetInformationObject(1);
     vtkDataObject* doOutput = info->Get(vtkDataObject::DATA_OBJECT());
     vtkMultiBlockDataSet* mb = vtkMultiBlockDataSet::SafeDownCast(doOutput);
-
-//    std::cout << "Dataset loaded..." << std::endl;
 
     if(!mb)
     {
@@ -2269,13 +2294,13 @@ void vtkEnlilReader::processEVOFiles(vtkInformationVector* &outputVector)
     QStringList evoList = this->evoFiles.keys();
     for(int x = 0; x < evoList.size(); x++)
     {
-//        std::cout << "Processing File: " << evoList[x].toAscii().data() << std::endl;
         enlilEvoFile* currentFile = this->evoFiles[evoList[x]];
         currentFile->addUnitConversion("m/s", "km/s", UNITS::km2m);
         currentFile->addUnitConversion("kg/m3", "N/cm^3", UNITS::emu * UNITS::km2cm);
+        currentFile->addUnitConversion("T", "nT", 1.0/1e9);
 
         //switch to proccessed data
-        currentFile->switchOutput();
+        currentFile->selectOutput(1);
 
         vtkTable* output = vtkTable::New();
 
@@ -2363,6 +2388,7 @@ void vtkEnlilReader::processEVOFiles(vtkInformationVector* &outputVector)
 
     }
 
+    this->EvoFilesProcessed = true;
 }
 
 
@@ -2381,7 +2407,7 @@ int vtkEnlilReader::FillOutputPortInformation(int port, vtkInformation* info)
 
     if(port==1)
     {
-//        std::cout << "EVO Files (Multi-block)" << std::endl;
+        //        std::cout << "EVO Files (Multi-block)" << std::endl;
         info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkMultiBlockDataSet");
     }
 
