@@ -302,10 +302,14 @@ private:
     QMap<QString, enlilEvoFile*> evoFiles;   //environment files
     void addEvoFile(const char* FileName, const char *refName);
     void locateAndLoadEvoFiles();
-    void processEVOFiles(vtkInformationVector* &outputVector);
+    void loadEvoData(vtkInformationVector *&outputVector);
+    void processEVOFiles();
     bool useEvoFiles;
     bool EvoFilesLoaded;
     bool EvoFilesProcessed;
+
+    //EVO Data Storage
+    QMap<QString, QVector<vtkDoubleArray*> > evoData;
 
 
     vtkEnlilReader(const vtkEnlilReader&);  // Not implemented.

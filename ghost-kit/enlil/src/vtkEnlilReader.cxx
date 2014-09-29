@@ -120,6 +120,16 @@ vtkEnlilReader::~vtkEnlilReader()
     {
         delete this->controlFile;
     }
+
+    QStringList files = this->evoData.keys();
+    for(int y = 0; y < this->evoData.count(); y++)
+    {
+        for(int x = 0; x < this->evoData[files[y]].count(); x++)
+        {
+            this->evoData[files[y]][x]->Delete();
+        }
+    }
+
 }
 
 int vtkEnlilReader::findControlFile()
@@ -401,18 +411,8 @@ int vtkEnlilReader::RequestInformation(
     if(status)
     {
 
-        double timeRange[2] = {0,0};
-        double timeValue=0;
-
-        DataOutputInfo->Set(
-                    vtkStreamingDemandDrivenPipeline::TIME_STEPS(),
-                    &timeValue,
-                    1);
-
-        DataOutputInfo->Set(
-                    vtkStreamingDemandDrivenPipeline::TIME_RANGE(),
-                    timeRange,
-                    2);
+        DataOutputInfo->Remove(vtkStreamingDemandDrivenPipeline::TIME_RANGE());
+        DataOutputInfo->Remove(vtkStreamingDemandDrivenPipeline::TIME_STEPS());
 
     }
 
@@ -449,8 +449,12 @@ int vtkEnlilReader::RequestData(
     this->LoadVariableData(outputVector);
 
     //Import EVO file data
-    this->locateAndLoadEvoFiles();
-    this->processEVOFiles(outputVector);
+    if(!this->EvoFilesProcessed)
+    {
+        this->locateAndLoadEvoFiles();
+        this->processEVOFiles();
+    }
+    this->loadEvoData(outputVector);
 
     this->SetProgress(1.00);
 
@@ -2262,48 +2266,21 @@ void vtkEnlilReader::locateAndLoadEvoFiles()
     this->EvoFilesLoaded = true;
 }
 
-void vtkEnlilReader::processEVOFiles(vtkInformationVector* &outputVector)
+void vtkEnlilReader::processEVOFiles()
 {
 
-    //TODO: REFACTOR this to seperate the processing from the loading
-
-    //if we have already proscessed this, skip
-    //if(this->EvoFilesProcessed) return;
-
-    vtkInformation* info = outputVector->GetInformationObject(1);
-    vtkDataObject* doOutput = info->Get(vtkDataObject::DATA_OBJECT());
-    vtkMultiBlockDataSet* mb = vtkMultiBlockDataSet::SafeDownCast(doOutput);
-
-    if(!mb)
-    {
-        std::cerr << "Failed to create multi-block dataset... think again...  this way doesn't work..." << std::endl;
-    }
-
-    //add the evo files
-    int numCurrBlocks = mb->GetNumberOfBlocks();
-    if(numCurrBlocks > 0)
-    {
-        for(int x = 0; x < numCurrBlocks; x++)
-        {
-            mb->RemoveBlock(x);
-        }
-    }
-
-    mb->SetNumberOfBlocks(this->evoFiles.count());
-
-    QString currentEvo;
     QStringList evoList = this->evoFiles.keys();
     for(int x = 0; x < evoList.size(); x++)
     {
         enlilEvoFile* currentFile = this->evoFiles[evoList[x]];
+
+        //TODO: Place in a changable location... this is temp hard coding
         currentFile->addUnitConversion("m/s", "km/s", UNITS::km2m);
         currentFile->addUnitConversion("kg/m3", "N/cm^3", UNITS::emu * UNITS::km2cm);
         currentFile->addUnitConversion("T", "nT", 1.0/1e9);
 
         //switch to proccessed data
         currentFile->selectOutput(1);
-
-        vtkTable* output = vtkTable::New();
 
         //Table creations
 
@@ -2343,8 +2320,7 @@ void vtkEnlilReader::processEVOFiles(vtkInformationVector* &outputVector)
                 Column->InsertNextValue(currentColumn[z]);
             }
 
-            output->AddColumn(Column);
-            Column->Delete();
+            this->evoData[evoList[x]].push_back(Column);
         }
 
         //process vectors
@@ -2373,16 +2349,12 @@ void vtkEnlilReader::processEVOFiles(vtkInformationVector* &outputVector)
                 ColumnRTP->InsertNextTuple3(R[z], T[z], P[z]);
             }
 
-            output->AddColumn(ColumnXYZ);
-            output->AddColumn(ColumnRTP);
-
-            ColumnXYZ->Delete();
-            ColumnRTP->Delete();
+            this->evoData[evoList[x]].push_back(ColumnXYZ);
+            this->evoData[evoList[x]].push_back(ColumnRTP);
 
         }
 
-        mb->GetMetaData(x)->Set(vtkCompositeDataSet::NAME(), evoList[x].toAscii().data());
-        mb->SetBlock(x,output);
+
 
         //TODO: LOAD UNITS TO FIELD Data
 
@@ -2392,6 +2364,50 @@ void vtkEnlilReader::processEVOFiles(vtkInformationVector* &outputVector)
     this->EvoFilesProcessed = true;
 }
 
+void vtkEnlilReader::loadEvoData(vtkInformationVector* &outputVector)
+{
+    vtkInformation* info = outputVector->GetInformationObject(1);
+    vtkDataObject* doOutput = info->Get(vtkDataObject::DATA_OBJECT());
+    vtkMultiBlockDataSet* mb = vtkMultiBlockDataSet::SafeDownCast(doOutput);
+
+    vtkTable* output = vtkTable::New();
+
+    if(!mb)
+    {
+        std::cerr << "Failed to create multi-block dataset... think again...  this way doesn't work..." << std::endl;
+    }
+
+    //create the blocks
+    int numCurrBlocks = mb->GetNumberOfBlocks();
+    if(numCurrBlocks > 0)
+    {
+        for(int x = 0; x < numCurrBlocks; x++)
+        {
+            mb->RemoveBlock(x);
+        }
+    }
+
+    mb->SetNumberOfBlocks(this->evoData.count());
+
+
+    //add data to the blocks
+    QStringList blocks = this->evoData.keys();
+    for(int y=0; y < this->evoData.count();y++)
+    {
+
+        for(int x=0; x < this->evoData[blocks[y]].count(); x++)
+        {
+            output->AddColumn(this->evoData[blocks[y]][x]);
+        }
+
+        mb->GetMetaData(y)->Set(vtkCompositeDataSet::NAME(), blocks[y].toAscii().data());
+        mb->SetBlock(y,output);
+
+        //TODO: add field data
+
+    }
+
+}
 
 
 //---------------------------------------------------------------------------------------------
