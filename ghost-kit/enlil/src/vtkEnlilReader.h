@@ -303,6 +303,7 @@ private:
     void addEvoFile(const char* FileName, const char *refName);
     void locateAndLoadEvoFiles();
     void loadEvoData(vtkInformationVector *&outputVector);
+    void clearEvoData();
     void processEVOFiles();
     bool useEvoFiles;
     bool EvoFilesLoaded;

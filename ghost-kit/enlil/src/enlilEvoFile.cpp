@@ -32,44 +32,44 @@ void enlilEvoFile::_initializeFiles()
 {
 
     //open the file
-    std::cout << "Opening file: " << qPrintable(this->fileName) << std::endl;
+    //std::cout << "Opening file: " << qPrintable(this->fileName) << std::endl;
     this->file = new NcFile(qPrintable(this->fileName));
 
     if(!this->file->is_valid())
     {
-        std::cerr << "Error loading file " << qPrintable(this->fileName) << std::endl;
+        //std::cerr << "Error loading file " << qPrintable(this->fileName) << std::endl;
         return;
     }
 
     //get number of entries
     NcDim *dims = this->file->get_dim("nevo");
-    std::cout << "Dims retrieved..." << std::endl;
+    //std::cout << "Dims retrieved..." << std::endl;
     if(dims->is_valid())
     {
         this->stepCount = dims->size();
-        std::cerr << "stepCount: " << this->stepCount << std::endl;
+        //std::cerr << "stepCount: " << this->stepCount << std::endl;
     }
 
-    std::cout << "Getting Var and Att lists..." << std::endl;
+    //std::cout << "Getting Var and Att lists..." << std::endl;
 
     //get list of variables
     QStringList vars = this->_getVaribleList();
     QStringList atts = this->_getAttributeList();
 
-    std::cout << "Vars and Atts retrieved..." << std::endl;
+    //std::cout << "Vars and Atts retrieved..." << std::endl;
 
     //process vars
     for(int x=0; x < vars.size(); x++)
     {
-        std::cout << "Loading Var: " << vars[x].toAscii().data() << std::endl;
+        //std::cout << "Loading Var: " << vars[x].toAscii().data() << std::endl;
         this->_loadVariable(vars[x]);
 
         QStringList varAtts = this->_getAttListForVar(vars[x]);
 
-                std::cout << "reading attributes" << std::endl;
+                //std::cout << "reading attributes" << std::endl;
                 for(int y=0; y < varAtts.size();y++)
                 {
-                    std::cout << "getting var attributes.." << std::flush << std::endl;
+                   // std::cout << "getting var attributes.." << std::flush << std::endl;
                     //get specified vars if they exist
                     if(varAtts[y] == QString("units") || varAtts[y] == QString("long_name"));
                         this->_loadAttFromVar(vars[x], varAtts[y]);
@@ -156,14 +156,14 @@ void enlilEvoFile::selectOutput(int version)
     switch(version)
     {
     case 0:
-        std::cout << "Using Raw Values..." << std::endl;
+        //std::cout << "Using Raw Values..." << std::endl;
         this->varOutput = _variablesRaw;
         this->varUnitsOutput = _varUnitsRaw;
         this->longNamesOutput = _longNamesRaw;
         break;
 
     case 1:
-        std::cout << "Using Processed Values..." << std::endl;
+       // std::cout << "Using Processed Values..." << std::endl;
         this->varOutput = _variablesProcessed;
         this->varUnitsOutput = _varUnitsProcessed;
         this->longNamesOutput = _longNamesProcessed;
@@ -306,15 +306,15 @@ QStringList enlilEvoFile::_getAttListForVar(QString varName)
 
     for(int x=0; x<numAtts; x++)
     {
-        std::cout << "Getting Attribute: " << x << std::endl;
+        //std::cout << "Getting Attribute: " << x << std::endl;
 
         NcAtt* att = var->get_att(x);
         if(att->is_valid()) values.push_back(QString(att->name()));
 
-        std::cout << "Name: " << att->name() << std::flush << std::endl;
+       // std::cout << "Name: " << att->name() << std::flush << std::endl;
     }
 
-    std::cout << "Returning to calling function..." << std::endl;
+    //std::cout << "Returning to calling function..." << std::endl;
     return values;
 
 }
@@ -421,8 +421,8 @@ void enlilEvoFile::_processSphericalVectors()
         divisor = conversion.second;
         newUnits = conversion.first;
 
-        std::cout << "Divisor: " << divisor << std::endl;
-        std::cout << "Units:   " << qPrintable(newUnits) << std::endl;
+        //std::cout << "Divisor: " << divisor << std::endl;
+        //std::cout << "Units:   " << qPrintable(newUnits) << std::endl;
 
         //get variables to process
         QVector<double> DR = this->_variablesRaw[(QString(vectors[x] + "1").toAscii().data())];

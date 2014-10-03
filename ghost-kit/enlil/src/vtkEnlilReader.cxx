@@ -121,6 +121,12 @@ vtkEnlilReader::~vtkEnlilReader()
         delete this->controlFile;
     }
 
+    this->clearEvoData();
+
+}
+
+void vtkEnlilReader::clearEvoData()
+{
     QStringList files = this->evoData.keys();
     for(int y = 0; y < this->evoData.count(); y++)
     {
@@ -129,7 +135,6 @@ vtkEnlilReader::~vtkEnlilReader()
             this->evoData[files[y]][x]->Delete();
         }
     }
-
 }
 
 int vtkEnlilReader::findControlFile()
@@ -449,11 +454,10 @@ int vtkEnlilReader::RequestData(
     this->LoadVariableData(outputVector);
 
     //Import EVO file data
-    if(!this->EvoFilesProcessed)
-    {
+
         this->locateAndLoadEvoFiles();
         this->processEVOFiles();
-    }
+
     this->loadEvoData(outputVector);
 
     this->SetProgress(1.00);
@@ -550,6 +554,8 @@ void vtkEnlilReader::RemoveAllFileNames()
     this->TimeSteps.clear();
     this->gridClean = false;
     this->EvoFilesLoaded = false;
+    this->EvoFilesProcessed = false;
+    this->clearEvoData();
 
     this->FileName = NULL;
     this->Modified();
@@ -2223,6 +2229,11 @@ void vtkEnlilReader::locateAndLoadEvoFiles()
     //skip if already processed
     if(this->EvoFilesLoaded) return;
 
+    //if the files have change, clear old
+    this->evoFiles.clear();
+    this->evoData.clear();
+    this->EvoFilesProcessed = false;
+
     QStringList directory = QString(this->CurrentFileName).split("/");
     directory[directory.size()-1] = QString("");
     QString path = directory.join("/");
@@ -2247,7 +2258,7 @@ void vtkEnlilReader::locateAndLoadEvoFiles()
 
             evoFiles[nameSplit[1]] = name;
 
-            std::cout << "Found File: " << qPrintable(name) << std::endl;
+            //std::cout << "Found File: " << qPrintable(name) << std::endl;
         }
     }
 
@@ -2256,7 +2267,7 @@ void vtkEnlilReader::locateAndLoadEvoFiles()
     QStringList evoFileNames = evoFiles.keys();
     for(int x = 0; x < evoFileNames.count(); x++)
     {
-        std::cout << std::endl;
+        //std::cout << std::endl;
         QString current = evoFileNames[x];
         QString filePathName = path + evoFiles[current];
         this->addEvoFile(qPrintable(filePathName), qPrintable(current));
@@ -2268,6 +2279,11 @@ void vtkEnlilReader::locateAndLoadEvoFiles()
 
 void vtkEnlilReader::processEVOFiles()
 {
+    //see if load is clean
+    if(this->EvoFilesProcessed) return;
+
+    //if not, clear all
+    this->evoData.clear();
 
     QStringList evoList = this->evoFiles.keys();
     for(int x = 0; x < evoList.size(); x++)
@@ -2275,9 +2291,9 @@ void vtkEnlilReader::processEVOFiles()
         enlilEvoFile* currentFile = this->evoFiles[evoList[x]];
 
         //TODO: Place in a changable location... this is temp hard coding
-        currentFile->addUnitConversion("m/s", "km/s", UNITS::km2m);
-        currentFile->addUnitConversion("kg/m3", "N/cm^3", UNITS::emu * UNITS::km2cm);
-        currentFile->addUnitConversion("T", "nT", 1.0/1e9);
+//        currentFile->addUnitConversion("m/s", "km/s", UNITS::km2m);
+//        currentFile->addUnitConversion("kg/m3", "N/cm^3", UNITS::emu * UNITS::km2cm);
+//        currentFile->addUnitConversion("T", "nT", 1.0/1e9);
 
         //switch to proccessed data
         currentFile->selectOutput(1);
@@ -2370,7 +2386,6 @@ void vtkEnlilReader::loadEvoData(vtkInformationVector* &outputVector)
     vtkDataObject* doOutput = info->Get(vtkDataObject::DATA_OBJECT());
     vtkMultiBlockDataSet* mb = vtkMultiBlockDataSet::SafeDownCast(doOutput);
 
-    vtkTable* output = vtkTable::New();
 
     if(!mb)
     {
@@ -2394,6 +2409,7 @@ void vtkEnlilReader::loadEvoData(vtkInformationVector* &outputVector)
     QStringList blocks = this->evoData.keys();
     for(int y=0; y < this->evoData.count();y++)
     {
+        vtkTable* output = vtkTable::New();
 
         for(int x=0; x < this->evoData[blocks[y]].count(); x++)
         {
@@ -2402,6 +2418,7 @@ void vtkEnlilReader::loadEvoData(vtkInformationVector* &outputVector)
 
         mb->GetMetaData(y)->Set(vtkCompositeDataSet::NAME(), blocks[y].toAscii().data());
         mb->SetBlock(y,output);
+        output->Delete();
 
         //TODO: add field data
 
