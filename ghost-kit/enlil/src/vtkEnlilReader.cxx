@@ -2262,6 +2262,7 @@ void vtkEnlilReader::processEVOFiles()
 
     //if not, clear all
     this->evoData.clear();
+    this->evoUnits.clear();
 
     QStringList evoList = this->evoFiles.keys();
     for(int x = 0; x < evoList.size(); x++)
@@ -2371,7 +2372,10 @@ void vtkEnlilReader::processEVOFiles()
             vtkStringArray *unitsX = vtkStringArray::New();
             unitsX->SetName(QString(unitKeys[u]+" Units").toAscii().data());
             unitsX->SetNumberOfComponents(1);
-            unitsX->InsertNextValue(unitMap[unitKeys[u]].toStdString());
+            unitsX->InsertNextValue("Testing1,2,3,4,5...");
+            unitsX->SetComponentName(0, "Testing1,2,3... name...");
+
+            std::cout << "Units Value: " << unitMap[unitKeys[u]].toAscii().data() << std::endl;
 
             this->evoUnits[evoList[x]].push_back(unitsX);
         }
@@ -2425,9 +2429,16 @@ void vtkEnlilReader::loadEvoData(vtkInformationVector* &outputVector)
         //TODO: add field data
         for(int x=0; x < this->evoUnits[blocks[y]].count(); x++)
         {
+            std::cout << "Field Data: " << this->evoUnits[blocks[y]][x]->GetValue(0) << std::endl;
             output->GetFieldData()->AddArray(this->evoUnits[blocks[y]][x]);
 
         }
+        vtkDoubleArray* test = vtkDoubleArray::New();
+        test->SetName("Test");
+        test->SetNumberOfComponents(1);
+        test->InsertNextValue(1234.543);
+        output->GetFieldData()->AddArray(test);
+        test->Delete();
 
 
         mb->GetMetaData(y)->Set(vtkCompositeDataSet::NAME(), blocks[y].toAscii().data());
