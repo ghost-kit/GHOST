@@ -109,8 +109,6 @@ vtkEnlilReader::vtkEnlilReader()
     this->EvoFilesLoaded = false;
     this->EvoFilesProcessed = false;
 
-    //testing file evo file reader
-    //enlilEvoFile testFile("/ModelData/Enlil/2014/pStudy/Con20-Test/Joshua_Murphy_082814_SH_18/evo.Earth.nc");
 
 }
 
@@ -2248,7 +2246,6 @@ void vtkEnlilReader::locateAndLoadEvoFiles()
     QStringList evoFileNames = evoFiles.keys();
     for(int x = 0; x < evoFileNames.count(); x++)
     {
-        std::cout << "File: " << qPrintable(evoFileNames[x]) << std::endl;
         QString current = evoFileNames[x];
         QString filePathName = path + evoFiles[current];
         this->addEvoFile(qPrintable(filePathName), qPrintable(current));
@@ -2282,6 +2279,7 @@ void vtkEnlilReader::processEVOFiles()
         //Table creations
 
         QStringList columnNames = currentFile->getVarNames();
+        QMap<QString,QString> unitMap;
 
         //get lists of scalars and vectors
         QStringList scalars;
@@ -2294,11 +2292,24 @@ void vtkEnlilReader::processEVOFiles()
             {
                 QStringList split = current.split("_");
                 vectors.push_back(split[0]);
+                if(currentFile->hasUnits(current))
+                {
+                    unitMap[split[0]] = currentFile->getVarUnits(current.toAscii().data());
+                    std::cout << qPrintable(split[0]) << " Units: " << qPrintable(unitMap[split[0]]) << std::endl;
+                }
+
             }
             else
             {
                 scalars.push_back(current);
+                if(currentFile->hasUnits(current))
+                {
+                    unitMap[current] = currentFile->getVarUnits(current.toAscii().data());
+                    std::cout << qPrintable(current) <<" Units: " << qPrintable(unitMap[current]) << std::endl;
+
+                }
             }
+
         }
 
         //remove duplicate entries
@@ -2353,7 +2364,21 @@ void vtkEnlilReader::processEVOFiles()
 
 
 
-        //TODO: LOAD UNITS TO FIELD Data
+        //process field data (Units)
+        QStringList unitKeys = unitMap.keys();
+        for(int u=0; u < unitKeys.count();u++)
+        {
+            vtkStringArray *unitsX = vtkStringArray::New();
+            unitsX->SetName(QString(unitKeys[u]+" Units").toAscii().data());
+            unitsX->SetNumberOfComponents(1);
+            unitsX->InsertNextValue(unitMap[unitKeys[u]].toStdString());
+
+            this->evoUnits[evoList[x]].push_back(unitsX);
+        }
+
+
+        //TODO: Process global field data
+
 
 
     }
@@ -2397,11 +2422,20 @@ void vtkEnlilReader::loadEvoData(vtkInformationVector* &outputVector)
             output->AddColumn(this->evoData[blocks[y]][x]);
         }
 
+        //TODO: add field data
+        for(int x=0; x < this->evoUnits[blocks[y]].count(); x++)
+        {
+            output->GetFieldData()->AddArray(this->evoUnits[blocks[y]][x]);
+
+        }
+
+
         mb->GetMetaData(y)->Set(vtkCompositeDataSet::NAME(), blocks[y].toAscii().data());
         mb->SetBlock(y,output);
         output->Delete();
 
-        //TODO: add field data
+
+
 
     }
 

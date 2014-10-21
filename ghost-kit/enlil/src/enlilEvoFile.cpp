@@ -131,6 +131,17 @@ QStringList enlilEvoFile::getMeataDataNames()
     return this->fileMetaData.keys();
 }
 
+bool enlilEvoFile::hasUnits(const char *name)
+{
+    if(this->varUnitsOutput.contains(QString(name))) return true;
+    else return false;
+}
+
+bool enlilEvoFile::hasUnits(QString name)
+{
+    return hasUnits(name.toAscii().data());
+}
+
 QVector<double> enlilEvoFile::getVar(const char *name)
 {
     return this->varOutput[QString(name)];
@@ -545,9 +556,9 @@ void enlilEvoFile::_processTime()
     QVector<double> timeVec = this->_variablesRaw[("TIME")];
 
     double timeMax = this->getMax(timeVec);
-    if(timeMax > 1e9)
+    if(timeMax > 3.15569e12)
     {
-        std::cout << "Max offset too high..." << std::endl;
+        std::cerr << "Time offset for last time step is more than 100,000 years from the reference time... you may want to check your model output... Cannot calculate a Modified Julian Date for " << qPrintable(this->fileName)<< std::endl;
         return;    //invalid times
     }
 

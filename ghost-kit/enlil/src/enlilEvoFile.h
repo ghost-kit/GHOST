@@ -28,6 +28,9 @@ public:
     QStringList getVarNames();
     QStringList getMeataDataNames();
 
+    bool hasUnits(const char* name);
+    bool hasUnits(QString name);
+
     QVector<double> getVar(const char* name);
     QString getVarUnits(const char* name);
     QString getVarLongName(const char* name);

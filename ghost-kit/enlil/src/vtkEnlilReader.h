@@ -311,6 +311,7 @@ private:
 
     //EVO Data Storage
     QMap<QString, QVector<vtkDoubleArray*> > evoData;
+    QMap<QString, QVector<vtkStringArray*> > evoUnits;
 
 
     vtkEnlilReader(const vtkEnlilReader&);  // Not implemented.
