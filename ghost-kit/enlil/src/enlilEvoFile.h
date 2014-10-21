@@ -9,6 +9,7 @@
 #include <QVariant>
 #include <vtknetcdf/include/netcdf.h>
 #include <vtknetcdf/cxx/netcdfcpp.h>
+#include <QtAlgorithms>
 
 
 class enlilEvoFile
@@ -101,6 +102,8 @@ private:
 
     //file manipulations
     NcFile *file;
+
+    double getMax(QVector<double> vector);
 
 };
 

@@ -541,7 +541,15 @@ void enlilEvoFile::_processTime()
     if(!this->getMeataDataNames().contains("refdate_mjd")) return; //do not process
 
     double refmjd = this->getMetaData("refdate_mjd").toDouble(0);
+
     QVector<double> timeVec = this->_variablesRaw[("TIME")];
+
+    double timeMax = this->getMax(timeVec);
+    if(timeMax > 1e9)
+    {
+        std::cout << "Max offset too high..." << std::endl;
+        return;    //invalid times
+    }
 
     DateTime refDate(refmjd);
 
@@ -553,6 +561,7 @@ void enlilEvoFile::_processTime()
         newDate.incrementSeconds(timeVec[x]);
 
         mjd.push_back(newDate.getMJD());
+
     }
 
     this->_variablesProcessed["MJD"] = mjd;
@@ -610,4 +619,12 @@ double *enlilEvoFile::_sphere2Cart(const double rtp[], const double rtpOrigin[])
     vector[2] = (rtp[0] * cos(rtpOrigin[1])) + (-1.0*rtp[1] * sin(rtpOrigin[1]));
 
     return vector;
+}
+
+double enlilEvoFile::getMax(QVector<double> vector)
+{
+    qSort(vector);
+    double max = vector.last();
+
+    return max;
 }

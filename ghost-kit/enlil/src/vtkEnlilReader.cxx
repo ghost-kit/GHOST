@@ -8,6 +8,7 @@
 #include "vtkFloatArray.h"
 #include "vtkFloatArray.h"
 #include "vtkDoubleArray.h"
+#include "vtkAbstractArray.h"
 #include "vtkTable.h"
 #include "vtkIdList.h"
 #include "vtkInformation.h"
@@ -19,6 +20,9 @@
 #include "vtkStructuredGrid.h"
 #include "vtkUnstructuredGrid.h"
 #include "vtkStreamingDemandDrivenPipeline.h"
+#include "vtkVariantArray.h"
+#include "vtkObjectBase.h"
+#include "vtkStringArray.h"
 
 #include "vtkStringArray.h"
 #include "vtkFloatArray.h"
@@ -28,6 +32,7 @@
 #include "vtkUnstructuredGrid.h"
 #include "vtkMultiBlockDataSetAlgorithm.h"
 #include "vtksys/SystemTools.hxx"
+#include "vtkType.h"
 
 #include <string>
 #include <sstream>
@@ -455,8 +460,8 @@ int vtkEnlilReader::RequestData(
 
     //Import EVO file data
 
-        this->locateAndLoadEvoFiles();
-        this->processEVOFiles();
+    this->locateAndLoadEvoFiles();
+    this->processEVOFiles();
 
     this->loadEvoData(outputVector);
 
@@ -1657,7 +1662,7 @@ int vtkEnlilReader::LoadMetaData(vtkInformationVector *outputVector)
             std::cerr << "Cannot Parse Directory" << std::endl;
         }
 
-        //control file
+        // control file
         if(this->useControlFile)
         {
             //update control file
@@ -1670,94 +1675,70 @@ int vtkEnlilReader::LoadMetaData(vtkInformationVector *outputVector)
             controlFilePath->InsertNextValue(this->controlFileName.toAscii().data());
             Data->GetFieldData()->AddArray(controlFilePath.GetPointer());
 
-            //grid size
-            vtkNew<vtkIntArray> CFgrid;
-            CFgrid->SetName("Grid Dimensions (CF)");
-            CFgrid->SetNumberOfComponents(3);
-            CFgrid->InsertNextTuple3(this->controlFile->getGrid(0), this->controlFile->getGrid(1), this->controlFile->getGrid(2));
-            Data->GetFieldData()->AddArray(CFgrid.GetPointer());
 
-            //Fast Solar Wind Parameters
-            vtkNew<vtkDoubleArray> dFast;
-            dFast->SetName("FSW Density (CF)");
-            dFast->SetNumberOfComponents(1);
-            dFast->InsertNextValue(this->controlFile->getDFast());
-            Data->GetFieldData()->AddArray(dFast.GetPointer());
+            QStringList propertyKeys=this->controlFile->getPropertyList();
 
-            vtkNew<vtkDoubleArray> tFast;
-            tFast->SetName("FSW Temperature (CF)");
-            tFast->SetNumberOfComponents(1);
-            tFast->InsertNextValue(this->controlFile->getTFast());
-            Data->GetFieldData()->AddArray(tFast.GetPointer());
-
-            vtkNew<vtkDoubleArray> vFast;
-            vFast->SetName("FSW Velocity (CF)");
-            vFast->SetNumberOfComponents(1);
-            vFast->InsertNextValue(this->controlFile->getVFast());
-            Data->GetFieldData()->AddArray(vFast.GetPointer());
-
-
-            //Number of CMEs
-            vtkNew<vtkIntArray> nCME;
-            nCME->SetName("Number of CMEs");
-            nCME->SetNumberOfComponents(1);
-            nCME->InsertNextValue(this->controlFile->getNCME());
-            Data->GetFieldData()->AddArray(nCME.GetPointer());
-
-            //CME information
-            for(int x = 0; x < this->controlFile->getNCME(); x++)
+            for(int cf=0; cf < this->controlFile->getNumberOfProperties(); cf++)
             {
-                //create arrays
-                vtkNew<vtkDoubleArray> coneAngle;
-                vtkNew<vtkDoubleArray> cloudVel;
-                vtkNew<vtkDoubleArray> cloudLat;
-                vtkNew<vtkDoubleArray> cloudLon;
-                vtkNew<vtkDoubleArray> cloudStartMJD;
-                vtkNew<vtkStringArray> cloudStartString;
+                QString property=propertyKeys[cf];
+                QList<QVariant> propVals = this->controlFile->getProperty(property);
+                int type = this->controlFile->getType(property);
 
-                //build names
-                QString cmeName = QString("CME ") + QString::number(x);
-                QString CAname = cmeName + QString(" cone angle");
-                QString CVname = cmeName + QString(" Velocity");
-                QString CLatName = cmeName + QString(" Lat");
-                QString CLonName = cmeName + QString(" Lon");
-                QString CSmjdName = cmeName + QString(" Start Time (MJD)");
-                QString CSstringName = cmeName + QString(" Start Time (string)");
+                vtkNew<vtkVariantArray> newColumn;
 
-                //assign names
-                coneAngle->SetName(CAname.toAscii().data());
-                cloudVel->SetName(CVname.toAscii().data());
-                cloudLat->SetName(CLatName.toAscii().data());
-                cloudLon->SetName(CLonName.toAscii().data());
-                cloudStartMJD->SetName(CSmjdName.toAscii().data());
-                cloudStartString->SetName(CSstringName.toAscii().data());
+                switch(type)
+                {
+                case VTK_DOUBLE:
+                {
+                    newColumn->SetNumberOfComponents(propVals.count());
+                    newColumn->SetName(property.toAscii().data());
+                    vtkNew<vtkDoubleArray> numbers;
+                    numbers->SetNumberOfComponents(propVals.count());
+                    double *vals2 =  new double[propVals.count()];
 
-                //set number of components
-                coneAngle->SetNumberOfComponents(1);
-                cloudVel->SetNumberOfComponents(1);
-                cloudLat->SetNumberOfComponents(1);
-                cloudLon->SetNumberOfComponents(1);
-                cloudStartMJD->SetNumberOfComponents(1);
-                cloudStartString->SetNumberOfComponents(1);
+                    if(propVals.count() > 1)
+                    {
+                        for(int t=0; t < propVals.count(); t++)
+                        {
+                            vals2[t] = propVals[t].toDouble();
+                        }
+                        numbers->InsertNextTuple(vals2);
+                        newColumn->InsertNextTuple(0, numbers.GetPointer());
 
-                //populate the arrays
-                coneAngle->InsertNextValue(this->controlFile->getCmeRCloud(x));
-                cloudVel->InsertNextValue(this->controlFile->getCmeVelCloud(x));
-                cloudLat->InsertNextValue(this->controlFile->getCmeLatCloud(x));
-                cloudLon->InsertNextValue(this->controlFile->getCmeLonCloud(x));
-                cloudStartMJD->InsertNextValue(this->controlFile->getCmeDateCloud(x).getMJD());
-                cloudStartString->InsertNextValue(this->controlFile->getCmeDateCloud(x).getDateTimeString().c_str());
+                    }
+                    else
+                    {
+                        newColumn->InsertNextValue(vtkVariant(propVals[0].toDouble()));
 
-                //Add to Paraview
-                Data->GetFieldData()->AddArray(coneAngle.GetPointer());
-                Data->GetFieldData()->AddArray(cloudVel.GetPointer());
-                Data->GetFieldData()->AddArray(cloudLat.GetPointer());
-                Data->GetFieldData()->AddArray(cloudLon.GetPointer());
-                Data->GetFieldData()->AddArray(cloudStartMJD.GetPointer());
-                Data->GetFieldData()->AddArray(cloudStartString.GetPointer());
+                    }
+                    break;
+                }
+                case VTK_STRING:
+                {
+                    newColumn->SetNumberOfComponents(propVals.count());
+                    newColumn->SetName(property.toAscii().data());
 
+                    vtkNew<vtkStringArray> newStrings;
+                    newStrings->SetNumberOfComponents(propVals.count());
+                    for(int t=0; t < propVals.count(); t++)
+                    {
+                        newStrings->InsertNextValue(propVals[t].toString().toAscii().data());
+                        newStrings->SetComponentName(t, propVals[t].toString().toAscii().data());
+                    }
+                    newColumn->InsertNextTuple(0, newStrings.GetPointer());
+
+                    break;
+                }
+                default:
+                    std::cerr << "type failure. CF type should be only string or double" << std::endl;
+                }
+
+
+                Data->GetFieldData()->AddArray(newColumn.GetPointer());
 
             }
+
+
         }
 
 
@@ -2267,7 +2248,7 @@ void vtkEnlilReader::locateAndLoadEvoFiles()
     QStringList evoFileNames = evoFiles.keys();
     for(int x = 0; x < evoFileNames.count(); x++)
     {
-        //std::cout << std::endl;
+        std::cout << "File: " << qPrintable(evoFileNames[x]) << std::endl;
         QString current = evoFileNames[x];
         QString filePathName = path + evoFiles[current];
         this->addEvoFile(qPrintable(filePathName), qPrintable(current));
@@ -2291,9 +2272,9 @@ void vtkEnlilReader::processEVOFiles()
         enlilEvoFile* currentFile = this->evoFiles[evoList[x]];
 
         //TODO: Place in a changable location... this is temp hard coding
-//        currentFile->addUnitConversion("m/s", "km/s", UNITS::km2m);
-//        currentFile->addUnitConversion("kg/m3", "N/cm^3", UNITS::emu * UNITS::km2cm);
-//        currentFile->addUnitConversion("T", "nT", 1.0/1e9);
+        //        currentFile->addUnitConversion("m/s", "km/s", UNITS::km2m);
+        //        currentFile->addUnitConversion("kg/m3", "N/cm^3", UNITS::emu * UNITS::km2cm);
+        //        currentFile->addUnitConversion("T", "nT", 1.0/1e9);
 
         //switch to proccessed data
         currentFile->selectOutput(1);
