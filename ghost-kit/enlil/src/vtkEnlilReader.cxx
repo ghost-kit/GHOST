@@ -2372,10 +2372,7 @@ void vtkEnlilReader::processEVOFiles()
             vtkStringArray *unitsX = vtkStringArray::New();
             unitsX->SetName(QString(unitKeys[u]+" Units").toAscii().data());
             unitsX->SetNumberOfComponents(1);
-            unitsX->InsertNextValue("Testing1,2,3,4,5...");
-            unitsX->SetComponentName(0, "Testing1,2,3... name...");
-
-            std::cout << "Units Value: " << unitMap[unitKeys[u]].toAscii().data() << std::endl;
+            unitsX->InsertNextValue(unitMap[unitKeys[u]].toAscii().data());
 
             this->evoUnits[evoList[x]].push_back(unitsX);
         }
