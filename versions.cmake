@@ -9,8 +9,8 @@
 # endif()
 
 add_revision(hdf4
-    URL "http://www.hdfgroup.org/ftp/HDF/HDF_Current/src/hdf-4.2.10.tar.gz"
-    URL_MD5 5c63e2934778714c7bcd32f0198fbc71)
+    URL "http://www.hdfgroup.org/ftp/HDF/HDF_Current/src/hdf-4.2.11.tar"
+    URL_MD5 da1e9c9a814f6b160a38a786fc4a6c8a)
 
 add_revision(jpeg
         URL "http://www.hdfgroup.org/ftp/lib-external/jpeg/src/jpegsrc.v6b.tar.gz"
@@ -92,8 +92,8 @@ add_revision(fontconfig
   URL_MD5 77e15a92006ddc2adbb06f840d591c0e)
 
 add_revision(qt
-  URL "http://www.paraview.org/files/dependencies/qt-everywhere-opensource-src-4.8.2.tar.gz"
-  URL_MD5 3c1146ddf56247e16782f96910a8423b)
+  URL "http://www.paraview.org/files/dependencies/qt-everywhere-opensource-src-4.8.6.tar.gz"
+  URL_MD5 2edbe4d6c2eff33ef91732602f3518eb)
 
 if (WIN32 OR (CROSS_BUILD_STAGE STREQUAL "CROSS"))
   add_revision(python
@@ -166,7 +166,7 @@ if (ParaView_FROM_GIT)
   # Download PV from GIT
   add_revision(paraview
     GIT_REPOSITORY git://paraview.org/ParaView.git
-    GIT_TAG "master")
+    GIT_TAG "v4.1.0")
 else()
   # Variables to hold the URL and MD5 (optional)
   set (ParaView_URL "http://www.paraview.org/files/v4.0/ParaView-v4.0.1-source.tgz" CACHE
