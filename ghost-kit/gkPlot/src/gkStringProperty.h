@@ -10,7 +10,7 @@
 #include "pqTreeWidgetSelectionHelper.h"
 #include "pqTreeWidgetCheckHelper.h"
 #include "pqTreeWidgetItemObject.h"
-#include "pqSelectionInspectorWidget.h"
+//#include "pqSelectionInspectorWidget.h"
 #include "pqSelectionManager.h"
 #include "pqArrayListDomain.h"
 #include "pqApplicationCore.h"
