@@ -13,6 +13,7 @@
 #include<QString>
 
 #include "enlilControlFile.h"
+#include "enlilEvoFile.h"
 
 
 class vtkDataArraySelection;
@@ -153,7 +154,7 @@ protected:
     int DataUnits;
     bool gridClean;
     int numberOfArrays;
-    int useControlFile;
+    bool useControlFile;
 
     //control file
     enlilControlFile *controlFile;
@@ -296,6 +297,21 @@ private:
     RCache::ReaderCache rVelocityCache;
 
     void cleanCache();
+
+    //EVO files
+    QMap<QString, enlilEvoFile*> evoFiles;   //environment files
+    void addEvoFile(const char* FileName, const char *refName);
+    void locateAndLoadEvoFiles();
+    void loadEvoData(vtkInformationVector *&outputVector);
+    void clearEvoData();
+    void processEVOFiles();
+    bool useEvoFiles;
+    bool EvoFilesLoaded;
+    bool EvoFilesProcessed;
+
+    //EVO Data Storage
+    QMap<QString, QVector<vtkDoubleArray*> > evoData;
+    QMap<QString, QVector<vtkStringArray*> > evoUnits;
 
 
     vtkEnlilReader(const vtkEnlilReader&);  // Not implemented.

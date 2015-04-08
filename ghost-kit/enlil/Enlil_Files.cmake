@@ -14,6 +14,7 @@ set(ENLIL_SRC
         ${ENLIL_SOURCE_DIR}/src/readerCache.cxx
         ${ENLIL_SOURCE_DIR}/src/readerCacheManager.cxx
         ${ENLIL_SOURCE_DIR}/src/enlilControlFile.cpp
+        ${ENLIL_SOURCE_DIR}/src/enlilEvoFile.cpp
     )
 
 set(ENLIL_SM_SRC

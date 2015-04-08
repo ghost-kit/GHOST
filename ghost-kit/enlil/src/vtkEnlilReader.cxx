@@ -8,6 +8,7 @@
 #include "vtkFloatArray.h"
 #include "vtkFloatArray.h"
 #include "vtkDoubleArray.h"
+#include "vtkAbstractArray.h"
 #include "vtkTable.h"
 #include "vtkIdList.h"
 #include "vtkInformation.h"
@@ -19,6 +20,9 @@
 #include "vtkStructuredGrid.h"
 #include "vtkUnstructuredGrid.h"
 #include "vtkStreamingDemandDrivenPipeline.h"
+#include "vtkVariantArray.h"
+#include "vtkObjectBase.h"
+#include "vtkStringArray.h"
 
 #include "vtkStringArray.h"
 #include "vtkFloatArray.h"
@@ -28,6 +32,7 @@
 #include "vtkUnstructuredGrid.h"
 #include "vtkMultiBlockDataSetAlgorithm.h"
 #include "vtksys/SystemTools.hxx"
+#include "vtkType.h"
 
 #include <string>
 #include <sstream>
@@ -41,12 +46,17 @@
 #include <vtknetcdf/cxx/netcdfcpp.h>
 #include <iostream>
 
+#include "enlilEvoFile.h"
+#include "vtkMultiBlockDataSet.h"
 
 #include "ltrDateTime.h"
 #include "readerCache.h"
 #include "vtkNew.h"
 #include <QString>
 #include <QStringList>
+
+#include <QDir>
+
 vtkStandardNewMacro(vtkEnlilReader)
 
 
@@ -59,7 +69,7 @@ vtkEnlilReader::vtkEnlilReader()
     this->FileName = NULL;
 
     //set the number of output ports you will need
-    this->SetNumberOfOutputPorts(1);
+    this->SetNumberOfOutputPorts(2);
 
     //set the number of input ports (Default 0)
     this->SetNumberOfInputPorts(0);
@@ -94,6 +104,11 @@ vtkEnlilReader::vtkEnlilReader()
     this->CellDataArraySelection->AddObserver(vtkCommand::ModifiedEvent, this->SelectionObserver);
 
     this->controlFile = NULL;
+    this->useEvoFiles = false;
+    this->useControlFile = false;
+    this->EvoFilesLoaded = false;
+    this->EvoFilesProcessed = false;
+
 
 }
 
@@ -107,6 +122,21 @@ vtkEnlilReader::~vtkEnlilReader()
     if(this->controlFile)
     {
         delete this->controlFile;
+    }
+
+    this->clearEvoData();
+
+}
+
+void vtkEnlilReader::clearEvoData()
+{
+    QStringList files = this->evoData.keys();
+    for(int y = 0; y < this->evoData.count(); y++)
+    {
+        for(int x = 0; x < this->evoData[files[y]].count(); x++)
+        {
+            this->evoData[files[y]][x]->Delete();
+        }
     }
 }
 
@@ -378,6 +408,22 @@ int vtkEnlilReader::RequestInformation(
 
 
     }
+
+
+    //we need port 1 to be only one time step.
+    DataOutputInfo = outputVector->GetInformationObject(1);
+    status = this->checkStatus(
+                DataOutputInfo,
+                (char*)" Array Name: Data Info Output Information");
+
+    if(status)
+    {
+
+        DataOutputInfo->Remove(vtkStreamingDemandDrivenPipeline::TIME_RANGE());
+        DataOutputInfo->Remove(vtkStreamingDemandDrivenPipeline::TIME_STEPS());
+
+    }
+
     return 1;
 }
 
@@ -395,8 +441,6 @@ int vtkEnlilReader::RequestData(
     //need to determine the current requested file
     double requestedTimeValue = this->getRequestedTime(outputVector);
 
-    //    std::cout << "Requested Time Value in Request Data: " << requestedTimeValue << std::endl;
-
     this->CurrentFileName = (char*)this->time2fileMap[requestedTimeValue].c_str();
     this->CurrentPhysicalTime = this->time2physicaltimeMap[requestedTimeValue];
     this->CurrentDateTimeString = (char*) this->time2datestringMap[requestedTimeValue].c_str();
@@ -407,15 +451,20 @@ int vtkEnlilReader::RequestData(
     //Import the MetaData
     this->LoadMetaData(outputVector);
 
-    //    std::cout << __FUNCTION__ <<  " Loaded MetaData" << std::endl;
     this->SetProgress(.05);
 
     //Import the actual Data
     this->LoadVariableData(outputVector);
 
+    //Import EVO file data
+
+    this->locateAndLoadEvoFiles();
+    this->processEVOFiles();
+
+    this->loadEvoData(outputVector);
+
     this->SetProgress(1.00);
 
-    //    std::cout << __FUNCTION__ << " Stop" << std::endl;
     return 1;
 
 }
@@ -507,6 +556,9 @@ void vtkEnlilReader::RemoveAllFileNames()
     this->NumberOfTimeSteps = 0;
     this->TimeSteps.clear();
     this->gridClean = false;
+    this->EvoFilesLoaded = false;
+    this->EvoFilesProcessed = false;
+    this->clearEvoData();
 
     this->FileName = NULL;
     this->Modified();
@@ -1608,7 +1660,7 @@ int vtkEnlilReader::LoadMetaData(vtkInformationVector *outputVector)
             std::cerr << "Cannot Parse Directory" << std::endl;
         }
 
-        //control file
+        // control file
         if(this->useControlFile)
         {
             //update control file
@@ -1621,94 +1673,70 @@ int vtkEnlilReader::LoadMetaData(vtkInformationVector *outputVector)
             controlFilePath->InsertNextValue(this->controlFileName.toAscii().data());
             Data->GetFieldData()->AddArray(controlFilePath.GetPointer());
 
-            //grid size
-            vtkNew<vtkIntArray> CFgrid;
-            CFgrid->SetName("Grid Dimensions (CF)");
-            CFgrid->SetNumberOfComponents(3);
-            CFgrid->InsertNextTuple3(this->controlFile->getGrid(0), this->controlFile->getGrid(1), this->controlFile->getGrid(2));
-            Data->GetFieldData()->AddArray(CFgrid.GetPointer());
 
-            //Fast Solar Wind Parameters
-            vtkNew<vtkDoubleArray> dFast;
-            dFast->SetName("FSW Density (CF)");
-            dFast->SetNumberOfComponents(1);
-            dFast->InsertNextValue(this->controlFile->getDFast());
-            Data->GetFieldData()->AddArray(dFast.GetPointer());
+            QStringList propertyKeys=this->controlFile->getPropertyList();
 
-            vtkNew<vtkDoubleArray> tFast;
-            tFast->SetName("FSW Temperature (CF)");
-            tFast->SetNumberOfComponents(1);
-            tFast->InsertNextValue(this->controlFile->getTFast());
-            Data->GetFieldData()->AddArray(tFast.GetPointer());
-
-            vtkNew<vtkDoubleArray> vFast;
-            vFast->SetName("FSW Velocity (CF)");
-            vFast->SetNumberOfComponents(1);
-            vFast->InsertNextValue(this->controlFile->getVFast());
-            Data->GetFieldData()->AddArray(vFast.GetPointer());
-
-
-            //Number of CMEs
-            vtkNew<vtkIntArray> nCME;
-            nCME->SetName("Number of CMEs");
-            nCME->SetNumberOfComponents(1);
-            nCME->InsertNextValue(this->controlFile->getNCME());
-            Data->GetFieldData()->AddArray(nCME.GetPointer());
-
-            //CME information
-            for(int x = 0; x < this->controlFile->getNCME(); x++)
+            for(int cf=0; cf < this->controlFile->getNumberOfProperties(); cf++)
             {
-                //create arrays
-                vtkNew<vtkDoubleArray> coneAngle;
-                vtkNew<vtkDoubleArray> cloudVel;
-                vtkNew<vtkDoubleArray> cloudLat;
-                vtkNew<vtkDoubleArray> cloudLon;
-                vtkNew<vtkDoubleArray> cloudStartMJD;
-                vtkNew<vtkStringArray> cloudStartString;
+                QString property=propertyKeys[cf];
+                QList<QVariant> propVals = this->controlFile->getProperty(property);
+                int type = this->controlFile->getType(property);
 
-                //build names
-                QString cmeName = QString("CME ") + QString::number(x);
-                QString CAname = cmeName + QString(" cone angle");
-                QString CVname = cmeName + QString(" Velocity");
-                QString CLatName = cmeName + QString(" Lat");
-                QString CLonName = cmeName + QString(" Lon");
-                QString CSmjdName = cmeName + QString(" Start Time (MJD)");
-                QString CSstringName = cmeName + QString(" Start Time (string)");
+                vtkNew<vtkVariantArray> newColumn;
 
-                //assign names
-                coneAngle->SetName(CAname.toAscii().data());
-                cloudVel->SetName(CVname.toAscii().data());
-                cloudLat->SetName(CLatName.toAscii().data());
-                cloudLon->SetName(CLonName.toAscii().data());
-                cloudStartMJD->SetName(CSmjdName.toAscii().data());
-                cloudStartString->SetName(CSstringName.toAscii().data());
+                switch(type)
+                {
+                case VTK_DOUBLE:
+                {
+                    newColumn->SetNumberOfComponents(propVals.count());
+                    newColumn->SetName(property.toAscii().data());
+                    vtkNew<vtkDoubleArray> numbers;
+                    numbers->SetNumberOfComponents(propVals.count());
+                    double *vals2 =  new double[propVals.count()];
 
-                //set number of components
-                coneAngle->SetNumberOfComponents(1);
-                cloudVel->SetNumberOfComponents(1);
-                cloudLat->SetNumberOfComponents(1);
-                cloudLon->SetNumberOfComponents(1);
-                cloudStartMJD->SetNumberOfComponents(1);
-                cloudStartString->SetNumberOfComponents(1);
+                    if(propVals.count() > 1)
+                    {
+                        for(int t=0; t < propVals.count(); t++)
+                        {
+                            vals2[t] = propVals[t].toDouble();
+                        }
+                        numbers->InsertNextTuple(vals2);
+                        newColumn->InsertNextTuple(0, numbers.GetPointer());
 
-                //populate the arrays
-                coneAngle->InsertNextValue(this->controlFile->getCmeRCloud(x));
-                cloudVel->InsertNextValue(this->controlFile->getCmeVelCloud(x));
-                cloudLat->InsertNextValue(this->controlFile->getCmeLatCloud(x));
-                cloudLon->InsertNextValue(this->controlFile->getCmeLonCloud(x));
-                cloudStartMJD->InsertNextValue(this->controlFile->getCmeDateCloud(x).getMJD());
-                cloudStartString->InsertNextValue(this->controlFile->getCmeDateCloud(x).getDateTimeString().c_str());
+                    }
+                    else
+                    {
+                        newColumn->InsertNextValue(vtkVariant(propVals[0].toDouble()));
 
-                //Add to Paraview
-                Data->GetFieldData()->AddArray(coneAngle.GetPointer());
-                Data->GetFieldData()->AddArray(cloudVel.GetPointer());
-                Data->GetFieldData()->AddArray(cloudLat.GetPointer());
-                Data->GetFieldData()->AddArray(cloudLon.GetPointer());
-                Data->GetFieldData()->AddArray(cloudStartMJD.GetPointer());
-                Data->GetFieldData()->AddArray(cloudStartString.GetPointer());
+                    }
+                    break;
+                }
+                case VTK_STRING:
+                {
+                    newColumn->SetNumberOfComponents(propVals.count());
+                    newColumn->SetName(property.toAscii().data());
 
+                    vtkNew<vtkStringArray> newStrings;
+                    newStrings->SetNumberOfComponents(propVals.count());
+                    for(int t=0; t < propVals.count(); t++)
+                    {
+                        newStrings->InsertNextValue(propVals[t].toString().toAscii().data());
+                        newStrings->SetComponentName(t, propVals[t].toString().toAscii().data());
+                    }
+                    newColumn->InsertNextTuple(0, newStrings.GetPointer());
+
+                    break;
+                }
+                default:
+                    std::cerr << "type failure. CF type should be only string or double" << std::endl;
+                }
+
+
+                Data->GetFieldData()->AddArray(newColumn.GetPointer());
 
             }
+
+
         }
 
 
@@ -1902,8 +1930,8 @@ void vtkEnlilReader::PopulateGridData()
     //Populate Extents
     this->setMyExtents(this->WholeExtent,
                        0, this->Dimension[0]-1,
-            0, this->Dimension[1]-1,
-            0, this->Dimension[2]-1);
+                       0, this->Dimension[1]-1,
+                       0, this->Dimension[2]-1);
 
     //done with grid, thus we now close it
     grid.close();
@@ -2168,6 +2196,258 @@ void vtkEnlilReader::cleanCache()
     this->bFieldCache.cleanCache();
 }
 
+void vtkEnlilReader::addEvoFile(const char *FileName, const char *refName)
+{
+
+    //TODO: make sure this changes if we change the scale factor
+    this->evoFiles[refName] = new enlilEvoFile(FileName, GRID_SCALE::ScaleFactor[this->GetGridScaleType()]);
+}
+
+void vtkEnlilReader::locateAndLoadEvoFiles()
+{
+    //skip if already processed
+    if(this->EvoFilesLoaded) return;
+
+    //if the files have change, clear old
+    this->evoFiles.clear();
+    this->evoData.clear();
+    this->EvoFilesProcessed = false;
+
+    QStringList directory = QString(this->CurrentFileName).split("/");
+    directory[directory.size()-1] = QString("");
+    QString path = directory.join("/");
+
+    //find list of evo files
+    QDir dir(path);
+    dir.setFilter(QDir::Files|QDir::NoSymLinks);
+
+    QFileInfoList fileList = dir.entryInfoList();
+    QMap<QString, QString> evoFiles;
+
+    //find the correct files
+    for(int i=0; i<fileList.size(); i++)
+    {
+        QFileInfo fileInfo = fileList.at(i);
+
+        if(fileInfo.fileName().contains("evo."))
+        {
+
+            QString name(fileInfo.fileName());
+            QStringList nameSplit = name.split(".");
+
+            evoFiles[nameSplit[1]] = name;
+
+            //std::cout << "Found File: " << qPrintable(name) << std::endl;
+        }
+    }
+
+
+    //add the files to the active list
+    QStringList evoFileNames = evoFiles.keys();
+    for(int x = 0; x < evoFileNames.count(); x++)
+    {
+        QString current = evoFileNames[x];
+        QString filePathName = path + evoFiles[current];
+        this->addEvoFile(qPrintable(filePathName), qPrintable(current));
+    }
+
+
+    this->EvoFilesLoaded = true;
+}
+
+void vtkEnlilReader::processEVOFiles()
+{
+    //see if load is clean
+    if(this->EvoFilesProcessed) return;
+
+    //if not, clear all
+    this->evoData.clear();
+    this->evoUnits.clear();
+
+    QStringList evoList = this->evoFiles.keys();
+    for(int x = 0; x < evoList.size(); x++)
+    {
+        enlilEvoFile* currentFile = this->evoFiles[evoList[x]];
+
+        //TODO: Place in a changable location... this is temp hard coding
+        //        currentFile->addUnitConversion("m/s", "km/s", UNITS::km2m);
+        //        currentFile->addUnitConversion("kg/m3", "N/cm^3", UNITS::emu * UNITS::km2cm);
+        //        currentFile->addUnitConversion("T", "nT", 1.0/1e9);
+
+        //switch to proccessed data
+        currentFile->selectOutput(1);
+
+        //Table creations
+
+        QStringList columnNames = currentFile->getVarNames();
+        QMap<QString,QString> unitMap;
+
+        //get lists of scalars and vectors
+        QStringList scalars;
+        QStringList vectors;
+
+        for(int y=0; y<columnNames.size(); y++)
+        {
+            QString current = columnNames[y];
+            if(current.contains("_"))
+            {
+                QStringList split = current.split("_");
+                vectors.push_back(split[0]);
+                if(currentFile->hasUnits(current))
+                {
+                    unitMap[split[0]] = currentFile->getVarUnits(current.toAscii().data());
+                    std::cout << qPrintable(split[0]) << " Units: " << qPrintable(unitMap[split[0]]) << std::endl;
+                }
+
+            }
+            else
+            {
+                scalars.push_back(current);
+                if(currentFile->hasUnits(current))
+                {
+                    unitMap[current] = currentFile->getVarUnits(current.toAscii().data());
+                    std::cout << qPrintable(current) <<" Units: " << qPrintable(unitMap[current]) << std::endl;
+
+                }
+            }
+
+        }
+
+        //remove duplicate entries
+        vectors.removeDuplicates();
+
+        //process for scalar
+        for(int y = 0; y < scalars.size(); y++)
+        {
+
+            vtkDoubleArray *Column = vtkDoubleArray::New();
+            Column->SetName(scalars[y].toAscii().data());
+            Column->SetNumberOfComponents(1);
+            QVector<double> currentColumn = currentFile->getVar(scalars[y].toAscii().data());
+            for(int z = 0; z < currentFile->getStepCount(); z++)
+            {
+                Column->InsertNextValue(currentColumn[z]);
+            }
+
+            this->evoData[evoList[x]].push_back(Column);
+        }
+
+        //process vectors
+        for(int y=0; y< vectors.size();y++)
+        {
+            vtkDoubleArray *ColumnXYZ = vtkDoubleArray::New();
+            ColumnXYZ->SetName(QString(vectors[y]+"_XYZ").toAscii().data());
+            ColumnXYZ->SetNumberOfComponents(3);
+
+            vtkDoubleArray *ColumnRTP = vtkDoubleArray::New();
+            ColumnRTP->SetName(QString(vectors[y]+"_RTP").toAscii().data());
+            ColumnRTP->SetNumberOfComponents(3);
+
+            QVector<double> X = currentFile->getVar(QString(vectors[y] + "_X").toAscii().data());
+            QVector<double> Y = currentFile->getVar(QString(vectors[y] + "_Y").toAscii().data());
+            QVector<double> Z = currentFile->getVar(QString(vectors[y] + "_Z").toAscii().data());
+
+            QVector<double> R = currentFile->getVar(QString(vectors[y] + "_R").toAscii().data());
+            QVector<double> T = currentFile->getVar(QString(vectors[y] + "_T").toAscii().data());
+            QVector<double> P = currentFile->getVar(QString(vectors[y] + "_P").toAscii().data());
+
+
+            for(int z=0; z < X.count(); z++)
+            {
+                ColumnXYZ->InsertNextTuple3(X[z], Y[z], Z[z]);
+                ColumnRTP->InsertNextTuple3(R[z], T[z], P[z]);
+            }
+
+            this->evoData[evoList[x]].push_back(ColumnXYZ);
+            this->evoData[evoList[x]].push_back(ColumnRTP);
+
+        }
+
+
+
+        //process field data (Units)
+        QStringList unitKeys = unitMap.keys();
+        for(int u=0; u < unitKeys.count();u++)
+        {
+            vtkStringArray *unitsX = vtkStringArray::New();
+            unitsX->SetName(QString(unitKeys[u]+" Units").toAscii().data());
+            unitsX->SetNumberOfComponents(1);
+            unitsX->InsertNextValue(unitMap[unitKeys[u]].toAscii().data());
+
+            this->evoUnits[evoList[x]].push_back(unitsX);
+        }
+
+
+        //TODO: Process global field data
+
+
+
+    }
+
+    this->EvoFilesProcessed = true;
+}
+
+void vtkEnlilReader::loadEvoData(vtkInformationVector* &outputVector)
+{
+    vtkInformation* info = outputVector->GetInformationObject(1);
+    vtkDataObject* doOutput = info->Get(vtkDataObject::DATA_OBJECT());
+    vtkMultiBlockDataSet* mb = vtkMultiBlockDataSet::SafeDownCast(doOutput);
+
+
+    if(!mb)
+    {
+        std::cerr << "Failed to create multi-block dataset... think again...  this way doesn't work..." << std::endl;
+    }
+
+    //create the blocks
+    int numCurrBlocks = mb->GetNumberOfBlocks();
+    if(numCurrBlocks > 0)
+    {
+        for(int x = 0; x < numCurrBlocks; x++)
+        {
+            mb->RemoveBlock(x);
+        }
+    }
+
+    mb->SetNumberOfBlocks(this->evoData.count());
+
+
+    //add data to the blocks
+    QStringList blocks = this->evoData.keys();
+    for(int y=0; y < this->evoData.count();y++)
+    {
+        vtkTable* output = vtkTable::New();
+
+        for(int x=0; x < this->evoData[blocks[y]].count(); x++)
+        {
+            output->AddColumn(this->evoData[blocks[y]][x]);
+        }
+
+        //TODO: add field data
+        for(int x=0; x < this->evoUnits[blocks[y]].count(); x++)
+        {
+            std::cout << "Field Data: " << this->evoUnits[blocks[y]][x]->GetValue(0) << std::endl;
+            output->GetFieldData()->AddArray(this->evoUnits[blocks[y]][x]);
+
+        }
+        vtkDoubleArray* test = vtkDoubleArray::New();
+        test->SetName("Test");
+        test->SetNumberOfComponents(1);
+        test->InsertNextValue(1234.543);
+        output->GetFieldData()->AddArray(test);
+        test->Delete();
+
+
+        mb->GetMetaData(y)->Set(vtkCompositeDataSet::NAME(), blocks[y].toAscii().data());
+        mb->SetBlock(y,output);
+        output->Delete();
+
+
+
+
+    }
+
+}
 
 
 //---------------------------------------------------------------------------------------------
@@ -2180,12 +2460,15 @@ int vtkEnlilReader::FillOutputPortInformation(int port, vtkInformation* info)
     if (port==0)
     {
         info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkStructuredGrid");
-
-        return this->Superclass::FillInputPortInformation(port, info);
-
     }
 
-    return 1;
+    if(port==1)
+    {
+        //        std::cout << "EVO Files (Multi-block)" << std::endl;
+        info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkMultiBlockDataSet");
+    }
+
+    return this->Superclass::FillInputPortInformation(port, info);;
 }
 
 //---------------------------------------------------------------------------------------------
@@ -2239,6 +2522,7 @@ void vtkEnlilReader::setUseControlFile(int status)
     {
         //this will deactivate the control file
         this->updateControlFile(false);
+
     }
 
     this->Modified();
