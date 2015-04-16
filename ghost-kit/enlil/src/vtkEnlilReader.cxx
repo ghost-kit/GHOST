@@ -1888,7 +1888,7 @@ int vtkEnlilReader::calculateTimeSteps()
         {
             NcFile data(this->fileNames[x].c_str());
             NcVar* time = data.get_var("TIME");
-            NcAtt* mjd_start = data.get_att("refdate_mjd");
+            NcAtt* mjd_start = data.get_att("rundate_mjd");
 
             DateTime refDate(mjd_start->as_double(0));
             double epochSeconds = refDate.getSecondsSinceEpoch();
