@@ -2247,7 +2247,7 @@ void vtkEnlilReader::locateAndLoadEvoFiles()
 
             evoFiles[nameSplit[1]] = name;
 
-            //std::cout << "Found File: " << qPrintable(name) << std::endl;
+            std::cout << "Found File: " << qPrintable(name) << std::endl;
         }
     }
 
