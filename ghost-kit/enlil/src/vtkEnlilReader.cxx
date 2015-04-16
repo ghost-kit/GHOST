@@ -356,6 +356,8 @@ int vtkEnlilReader::RequestInformation(
         vtkInformationVector** inputVector,
         vtkInformationVector* outputVector)
 {
+    
+    std::cerr << "Starting Request Information" << std::flush << std::endl;
     int status = 0;
 
     // Array names and extents
@@ -376,6 +378,8 @@ int vtkEnlilReader::RequestInformation(
 
     if(status)
     {
+        
+        std::cerr << "getting array names" << std::flush << std::endl;
         //Work Around for restore state problems
         if(this->numberOfArrays == 0)
         {
