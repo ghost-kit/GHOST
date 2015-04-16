@@ -2280,9 +2280,9 @@ void vtkEnlilReader::processEVOFiles()
         enlilEvoFile* currentFile = this->evoFiles[evoList[x]];
 
         //TODO: Place in a changable location... this is temp hard coding
-        //        currentFile->addUnitConversion("m/s", "km/s", UNITS::km2m);
-        //        currentFile->addUnitConversion("kg/m3", "N/cm^3", UNITS::emu * UNITS::km2cm);
-        //        currentFile->addUnitConversion("T", "nT", 1.0/1e9);
+                currentFile->addUnitConversion("m/s", "km/s", UNITS::km2m);
+                currentFile->addUnitConversion("kg/m3", "N/cm^3", UNITS::emu * UNITS::km2cm);
+                currentFile->addUnitConversion("T", "nT", 1.0/1e9);
 
         //switch to proccessed data
         currentFile->selectOutput(1);
