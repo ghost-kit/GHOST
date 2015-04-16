@@ -366,6 +366,8 @@ int vtkEnlilReader::RequestInformation(
                 DataOutputInfo,
                 (char*)" Array Name: Data Info Output Information");
 
+    std::cerr << "Starting Calculate Time Steps" << std::flush << std::endl;
+    
     //Set the Whole Extents and Time
     this->calculateTimeSteps();
 
