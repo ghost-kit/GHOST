@@ -549,9 +549,9 @@ void enlilEvoFile::_processScalars()
 void enlilEvoFile::_processTime()
 {
     if(!this->_variablesRaw.keys().contains("TIME")) return; //do not process
-    if(!this->getMeataDataNames().contains("refdate_mjd")) return; //do not process
+    if(!this->getMeataDataNames().contains("rundate_mjd")) return; //do not process
 
-    double refmjd = this->getMetaData("refdate_mjd").toDouble(0);
+    double refmjd = this->getMetaData("rundate_mjd").toDouble(0);
 
     QVector<double> timeVec = this->_variablesRaw[("TIME")];
 
