@@ -422,8 +422,11 @@ int vtkEnlilReader::RequestInformation(
         DataOutputInfo->Remove(vtkStreamingDemandDrivenPipeline::TIME_RANGE());
         DataOutputInfo->Remove(vtkStreamingDemandDrivenPipeline::TIME_STEPS());
 
+
     }
 
+    std::cerr << "Request Information Completed Successfully" << std::flush << std::endl;
+    
     return 1;
 }
 
