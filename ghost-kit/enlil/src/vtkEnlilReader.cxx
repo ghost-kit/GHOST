@@ -371,6 +371,7 @@ int vtkEnlilReader::RequestInformation(
     //Set the Whole Extents and Time
     this->calculateTimeSteps();
 
+    std::cerr << "Starting Grid Population" << std::flush << std::endl;
     //Setup the grid date
     this->PopulateGridData();
 
