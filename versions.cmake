@@ -169,7 +169,7 @@ if (ParaView_FROM_GIT)
     GIT_TAG "v4.2.0")
 else()
   # Variables to hold the URL and MD5 (optional)
-  set (ParaView_URL "http://www.paraview.org/files/v4.1/ParaView-v4.2.0-source.tar.gz" CACHE
+  set (ParaView_URL "http://www.paraview.org/files/v4.2/ParaView-v4.2.0-source.tar.gz" CACHE
     STRING "Specify the url for ParaView tarball")
   set (ParaView_URL_MD5 "c608d572ef8bbc5bfdbd284c12c578c5" CACHE
     STRING "MD5 of the ParaView tarball")
