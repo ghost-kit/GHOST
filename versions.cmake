@@ -49,6 +49,8 @@ add_revision(cxform
 add_revision(CDFreader
     SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/dep-libs/CDFreader)
 
+
+
 add_revision(zlib
   URL "http://www.paraview.org/files/dependencies/zlib-1.2.7.tar.gz"
   URL_MD5 60df6a37c56e7c1366cca812414f7b85)
@@ -62,6 +64,9 @@ add_revision(png
 add_revision(freetype
   URL "http://paraview.org/files/dependencies/freetype-2.4.8.tar.gz"
   URL_MD5 "5d82aaa9a4abc0ebbd592783208d9c76")
+
+add_revision(fixFreetype
+    SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/dep-libs/fixFreetype)
 
 add_revision(szip
   URL "http://paraview.org/files/dependencies/szip-2.1.tar.gz"
