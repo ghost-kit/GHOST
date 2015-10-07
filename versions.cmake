@@ -9,8 +9,8 @@
 # endif()
 
 add_revision(hdf4
-    URL "http://www.hdfgroup.org/ftp/HDF/HDF_Current/src/hdf-4.2.11.tar"
-    URL_MD5 da1e9c9a814f6b160a38a786fc4a6c8a)
+    URL "http://www.hdfgroup.org/ftp/HDF/HDF_Current/src/hdf-4.2.11.tar.gz"
+    URL_MD5 063f9928f3a19cc21367b71c3b8bbf19)
 
 add_revision(jpeg
         URL "http://www.hdfgroup.org/ftp/lib-external/jpeg/src/jpegsrc.v6b.tar.gz"
