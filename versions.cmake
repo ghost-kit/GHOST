@@ -171,7 +171,7 @@ if (ParaView_FROM_GIT)
   # Download PV from GIT
   add_revision(paraview
     GIT_REPOSITORY git://paraview.org/ParaView.git
-    GIT_TAG "v4.2.0")
+    GIT_TAG "v4.1.0")
 else()
   # Variables to hold the URL and MD5 (optional)
   set (ParaView_URL "http://www.paraview.org/files/v4.2/ParaView-v4.2.0-source.tar.gz" CACHE
