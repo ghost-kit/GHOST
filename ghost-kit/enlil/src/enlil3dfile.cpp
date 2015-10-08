@@ -64,6 +64,7 @@ void enlil3DFile::_initializeFiles()
     std::cout << "Vars and Atts retrieved..." << std::endl;
 
     //process vars
+    //TODO: LOAD TIME FIRST. Then links to methods for getting data
     for(int x=0; x < vars.size(); x++)
     {
         std::cout << "Loading Var: " << vars[x].toAscii().data() << std::endl;
@@ -554,11 +555,33 @@ void enlil3DFile::_processScalars()
 
 void enlil3DFile::_processTime()
 {
-    if(!this->_variablesRaw.keys().contains("TIME")) return; //do not process
-    if(!this->getMeataDataNames().contains("rundate_mjd")) return; //do not process
+    if(!this->_variablesRaw.keys().contains("TIME")) return; //do not process if doesn't have "TIME"
+    if(!this->_variablesRaw.keys().contains("version")) return; //make sure there is a version
 
-    double refmjd = this->getMetaData("rundate_mjd").toDouble(0);
+    double version = this->getMetaData("version"); //need to know the version of the run
 
+
+    // The version of the file dictates the variable name for the reference date
+    if(version < 2.8)
+    {
+        this->runDataString = QString("refdate_mjd");
+    }
+    else    // variable name changed in version 2.8
+    {
+        this->runDataString = QString("rundate_mjd");
+    }
+
+    //If the file does not contain the proper version, throw an error.
+    if(!this->getMeataDataNames().contains(this->runDataString))
+    {
+        std::cerr << "ERROR: Enlil Version " << version << " Does not contain the proper reference date variable for this reader.  Please submit a bug report." << std::endl;
+        return; //do not process
+    }
+
+    //Get the reference date
+    double refmjd = this->getMetaData(this->runDataString).toDouble(0);
+
+    //TODO: Get time ... this is a variable read, so I need to figure out how to dynamically do this...
     QVector<double> timeVec = this->_variablesRaw[("TIME")];
 
     double timeMax = this->getMax(timeVec);

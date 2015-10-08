@@ -197,6 +197,8 @@ protected:
     int NumberOfTimeSteps;                 // Number of time steps
     std::vector<double> TimeSteps;        // Actual times available for request
 
+
+    //TODO: UPDATE TO NEW Data Structures vvvvvv
     double timeRange[2];
     double CurrentPhysicalTime;
     double current_MJD;
@@ -205,6 +207,8 @@ protected:
 
     char* CurrentFileName;
     void SetCurrentFileName(const char* fname);
+    //TODO: END UPDATE NEW DATA STRUCTURES ^^^^^^^
+
 
     // Selected field of interest
     vtkDataArraySelection* PointDataArraySelection;
@@ -213,8 +217,9 @@ protected:
     // Observer to modify this object when array selections are modified
     vtkCallbackCommand* SelectionObserver;
 
-    // Load a variable from data file
 
+
+    // Load a variable from data file
     int GenerateGrid();
     int LoadVariableData(vtkInformationVector *outputVector);
     int LoadArrayValues(std::string array, vtkInformationVector* outputVector);
@@ -288,30 +293,56 @@ protected:
 private:
 
     //Caching implimentation
-    RCache::ReaderCache pDensityCache;
-    RCache::ReaderCache cDensityCache;
-    RCache::ReaderCache temperatureCache;
-    RCache::ReaderCache polarityCache;
-    RCache::ReaderCache bFieldCache;
-    RCache::ReaderCache velocityCache;
-    RCache::ReaderCache rVelocityCache;
+//    RCache::ReaderCache pDensityCache;
+//    RCache::ReaderCache cDensityCache;
+//    RCache::ReaderCache temperatureCache;
+//    RCache::ReaderCache polarityCache;
+//    RCache::ReaderCache bFieldCache;
+//    RCache::ReaderCache velocityCache;
+//    RCache::ReaderCache rVelocityCache;
 
     void cleanCache();
 
     //EVO files
-    QMap<QString, enlilEvoFile*> evoFiles;   //environment files
+    QMap<QString, enlilEvoFile*> evoFiles;   //environment files mapped by environment
     void addEvoFile(const char* FileName, const char *refName);
     void locateAndLoadEvoFiles();
     void loadEvoData(vtkInformationVector *&outputVector);
     void clearEvoData();
     void processEVOFiles();
-    bool useEvoFiles;
-    bool EvoFilesLoaded;
-    bool EvoFilesProcessed;
+    bool _useEvoFiles;
+    bool _EvoFilesLoaded;
+    bool _EvoFilesProcessed;
 
     //EVO Data Storage
-    QMap<QString, QVector<vtkDoubleArray*> > evoData;
-    QMap<QString, QVector<vtkStringArray*> > evoUnits;
+    QMap<QString, QVector<vtkDoubleArray*> > _evoData;
+    QMap<QString, QVector<vtkStringArray*> > _evoUnits;
+
+
+    //TODO: This 3D Data section is currention just a copy of the EVO data section
+    //  above.  It will be tweaked for 3D data soon.
+    /***
+     * 1) parse all files for
+     *      a) mjd
+     *      b) field data
+     *      c) extents
+     * 2) provide interface for getting hypercubes
+     * 3) cache common data (field data, grid, etc.)
+     ***/
+
+    //3D Data Files
+    QMap<double, enlil3DFile*> _3dFiles;    //3D Files mapped by mjd
+    void add3DFile(const char* FileName, double mjd);
+    void load3DData(vtkInformationVector *&outputVector);
+    void clear3DData();
+    void process3DFiles();
+    bool _3DFilesLoaded;
+    bool _3DFilesProcessed;
+
+    //3D Data Storage
+    QMap<double, QMap<QString, QVector<vtkDoubleArray*> > > _3DData;
+    QMap<double, QMap<QString, QVector<vtkStringArray*> > > _3DUnits;
+
 
 
     vtkEnlilReader(const vtkEnlilReader&);  // Not implemented.

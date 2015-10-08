@@ -104,10 +104,10 @@ vtkEnlilReader::vtkEnlilReader()
     this->CellDataArraySelection->AddObserver(vtkCommand::ModifiedEvent, this->SelectionObserver);
 
     this->controlFile = NULL;
-    this->useEvoFiles = false;
+    this->_useEvoFiles = false;
     this->useControlFile = false;
-    this->EvoFilesLoaded = false;
-    this->EvoFilesProcessed = false;
+    this->_EvoFilesLoaded = false;
+    this->_EvoFilesProcessed = false;
 
 
 }
@@ -130,12 +130,12 @@ vtkEnlilReader::~vtkEnlilReader()
 
 void vtkEnlilReader::clearEvoData()
 {
-    QStringList files = this->evoData.keys();
-    for(int y = 0; y < this->evoData.count(); y++)
+    QStringList files = this->_evoData.keys();
+    for(int y = 0; y < this->_evoData.count(); y++)
     {
-        for(int x = 0; x < this->evoData[files[y]].count(); x++)
+        for(int x = 0; x < this->_evoData[files[y]].count(); x++)
         {
-            this->evoData[files[y]][x]->Delete();
+            this->_evoData[files[y]][x]->Delete();
         }
     }
 }
@@ -549,7 +549,7 @@ double vtkEnlilReader::getRequestedTime(vtkInformationVector* outputVector)
 void vtkEnlilReader::AddFileName(const char *fname)
 {
     //    std::cerr << "Added FileName: " << fname << std::endl;
-    this->fileNames.push_back(fname);
+    this->add3DFile(fname);
     this->Modified();
 }
 
@@ -566,8 +566,8 @@ void vtkEnlilReader::RemoveAllFileNames()
     this->NumberOfTimeSteps = 0;
     this->TimeSteps.clear();
     this->gridClean = false;
-    this->EvoFilesLoaded = false;
-    this->EvoFilesProcessed = false;
+    this->_EvoFilesLoaded = false;
+    this->_EvoFilesProcessed = false;
     this->clearEvoData();
 
     this->FileName = NULL;
@@ -991,7 +991,7 @@ int vtkEnlilReader::LoadArrayValues(std::string array, vtkInformationVector* out
             break;
 
         default:
-            std::cout << "DEFAULT - THIS IS AN ERROR" << std::endl << std::flush;
+            std::cerr << "DEFAULT - THIS IS AN ERROR" << std::endl << std::flush;
 
             break;
         }
@@ -2216,12 +2216,12 @@ void vtkEnlilReader::addEvoFile(const char *FileName, const char *refName)
 void vtkEnlilReader::locateAndLoadEvoFiles()
 {
     //skip if already processed
-    if(this->EvoFilesLoaded) return;
+    if(this->_EvoFilesLoaded) return;
 
     //if the files have change, clear old
     this->evoFiles.clear();
-    this->evoData.clear();
-    this->EvoFilesProcessed = false;
+    this->_evoData.clear();
+    this->_EvoFilesProcessed = false;
 
     QStringList directory = QString(this->CurrentFileName).split("/");
     directory[directory.size()-1] = QString("");
@@ -2262,17 +2262,17 @@ void vtkEnlilReader::locateAndLoadEvoFiles()
     }
 
 
-    this->EvoFilesLoaded = true;
+    this->_EvoFilesLoaded = true;
 }
 
 void vtkEnlilReader::processEVOFiles()
 {
     //see if load is clean
-    if(this->EvoFilesProcessed) return;
+    if(this->_EvoFilesProcessed) return;
 
     //if not, clear all
-    this->evoData.clear();
-    this->evoUnits.clear();
+    this->_evoData.clear();
+    this->_evoUnits.clear();
 
     QStringList evoList = this->evoFiles.keys();
     for(int x = 0; x < evoList.size(); x++)
@@ -2339,7 +2339,7 @@ void vtkEnlilReader::processEVOFiles()
                 Column->InsertNextValue(currentColumn[z]);
             }
 
-            this->evoData[evoList[x]].push_back(Column);
+            this->_evoData[evoList[x]].push_back(Column);
         }
 
         //process vectors
@@ -2368,8 +2368,8 @@ void vtkEnlilReader::processEVOFiles()
                 ColumnRTP->InsertNextTuple3(R[z], T[z], P[z]);
             }
 
-            this->evoData[evoList[x]].push_back(ColumnXYZ);
-            this->evoData[evoList[x]].push_back(ColumnRTP);
+            this->_evoData[evoList[x]].push_back(ColumnXYZ);
+            this->_evoData[evoList[x]].push_back(ColumnRTP);
 
         }
 
@@ -2384,7 +2384,7 @@ void vtkEnlilReader::processEVOFiles()
             unitsX->SetNumberOfComponents(1);
             unitsX->InsertNextValue(unitMap[unitKeys[u]].toAscii().data());
 
-            this->evoUnits[evoList[x]].push_back(unitsX);
+            this->_evoUnits[evoList[x]].push_back(unitsX);
         }
 
 
@@ -2394,15 +2394,22 @@ void vtkEnlilReader::processEVOFiles()
 
     }
 
-    this->EvoFilesProcessed = true;
+    this->_EvoFilesProcessed = true;
 }
+
+void vtkEnlilReader::add3DFile(const char *FileName, double mjd)
+{
+
+}
+
+
+
 
 void vtkEnlilReader::loadEvoData(vtkInformationVector* &outputVector)
 {
     vtkInformation* info = outputVector->GetInformationObject(1);
     vtkDataObject* doOutput = info->Get(vtkDataObject::DATA_OBJECT());
     vtkMultiBlockDataSet* mb = vtkMultiBlockDataSet::SafeDownCast(doOutput);
-
 
     if(!mb)
     {
@@ -2419,25 +2426,24 @@ void vtkEnlilReader::loadEvoData(vtkInformationVector* &outputVector)
         }
     }
 
-    mb->SetNumberOfBlocks(this->evoData.count());
-
+    mb->SetNumberOfBlocks(this->_evoData.count());
 
     //add data to the blocks
-    QStringList blocks = this->evoData.keys();
-    for(int y=0; y < this->evoData.count();y++)
+    QStringList blocks = this->_evoData.keys();
+    for(int y=0; y < this->_evoData.count();y++)
     {
         vtkTable* output = vtkTable::New();
 
-        for(int x=0; x < this->evoData[blocks[y]].count(); x++)
+        for(int x=0; x < this->_evoData[blocks[y]].count(); x++)
         {
-            output->AddColumn(this->evoData[blocks[y]][x]);
+            output->AddColumn(this->_evoData[blocks[y]][x]);
         }
 
         //TODO: add field data
-        for(int x=0; x < this->evoUnits[blocks[y]].count(); x++)
+        for(int x=0; x < this->_evoUnits[blocks[y]].count(); x++)
         {
-            std::cout << "Field Data: " << this->evoUnits[blocks[y]][x]->GetValue(0) << std::endl;
-            output->GetFieldData()->AddArray(this->evoUnits[blocks[y]][x]);
+            std::cout << "Field Data: " << this->_evoUnits[blocks[y]][x]->GetValue(0) << std::endl;
+            output->GetFieldData()->AddArray(this->_evoUnits[blocks[y]][x]);
 
         }
         vtkDoubleArray* test = vtkDoubleArray::New();
@@ -2452,13 +2458,207 @@ void vtkEnlilReader::loadEvoData(vtkInformationVector* &outputVector)
         mb->SetBlock(y,output);
         output->Delete();
 
+    }
+
+}
+
+//3D Data File Loading
+
+void vtkEnlilReader::process3DFiles()
+{
+    //see if load is clean
+    if(this->_EvoFilesProcessed) return;
+
+    //if not, clear all
+    this->_evoData.clear();
+    this->_evoUnits.clear();
+
+    QStringList evoList = this->evoFiles.keys();
+    for(int x = 0; x < evoList.size(); x++)
+    {
+        enlilEvoFile* currentFile = this->evoFiles[evoList[x]];
+
+        //TODO: Place in a changable location... this is temp hard coding
+                currentFile->addUnitConversion("m/s", "km/s", UNITS::km2m);
+                currentFile->addUnitConversion("kg/m3", "N/cm^3", UNITS::emu * UNITS::km2cm);
+                currentFile->addUnitConversion("T", "nT", 1.0/1e9);
+
+        //switch to proccessed data
+        currentFile->selectOutput(1);
+
+        //Table creations
+
+        QStringList columnNames = currentFile->getVarNames();
+        QMap<QString,QString> unitMap;
+
+        //get lists of scalars and vectors
+        QStringList scalars;
+        QStringList vectors;
+
+        for(int y=0; y<columnNames.size(); y++)
+        {
+            QString current = columnNames[y];
+            if(current.contains("_"))
+            {
+                QStringList split = current.split("_");
+                vectors.push_back(split[0]);
+                if(currentFile->hasUnits(current))
+                {
+                    unitMap[split[0]] = currentFile->getVarUnits(current.toAscii().data());
+                    std::cout << qPrintable(split[0]) << " Units: " << qPrintable(unitMap[split[0]]) << std::endl;
+                }
+
+            }
+            else
+            {
+                scalars.push_back(current);
+                if(currentFile->hasUnits(current))
+                {
+                    unitMap[current] = currentFile->getVarUnits(current.toAscii().data());
+                    std::cout << qPrintable(current) <<" Units: " << qPrintable(unitMap[current]) << std::endl;
+
+                }
+            }
+
+        }
+
+        //remove duplicate entries
+        vectors.removeDuplicates();
+
+        //process for scalar
+        for(int y = 0; y < scalars.size(); y++)
+        {
+
+            vtkDoubleArray *Column = vtkDoubleArray::New();
+            Column->SetName(scalars[y].toAscii().data());
+            Column->SetNumberOfComponents(1);
+            QVector<double> currentColumn = currentFile->getVar(scalars[y].toAscii().data());
+            for(int z = 0; z < currentFile->getStepCount(); z++)
+            {
+                Column->InsertNextValue(currentColumn[z]);
+            }
+
+            this->_evoData[evoList[x]].push_back(Column);
+        }
+
+        //process vectors
+        for(int y=0; y< vectors.size();y++)
+        {
+            vtkDoubleArray *ColumnXYZ = vtkDoubleArray::New();
+            ColumnXYZ->SetName(QString(vectors[y]+"_XYZ").toAscii().data());
+            ColumnXYZ->SetNumberOfComponents(3);
+
+            vtkDoubleArray *ColumnRTP = vtkDoubleArray::New();
+            ColumnRTP->SetName(QString(vectors[y]+"_RTP").toAscii().data());
+            ColumnRTP->SetNumberOfComponents(3);
+
+            QVector<double> X = currentFile->getVar(QString(vectors[y] + "_X").toAscii().data());
+            QVector<double> Y = currentFile->getVar(QString(vectors[y] + "_Y").toAscii().data());
+            QVector<double> Z = currentFile->getVar(QString(vectors[y] + "_Z").toAscii().data());
+
+            QVector<double> R = currentFile->getVar(QString(vectors[y] + "_R").toAscii().data());
+            QVector<double> T = currentFile->getVar(QString(vectors[y] + "_T").toAscii().data());
+            QVector<double> P = currentFile->getVar(QString(vectors[y] + "_P").toAscii().data());
+
+
+            for(int z=0; z < X.count(); z++)
+            {
+                ColumnXYZ->InsertNextTuple3(X[z], Y[z], Z[z]);
+                ColumnRTP->InsertNextTuple3(R[z], T[z], P[z]);
+            }
+
+            this->_evoData[evoList[x]].push_back(ColumnXYZ);
+            this->_evoData[evoList[x]].push_back(ColumnRTP);
+
+        }
+
+
+
+        //process field data (Units)
+        QStringList unitKeys = unitMap.keys();
+        for(int u=0; u < unitKeys.count();u++)
+        {
+            vtkStringArray *unitsX = vtkStringArray::New();
+            unitsX->SetName(QString(unitKeys[u]+" Units").toAscii().data());
+            unitsX->SetNumberOfComponents(1);
+            unitsX->InsertNextValue(unitMap[unitKeys[u]].toAscii().data());
+
+            this->_evoUnits[evoList[x]].push_back(unitsX);
+        }
+
+
+        //TODO: Process global field data
 
 
 
     }
 
+    this->_EvoFilesProcessed = true;
 }
 
+
+
+void vtkEnlilReader::load3DData(vtkInformationVector* &outputVector)
+{
+    vtkInformation* info = outputVector->GetInformationObject(1);
+    vtkDataObject* doOutput = info->Get(vtkDataObject::DATA_OBJECT());
+    vtkMultiBlockDataSet* mb = vtkMultiBlockDataSet::SafeDownCast(doOutput);
+
+    if(!mb)
+    {
+        std::cerr << "Failed to create multi-block dataset... think again...  this way doesn't work..." << std::endl;
+    }
+
+    //create the blocks
+    int numCurrBlocks = mb->GetNumberOfBlocks();
+    if(numCurrBlocks > 0)
+    {
+        for(int x = 0; x < numCurrBlocks; x++)
+        {
+            mb->RemoveBlock(x);
+        }
+    }
+
+    mb->SetNumberOfBlocks(this->_evoData.count());
+
+    //add data to the blocks
+    QStringList blocks = this->_evoData.keys();
+    for(int y=0; y < this->_evoData.count();y++)
+    {
+        vtkTable* output = vtkTable::New();
+
+        for(int x=0; x < this->_evoData[blocks[y]].count(); x++)
+        {
+            output->AddColumn(this->_evoData[blocks[y]][x]);
+        }
+
+        //TODO: add field data
+        for(int x=0; x < this->_evoUnits[blocks[y]].count(); x++)
+        {
+            std::cout << "Field Data: " << this->_evoUnits[blocks[y]][x]->GetValue(0) << std::endl;
+            output->GetFieldData()->AddArray(this->_evoUnits[blocks[y]][x]);
+
+        }
+        vtkDoubleArray* test = vtkDoubleArray::New();
+        test->SetName("Test");
+        test->SetNumberOfComponents(1);
+        test->InsertNextValue(1234.543);
+        output->GetFieldData()->AddArray(test);
+        test->Delete();
+
+
+        mb->GetMetaData(y)->Set(vtkCompositeDataSet::NAME(), blocks[y].toAscii().data());
+        mb->SetBlock(y,output);
+        output->Delete();
+
+    }
+
+}
+
+void vtkEnlilReader::clear3DData()
+{
+
+}
 
 //---------------------------------------------------------------------------------------------
 //--------------------------------------------------------------

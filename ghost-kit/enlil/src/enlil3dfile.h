@@ -106,6 +106,15 @@ private:
 
     double getMax(QVector<double> vector);
 
+    /**
+     * @brief runDataString
+     * This string takes on the value for the reference date as per the version of the
+     *      Enlil data file.
+     * Version 2.6 and 2.7 -> refdate_mjd
+     * Version 2.8 -> rundate_mjd
+     */
+    QString runDataString;
+
 };
 
 #endif // ENLIL3DFILE_H
