@@ -23,7 +23,7 @@ public:
 
     QString getFileName();
     QString getName();
-    qint64 getStepCount();
+    int getDims(int xyz);
     QStringList getVarNames();
     QStringList getMeataDataNames();
 
@@ -39,11 +39,18 @@ public:
     //switch between raw and processed data
     void selectOutput(int version);
 
+    double getMJD() const;
+
+    double getScale_factor() const;
+    void setScale_factor(double scale_factor);
+
 protected:
     //basic info
     QString name;
     QString fileName;
-    long stepCount;
+    double MJD;
+    qint64 TIME;
+    int dims[3];
     bool outputRaw;
 
     // data variables

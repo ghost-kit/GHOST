@@ -7,6 +7,8 @@
 
 enlil3DFile::enlil3DFile(const char *FileName, double scaleFactor)
 {
+    std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
+
     //setup the object
     this->setFileName(FileName);
     this->__scale_factor = scaleFactor;
@@ -30,15 +32,21 @@ enlil3DFile::enlil3DFile(const char *FileName, double scaleFactor)
 
 enlil3DFile::~enlil3DFile()
 {
+    std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
 
 }
 
 void enlil3DFile::_initializeFiles()
 {
+    std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
+
 
     //open the file
     std::cout << "Opening file: " << qPrintable(this->fileName) << std::endl;
     this->file = new NcFile(qPrintable(this->fileName));
+
+    std::cout << "File Opened..." << std::endl << std::flush;
+
 
     if(!this->file->is_valid())
     {
@@ -47,14 +55,19 @@ void enlil3DFile::_initializeFiles()
     }
 
     //get number of entries
-    NcDim *dims = this->file->get_dim("nevo");
-    std::cout << "Dims retrieved..." << std::endl;
-    if(dims->is_valid())
+    NcDim *dims[3];
+    dims[0] = this->file->get_dim("n1");
+    dims[1] = this->file->get_dim("n2");
+    dims[2] = this->file->get_dim("n3");
+
+    if(dims[0]->is_valid() && dims[1]->is_valid() && dims[2]->is_valid())
     {
-        this->stepCount = dims->size();
-        //std::cerr << "stepCount: " << this->stepCount << std::endl;
+        this->dims[0] = dims[0]->size();
+        this->dims[1] = dims[1]->size();
+        this->dims[2] = dims[2]->size();
     }
 
+    std::cout << "Dims retrieved..." << this->dims[0] << "," << this->dims[1] << "," << this->dims[2] << std::endl;
     std::cout << "Getting Var and Att lists..." << std::endl;
 
     //get list of variables
@@ -63,30 +76,40 @@ void enlil3DFile::_initializeFiles()
 
     std::cout << "Vars and Atts retrieved..." << std::endl;
 
-    //process vars
-    //TODO: LOAD TIME FIRST. Then links to methods for getting data
-    for(int x=0; x < vars.size(); x++)
-    {
-        std::cout << "Loading Var: " << vars[x].toAscii().data() << std::endl;
-        this->_loadVariable(vars[x]);
-
-        QStringList varAtts = this->_getAttListForVar(vars[x]);
-
-                //std::cout << "reading attributes" << std::endl;
-                for(int y=0; y < varAtts.size();y++)
-                {
-                    std::cout << "getting var attributes.." << std::flush << std::endl;
-                    //get specified vars if they exist
-                    if(varAtts[y] == QString("units") || varAtts[y] == QString("long_name"));
-                        this->_loadAttFromVar(vars[x], varAtts[y]);
-                }
-    }
-
     //process atts
     for(int x=0; x < atts.size(); x++)
     {
         this->_loadMetaData(atts[x]);
     }
+
+    //process vars
+    //TODO: LOAD TIME FIRST. Then links to methods for getting data
+    if(vars.contains(QString("TIME")))
+    {
+        this->_loadVariable(QString("TIME"));
+        this->TIME = this->_variablesRaw["TIME"][0];
+    }
+
+
+
+    //    for(int x=0; x < vars.size(); x++)
+    //    {
+    //        std::cout << "Loading Var: " << vars[x].toAscii().data() << std::endl;
+    //        this->_loadVariable(vars[x]);
+
+    //        QStringList varAtts = this->_getAttListForVar(vars[x]);
+
+    //                std::cout << "reading attributes" << std::endl;
+    //                for(int y=0; y < varAtts.size();y++)
+    //                {
+    //                    std::cout << "getting var attributes.." << std::flush << std::endl;
+    //                    //get specified vars if they exist
+    //                    if(varAtts[y] == QString("units") || varAtts[y] == QString("long_name"));
+    //                        this->_loadAttFromVar(vars[x], varAtts[y]);
+    //                }
+    //    }
+
+
 
     this->file->close();
 
@@ -95,84 +118,114 @@ void enlil3DFile::_initializeFiles()
 
 void enlil3DFile::setFileName(const char *FileName)
 {
+    std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
+
     this->fileName = QString(FileName);
 }
 
 void enlil3DFile::setName(const char *name)
 {
+    std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
+
     this->name = QString(name);
 }
 
 void enlil3DFile::addUnitConversion(const char *baseUnits, const char *newUnits, double divisor)
 {
+    std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
+
     this->_addConversion(QString(baseUnits), QString(newUnits), divisor);
 }
 
 QString enlil3DFile::getFileName()
 {
+    std::cout << "Enlil3d Function: " << __FUNCTION__ << std::endl << std::flush;
+
     return this->fileName;
 
 }
 
 QString enlil3DFile::getName()
 {
+    std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
+
     return this->name;
 }
 
-qint64 enlil3DFile::getStepCount()
+int enlil3DFile::getDims(int xyz)
 {
-    return this->stepCount;
+    std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
+
+    return this->dims[xyz];
 
 }
 
 QStringList enlil3DFile::getVarNames()
 {
+    std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
+
     return this->varOutput.keys();
 }
 
 QStringList enlil3DFile::getMeataDataNames()
 {
+    std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
+
     return this->fileMetaData.keys();
 
 }
 
 bool enlil3DFile::hasUnits(const char *name)
 {
+    std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
+
     if(this->varUnitsOutput.contains(QString(name))) return true;
     else return false;
 }
 
 bool enlil3DFile::hasUnits(QString name)
 {
+    std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
+
     return hasUnits(name.toAscii().data());
 }
 
 QVector<double> enlil3DFile::getVar(const char *name)
 {
+    std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
+
     return this->varOutput[QString(name)];
 
 }
 
 QString enlil3DFile::getVarUnits(const char *name)
 {
+    std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
+
     return this->varUnitsOutput[QString(name)];
 
 }
 
 QString enlil3DFile::getVarLongName(const char *name)
 {
+    std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
+
     return this->longNamesOutput[QString(name)];
 
 }
 
 QVariant enlil3DFile::getMetaData(const char *name)
 {
+    std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
+
     return this->fileMetaData[QString(name)];
 
 }
 
 void enlil3DFile::selectOutput(int version)
 {
+    std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
+
     switch(version)
     {
     case 0:
@@ -183,7 +236,7 @@ void enlil3DFile::selectOutput(int version)
         break;
 
     case 1:
-       // std::cout << "Using Processed Values..." << std::endl;
+        // std::cout << "Using Processed Values..." << std::endl;
         this->varOutput = _variablesProcessed;
         this->varUnitsOutput = _varUnitsProcessed;
         this->longNamesOutput = _longNamesProcessed;
@@ -194,10 +247,19 @@ void enlil3DFile::selectOutput(int version)
     }
 }
 
+double enlil3DFile::getMJD() const
+{
+    std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
+
+    return MJD;
+}
+
 
 
 void enlil3DFile::_loadVariable(QString name)
 {
+    std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
+
     long readStart[2] = {0,0};
 
     NcVar *variable = this->file->get_var(name.toAscii().data());
@@ -224,6 +286,9 @@ void enlil3DFile::_loadVariable(QString name)
 
 void enlil3DFile::_loadMetaData(QString name)
 {
+    std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
+    std::cout << "Name: " << name.toAscii().data() << std::endl << std::flush;
+
     NcAtt *attribute = this->file->get_att(name.toAscii().data());
     NcType attType = attribute->type();
     QVariant variant;
@@ -269,6 +334,8 @@ void enlil3DFile::_loadMetaData(QString name)
 
 QStringList enlil3DFile::_getVaribleList()
 {
+    std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
+
     qint64 numVars = this->file->num_vars();
     QStringList values;
 
@@ -283,6 +350,8 @@ QStringList enlil3DFile::_getVaribleList()
 
 QStringList enlil3DFile::_getAttributeList()
 {
+    std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
+
     qint64 numAtts = this->file->num_atts();
     QStringList values;
 
@@ -297,6 +366,8 @@ QStringList enlil3DFile::_getAttributeList()
 
 void enlil3DFile::_loadAttFromVar(QString VarName, QString AttName)
 {
+    std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
+
     QString value;
     NcVar* var = this->file->get_var(VarName.toAscii().data());
     NcAtt* att = var->get_att(AttName.toAscii().data());
@@ -315,6 +386,8 @@ void enlil3DFile::_loadAttFromVar(QString VarName, QString AttName)
 
 QStringList enlil3DFile::_getAttListForVar(QString varName)
 {
+    std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
+
     QStringList values;
     QStringList variables = this->_variablesRaw.keys();
 
@@ -331,7 +404,7 @@ QStringList enlil3DFile::_getAttListForVar(QString varName)
         NcAtt* att = var->get_att(x);
         if(att->is_valid()) values.push_back(QString(att->name()));
 
-       // std::cout << "Name: " << att->name() << std::flush << std::endl;
+        // std::cout << "Name: " << att->name() << std::flush << std::endl;
     }
 
     //std::cout << "Returning to calling function..." << std::endl;
@@ -340,64 +413,68 @@ QStringList enlil3DFile::_getAttListForVar(QString varName)
 
 void enlil3DFile::_processLocation()
 {
-    //check existance of the position values
-    QStringList vars = this->_variablesRaw.keys();
+    //    std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
 
-    if(vars.contains("X1") && vars.contains("X2") && vars.contains("X3"))
-    {
-        QVector<double> x1 = this->_variablesRaw["X1"];
-        QVector<double> x2 = this->_variablesRaw["X2"];
-        QVector<double> x3 = this->_variablesRaw["X3"];
+    //    //check existance of the position values
+    //    QStringList vars = this->_variablesRaw.keys();
 
-        QVector<double> X;
-        QVector<double> Y;
-        QVector<double> Z;
+    //    if(vars.contains("X1") && vars.contains("X2") && vars.contains("X3"))
+    //    {
+    //        QVector<double> x1 = this->_variablesRaw["X1"];
+    //        QVector<double> x2 = this->_variablesRaw["X2"];
+    //        QVector<double> x3 = this->_variablesRaw["X3"];
 
-        QVector<double> R;
-        QVector<double> T;
-        QVector<double> P;
+    //        QVector<double> X;
+    //        QVector<double> Y;
+    //        QVector<double> Z;
 
-        double* rtp = new double[3];
-        double* xyz = NULL;
+    //        QVector<double> R;
+    //        QVector<double> T;
+    //        QVector<double> P;
 
-        for(int a = 0; a < this->stepCount; a++)
-        {
+    //        double* rtp = new double[3];
+    //        double* xyz = NULL;
 
-            rtp[0] = x1[a];
-            rtp[1] = x2[a];
-            rtp[2] = x3[a];
+    //        for(int a = 0; a < this->stepCount; a++)
+    //        {
 
-            xyz = this->_gridSphere2Cart(rtp);
+    //            rtp[0] = x1[a];
+    //            rtp[1] = x2[a];
+    //            rtp[2] = x3[a];
 
-            R.push_back(rtp[0]/this->__scale_factor);
-            T.push_back(rtp[1]);
-            P.push_back(rtp[2]);
+    //            xyz = this->_gridSphere2Cart(rtp);
 
-            X.push_back(xyz[0]/this->__scale_factor);
-            Y.push_back(xyz[1]/this->__scale_factor);
-            Z.push_back(xyz[2]/this->__scale_factor);
+    //            R.push_back(rtp[0]/this->__scale_factor);
+    //            T.push_back(rtp[1]);
+    //            P.push_back(rtp[2]);
 
-            delete [] xyz;
+    //            X.push_back(xyz[0]/this->__scale_factor);
+    //            Y.push_back(xyz[1]/this->__scale_factor);
+    //            Z.push_back(xyz[2]/this->__scale_factor);
 
-        }
+    //            delete [] xyz;
 
-        delete [] rtp;
+    //        }
 
-        //save converted results
-        this->_variablesProcessed["pos_X"] = X;
-        this->_variablesProcessed["pos_Y"] = Y;
-        this->_variablesProcessed["pos_Z"] = Z;
+    //        delete [] rtp;
 
-        //save processed data (RTP)
-        this->_variablesProcessed[QString("pos_R")] = R;
-        this->_variablesProcessed[QString("pos_T")] = T;
-        this->_variablesProcessed[QString("pos_P")] = P;
-    }
+    //        //save converted results
+    //        this->_variablesProcessed["pos_X"] = X;
+    //        this->_variablesProcessed["pos_Y"] = Y;
+    //        this->_variablesProcessed["pos_Z"] = Z;
+
+    //        //save processed data (RTP)
+    //        this->_variablesProcessed[QString("pos_R")] = R;
+    //        this->_variablesProcessed[QString("pos_T")] = T;
+    //        this->_variablesProcessed[QString("pos_P")] = P;
+    //    }
 
 }
 
 void enlil3DFile::_processSphericalVectors()
 {
+    std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
+
     double divisor = 1;
     QString newUnits;
 
@@ -460,30 +537,30 @@ void enlil3DFile::_processSphericalVectors()
         double* xyz = NULL;
 
         //process
-        for(int y=0; y < this->stepCount; y++)
-        {
-            //data origin
-            rtpOrigin[0] = R[y];
-            rtpOrigin[1] = T[y];
-            rtpOrigin[2] = P[y];
+        //        for(int y=0; y < this->stepCount; y++)
+        //        {
+        //            //data origin
+        //            rtpOrigin[0] = R[y];
+        //            rtpOrigin[1] = T[y];
+        //            rtpOrigin[2] = P[y];
 
-            rtp[0] = DR[y];
-            rtp[1] = DT[y];
-            rtp[2] = DP[y];
+        //            rtp[0] = DR[y];
+        //            rtp[1] = DT[y];
+        //            rtp[2] = DP[y];
 
-            //convert
-            xyz = this->_sphere2Cart(rtp, rtpOrigin);
+        //            //convert
+        //            xyz = this->_sphere2Cart(rtp, rtpOrigin);
 
-            DRc.push_back(DR[y]/divisor);
-            DTc.push_back(DT[y]/divisor);
-            DPc.push_back(DP[y]/divisor);
+        //            DRc.push_back(DR[y]/divisor);
+        //            DTc.push_back(DT[y]/divisor);
+        //            DPc.push_back(DP[y]/divisor);
 
-            X.push_back(xyz[0]/divisor);
-            Y.push_back(xyz[1]/divisor);
-            Z.push_back(xyz[2]/divisor);
+        //            X.push_back(xyz[0]/divisor);
+        //            Y.push_back(xyz[1]/divisor);
+        //            Z.push_back(xyz[2]/divisor);
 
-            delete [] xyz;
-        }
+        //            delete [] xyz;
+        //        }
 
         delete [] rtp;
         delete [] rtpOrigin;
@@ -513,6 +590,8 @@ void enlil3DFile::_processSphericalVectors()
 
 void enlil3DFile::_processScalars()
 {
+    std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
+
     double divisor=1;
     QString newUnits;
     QStringList vars = this->_variablesRaw.keys();
@@ -555,11 +634,24 @@ void enlil3DFile::_processScalars()
 
 void enlil3DFile::_processTime()
 {
-    if(!this->_variablesRaw.keys().contains("TIME")) return; //do not process if doesn't have "TIME"
-    if(!this->_variablesRaw.keys().contains("version")) return; //make sure there is a version
+    std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
 
-    double version = this->getMetaData("version"); //need to know the version of the run
+    if(!this->_variablesRaw.keys().contains("TIME"))
+    {
+        std::cerr << "Missing Variable TIME." << std::endl;
+//        exit(1);
+        return; //do not process if doesn't have "TIME"
+    }
 
+    if(!this->getMeataDataNames().contains("version"))
+    {
+        std::cerr << "Missing Versions..." << std::endl;
+        exit(1);
+        return; //make sure there is a version
+    }
+
+    double version = this->getMetaData("version").toDouble(); //need to know the version of the run
+    std::cout << "Version: " << version << std::endl;
 
     // The version of the file dictates the variable name for the reference date
     if(version < 2.8)
@@ -579,7 +671,7 @@ void enlil3DFile::_processTime()
     }
 
     //Get the reference date
-    double refmjd = this->getMetaData(this->runDataString).toDouble(0);
+    double refmjd = this->getMetaData(this->runDataString.toAscii().data()).toDouble(0);
 
     //TODO: Get time ... this is a variable read, so I need to figure out how to dynamically do this...
     QVector<double> timeVec = this->_variablesRaw[("TIME")];
@@ -605,10 +697,13 @@ void enlil3DFile::_processTime()
     }
 
     this->_variablesProcessed["MJD"] = mjd;
+    this->MJD = mjd[0];
 }
 
 void enlil3DFile::_addConversion(QString baseUnits, QString newUnits, double divisor)
 {
+    std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
+
     this->_convMap[baseUnits] = qMakePair(newUnits, divisor);
     this->_processSphericalVectors();
     this->_processScalars();
@@ -616,6 +711,8 @@ void enlil3DFile::_addConversion(QString baseUnits, QString newUnits, double div
 
 QPair<QString, double> enlil3DFile::_getConvDivForVar(QString var)
 {
+    std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
+
     QString base;
     if(this->_varUnitsRaw.keys().contains(var))
     {
@@ -637,6 +734,8 @@ QPair<QString, double> enlil3DFile::_getConvDivForVar(QString var)
 
 double *enlil3DFile::_gridSphere2Cart(const double rtp[])
 {
+    std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
+
     //calculate
     double* xyz = new double[3];
     xyz[0] = rtp[0] * sin(rtp[1]) * cos(rtp[2]);
@@ -648,6 +747,8 @@ double *enlil3DFile::_gridSphere2Cart(const double rtp[])
 
 double *enlil3DFile::_sphere2Cart(const double rtp[], const double rtpOrigin[])
 {
+    std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
+
     double *vector = new double[3];
 
     vector[0] = (rtp[0] * sin(rtpOrigin[1]) * cos(rtpOrigin[2])) + (rtp[1] * cos(rtpOrigin[1]) * cos(rtpOrigin[2])) + (-1.0*rtp[2] * sin(rtpOrigin[2]));
@@ -657,8 +758,25 @@ double *enlil3DFile::_sphere2Cart(const double rtp[], const double rtpOrigin[])
     return vector;
 }
 
+double enlil3DFile::getScale_factor() const
+{
+    std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
+
+    return __scale_factor;
+}
+
+void enlil3DFile::setScale_factor(double scale_factor)
+{
+    std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
+
+    //TODO: CRITICAL: Must re-calculate after scale-factor is set.
+    __scale_factor = scale_factor;
+}
+
 double enlil3DFile::getMax(QVector<double> vector)
 {
+    std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
+
     qSort(vector);
     double max = vector.last();
 

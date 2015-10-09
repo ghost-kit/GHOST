@@ -14,6 +14,7 @@
 
 #include "enlilControlFile.h"
 #include "enlilEvoFile.h"
+#include "enlil3dfile.h"
 
 
 class vtkDataArraySelection;
@@ -98,11 +99,9 @@ public:
         this->Modified();
     }
 
+    char* GetCurrentFileName();
+
     vtkGetMacro(DataUnits, int)
-
-
-    vtkSetStringMacro(FileName)
-    vtkGetStringMacro(FileName)
 
     vtkSetVector6Macro(WholeExtent, int)
     vtkGetVector6Macro(WholeExtent, int)
@@ -137,7 +136,7 @@ public:
     unsigned int GetNumberOfFileNames();
     const char *GetFileName(unsigned int idx);
 
-    vtkGetStringMacro(CurrentFileName);
+//    vtkGetStringMacro(CurrentFileName)
 
 
     void readVector(std::string array, vtkFloatArray *DataArray, vtkInformationVector* outputVector, const int &dataID);
@@ -149,7 +148,6 @@ protected:
     vtkEnlilReader();
     ~vtkEnlilReader();
 
-    char* FileName;            // Base file name
     int GridScaleType;
     int DataUnits;
     bool gridClean;
@@ -195,7 +193,7 @@ protected:
 
     // Time step information
     int NumberOfTimeSteps;                 // Number of time steps
-    std::vector<double> TimeSteps;        // Actual times available for request
+    QList<double> TimeSteps;        // Actual times available for request
 
 
     //TODO: UPDATE TO NEW Data Structures vvvvvv
@@ -205,8 +203,8 @@ protected:
     char* CurrentDateTimeString;
     bool timesCalulated;
 
-    char* CurrentFileName;
-    void SetCurrentFileName(const char* fname);
+    enlil3DFile* CurrentFile;
+    void SetCurrentFile(const char* fname);
     //TODO: END UPDATE NEW DATA STRUCTURES ^^^^^^^
 
 
@@ -332,7 +330,7 @@ private:
 
     //3D Data Files
     QMap<double, enlil3DFile*> _3dFiles;    //3D Files mapped by mjd
-    void add3DFile(const char* FileName, double mjd);
+    void add3DFile(enlil3DFile *file, double mjd);
     void load3DData(vtkInformationVector *&outputVector);
     void clear3DData();
     void process3DFiles();

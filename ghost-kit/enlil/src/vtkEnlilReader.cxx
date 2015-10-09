@@ -65,8 +65,9 @@ vtkStandardNewMacro(vtkEnlilReader)
 //---------------------------------------------------------------
 vtkEnlilReader::vtkEnlilReader()
 {
+
+    std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
     int nulExtent[6] = {0,0,0,0,0,0};
-    this->FileName = NULL;
 
     //set the number of output ports you will need
     this->SetNumberOfOutputPorts(2);
@@ -85,6 +86,7 @@ vtkEnlilReader::vtkEnlilReader()
     //Configure sytem array interfaces
     this->Points = NULL;
     this->Radius = NULL;
+    this->CurrentFile = NULL;
     this->gridClean = false;
     this->infoClean = false;
 
@@ -115,6 +117,8 @@ vtkEnlilReader::vtkEnlilReader()
 //---------------------------------------------------------------------------------------------
 vtkEnlilReader::~vtkEnlilReader()
 {
+    std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
+
     this->PointDataArraySelection->Delete();
     this->CellDataArraySelection->Delete();
     this->SelectionObserver->Delete();
@@ -130,6 +134,8 @@ vtkEnlilReader::~vtkEnlilReader()
 
 void vtkEnlilReader::clearEvoData()
 {
+    std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
+
     QStringList files = this->_evoData.keys();
     for(int y = 0; y < this->_evoData.count(); y++)
     {
@@ -142,34 +148,44 @@ void vtkEnlilReader::clearEvoData()
 
 int vtkEnlilReader::findControlFile()
 {
+    std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
+
     //TODO: find the control file in the current file directory.
     //  if cannot find it, deactivate useControlFile and throw
     //  A vtkErrorMacro()
 
-    //Look in current directory for control file with the name of "control_file"
-    QStringList directory = QString(this->CurrentFileName).split("/");
-    directory[directory.size()-1] = QString("control_file");
+    //    //Look in current directory for control file with the name of "control_file"
+    //    QStringList directory = this->CurrentFile->getFileName().split("/");
+    //    directory[directory.size()-1] = QString("control_file");
 
-    QString CFPath = directory.join("/");
+    //    QString CFPath = directory.join("/");
 
-    //check existence
-    std::ifstream file(CFPath.toAscii().data());
-    if (file.good())
-    {
+    //    //check existence
+    //    std::ifstream file(CFPath.toAscii().data());
+    //    if (file.good())
+    //    {
 
-        file.close();
-        this->controlFileName.clear();
-        this->controlFileName = CFPath;
+    //        file.close();
+    //        this->controlFileName.clear();
+    //        this->controlFileName = CFPath;
 
-        return true;
-    }
+    //        return true;
+    //    }
 
-    std::cerr << "File Not Found " << std::endl;
+    //    std::cerr << "File Not Found " << std::endl;
 
-    file.close();
-    this->controlFileName.clear();
+    //    file.close();
+    //    this->controlFileName.clear();
 
     return false;
+}
+
+void vtkEnlilReader::SetCurrentFile(const char *fname)
+{
+    std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
+
+    std::cout << "Unimplemented.... " << __FUNCTION__ << std::endl << std::flush;
+    exit(1);
 }
 
 //---------------------------------------------------------------------------------------------
@@ -189,6 +205,8 @@ int vtkEnlilReader::findControlFile()
  */
 int vtkEnlilReader::GetNumberOfPointArrays()
 {
+    std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
+
     return this->PointDataArraySelection->GetNumberOfArrays();
 }
 //---------------------------------------------------------------------------------------------
@@ -198,6 +216,8 @@ int vtkEnlilReader::GetNumberOfPointArrays()
  */
 int vtkEnlilReader::GetNumberOfCellArrays()
 {
+    std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
+
     return this->CellDataArraySelection->GetNumberOfArrays();
 }
 //---------------------------------------------------------------------------------------------
@@ -207,6 +227,8 @@ int vtkEnlilReader::GetNumberOfCellArrays()
  */
 const char* vtkEnlilReader::GetPointArrayName(int index)
 {
+    std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
+
     return this->PointDataArraySelection->GetArrayName(index);
 }
 
@@ -217,6 +239,8 @@ const char* vtkEnlilReader::GetPointArrayName(int index)
  */
 const char* vtkEnlilReader::GetCellArrayName(int index)
 {
+    std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
+
     return this->CellDataArraySelection->GetArrayName(index);
 }
 
@@ -227,6 +251,8 @@ const char* vtkEnlilReader::GetCellArrayName(int index)
  */
 int vtkEnlilReader::GetPointArrayStatus(const char *name)
 {
+    std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
+
     return this->PointDataArraySelection->GetArraySetting(name);
 }
 
@@ -237,6 +263,8 @@ int vtkEnlilReader::GetPointArrayStatus(const char *name)
  */
 int vtkEnlilReader::GetCellArrayStatus(const char *name)
 {
+    std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
+
     return this->CellDataArraySelection->GetArraySetting(name);
 }
 
@@ -247,6 +275,8 @@ int vtkEnlilReader::GetCellArrayStatus(const char *name)
  */
 void vtkEnlilReader::SetPointArrayStatus(const char *name, int status)
 {
+    std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
+
     //  std::cout << __FUNCTION__ << " Called with status: " << status << std::endl;
 
     if(status)
@@ -276,6 +306,8 @@ void vtkEnlilReader::SetPointArrayStatus(const char *name, int status)
  */
 void vtkEnlilReader::SetCellArrayStatus(const char *name, int status)
 {
+    std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
+
     if(status == 1)
         this->CellDataArraySelection->EnableArray(name);
     else
@@ -295,6 +327,8 @@ void vtkEnlilReader::SetCellArrayStatus(const char *name, int status)
  */
 void vtkEnlilReader::DisableAllPointArrays()
 {
+    std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
+
     this->PointDataArraySelection->DisableAllArrays();
 
     this->Modified();
@@ -307,6 +341,8 @@ void vtkEnlilReader::DisableAllPointArrays()
  */
 void vtkEnlilReader::DisableAllCellArrays()
 {
+    std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
+
     this->CellDataArraySelection->DisableAllArrays();
 
     this->Modified();
@@ -319,6 +355,8 @@ void vtkEnlilReader::DisableAllCellArrays()
  */
 void vtkEnlilReader::EnableAllPointArrays()
 {
+    std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
+
     this->PointDataArraySelection->EnableAllArrays();
 
     this->Modified();
@@ -331,6 +369,8 @@ void vtkEnlilReader::EnableAllPointArrays()
  */
 void vtkEnlilReader::EnableAllCellArrays()
 {
+    std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
+
     this->CellDataArraySelection->EnableAllArrays();
     this->Modified();
 }
@@ -346,6 +386,8 @@ void vtkEnlilReader::EnableAllCellArrays()
 
 int vtkEnlilReader::CanReadFiles(const char *filename)
 {
+    std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
+
     //This doesn't really do anything right now...
     return 1;
 }
@@ -356,8 +398,9 @@ int vtkEnlilReader::RequestInformation(
         vtkInformationVector** inputVector,
         vtkInformationVector* outputVector)
 {
+    std::cout << "Function: " << __FUNCTION__ << std::endl;
     
-    std::cerr << "Starting Request Information" << std::flush << std::endl;
+    std::cout << "Starting Request Information" << std::flush << std::endl;
     int status = 0;
 
     // Array names and extents
@@ -366,23 +409,23 @@ int vtkEnlilReader::RequestInformation(
                 DataOutputInfo,
                 (char*)" Array Name: Data Info Output Information");
 
-    std::cerr << "Starting Calculate Time Steps" << std::flush << std::endl;
+    std::cout << "Starting Calculate Time Steps" << std::flush << std::endl;
     
     //Set the Whole Extents and Time
     this->calculateTimeSteps();
 
-    std::cerr << "Starting Grid Population" << std::flush << std::endl;
+    std::cout << "Starting Grid Population" << std::flush << std::endl;
     //Setup the grid date
     this->PopulateGridData();
 
     //get information from the first file in the list... it has to come from somewhere...
-    this->CurrentFileName = (char*) this->fileNames[0].c_str();
-    this->FileName = CurrentFileName;
+    this->CurrentFile = this->_3dFiles[this->TimeSteps[0]];
 
+    std::cout << "Status: " << status << std::endl;
     if(status)
     {
         
-        std::cerr << "getting array names" << std::flush << std::endl;
+        std::cout << "getting array names" << std::flush << std::endl;
         //Work Around for restore state problems
         if(this->numberOfArrays == 0)
         {
@@ -397,7 +440,7 @@ int vtkEnlilReader::RequestInformation(
 
         DataOutputInfo->Set(
                     vtkStreamingDemandDrivenPipeline::TIME_STEPS(),
-                    this->TimeSteps.data(),
+                    this->TimeSteps.toVector().data(),
                     this->NumberOfTimeSteps);
 
         DataOutputInfo->Set(
@@ -432,7 +475,7 @@ int vtkEnlilReader::RequestInformation(
 
     }
 
-    std::cerr << "Request Information Completed Successfully" << std::flush << std::endl;
+    std::cout << "Request Information Completed Successfully" << std::flush << std::endl;
     
     return 1;
 }
@@ -444,6 +487,8 @@ int vtkEnlilReader::RequestData(
         vtkInformationVector** inputVector,
         vtkInformationVector* outputVector)
 {
+    std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
+
     //    std::cout << __FUNCTION__ << " Start" << std::endl;
 
     this->SetProgress(0);
@@ -451,12 +496,9 @@ int vtkEnlilReader::RequestData(
     //need to determine the current requested file
     double requestedTimeValue = this->getRequestedTime(outputVector);
 
-    this->CurrentFileName = (char*)this->time2fileMap[requestedTimeValue].c_str();
-    this->CurrentPhysicalTime = this->time2physicaltimeMap[requestedTimeValue];
-    this->CurrentDateTimeString = (char*) this->time2datestringMap[requestedTimeValue].c_str();
-
-    //hack to be fixed
-    this->FileName = this->CurrentFileName;
+    this->CurrentFile =  this->_3dFiles[requestedTimeValue];
+    //    this->CurrentPhysicalTime = this->time2physicaltimeMap[requestedTimeValue];
+    //    this->CurrentDateTimeString = (char*) this->time2datestringMap[requestedTimeValue].c_str();
 
     //Import the MetaData
     this->LoadMetaData(outputVector);
@@ -483,6 +525,8 @@ int vtkEnlilReader::RequestData(
 //Get the Requested Time Step
 double vtkEnlilReader::getRequestedTime(vtkInformationVector* outputVector)
 {
+    std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
+
     vtkInformation* outInfo = outputVector->GetInformationObject(0);
 
     double requestedTimeValue = this->TimeSteps[0];
@@ -498,10 +542,13 @@ double vtkEnlilReader::getRequestedTime(vtkInformationVector* outputVector)
         //find the first time step where the value is greater than requested
         while(this->TimeSteps[x] < requestedTimeValue && x < this->NumberOfTimeSteps-1)
         {
+            std::cout << "Time: " << this->TimeSteps[x] << std::endl << std::flush;
             x++;
         }
-        //        std::cout << "x counter: " << x << std::endl;
-        //        std::cout << "number of time steps " << this->NumberOfTimeSteps << std::endl;
+        std::cout << "x counter: " << x << std::endl;
+        std::cout << "number of time steps " << this->NumberOfTimeSteps << std::endl;
+
+        exit(1);
 
         upper = this->TimeSteps[x];
 
@@ -546,37 +593,55 @@ double vtkEnlilReader::getRequestedTime(vtkInformationVector* outputVector)
 //---------------------------------------------------------------------------------------------
 //Methods for file series
 
+
+
 void vtkEnlilReader::AddFileName(const char *fname)
 {
-    //    std::cerr << "Added FileName: " << fname << std::endl;
-    this->add3DFile(fname);
+    std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
+
+    //TODO: when adding file, must open briefly, get the time stamp, and close.
+    double timestamp=0;
+
+    enlil3DFile* file = new enlil3DFile(fname, 1);
+    timestamp = file->getMJD();
+
+    this->add3DFile(file,timestamp);
     this->Modified();
+
+    std::cout << "Added File: " << fname << std::endl;
+
 }
 
 const char* vtkEnlilReader::GetFileName(unsigned int idx)
 {
+    std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
+
     return this->fileNames[idx].c_str();
 }
 
 void vtkEnlilReader::RemoveAllFileNames()
 {
-    this->fileNames.clear();
-    this->numberOfArrays = 0;
-    this->timesCalulated = false;
-    this->NumberOfTimeSteps = 0;
-    this->TimeSteps.clear();
-    this->gridClean = false;
-    this->_EvoFilesLoaded = false;
-    this->_EvoFilesProcessed = false;
-    this->clearEvoData();
+    std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
 
-    this->FileName = NULL;
-    this->Modified();
+    //    this->fileNames.clear();
+    //    this->numberOfArrays = 0;
+    //    this->timesCalulated = false;
+    //    this->NumberOfTimeSteps = 0;
+    //    this->TimeSteps.clear();
+    //    this->gridClean = false;
+    //    this->_EvoFilesLoaded = false;
+    //    this->_EvoFilesProcessed = false;
+    //    this->clearEvoData();
+
+    //    this->FileName = NULL;
+    //    this->Modified();
 }
 
 unsigned int vtkEnlilReader::GetNumberOfFileNames()
 {
-    return this->fileNames.size();
+    std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
+
+    return this->_3dFiles.count();
 }
 
 //=================== END CORE METHODS =======================
@@ -589,6 +654,8 @@ void vtkEnlilReader::SelectionCallback(
         void* clientdata,
         void* vtkNotUsed(calldata))
 {
+    std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
+
 
     static_cast<vtkEnlilReader*>(clientdata)->Modified();
 }
@@ -607,6 +674,8 @@ void vtkEnlilReader::SelectionCallback(
 //-- Return 0 for failure, 1 for success --//
 int vtkEnlilReader::LoadVariableData(vtkInformationVector* outputVector)
 {
+    std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
+
     int newExtent[6];
 
     vtkStructuredGrid* Data = vtkStructuredGrid::GetData(outputVector, 0);
@@ -696,6 +765,8 @@ int vtkEnlilReader::LoadVariableData(vtkInformationVector* outputVector)
 //we will need to incorporate the changes here.
 void vtkEnlilReader::readVector(std::string array, vtkFloatArray *DataArray,  vtkInformationVector* outputVector, const int &dataID)
 {
+
+    std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
 
     double xyz[3] = {0.0, 0.0, 0.0};
 
@@ -790,6 +861,8 @@ void vtkEnlilReader::readVector(std::string array, vtkFloatArray *DataArray,  vt
 //---------------------------------------------------------------------------------------------
 void vtkEnlilReader::readScalar(vtkStructuredGrid *Data, vtkFloatArray *DataArray, std::string array, vtkInformationVector* outputVector, int dataID)
 {
+    std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
+
     DataArray->SetNumberOfComponents(1);  //Scalar
 
     //array pointers
@@ -848,6 +921,8 @@ void vtkEnlilReader::readScalar(vtkStructuredGrid *Data, vtkFloatArray *DataArra
 //---------------------------------------------------------------------------------------------
 void vtkEnlilReader::getDataID(std::string array, int &dataID)
 {
+    std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
+
     QString arrayName(array.c_str());
 
     if(arrayName.contains("Density") && arrayName.contains("cloud"))
@@ -884,322 +959,324 @@ void vtkEnlilReader::getDataID(std::string array, int &dataID)
 //---------------------------------------------------------------------------------------------
 int vtkEnlilReader::LoadArrayValues(std::string array, vtkInformationVector* outputVector)
 {
-    //get the dataID
-    int dataID = 0;
-    getDataID(array, dataID);
+    std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
+
+    //    //get the dataID
+    //    int dataID = 0;
+    //    getDataID(array, dataID);
 
-    bool vector
-            = (this->VectorVariableMap.find(std::string(array)) != this->VectorVariableMap.end());
+    //    bool vector
+    //            = (this->VectorVariableMap.find(std::string(array)) != this->VectorVariableMap.end());
 
-    //get data from system
-    vtkStructuredGrid *Data = vtkStructuredGrid::GetData(outputVector,0);
+    //    //get data from system
+    //    vtkStructuredGrid *Data = vtkStructuredGrid::GetData(outputVector,0);
 
-    //get the Xtents to play with
-    RCache::extents wholeExtents(this->WholeExtent);
-    RCache::extents subExtents(this->SubExtent);
+    //    //get the Xtents to play with
+    //    RCache::extents wholeExtents(this->WholeExtent);
+    //    RCache::extents subExtents(this->SubExtent);
 
-    //make the data array pointer available
-    vtkFloatArray *DataArray = NULL;
+    //    //make the data array pointer available
+    //    vtkFloatArray *DataArray = NULL;
 
-    //set up array to be added
+    //    //set up array to be added
 
-    //    std::cout << "Loading Fields" << std::endl << std::flush;
-    //    std::cout << "Vector Status: " << (vector ? "TRUE" : "FALSE") << std::endl << std::flush;
-    //    std::cout << "DataID: " << dataID << std::endl << std::flush;
+    //    //    std::cout << "Loading Fields" << std::endl << std::flush;
+    //    //    std::cout << "Vector Status: " << (vector ? "TRUE" : "FALSE") << std::endl << std::flush;
+    //    //    std::cout << "DataID: " << dataID << std::endl << std::flush;
 
-    if(vector)  //load vector data
-    {
-        switch(dataID)
-        {
-        case DATA_TYPE::BFIELD:
-            //read the fields
-            if(this->bFieldCache.getExtentsFromCache(this->current_MJD, subExtents) == NULL)
-            {
-                //                std::cout << "BFIELD" << std::endl << std::flush;
+    //    if(vector)  //load vector data
+    //    {
+    //        switch(dataID)
+    //        {
+    //        case DATA_TYPE::BFIELD:
+    //            //read the fields
+    //            if(this->bFieldCache.getExtentsFromCache(this->current_MJD, subExtents) == NULL)
+    //            {
+    //                //                std::cout << "BFIELD" << std::endl << std::flush;
 
-                DataArray = vtkFloatArray::New();
-                DataArray->SetName(array.c_str());
-                //this means the data is not in cache, so lets get it
-                readVector(array, DataArray, outputVector, dataID);
+    //                DataArray = vtkFloatArray::New();
+    //                DataArray->SetName(array.c_str());
+    //                //this means the data is not in cache, so lets get it
+    //                readVector(array, DataArray, outputVector, dataID);
 
-                // we really cannot cache the ENTIRE dataset at 800+ MB per step
-                // so we are, for now, just limiting the cache to non-whole reads.
-                // This can be further improved, I am sure.
-                if(subExtents < wholeExtents)
-                {
-                    //add the element to the cache
-                    //lets not use the cache yet.. not ready for prime time
-                    //TODO: finish cache system
+    //                // we really cannot cache the ENTIRE dataset at 800+ MB per step
+    //                // so we are, for now, just limiting the cache to non-whole reads.
+    //                // This can be further improved, I am sure.
+    //                if(subExtents < wholeExtents)
+    //                {
+    //                    //add the element to the cache
+    //                    //lets not use the cache yet.. not ready for prime time
+    //                    //TODO: finish cache system
 
-                    //this->bFieldCache.addCacheElement(this->current_MJD, subExtents, DataArray);
+    //                    //this->bFieldCache.addCacheElement(this->current_MJD, subExtents, DataArray);
 
-                }
+    //                }
 
-            }
-            else
-            {
-                //                std::cout << "BFIELD Cache" << std::endl << std::flush;
-                //                std::cout << "Getting Data From the Cache: " << std::endl;
-                //                this->printExtents(SubExtent, (char*)"Current Extents: ");
-                //                std::cout << "Current Time: " << this->current_MJD << std::endl;
+    //            }
+    //            else
+    //            {
+    //                //                std::cout << "BFIELD Cache" << std::endl << std::flush;
+    //                //                std::cout << "Getting Data From the Cache: " << std::endl;
+    //                //                this->printExtents(SubExtent, (char*)"Current Extents: ");
+    //                //                std::cout << "Current Time: " << this->current_MJD << std::endl;
 
-                //get the data array from the cache system
-                DataArray = vtkFloatArray::SafeDownCast(this->bFieldCache.getExtentsFromCache(this->current_MJD, subExtents)->data);
-
-
-            }
-
-            break;
-
-        case DATA_TYPE::VELOCITY:
+    //                //get the data array from the cache system
+    //                DataArray = vtkFloatArray::SafeDownCast(this->bFieldCache.getExtentsFromCache(this->current_MJD, subExtents)->data);
 
-            if(this->velocityCache.getExtentsFromCache(this->current_MJD, subExtents) == NULL)
-            {
-                //                std::cout << "VELOCITY" << std::endl << std::flush;
 
-
-                DataArray = vtkFloatArray::New();
-                DataArray->SetName(array.c_str());
-                //this means the data is not in cache, so lets get it
-                readVector(array, DataArray, outputVector, dataID);
+    //            }
+
+    //            break;
 
-                // we really cannot cache the ENTIRE dataset at 800+ MB per step
-                // so we are, for now, just limiting the cache to non-whole reads.
-                // This can be further improved, I am sure.
-                if(subExtents < wholeExtents)
-                {
-                    //add the element to the cache
-                    //lets not use the cache yet.. not ready for prime time
-                    //TODO: finish cache system
+    //        case DATA_TYPE::VELOCITY:
 
-                    //this->velocityCache.addCacheElement(this->current_MJD, subExtents, DataArray);
+    //            if(this->velocityCache.getExtentsFromCache(this->current_MJD, subExtents) == NULL)
+    //            {
+    //                //                std::cout << "VELOCITY" << std::endl << std::flush;
 
-                }
-            }
-            else
-            {
-                //                std::cout << "VELOCITY Cache" << std::endl << std::flush;
-                //                std::cout << "Getting Data From the Cache: " << std::endl;
-                //                this->printExtents(SubExtent, (char*)"Current Extents: ");
-                //                std::cout << "Current Time: " << this->current_MJD << std::endl;
-
-                //get the data array from the cache system
-                DataArray = vtkFloatArray::SafeDownCast(this->velocityCache.getExtentsFromCache(this->current_MJD, subExtents)->data);
 
+    //                DataArray = vtkFloatArray::New();
+    //                DataArray->SetName(array.c_str());
+    //                //this means the data is not in cache, so lets get it
+    //                readVector(array, DataArray, outputVector, dataID);
 
-            }
-            break;
+    //                // we really cannot cache the ENTIRE dataset at 800+ MB per step
+    //                // so we are, for now, just limiting the cache to non-whole reads.
+    //                // This can be further improved, I am sure.
+    //                if(subExtents < wholeExtents)
+    //                {
+    //                    //add the element to the cache
+    //                    //lets not use the cache yet.. not ready for prime time
+    //                    //TODO: finish cache system
 
-        default:
-            std::cerr << "DEFAULT - THIS IS AN ERROR" << std::endl << std::flush;
+    //                    //this->velocityCache.addCacheElement(this->current_MJD, subExtents, DataArray);
 
-            break;
-        }
+    //                }
+    //            }
+    //            else
+    //            {
+    //                //                std::cout << "VELOCITY Cache" << std::endl << std::flush;
+    //                //                std::cout << "Getting Data From the Cache: " << std::endl;
+    //                //                this->printExtents(SubExtent, (char*)"Current Extents: ");
+    //                //                std::cout << "Current Time: " << this->current_MJD << std::endl;
 
-        //Add array to grid
-        if(DataArray)
-        {
-            Data->GetPointData()->AddArray(DataArray);
+    //                //get the data array from the cache system
+    //                DataArray = vtkFloatArray::SafeDownCast(this->velocityCache.getExtentsFromCache(this->current_MJD, subExtents)->data);
 
-            // Call delete here. Both vtkPointData::AddArray() and now the cache::addCacheElement()
-            // methods are keeping a reference to the array.
-            DataArray->Delete();
-        }
 
+    //            }
+    //            break;
 
+    //        default:
+    //            std::cerr << "DEFAULT - THIS IS AN ERROR" << std::endl << std::flush;
 
-    }
-    else    //load scalar data
-    {
-
-        switch(dataID)
-        {
-        case DATA_TYPE::PDENSITY:
-
-            //            std::cout << "Looking for PDentsity" << std::endl;
-            //            std::cout << "MJD: " << this->current_MJD << std::endl << std::flush;
-            //            std::cout << "Extents: " << subExtents.getExtent(0) << " " << subExtents.getExtent(1)
-            //                      << " " << subExtents.getExtent(2) << " " << subExtents.getExtent(3)
-            //                      << " " << subExtents.getExtent(4) << " " << subExtents.getExtent(5)
-            //                      << std::endl << std::flush;
-
-            if(this->pDensityCache.getExtentsFromCache(this->current_MJD, subExtents) == NULL)
-            {
-                //                std::cout << "PDENSITY" << std::endl << std::flush;
-
-                DataArray = vtkFloatArray::New();
-                DataArray->SetName(array.c_str());
-                readScalar(Data, DataArray, array, outputVector, dataID);
-
-                if(subExtents < wholeExtents)
-                {
-                    //add the element to the cache
-                    //lets not use the cache yet.. not ready for prime time
-                    //TODO: finish cache system
-
-                    //this->pDensityCache.addCacheElement(this->current_MJD, subExtents, DataArray);
-
-                }
-            }
-            else
-            {
-                //SafeDownCast it
-                //                std::cout << "PDENSITY Cache" << std::endl << std::flush;
-                //                std::cout << "Getting Data From the Cache: " << std::endl;
-                //                this->printExtents(SubExtent, (char*)"Current Extents: ");
-                //                std::cout << "Current Time: " << this->current_MJD << std::endl;
-
-                //get the data array from the cache system
-                DataArray = vtkFloatArray::SafeDownCast(this->pDensityCache.getExtentsFromCache(this->current_MJD, subExtents)->data);
-
-            }
-
-            break;
-        case DATA_TYPE::CDENSITY:
-            if(this->cDensityCache.getExtentsFromCache(this->current_MJD, subExtents) == NULL)
-            {
-                //                std::cout << "CDENSITY" << std::endl << std::flush;
-
-
-                DataArray = vtkFloatArray::New();
-                DataArray->SetName(array.c_str());
-                readScalar(Data, DataArray, array, outputVector, dataID);
-
-                if(subExtents < wholeExtents)
-                {
-                    //add the element to the cache
-                    //lets not use the cache yet.. not ready for prime time
-                    //TODO: finish cache system
-
-                    //this->cDensityCache.addCacheElement(this->current_MJD, subExtents, DataArray);
+    //            break;
+    //        }
 
-                }
-            }
-            else
-            {
-                //                std::cout << "CDENSITY Cache" << std::endl << std::flush;
-                //                std::cout << "Getting Data From the Cache: " << std::endl;
-                //                this->printExtents(SubExtent, (char*)"Current Extents: ");
-                //                std::cout << "Current Time: " << this->current_MJD << std::endl;
-
-                //get the data array from the cache system
-                DataArray = vtkFloatArray::SafeDownCast(this->cDensityCache.getExtentsFromCache(this->current_MJD, subExtents)->data);
+    //        //Add array to grid
+    //        if(DataArray)
+    //        {
+    //            Data->GetPointData()->AddArray(DataArray);
 
-            }
-            break;
+    //            // Call delete here. Both vtkPointData::AddArray() and now the cache::addCacheElement()
+    //            // methods are keeping a reference to the array.
+    //            DataArray->Delete();
+    //        }
 
-        case DATA_TYPE::POLARITY:
-            if(this->polarityCache.getExtentsFromCache(this->current_MJD, subExtents) == NULL)
-            {
-                //                std::cout << "POLARITY" << std::endl << std::flush;
 
-                DataArray = vtkFloatArray::New();
-                DataArray->SetName(array.c_str());
-                readScalar(Data, DataArray, array, outputVector, dataID);
 
-                if(subExtents < wholeExtents)
-                {
-                    //add the element to the cache
-                    //lets not use the cache yet.. not ready for prime time
-                    //TODO: finish cache system
+    //    }
+    //    else    //load scalar data
+    //    {
+
+    //        switch(dataID)
+    //        {
+    //        case DATA_TYPE::PDENSITY:
+
+    //            //            std::cout << "Looking for PDentsity" << std::endl;
+    //            //            std::cout << "MJD: " << this->current_MJD << std::endl << std::flush;
+    //            //            std::cout << "Extents: " << subExtents.getExtent(0) << " " << subExtents.getExtent(1)
+    //            //                      << " " << subExtents.getExtent(2) << " " << subExtents.getExtent(3)
+    //            //                      << " " << subExtents.getExtent(4) << " " << subExtents.getExtent(5)
+    //            //                      << std::endl << std::flush;
 
-                    //this->polarityCache.addCacheElement(this->current_MJD, subExtents, DataArray);
+    //            if(this->pDensityCache.getExtentsFromCache(this->current_MJD, subExtents) == NULL)
+    //            {
+    //                //                std::cout << "PDENSITY" << std::endl << std::flush;
 
-                }
-            }
-            else
-            {
-                //                std::cout << "POLARITY Cache" << std::endl << std::flush;
-                //                std::cout << "Getting Data From the Cache: " << std::endl;
-                //                this->printExtents(SubExtent, (char*)"Current Extents: ");
-                //                std::cout << "Current Time: " << this->current_MJD << std::endl;
+    //                DataArray = vtkFloatArray::New();
+    //                DataArray->SetName(array.c_str());
+    //                readScalar(Data, DataArray, array, outputVector, dataID);
 
-                //get the data array from the cache system
-                DataArray = vtkFloatArray::SafeDownCast(this->polarityCache.getExtentsFromCache(this->current_MJD, subExtents)->data);
+    //                if(subExtents < wholeExtents)
+    //                {
+    //                    //add the element to the cache
+    //                    //lets not use the cache yet.. not ready for prime time
+    //                    //TODO: finish cache system
+
+    //                    //this->pDensityCache.addCacheElement(this->current_MJD, subExtents, DataArray);
 
-            }
-            break;
+    //                }
+    //            }
+    //            else
+    //            {
+    //                //SafeDownCast it
+    //                //                std::cout << "PDENSITY Cache" << std::endl << std::flush;
+    //                //                std::cout << "Getting Data From the Cache: " << std::endl;
+    //                //                this->printExtents(SubExtent, (char*)"Current Extents: ");
+    //                //                std::cout << "Current Time: " << this->current_MJD << std::endl;
+
+    //                //get the data array from the cache system
+    //                DataArray = vtkFloatArray::SafeDownCast(this->pDensityCache.getExtentsFromCache(this->current_MJD, subExtents)->data);
+
+    //            }
 
-        case DATA_TYPE::TEMP:
-            if(this->temperatureCache.getExtentsFromCache(this->current_MJD, subExtents) == NULL)
-            {
-                //                std::cout << "TEMPURATURE" << std::endl;
+    //            break;
+    //        case DATA_TYPE::CDENSITY:
+    //            if(this->cDensityCache.getExtentsFromCache(this->current_MJD, subExtents) == NULL)
+    //            {
+    //                //                std::cout << "CDENSITY" << std::endl << std::flush;
+
+
+    //                DataArray = vtkFloatArray::New();
+    //                DataArray->SetName(array.c_str());
+    //                readScalar(Data, DataArray, array, outputVector, dataID);
+
+    //                if(subExtents < wholeExtents)
+    //                {
+    //                    //add the element to the cache
+    //                    //lets not use the cache yet.. not ready for prime time
+    //                    //TODO: finish cache system
 
-                DataArray = vtkFloatArray::New();
-                DataArray->SetName(array.c_str());
-                readScalar(Data, DataArray, array, outputVector, dataID);
+    //                    //this->cDensityCache.addCacheElement(this->current_MJD, subExtents, DataArray);
 
-                if(subExtents < wholeExtents)
-                {
-                    //add the element to the cache
-                    //lets not use the cache yet.. not ready for prime time
-                    //TODO: finish cache system
+    //                }
+    //            }
+    //            else
+    //            {
+    //                //                std::cout << "CDENSITY Cache" << std::endl << std::flush;
+    //                //                std::cout << "Getting Data From the Cache: " << std::endl;
+    //                //                this->printExtents(SubExtent, (char*)"Current Extents: ");
+    //                //                std::cout << "Current Time: " << this->current_MJD << std::endl;
 
-                    //this->temperatureCache.addCacheElement(this->current_MJD, subExtents, DataArray);
+    //                //get the data array from the cache system
+    //                DataArray = vtkFloatArray::SafeDownCast(this->cDensityCache.getExtentsFromCache(this->current_MJD, subExtents)->data);
 
-                }
+    //            }
+    //            break;
 
-            }
-            else
-            {
-                //                std::cout << "TEMPURATURE Cache" << std::endl;
-                //                std::cout << "Getting Data From the Cache: " << std::endl;
-                //                this->printExtents(SubExtent, (char*)"Current Extents: ");
-                //                std::cout << "Current Time: " << this->current_MJD << std::endl;
+    //        case DATA_TYPE::POLARITY:
+    //            if(this->polarityCache.getExtentsFromCache(this->current_MJD, subExtents) == NULL)
+    //            {
+    //                //                std::cout << "POLARITY" << std::endl << std::flush;
 
-                //get the data array from the cache system
-                DataArray = vtkFloatArray::SafeDownCast(this->temperatureCache.getExtentsFromCache(this->current_MJD, subExtents)->data);
+    //                DataArray = vtkFloatArray::New();
+    //                DataArray->SetName(array.c_str());
+    //                readScalar(Data, DataArray, array, outputVector, dataID);
 
-            }
-            break;
+    //                if(subExtents < wholeExtents)
+    //                {
+    //                    //add the element to the cache
+    //                    //lets not use the cache yet.. not ready for prime time
+    //                    //TODO: finish cache system
 
-        case DATA_TYPE::RVELOCITY:
-            if(this->rVelocityCache.getExtentsFromCache(this->current_MJD, subExtents) == NULL)
-            {
-                //                std::cout << "TEMPURATURE" << std::endl;
+    //                    //this->polarityCache.addCacheElement(this->current_MJD, subExtents, DataArray);
 
-                DataArray = vtkFloatArray::New();
-                DataArray->SetName(array.c_str());
-                readScalar(Data, DataArray, array, outputVector, dataID);
+    //                }
+    //            }
+    //            else
+    //            {
+    //                //                std::cout << "POLARITY Cache" << std::endl << std::flush;
+    //                //                std::cout << "Getting Data From the Cache: " << std::endl;
+    //                //                this->printExtents(SubExtent, (char*)"Current Extents: ");
+    //                //                std::cout << "Current Time: " << this->current_MJD << std::endl;
 
-                if(subExtents < wholeExtents)
-                {
-                    //add the element to the cache
-                    //lets not use the cache yet.. not ready for prime time
-                    //TODO: finish cache system
+    //                //get the data array from the cache system
+    //                DataArray = vtkFloatArray::SafeDownCast(this->polarityCache.getExtentsFromCache(this->current_MJD, subExtents)->data);
 
-                    //this->rVelocityCache.addCacheElement(this->current_MJD, subExtents, DataArray);
+    //            }
+    //            break;
 
-                }
+    //        case DATA_TYPE::TEMP:
+    //            if(this->temperatureCache.getExtentsFromCache(this->current_MJD, subExtents) == NULL)
+    //            {
+    //                //                std::cout << "TEMPURATURE" << std::endl;
 
-            }
-            else
-            {
-                //get the data array from the cache system
-                DataArray = vtkFloatArray::SafeDownCast(this->rVelocityCache.getExtentsFromCache(this->current_MJD, subExtents)->data);
+    //                DataArray = vtkFloatArray::New();
+    //                DataArray->SetName(array.c_str());
+    //                readScalar(Data, DataArray, array, outputVector, dataID);
 
-            }
-            break;
+    //                if(subExtents < wholeExtents)
+    //                {
+    //                    //add the element to the cache
+    //                    //lets not use the cache yet.. not ready for prime time
+    //                    //TODO: finish cache system
 
-        default:
-            //            std::cout << "DEFAULT - THIS IS AN ERROR" << std::endl;
+    //                    //this->temperatureCache.addCacheElement(this->current_MJD, subExtents, DataArray);
 
-            break;
+    //                }
 
-        }
+    //            }
+    //            else
+    //            {
+    //                //                std::cout << "TEMPURATURE Cache" << std::endl;
+    //                //                std::cout << "Getting Data From the Cache: " << std::endl;
+    //                //                this->printExtents(SubExtent, (char*)"Current Extents: ");
+    //                //                std::cout << "Current Time: " << this->current_MJD << std::endl;
 
-        //Add array to grid
-        if(DataArray)
-        {
-            Data->GetPointData()->AddArray(DataArray);
+    //                //get the data array from the cache system
+    //                DataArray = vtkFloatArray::SafeDownCast(this->temperatureCache.getExtentsFromCache(this->current_MJD, subExtents)->data);
 
-            // Call delete here. Both vtkPointData::AddArray() and now the cache::addCacheElement()
-            // methods are keeping a reference to the array.
-            DataArray->Delete();
-        }
+    //            }
+    //            break;
 
+    //        case DATA_TYPE::RVELOCITY:
+    //            if(this->rVelocityCache.getExtentsFromCache(this->current_MJD, subExtents) == NULL)
+    //            {
+    //                //                std::cout << "TEMPURATURE" << std::endl;
 
-    }
+    //                DataArray = vtkFloatArray::New();
+    //                DataArray->SetName(array.c_str());
+    //                readScalar(Data, DataArray, array, outputVector, dataID);
+
+    //                if(subExtents < wholeExtents)
+    //                {
+    //                    //add the element to the cache
+    //                    //lets not use the cache yet.. not ready for prime time
+    //                    //TODO: finish cache system
+
+    //                    //this->rVelocityCache.addCacheElement(this->current_MJD, subExtents, DataArray);
+
+    //                }
+
+    //            }
+    //            else
+    //            {
+    //                //get the data array from the cache system
+    //                DataArray = vtkFloatArray::SafeDownCast(this->rVelocityCache.getExtentsFromCache(this->current_MJD, subExtents)->data);
+
+    //            }
+    //            break;
+
+    //        default:
+    //            //            std::cout << "DEFAULT - THIS IS AN ERROR" << std::endl;
+
+    //            break;
+
+    //        }
+
+    //        //Add array to grid
+    //        if(DataArray)
+    //        {
+    //            Data->GetPointData()->AddArray(DataArray);
+
+    //            // Call delete here. Both vtkPointData::AddArray() and now the cache::addCacheElement()
+    //            // methods are keeping a reference to the array.
+    //            DataArray->Delete();
+    //        }
+
+
+    //    }
 
     return 1;
 }
@@ -1210,153 +1287,157 @@ int vtkEnlilReader::LoadArrayValues(std::string array, vtkInformationVector* out
  *  condition that does not exist sequentially in file */
 double* vtkEnlilReader::read3dPartialToArray(char* arrayName, int extents[])
 {
-    int extDims[3] = {0,0,0};
-    size_t readDims[4]   = {1,1,1,1};
-    long readStart[4]  = {0,extents[4],extents[2],extents[0]};
 
-    // get dimensions from extents
-    this->extractDimensions(extDims, extents);
-
-    // Enlil encodes in reverse, so reverse the order, add fourth dimension 1st.
-    readDims[1] = extDims[2];
-    readDims[2] = extDims[1];
-    readDims[3] = extDims[0];
-
-    //find all conditions that need to be accounted for
-    bool periodic = false;
-    bool periodicRead = false;
-    bool periodicOnly = false;
-
-    // this->printExtents(extents, (char*)"Loading Extents: ");
-
-    if(extents[5] == this->WholeExtent[5])
-    {
-        periodic = true;
-        // std::cout << "Set Periodic" << std::endl;
-
-        if(extents[4] > 0)
-        {
-            periodicRead = true;
-            // std::cout << "Set Periodic Read" << std::endl;
-            if(extents[4] == this->WholeExtent[5])
-            {
-                periodicOnly = true;
-                // std::cout << "Set Periodic Only" << std::endl;
-
-            }
-        }
-    }
-    else
-    {
-        //  std::cout << "Non-Periodic" << std::endl;
-        //  dont need to do anything
-
-    }
-
-    // allocate memory for complete array
-    double *array = new double[extDims[0]*extDims[1]*extDims[2]];
-
-    //open file
-    NcFile file(this->FileName);
-    NcVar* variable = file.get_var(arrayName);
-
-    // start to read in data
-    if(periodic && !periodicOnly)
-    {
-        //adjust dims
-        readDims[1] = readDims[1]-1;
-
-        //adjust the start point
-        variable->set_cur(readStart);
-
-        //read the file
-        variable->get(array, readDims);
-
-    }
-    else if(periodicOnly)
-    {
-        //set periodic only
-        readDims[1] = 1;
-        readStart[1] = 0;
-        readStart[2] = extents[2];
-        readStart[3] = extents[0];
-
-        //set read location
-        variable->set_cur(readStart);
-
-        //read the file
-        variable->get(array, readDims);
-
-    }
-    else
-    {
-        //set read location as stated
-        variable->set_cur(readStart);
-
-        //read as stated
-        variable->get(array, readDims);
-
-    }
-
-    // fix periodic boundary if necesary
-    if(periodic && !periodicRead && !periodicOnly)
-    {
-        //copy periodic data from begining to end
-        size_t wedgeSize = (extDims[0]*extDims[1]);
-        size_t wedgeLoc  = (extDims[0]*extDims[1])*(extDims[2]-1);
-
-        for(int x = 0; x < wedgeSize; x++)
-        {
-            //copy the wedge
-            array[wedgeLoc] = array[x];
-
-            //advance index
-            wedgeLoc++;
-        }
-
-    }
-    else if (periodic && periodicRead && !periodicOnly)  /*periodicRead &&*/
-    {
-        //read in periodic data and place at end of array
-        size_t wedgeSize = extDims[0]*extDims[1];
-        size_t wedgeLoc  = (extDims[0]*extDims[1])*(extDims[2]-1);
-
-        double * wedge = new double[wedgeSize];
-
-        //start at 0,0,0
-        readStart[0] = 0;
-        readStart[1] = 0;
-        readStart[2] = extents[2];
-        readStart[3] = extents[0];
-
-        //restrict to phi = 1 dimension
-        readDims[1] = 1;
-
-        //set start
-        variable->set_cur(readStart);
-
-        //read data
-        variable->get(wedge, readDims);
-
-        //populate wedge to array
-        for(int x = 0; x < wedgeSize; x++)
-        {
-            //copy the wedge
-            array[wedgeLoc] = wedge[x];
-
-            //advance index
-            wedgeLoc++;
-        }
-
-        //free temp memory
-        delete [] wedge; wedge = NULL;
-    }
+    std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
 
 
-    //close file
-    file.close();
+    //    int extDims[3] = {0,0,0};
+    //    size_t readDims[4]   = {1,1,1,1};
+    //    long readStart[4]  = {0,extents[4],extents[2],extents[0]};
 
-    return array;
+    //    // get dimensions from extents
+    //    this->extractDimensions(extDims, extents);
+
+    //    // Enlil encodes in reverse, so reverse the order, add fourth dimension 1st.
+    //    readDims[1] = extDims[2];
+    //    readDims[2] = extDims[1];
+    //    readDims[3] = extDims[0];
+
+    //    //find all conditions that need to be accounted for
+    //    bool periodic = false;
+    //    bool periodicRead = false;
+    //    bool periodicOnly = false;
+
+    //    // this->printExtents(extents, (char*)"Loading Extents: ");
+
+    //    if(extents[5] == this->WholeExtent[5])
+    //    {
+    //        periodic = true;
+    //        // std::cout << "Set Periodic" << std::endl;
+
+    //        if(extents[4] > 0)
+    //        {
+    //            periodicRead = true;
+    //            // std::cout << "Set Periodic Read" << std::endl;
+    //            if(extents[4] == this->WholeExtent[5])
+    //            {
+    //                periodicOnly = true;
+    //                // std::cout << "Set Periodic Only" << std::endl;
+
+    //            }
+    //        }
+    //    }
+    //    else
+    //    {
+    //        //  std::cout << "Non-Periodic" << std::endl;
+    //        //  dont need to do anything
+
+    //    }
+
+    //    // allocate memory for complete array
+    //    double *array = new double[extDims[0]*extDims[1]*extDims[2]];
+
+    //    //open file
+    //    NcFile file(this->FileName);
+    //    NcVar* variable = file.get_var(arrayName);
+
+    //    // start to read in data
+    //    if(periodic && !periodicOnly)
+    //    {
+    //        //adjust dims
+    //        readDims[1] = readDims[1]-1;
+
+    //        //adjust the start point
+    //        variable->set_cur(readStart);
+
+    //        //read the file
+    //        variable->get(array, readDims);
+
+    //    }
+    //    else if(periodicOnly)
+    //    {
+    //        //set periodic only
+    //        readDims[1] = 1;
+    //        readStart[1] = 0;
+    //        readStart[2] = extents[2];
+    //        readStart[3] = extents[0];
+
+    //        //set read location
+    //        variable->set_cur(readStart);
+
+    //        //read the file
+    //        variable->get(array, readDims);
+
+    //    }
+    //    else
+    //    {
+    //        //set read location as stated
+    //        variable->set_cur(readStart);
+
+    //        //read as stated
+    //        variable->get(array, readDims);
+
+    //    }
+
+    //    // fix periodic boundary if necesary
+    //    if(periodic && !periodicRead && !periodicOnly)
+    //    {
+    //        //copy periodic data from begining to end
+    //        size_t wedgeSize = (extDims[0]*extDims[1]);
+    //        size_t wedgeLoc  = (extDims[0]*extDims[1])*(extDims[2]-1);
+
+    //        for(int x = 0; x < wedgeSize; x++)
+    //        {
+    //            //copy the wedge
+    //            array[wedgeLoc] = array[x];
+
+    //            //advance index
+    //            wedgeLoc++;
+    //        }
+
+    //    }
+    //    else if (periodic && periodicRead && !periodicOnly)  /*periodicRead &&*/
+    //    {
+    //        //read in periodic data and place at end of array
+    //        size_t wedgeSize = extDims[0]*extDims[1];
+    //        size_t wedgeLoc  = (extDims[0]*extDims[1])*(extDims[2]-1);
+
+    //        double * wedge = new double[wedgeSize];
+
+    //        //start at 0,0,0
+    //        readStart[0] = 0;
+    //        readStart[1] = 0;
+    //        readStart[2] = extents[2];
+    //        readStart[3] = extents[0];
+
+    //        //restrict to phi = 1 dimension
+    //        readDims[1] = 1;
+
+    //        //set start
+    //        variable->set_cur(readStart);
+
+    //        //read data
+    //        variable->get(wedge, readDims);
+
+    //        //populate wedge to array
+    //        for(int x = 0; x < wedgeSize; x++)
+    //        {
+    //            //copy the wedge
+    //            array[wedgeLoc] = wedge[x];
+
+    //            //advance index
+    //            wedgeLoc++;
+    //        }
+
+    //        //free temp memory
+    //        delete [] wedge; wedge = NULL;
+    //    }
+
+
+    //    //close file
+    //    file.close();
+
+    //    return array;
 
 }
 
@@ -1366,118 +1447,120 @@ double* vtkEnlilReader::read3dPartialToArray(char* arrayName, int extents[])
  *  condition that does not exist sequentially in file */
 double* vtkEnlilReader::readGridPartialToArray(char *arrayName, int subExtents[], bool isPeriodic = false)
 {
-    int     extDim = subExtents[1]-subExtents[0]+1;;
-    size_t  readDims[2]  = {1,extDim};
-    long    readStart[2] = {0,subExtents[0]};
+    std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
 
-    //Find conditions that need to be handled
-    bool periodic = false;
-    bool periodicRead = false;
-    bool periodicOnly = false;
+    //    int     extDim = subExtents[1]-subExtents[0]+1;;
+    //    size_t  readDims[2]  = {1,extDim};
+    //    long    readStart[2] = {0,subExtents[0]};
 
-    //if isPeriodic is set, then we are looking at phi
-    if(isPeriodic)
-    {
-        if(subExtents[1] == this->WholeExtent[5])
-        {
-            periodic = true;
-            if(subExtents[0] > 0)
-            {
-                periodicRead = true;
-                if(subExtents[0] == this->WholeExtent[5])
-                {
-                    periodicOnly = true;
-                }
-            }
-        }
-    }
+    //    //Find conditions that need to be handled
+    //    bool periodic = false;
+    //    bool periodicRead = false;
+    //    bool periodicOnly = false;
 
-    //allocate Memory for complete array
-    double *array = new double[extDim];
+    //    //if isPeriodic is set, then we are looking at phi
+    //    if(isPeriodic)
+    //    {
+    //        if(subExtents[1] == this->WholeExtent[5])
+    //        {
+    //            periodic = true;
+    //            if(subExtents[0] > 0)
+    //            {
+    //                periodicRead = true;
+    //                if(subExtents[0] == this->WholeExtent[5])
+    //                {
+    //                    periodicOnly = true;
+    //                }
+    //            }
+    //        }
+    //    }
 
-    //Open file
-    NcFile file(this->FileName);
-    NcVar* variable = file.get_var(arrayName);
+    //    //allocate Memory for complete array
+    //    double *array = new double[extDim];
 
-    //start to read in data
-    if(periodic && !periodicOnly)
-    {
+    //    //Open file
+    //    NcFile file(this->FileName);
+    //    NcVar* variable = file.get_var(arrayName);
 
-        //adjust dims
-        readDims[1] = readDims[1]-1;
+    //    //start to read in data
+    //    if(periodic && !periodicOnly)
+    //    {
 
-        //adjust the start point
-        variable->set_cur(readStart);
+    //        //adjust dims
+    //        readDims[1] = readDims[1]-1;
 
-        //read the file
-        variable->get(array, readDims);
+    //        //adjust the start point
+    //        variable->set_cur(readStart);
 
-    }
-    else if(periodicOnly)
-    {
+    //        //read the file
+    //        variable->get(array, readDims);
 
-        //set periodic only
-        readDims[1] = 1;
-        readStart[1] = 0;
+    //    }
+    //    else if(periodicOnly)
+    //    {
 
-        //set read location
-        variable->set_cur(readStart);
+    //        //set periodic only
+    //        readDims[1] = 1;
+    //        readStart[1] = 0;
 
-        //read the file
-        variable->get(array, readDims);
+    //        //set read location
+    //        variable->set_cur(readStart);
 
-    }
-    else
-    {
-        //set read location as stated
-        variable->set_cur(readStart);
+    //        //read the file
+    //        variable->get(array, readDims);
 
-        //read as stated
-        variable->get(array, readDims);
-    }
+    //    }
+    //    else
+    //    {
+    //        //set read location as stated
+    //        variable->set_cur(readStart);
 
-    //fix periodic boundary if necesary
-    if(periodic && !periodicRead && !periodicOnly)
-    {
+    //        //read as stated
+    //        variable->get(array, readDims);
+    //    }
 
-        //copy periodic data from begining to end
-        array[extDim-1] = array[0];
+    //    //fix periodic boundary if necesary
+    //    if(periodic && !periodicRead && !periodicOnly)
+    //    {
 
-    }
-    else if (periodic && periodicRead && !periodicOnly)
-    {
+    //        //copy periodic data from begining to end
+    //        array[extDim-1] = array[0];
 
-        //read in periodic data and place at end of array
-        size_t wedgeSize = 1;
-        size_t wedgeLoc  = (extDim-1);
+    //    }
+    //    else if (periodic && periodicRead && !periodicOnly)
+    //    {
 
-        double * wedge = new double[wedgeSize];
+    //        //read in periodic data and place at end of array
+    //        size_t wedgeSize = 1;
+    //        size_t wedgeLoc  = (extDim-1);
 
-        //start at 0,0,0
-        readStart[1] = 0;
+    //        double * wedge = new double[wedgeSize];
 
-        //restrict to phi = 1 dimension
-        readDims[1] = 1;
+    //        //start at 0,0,0
+    //        readStart[1] = 0;
 
-        //set start
-        variable->set_cur(readStart);
+    //        //restrict to phi = 1 dimension
+    //        readDims[1] = 1;
 
-        //read data
-        variable->get(wedge, readDims);
+    //        //set start
+    //        variable->set_cur(readStart);
 
-        //populate wedge to array
+    //        //read data
+    //        variable->get(wedge, readDims);
 
-        array[wedgeLoc] = wedge[0];
+    //        //populate wedge to array
 
-        //free temp memory
-        delete [] wedge; wedge = NULL;
-    }
+    //        array[wedgeLoc] = wedge[0];
 
-    //close the file
-    file.close();
+    //        //free temp memory
+    //        delete [] wedge; wedge = NULL;
+    //    }
 
-    //return completed array
-    return array;
+    //    //close the file
+    //    file.close();
+
+    //    //return completed array
+    //    return array;
 }
 
 //---------------------------------------------------------------------------------------------
@@ -1486,107 +1569,109 @@ void vtkEnlilReader::loadVarMetaData(const char *array, const char* title,
                                      vtkInformationVector *outputVector,
                                      bool vector)
 {
+    std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
 
-    vtkStructuredGrid *Data = vtkStructuredGrid::GetData(outputVector,0);
-    int status = this->checkStatus(Data, (char*)"(MetaData)Structured Grid Data Object");
 
-    if(!status)
-    {
-        std::cerr << "Failed to get Data Structure in " << __FUNCTION__ << std::endl;
-    }
+    //    vtkStructuredGrid *Data = vtkStructuredGrid::GetData(outputVector,0);
+    //    int status = this->checkStatus(Data, (char*)"(MetaData)Structured Grid Data Object");
 
-    //open the file
-    NcFile file(this->FileName);
-    NcVar* variable = file.get_var(array);
-    NcType attType;
+    //    if(!status)
+    //    {
+    //        std::cerr << "Failed to get Data Structure in " << __FUNCTION__ << std::endl;
+    //    }
 
-    std::string* attname = NULL;
-    char* attSval = NULL;
+    //    //open the file
+    //    NcFile file(this->FileName);
+    //    NcVar* variable = file.get_var(array);
+    //    NcType attType;
 
-    double  attDval = 0.0;
-    int     attIval = 0;
+    //    std::string* attname = NULL;
+    //    char* attSval = NULL;
 
-    std::string placeholder = std::string(title);
-    placeholder.append(" ");
+    //    double  attDval = 0.0;
+    //    int     attIval = 0;
 
-    std::string outputName;
+    //    std::string placeholder = std::string(title);
+    //    placeholder.append(" ");
 
-    //determine if any meta-data exists for array
-    int count = variable->num_atts();
+    //    std::string outputName;
 
-    //if so, load the meta data into arrays
-    for(int x = 0; x < count; x++)
-    {
-        attname = new std::string(variable->get_att(x)->name());
-        attType = variable->get_att(x)->type();
+    //    //determine if any meta-data exists for array
+    //    int count = variable->num_atts();
 
-        outputName.clear();
-        outputName.assign(placeholder.c_str());
-        outputName.append(attname->c_str());
+    //    //if so, load the meta data into arrays
+    //    for(int x = 0; x < count; x++)
+    //    {
+    //        attname = new std::string(variable->get_att(x)->name());
+    //        attType = variable->get_att(x)->type();
 
-        // create the needed arrays
-        vtkNew<vtkStringArray>  MetaString;
-        vtkNew<vtkIntArray>     MetaInt;
-        vtkNew<vtkFloatArray>  MetaDouble;
+    //        outputName.clear();
+    //        outputName.assign(placeholder.c_str());
+    //        outputName.append(attname->c_str());
 
-        //        std::cout << "Adding Attribute: " << outputName << std::endl;
+    //        // create the needed arrays
+    //        vtkNew<vtkStringArray>  MetaString;
+    //        vtkNew<vtkIntArray>     MetaInt;
+    //        vtkNew<vtkFloatArray>  MetaDouble;
 
-        switch(attType)
-        {
-        case ncByte:
+    //        //        std::cout << "Adding Attribute: " << outputName << std::endl;
 
-            //            std::cout << "Type: Byte" << std::endl;
-            //            std::cout << "Not implimented" << std::endl;
-            break;
+    //        switch(attType)
+    //        {
+    //        case ncByte:
 
-        case ncChar:
+    //            //            std::cout << "Type: Byte" << std::endl;
+    //            //            std::cout << "Not implimented" << std::endl;
+    //            break;
 
-            attSval = variable->get_att(x)->as_string(0);
+    //        case ncChar:
 
-            MetaString->SetName(outputName.c_str());
-            MetaString->SetNumberOfComponents(1);
-            MetaString->InsertNextValue(attSval);
+    //            attSval = variable->get_att(x)->as_string(0);
 
-            Data->GetFieldData()->AddArray(MetaString.GetPointer());
-            break;
+    //            MetaString->SetName(outputName.c_str());
+    //            MetaString->SetNumberOfComponents(1);
+    //            MetaString->InsertNextValue(attSval);
 
-        case ncShort:
-            //            std::cout << "Type: Short" << std::endl;
-            //            std::cout << "Not implimented" << std::endl;
-            break;
+    //            Data->GetFieldData()->AddArray(MetaString.GetPointer());
+    //            break;
 
-        case ncInt:
+    //        case ncShort:
+    //            //            std::cout << "Type: Short" << std::endl;
+    //            //            std::cout << "Not implimented" << std::endl;
+    //            break;
 
-            attIval = variable->get_att(x)->as_int(0);
+    //        case ncInt:
 
-            MetaInt->SetName(outputName.c_str());
-            MetaInt->SetNumberOfComponents(1);
-            MetaInt->InsertNextValue(attIval);
+    //            attIval = variable->get_att(x)->as_int(0);
 
-            Data->GetFieldData()->AddArray(MetaInt.GetPointer());
-            break;
+    //            MetaInt->SetName(outputName.c_str());
+    //            MetaInt->SetNumberOfComponents(1);
+    //            MetaInt->InsertNextValue(attIval);
 
-        case ncFloat:
-            //            std::cout << "Type: Float" << std::endl;
-            //            std::cout << "Not implimented" << std::endl;
-            break;
+    //            Data->GetFieldData()->AddArray(MetaInt.GetPointer());
+    //            break;
 
-        case ncDouble:
+    //        case ncFloat:
+    //            //            std::cout << "Type: Float" << std::endl;
+    //            //            std::cout << "Not implimented" << std::endl;
+    //            break;
 
-            attDval = variable->get_att(x)->as_double(0);
+    //        case ncDouble:
 
-            MetaDouble->SetName(outputName.c_str());
-            MetaDouble->SetNumberOfComponents(1);
-            MetaDouble->InsertNextValue(attDval);
+    //            attDval = variable->get_att(x)->as_double(0);
 
-            Data->GetFieldData()->AddArray(MetaDouble.GetPointer());
-            break;
+    //            MetaDouble->SetName(outputName.c_str());
+    //            MetaDouble->SetNumberOfComponents(1);
+    //            MetaDouble->InsertNextValue(attDval);
 
-        default:
-            break;
-        }
+    //            Data->GetFieldData()->AddArray(MetaDouble.GetPointer());
+    //            break;
 
-    }
+    //        default:
+    //            break;
+    //        }
+
+    //    }
 
 }
 
@@ -1596,6 +1681,7 @@ void vtkEnlilReader::loadVarMetaData(const char *array, const char* title,
  * Populate the system with your own arrays */
 int vtkEnlilReader::PopulateArrays()
 {
+    std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
 
     this->addPointArray((char*)"D");
     this->addPointArray((char*)"DP");
@@ -1614,238 +1700,242 @@ int vtkEnlilReader::PopulateArrays()
 //-- Meta Data Population
 int vtkEnlilReader::LoadMetaData(vtkInformationVector *outputVector)
 {
-    int ncFileID = 0;
-    int ncSDSID = 0;
-    int natts = 0;
+    std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
 
-    NcType type;
+    //    int ncFileID = 0;
+    //    int ncSDSID = 0;
+    //    int natts = 0;
 
-    char* attname;
+    //    NcType type;
 
-    char*    attvalc;
-    int     attvali;
-    double  attvald;
+    //    char* attname;
 
-    vtkStructuredGrid *Data = vtkStructuredGrid::GetData(outputVector,0);
-    int status = this->checkStatus(Data, (char*)"(MetaData)Structured Grid Data Object");
+    //    char*    attvalc;
+    //    int     attvali;
+    //    double  attvald;
 
-
-    if(status)
-    {
-        //File Name
-        vtkNew<vtkStringArray> FilePathString;
-        FilePathString->SetName("File Path");
-        FilePathString->SetNumberOfComponents(1);
-        FilePathString->InsertNextValue(this->CurrentFileName);
-
-        Data->GetFieldData()->AddArray(FilePathString.GetPointer());
-
-        //extract directory name
-        vtkNew<vtkStringArray> currentDirectory;
-        currentDirectory->SetName("Current Directory");
-        currentDirectory->SetNumberOfComponents(1);
-
-        //extract file name
-        vtkNew<vtkStringArray> FileNameString;
-        FileNameString->SetName("File Name");
-        FileNameString->SetNumberOfComponents(1);
+    //    vtkStructuredGrid *Data = vtkStructuredGrid::GetData(outputVector,0);
+    //    int status = this->checkStatus(Data, (char*)"(MetaData)Structured Grid Data Object");
 
 
-        QString directoryExtract(this->CurrentFileName);
+    //    if(status)
+    //    {
+    //        //File Name
+    //        vtkNew<vtkStringArray> FilePathString;
+    //        FilePathString->SetName("File Path");
+    //        FilePathString->SetNumberOfComponents(1);
+    //        FilePathString->InsertNextValue(this->CurrentFile->getFileName().toAscii().data());
 
-        //TODO: To make this work with windows, we would need to condition this.
-        QStringList dirParts = directoryExtract.split("/");
-        int numDirParts = dirParts.size();
+    //        Data->GetFieldData()->AddArray(FilePathString.GetPointer());
 
-        if(numDirParts > 1)
-        {
-            currentDirectory->InsertNextValue(dirParts[numDirParts-2].toAscii().data());
-            FileNameString->InsertNextValue(dirParts[numDirParts-1].toAscii().data());
+    //        //extract directory name
+    //        vtkNew<vtkStringArray> currentDirectory;
+    //        currentDirectory->SetName("Current Directory");
+    //        currentDirectory->SetNumberOfComponents(1);
 
-            Data->GetFieldData()->AddArray(currentDirectory.GetPointer());
-            Data->GetFieldData()->AddArray(FileNameString.GetPointer());
-        }
-        else
-        {
-            std::cerr << "Cannot Parse Directory" << std::endl;
-        }
-
-        // control file
-        if(this->useControlFile)
-        {
-            //update control file
-            this->updateControlFile(true);
-
-            //path
-            vtkNew<vtkStringArray> controlFilePath;
-            controlFilePath->SetName("Control File Path");
-            controlFilePath->SetNumberOfComponents(1);
-            controlFilePath->InsertNextValue(this->controlFileName.toAscii().data());
-            Data->GetFieldData()->AddArray(controlFilePath.GetPointer());
+    //        //extract file name
+    //        vtkNew<vtkStringArray> FileNameString;
+    //        FileNameString->SetName("File Name");
+    //        FileNameString->SetNumberOfComponents(1);
 
 
-            QStringList propertyKeys=this->controlFile->getPropertyList();
+    //        QString directoryExtract(this->CurrentFile->getFileName().toAscii().data());
 
-            for(int cf=0; cf < this->controlFile->getNumberOfProperties(); cf++)
-            {
-                QString property=propertyKeys[cf];
-                QList<QVariant> propVals = this->controlFile->getProperty(property);
-                int type = this->controlFile->getType(property);
+    //        //TODO: To make this work with windows, we would need to condition this.
+    //        QStringList dirParts = directoryExtract.split("/");
+    //        int numDirParts = dirParts.size();
 
-                vtkNew<vtkVariantArray> newColumn;
+    //        if(numDirParts > 1)
+    //        {
+    //            currentDirectory->InsertNextValue(dirParts[numDirParts-2].toAscii().data());
+    //            FileNameString->InsertNextValue(dirParts[numDirParts-1].toAscii().data());
 
-                switch(type)
-                {
-                case VTK_DOUBLE:
-                {
-                    newColumn->SetNumberOfComponents(propVals.count());
-                    newColumn->SetName(property.toAscii().data());
-                    vtkNew<vtkDoubleArray> numbers;
-                    numbers->SetNumberOfComponents(propVals.count());
-                    double *vals2 =  new double[propVals.count()];
+    //            Data->GetFieldData()->AddArray(currentDirectory.GetPointer());
+    //            Data->GetFieldData()->AddArray(FileNameString.GetPointer());
+    //        }
+    //        else
+    //        {
+    //            std::cerr << "Cannot Parse Directory" << std::endl;
+    //        }
 
-                    if(propVals.count() > 1)
-                    {
-                        for(int t=0; t < propVals.count(); t++)
-                        {
-                            vals2[t] = propVals[t].toDouble();
-                        }
-                        numbers->InsertNextTuple(vals2);
-                        newColumn->InsertNextTuple(0, numbers.GetPointer());
+    //        // control file
+    //        if(this->useControlFile)
+    //        {
+    //            //update control file
+    //            this->updateControlFile(true);
 
-                    }
-                    else
-                    {
-                        newColumn->InsertNextValue(vtkVariant(propVals[0].toDouble()));
-
-                    }
-                    break;
-                }
-                case VTK_STRING:
-                {
-                    newColumn->SetNumberOfComponents(propVals.count());
-                    newColumn->SetName(property.toAscii().data());
-
-                    vtkNew<vtkStringArray> newStrings;
-                    newStrings->SetNumberOfComponents(propVals.count());
-                    for(int t=0; t < propVals.count(); t++)
-                    {
-                        newStrings->InsertNextValue(propVals[t].toString().toAscii().data());
-                        newStrings->SetComponentName(t, propVals[t].toString().toAscii().data());
-                    }
-                    newColumn->InsertNextTuple(0, newStrings.GetPointer());
-
-                    break;
-                }
-                default:
-                    std::cerr << "type failure. CF type should be only string or double" << std::endl;
-                }
+    //            //path
+    //            vtkNew<vtkStringArray> controlFilePath;
+    //            controlFilePath->SetName("Control File Path");
+    //            controlFilePath->SetNumberOfComponents(1);
+    //            controlFilePath->InsertNextValue(this->controlFileName.toAscii().data());
+    //            Data->GetFieldData()->AddArray(controlFilePath.GetPointer());
 
 
-                Data->GetFieldData()->AddArray(newColumn.GetPointer());
+    //            QStringList propertyKeys=this->controlFile->getPropertyList();
 
-            }
+    //            for(int cf=0; cf < this->controlFile->getNumberOfProperties(); cf++)
+    //            {
+    //                QString property=propertyKeys[cf];
+    //                QList<QVariant> propVals = this->controlFile->getProperty(property);
+    //                int type = this->controlFile->getType(property);
+
+    //                vtkNew<vtkVariantArray> newColumn;
+
+    //                switch(type)
+    //                {
+    //                case VTK_DOUBLE:
+    //                {
+    //                    newColumn->SetNumberOfComponents(propVals.count());
+    //                    newColumn->SetName(property.toAscii().data());
+    //                    vtkNew<vtkDoubleArray> numbers;
+    //                    numbers->SetNumberOfComponents(propVals.count());
+    //                    double *vals2 =  new double[propVals.count()];
+
+    //                    if(propVals.count() > 1)
+    //                    {
+    //                        for(int t=0; t < propVals.count(); t++)
+    //                        {
+    //                            vals2[t] = propVals[t].toDouble();
+    //                        }
+    //                        numbers->InsertNextTuple(vals2);
+    //                        newColumn->InsertNextTuple(0, numbers.GetPointer());
+
+    //                    }
+    //                    else
+    //                    {
+    //                        newColumn->InsertNextValue(vtkVariant(propVals[0].toDouble()));
+
+    //                    }
+    //                    break;
+    //                }
+    //                case VTK_STRING:
+    //                {
+    //                    newColumn->SetNumberOfComponents(propVals.count());
+    //                    newColumn->SetName(property.toAscii().data());
+
+    //                    vtkNew<vtkStringArray> newStrings;
+    //                    newStrings->SetNumberOfComponents(propVals.count());
+    //                    for(int t=0; t < propVals.count(); t++)
+    //                    {
+    //                        newStrings->InsertNextValue(propVals[t].toString().toAscii().data());
+    //                        newStrings->SetComponentName(t, propVals[t].toString().toAscii().data());
+    //                    }
+    //                    newColumn->InsertNextTuple(0, newStrings.GetPointer());
+
+    //                    break;
+    //                }
+    //                default:
+    //                    std::cerr << "type failure. CF type should be only string or double" << std::endl;
+    //                }
 
 
-        }
+    //                Data->GetFieldData()->AddArray(newColumn.GetPointer());
+
+    //            }
 
 
-        //date string
-        vtkNew<vtkStringArray> DateString;
-        DateString->SetName("DateString");
-        DateString->SetNumberOfComponents(1);
-        DateString->InsertNextValue(this->CurrentDateTimeString);
+    //        }
 
-        Data->GetFieldData()->AddArray(DateString.GetPointer());
 
-        //Load Physical Time
-        vtkNew<vtkFloatArray> physTime;
-        physTime->SetName("PhysicalTime");
-        physTime->SetNumberOfComponents(1);
-        physTime->InsertNextValue(this->CurrentPhysicalTime);
+    //        //date string
+    //        vtkNew<vtkStringArray> DateString;
+    //        DateString->SetName("DateString");
+    //        DateString->SetNumberOfComponents(1);
+    //        DateString->InsertNextValue(this->CurrentDateTimeString);
 
-        Data->GetFieldData()->AddArray(physTime.GetPointer());
+    //        Data->GetFieldData()->AddArray(DateString.GetPointer());
 
-        //mjd is encoded as TIME already.  Do we want to put in here as well?
-        vtkNew<vtkDoubleArray> currentMJD;
-        currentMJD->SetName("MJD");
-        currentMJD->SetNumberOfComponents(1);
-        currentMJD->InsertNextValue(this->current_MJD);
+    //        //Load Physical Time
+    //        vtkNew<vtkFloatArray> physTime;
+    //        physTime->SetName("PhysicalTime");
+    //        physTime->SetNumberOfComponents(1);
+    //        physTime->InsertNextValue(this->CurrentPhysicalTime);
 
-        Data->GetFieldData()->AddArray(currentMJD.GetPointer());
+    //        Data->GetFieldData()->AddArray(physTime.GetPointer());
 
-        //get metadate from file
-        NcFile file(this->FileName);
-        natts = file.num_atts();
+    //        //mjd is encoded as TIME already.  Do we want to put in here as well?
+    //        vtkNew<vtkDoubleArray> currentMJD;
+    //        currentMJD->SetName("MJD");
+    //        currentMJD->SetNumberOfComponents(1);
+    //        currentMJD->InsertNextValue(this->current_MJD);
 
-        //TODO: Need to strip spaces from meta-data names and reformat them with underscores
-        for(int q=0; q < natts; q++)
-        {
+    //        Data->GetFieldData()->AddArray(currentMJD.GetPointer());
 
-            vtkNew<vtkStringArray>  MetaString;
-            vtkNew<vtkIntArray>     MetaInt;
-            vtkNew<vtkFloatArray>  MetaDouble;
+    //        //get metadate from file
+    //        NcFile file(this->FileName);
+    //        natts = file.num_atts();
 
-            attname = (char*)file.get_att(q)->name();
-            type = file.get_att(q)->type();
+    //        //TODO: Need to strip spaces from meta-data names and reformat them with underscores
+    //        for(int q=0; q < natts; q++)
+    //        {
 
-            switch(type)
-            {
-            case 1:
-                break;
+    //            vtkNew<vtkStringArray>  MetaString;
+    //            vtkNew<vtkIntArray>     MetaInt;
+    //            vtkNew<vtkFloatArray>  MetaDouble;
 
-            case 2: //text
+    //            attname = (char*)file.get_att(q)->name();
+    //            type = file.get_att(q)->type();
 
-                attvalc = file.get_att(q)->as_string(0);
+    //            switch(type)
+    //            {
+    //            case 1:
+    //                break;
 
-                MetaString->SetName(attname);
-                MetaString->SetNumberOfComponents(1);
-                MetaString->InsertNextValue(attvalc);
+    //            case 2: //text
 
-                Data->GetFieldData()->AddArray(MetaString.GetPointer());
-                break;
+    //                attvalc = file.get_att(q)->as_string(0);
 
-            case 3:
-                break;
+    //                MetaString->SetName(attname);
+    //                MetaString->SetNumberOfComponents(1);
+    //                MetaString->InsertNextValue(attvalc);
 
-            case 4: //int
-                attvali = file.get_att(q)->as_int(0);
+    //                Data->GetFieldData()->AddArray(MetaString.GetPointer());
+    //                break;
 
-                MetaInt->SetName(attname);
-                MetaInt->SetNumberOfComponents(1);
-                MetaInt->InsertNextValue(attvali);
+    //            case 3:
+    //                break;
 
-                Data->GetFieldData()->AddArray(MetaInt.GetPointer());
-                break;
+    //            case 4: //int
+    //                attvali = file.get_att(q)->as_int(0);
 
-            case 5:
-                break;
+    //                MetaInt->SetName(attname);
+    //                MetaInt->SetNumberOfComponents(1);
+    //                MetaInt->InsertNextValue(attvali);
 
-            case 6: //double
-                attvald = file.get_att(q)->as_double(0);
+    //                Data->GetFieldData()->AddArray(MetaInt.GetPointer());
+    //                break;
 
-                MetaDouble->SetName(attname);
-                MetaDouble->SetNumberOfComponents(1);
-                MetaDouble->InsertNextValue(attvald);
+    //            case 5:
+    //                break;
 
-                Data->GetFieldData()->AddArray(MetaDouble.GetPointer());
-                break;
+    //            case 6: //double
+    //                attvald = file.get_att(q)->as_double(0);
 
-            default:
-                break;
-            }
-        }
+    //                MetaDouble->SetName(attname);
+    //                MetaDouble->SetNumberOfComponents(1);
+    //                MetaDouble->InsertNextValue(attvald);
 
-        file.close();
-    }
+    //                Data->GetFieldData()->AddArray(MetaDouble.GetPointer());
+    //                break;
 
-    return 1;
+    //            default:
+    //                break;
+    //            }
+    //        }
+
+    //        file.close();
+    //    }
+
+    //    return 1;
 }
 
 //---------------------------------------------------------------------------------------------
 //Status Check
 int vtkEnlilReader::checkStatus(void *Object, char *name)
 {
+    std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
+
     if(Object == NULL)
     {
         std::cerr << "ERROR: " << name
@@ -1865,57 +1955,44 @@ int vtkEnlilReader::checkStatus(void *Object, char *name)
  * extents of your data */
 int vtkEnlilReader::calculateTimeSteps()
 {
-
-    /* Find Time Range.
-     * We need to open all files, calculate the time, and store locally.
-     * We need to keep track of current file
-     * We don't want to re-calculate the times, just keep them available mapped to their file names
-     * We also need to calculate the time range so ParaView knows what time steps we have.
-     */
+    std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
 
     if(this->timesCalulated == false)
     {
-
-        //calculate number of time steps
-        //  This is easy, as there is one time step per file.
-        this->NumberOfTimeSteps = this->fileNames.size();
         this->TimeSteps.clear();
         this->time2fileMap.clear();
 
-        //the hard part... open all of the files, map them to their calculated times
+        double startTime=0;
+        double endTime=0;
+        qint64 timeCount=0;
 
-        for (int x = 0; x < this->NumberOfTimeSteps; x++)
+        QList<double> timeSteps = this->_3dFiles.keys();
+
+        startTime = timeSteps.first();
+        endTime = timeSteps.last();
+        timeCount = timeSteps.count();
+
+        std::cout << "Found " << timeCount << " time steps" << std::endl << std::flush;
+
+        int t=0;
+        for(t=0; t < timeCount; t++)
         {
-            NcFile data(this->fileNames[x].c_str());
-            NcVar* time = data.get_var("TIME");
-            NcAtt* mjd_start = data.get_att("rundate_mjd");
-
-            DateTime refDate(mjd_start->as_double(0));
-            double epochSeconds = refDate.getSecondsSinceEpoch();
-            epochSeconds += time->as_double(0);
-
-            refDate.incrementSeconds(time->as_double(0));
-
-            this->TimeSteps.push_back(refDate.getMJD());
-
-            //populate physical time map
-            this->time2physicaltimeMap[this->TimeSteps[x]] = time->as_double(0);
-            data.close();
-
-            //populate file map
-            this->time2fileMap[this->TimeSteps[x]] = this->fileNames[x];
-
-            //populate datestring map
-            this->time2datestringMap[this->TimeSteps[x]].assign(refDate.getDateTimeString());
+            //std::cout << "Time Step: " << timeSteps[t] << std::endl << std::flush;
+            this->TimeSteps[t] = timeSteps[t];
 
         }
 
-        //calculate time range
-        this->timeRange[0] = this->TimeSteps[0];
-        this->timeRange[1] = this->TimeSteps[this->NumberOfTimeSteps-1];
+
+        this->timeRange[0] = startTime;
+        this->timeRange[1] = endTime;
+        this->NumberOfTimeSteps = timeCount;
 
         this->timesCalulated = true;
+
+
     }
+
+    std::cout << "exiting " << __FUNCTION__ << std::endl << std::flush;
 
     return 1;
 }
@@ -1926,25 +2003,30 @@ int vtkEnlilReader::calculateTimeSteps()
 //  the new timestep handling routine makes more sense to not include this.
 void vtkEnlilReader::PopulateGridData()
 {
-    //get the dimensions of the grid
-    NcFile grid(this->fileNames[0].c_str());
-    NcDim* dims_x = grid.get_dim(0);
-    NcDim* dims_y = grid.get_dim(1);
-    NcDim* dims_z = grid.get_dim(2);
 
-    //Populate Dimensions
-    this->Dimension[0] = (int)dims_x->size();
-    this->Dimension[1] = (int)dims_y->size();
-    this->Dimension[2] = (int)dims_z->size()+1;
+    std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
 
-    //Populate Extents
-    this->setMyExtents(this->WholeExtent,
-                       0, this->Dimension[0]-1,
-                       0, this->Dimension[1]-1,
-                       0, this->Dimension[2]-1);
+    if(this->_3dFiles.size() > 0)
+    {
+        double firstTime = this->_3dFiles.keys().first();
 
-    //done with grid, thus we now close it
-    grid.close();
+        this->Dimension[0] = this->_3dFiles[firstTime]->getDims(0);
+        this->Dimension[1] = this->_3dFiles[firstTime]->getDims(1);
+        this->Dimension[2] = this->_3dFiles[firstTime]->getDims(2);
+
+        //Populate Extents
+        this->setMyExtents(this->WholeExtent,
+                           0, this->Dimension[0]-1,
+                0, this->Dimension[1]-1,
+                0, this->Dimension[2]-1);
+
+        std::cout << "Completed Dimensioning..." << std::endl << std::flush;
+    }
+    else
+    {
+        std::cerr << "Dimensions Cannot Be Locatated..." << std::endl << std::flush;
+        exit(1);
+    }
 
 }
 
@@ -1952,6 +2034,8 @@ void vtkEnlilReader::PopulateGridData()
 //-- print extents --//
 void vtkEnlilReader::printExtents(int extent[], char* description)
 {
+    std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
+
     std::cout << description << " "
               << extent[0] << " " <<
                  extent[1] << " " <<
@@ -1964,6 +2048,8 @@ void vtkEnlilReader::printExtents(int extent[], char* description)
 //---------------------------------------------------------------------------------------------
 void vtkEnlilReader::setMyExtents(int extentToSet[], int sourceExtent[])
 {
+    std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
+
     extentToSet[0] = sourceExtent[0];
     extentToSet[1] = sourceExtent[1];
     extentToSet[2] = sourceExtent[2];
@@ -1977,6 +2063,8 @@ void vtkEnlilReader::setMyExtents(int extentToSet[], int sourceExtent[])
 //set exents to given array
 void vtkEnlilReader::setMyExtents(int extentToSet[], int dim1, int dim2, int dim3, int dim4, int dim5, int dim6)
 {
+    std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
+
     extentToSet[0] = dim1;
     extentToSet[1] = dim2;
     extentToSet[2] = dim3;
@@ -1989,6 +2077,8 @@ void vtkEnlilReader::setMyExtents(int extentToSet[], int dim1, int dim2, int dim
 //check equality of extents
 bool vtkEnlilReader::eq(int extent1[], int extent2[])
 {
+    std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
+
     return (extent1[0] == extent2[0] && extent1[1] == extent2[1]
             && extent1[2] == extent2[2] && extent1[3] == extent2[3]
             && extent1[4] == extent2[4] && extent1[5] == extent2[5]);
@@ -1998,6 +2088,8 @@ bool vtkEnlilReader::eq(int extent1[], int extent2[])
 //check bounds of extents
 bool vtkEnlilReader::ExtentOutOfBounds(int extToCheck[], int extStandard[])
 {
+    std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
+
     if(extToCheck[0] >= 0)
     {
         if(extToCheck[2] >= 0)
@@ -2021,6 +2113,8 @@ bool vtkEnlilReader::ExtentOutOfBounds(int extToCheck[], int extStandard[])
 //get the dimensions from the extents provided
 void vtkEnlilReader::extractDimensions(int dims[], int extent[])
 {
+    std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
+
     dims[0] = extent[1] - extent[0]+1;
     dims[1] = extent[3] - extent[2]+1;
     dims[2] = extent[5] - extent[4]+1;
@@ -2030,81 +2124,86 @@ void vtkEnlilReader::extractDimensions(int dims[], int extent[])
 //add a point array
 void vtkEnlilReader::addPointArray(char* name)
 {
-    NcFile file(this->FileName);
-    try
-    {
+    std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
 
-        // look up the "Long Name" of the variable
-        std::string varname = file.get_var(name)->get_att("long_name")->as_string(0);
+    //    NcFile file(this->FileName);
+    //    try
+    //    {
 
-        //Radial Veclocity Hack
-        if(varname == "X1-velocity")
-        {
-            varname = std::string("Radial Velocity");
-        }
+    //        // look up the "Long Name" of the variable
+    //        std::string varname = file.get_var(name)->get_att("long_name")->as_string(0);
 
-        //map the variable
-        this->ScalarVariableMap[varname] = std::string(name);
+    //        //Radial Veclocity Hack
+    //        if(varname == "X1-velocity")
+    //        {
+    //            varname = std::string("Radial Velocity");
+    //        }
 
-        // Add it to the point grid
-        if(!this->PointDataArraySelection->ArrayExists(varname.c_str()))
-        {
-            this->PointDataArraySelection->AddArray(varname.c_str());
-        }
+    //        //map the variable
+    //        this->ScalarVariableMap[varname] = std::string(name);
 
-    }
-    catch (...)
-    {
-        std::cerr << "Failed to retrieve variable " << name
-                  << ". Verify variable name." << std::endl;
+    //        // Add it to the point grid
+    //        if(!this->PointDataArraySelection->ArrayExists(varname.c_str()))
+    //        {
+    //            this->PointDataArraySelection->AddArray(varname.c_str());
+    //        }
 
-        file.close();
-        return;
-    }
+    //    }
+    //    catch (...)
+    //    {
+    //        std::cerr << "Failed to retrieve variable " << name
+    //                  << ". Verify variable name." << std::endl;
 
-    file.close();
+    //        file.close();
+    //        return;
+    //    }
+
+    //    file.close();
 }
 
 //---------------------------------------------------------------------------------------------
 void vtkEnlilReader::addPointArray(char* name1, char* name2, char* name3)
 {
-    NcFile file(this->FileName);
-    try
-    {
-        //get the long name of the first variable in the vector
-        std::string varname1 = file.get_var(name1)->get_att("long_name")->as_string(0);
 
-        //remove the vector component of the name
-        size_t pos = varname1.find("-");
-        std::string varname2 = varname1.substr(pos+1);
+    std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
 
-        //ensure that first work is capitalized
-        varname2[0] = toupper((unsigned char) varname2[0]);
+    //    NcFile file(this->FileName);
+    //    try
+    //    {
+    //        //get the long name of the first variable in the vector
+    //        std::string varname1 = file.get_var(name1)->get_att("long_name")->as_string(0);
 
-        //add components of vector to vector map
-        std::vector<std::string> nameArray;
-        nameArray.push_back(name1);
-        nameArray.push_back(name2);
-        nameArray.push_back(name3);
-        this->VectorVariableMap[varname2] = nameArray;
+    //        //remove the vector component of the name
+    //        size_t pos = varname1.find("-");
+    //        std::string varname2 = varname1.substr(pos+1);
 
-        //add array to point array name list
-        if(!this->PointDataArraySelection->ArrayExists(varname2.c_str()))
-        {
-            this->PointDataArraySelection->AddArray(varname2.c_str());
-        }
+    //        //ensure that first work is capitalized
+    //        varname2[0] = toupper((unsigned char) varname2[0]);
 
-    }
-    catch(...)
-    {
-        std::cerr << "Failed to retrieve variable "
-                  << name1 << " or " << name2 << " or " << name3
-                  << ". Verify variable names." << std::endl;
+    //        //add components of vector to vector map
+    //        std::vector<std::string> nameArray;
+    //        nameArray.push_back(name1);
+    //        nameArray.push_back(name2);
+    //        nameArray.push_back(name3);
+    //        this->VectorVariableMap[varname2] = nameArray;
 
-        file.close();
-        return;
-    }
-    file.close();
+    //        //add array to point array name list
+    //        if(!this->PointDataArraySelection->ArrayExists(varname2.c_str()))
+    //        {
+    //            this->PointDataArraySelection->AddArray(varname2.c_str());
+    //        }
+
+    //    }
+    //    catch(...)
+    //    {
+    //        std::cerr << "Failed to retrieve variable "
+    //                  << name1 << " or " << name2 << " or " << name3
+    //                  << ". Verify variable names." << std::endl;
+
+    //        file.close();
+    //        return;
+    //    }
+    //    file.close();
 }
 
 //---------------------------------------------------------------------------------------------
@@ -2113,6 +2212,7 @@ void vtkEnlilReader::addPointArray(char* name1, char* name2, char* name3)
  * your own grid-information */
 int vtkEnlilReader::GenerateGrid()
 {
+    std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
 
     int i = 0;
     int j = 0;
@@ -2197,17 +2297,19 @@ int vtkEnlilReader::GenerateGrid()
 //=================== Cache Control Methods ====================
 void vtkEnlilReader::cleanCache()
 {
+    std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
 
-    this->pDensityCache.cleanCache();
-    this->cDensityCache.cleanCache();
-    this->polarityCache.cleanCache();
-    this->temperatureCache.cleanCache();
-    this->velocityCache.cleanCache();
-    this->bFieldCache.cleanCache();
+    //    this->pDensityCache.cleanCache();
+    //    this->cDensityCache.cleanCache();
+    //    this->polarityCache.cleanCache();
+    //    this->temperatureCache.cleanCache();
+    //    this->velocityCache.cleanCache();
+    //    this->bFieldCache.cleanCache();
 }
 
 void vtkEnlilReader::addEvoFile(const char *FileName, const char *refName)
 {
+    std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
 
     //TODO: make sure this changes if we change the scale factor
     this->evoFiles[refName] = new enlilEvoFile(FileName, GRID_SCALE::ScaleFactor[this->GetGridScaleType()]);
@@ -2215,51 +2317,53 @@ void vtkEnlilReader::addEvoFile(const char *FileName, const char *refName)
 
 void vtkEnlilReader::locateAndLoadEvoFiles()
 {
-    //skip if already processed
-    if(this->_EvoFilesLoaded) return;
+    std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
 
-    //if the files have change, clear old
-    this->evoFiles.clear();
-    this->_evoData.clear();
-    this->_EvoFilesProcessed = false;
+    //    //skip if already processed
+    //    if(this->_EvoFilesLoaded) return;
 
-    QStringList directory = QString(this->CurrentFileName).split("/");
-    directory[directory.size()-1] = QString("");
-    QString path = directory.join("/");
+    //    //if the files have change, clear old
+    //    this->evoFiles.clear();
+    //    this->_evoData.clear();
+    //    this->_EvoFilesProcessed = false;
 
-    //find list of evo files
-    QDir dir(path);
-    dir.setFilter(QDir::Files|QDir::NoSymLinks);
+    //    QStringList directory = QString(this->CurrentFile->getFileName().toAscii().data()).split("/");
+    //    directory[directory.size()-1] = QString("");
+    //    QString path = directory.join("/");
 
-    QFileInfoList fileList = dir.entryInfoList();
-    QMap<QString, QString> evoFiles;
+    //    //find list of evo files
+    //    QDir dir(path);
+    //    dir.setFilter(QDir::Files|QDir::NoSymLinks);
 
-    //find the correct files
-    for(int i=0; i<fileList.size(); i++)
-    {
-        QFileInfo fileInfo = fileList.at(i);
+    //    QFileInfoList fileList = dir.entryInfoList();
+    //    QMap<QString, QString> evoFiles;
 
-        if(fileInfo.fileName().contains("evo."))
-        {
+    //    //find the correct files
+    //    for(int i=0; i<fileList.size(); i++)
+    //    {
+    //        QFileInfo fileInfo = fileList.at(i);
 
-            QString name(fileInfo.fileName());
-            QStringList nameSplit = name.split(".");
+    //        if(fileInfo.fileName().contains("evo."))
+    //        {
 
-            evoFiles[nameSplit[1]] = name;
+    //            QString name(fileInfo.fileName());
+    //            QStringList nameSplit = name.split(".");
 
-            std::cout << "Found File: " << qPrintable(name) << std::endl;
-        }
-    }
+    //            evoFiles[nameSplit[1]] = name;
+
+    //            std::cout << "Found File: " << qPrintable(name) << std::endl;
+    //        }
+    //    }
 
 
-    //add the files to the active list
-    QStringList evoFileNames = evoFiles.keys();
-    for(int x = 0; x < evoFileNames.count(); x++)
-    {
-        QString current = evoFileNames[x];
-        QString filePathName = path + evoFiles[current];
-        this->addEvoFile(qPrintable(filePathName), qPrintable(current));
-    }
+    //    //add the files to the active list
+    //    QStringList evoFileNames = evoFiles.keys();
+    //    for(int x = 0; x < evoFileNames.count(); x++)
+    //    {
+    //        QString current = evoFileNames[x];
+    //        QString filePathName = path + evoFiles[current];
+    //        this->addEvoFile(qPrintable(filePathName), qPrintable(current));
+    //    }
 
 
     this->_EvoFilesLoaded = true;
@@ -2267,139 +2371,147 @@ void vtkEnlilReader::locateAndLoadEvoFiles()
 
 void vtkEnlilReader::processEVOFiles()
 {
-    //see if load is clean
-    if(this->_EvoFilesProcessed) return;
+    std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
 
-    //if not, clear all
-    this->_evoData.clear();
-    this->_evoUnits.clear();
+    //    //see if load is clean
+    //    if(this->_EvoFilesProcessed) return;
 
-    QStringList evoList = this->evoFiles.keys();
-    for(int x = 0; x < evoList.size(); x++)
-    {
-        enlilEvoFile* currentFile = this->evoFiles[evoList[x]];
+    //    //if not, clear all
+    //    this->_evoData.clear();
+    //    this->_evoUnits.clear();
 
-        //TODO: Place in a changable location... this is temp hard coding
-                currentFile->addUnitConversion("m/s", "km/s", UNITS::km2m);
-                currentFile->addUnitConversion("kg/m3", "N/cm^3", UNITS::emu * UNITS::km2cm);
-                currentFile->addUnitConversion("T", "nT", 1.0/1e9);
+    //    QStringList evoList = this->evoFiles.keys();
+    //    for(int x = 0; x < evoList.size(); x++)
+    //    {
+    //        enlilEvoFile* currentFile = this->evoFiles[evoList[x]];
 
-        //switch to proccessed data
-        currentFile->selectOutput(1);
+    //        //TODO: Place in a changable location... this is temp hard coding
+    //        currentFile->addUnitConversion("m/s", "km/s", UNITS::km2m);
+    //        currentFile->addUnitConversion("kg/m3", "N/cm^3", UNITS::emu * UNITS::km2cm);
+    //        currentFile->addUnitConversion("T", "nT", 1.0/1e9);
 
-        //Table creations
+    //        //switch to proccessed data
+    //        currentFile->selectOutput(1);
 
-        QStringList columnNames = currentFile->getVarNames();
-        QMap<QString,QString> unitMap;
+    //        //Table creations
 
-        //get lists of scalars and vectors
-        QStringList scalars;
-        QStringList vectors;
+    //        QStringList columnNames = currentFile->getVarNames();
+    //        QMap<QString,QString> unitMap;
 
-        for(int y=0; y<columnNames.size(); y++)
-        {
-            QString current = columnNames[y];
-            if(current.contains("_"))
-            {
-                QStringList split = current.split("_");
-                vectors.push_back(split[0]);
-                if(currentFile->hasUnits(current))
-                {
-                    unitMap[split[0]] = currentFile->getVarUnits(current.toAscii().data());
-                    std::cout << qPrintable(split[0]) << " Units: " << qPrintable(unitMap[split[0]]) << std::endl;
-                }
+    //        //get lists of scalars and vectors
+    //        QStringList scalars;
+    //        QStringList vectors;
 
-            }
-            else
-            {
-                scalars.push_back(current);
-                if(currentFile->hasUnits(current))
-                {
-                    unitMap[current] = currentFile->getVarUnits(current.toAscii().data());
-                    std::cout << qPrintable(current) <<" Units: " << qPrintable(unitMap[current]) << std::endl;
+    //        for(int y=0; y<columnNames.size(); y++)
+    //        {
+    //            QString current = columnNames[y];
+    //            if(current.contains("_"))
+    //            {
+    //                QStringList split = current.split("_");
+    //                vectors.push_back(split[0]);
+    //                if(currentFile->hasUnits(current))
+    //                {
+    //                    unitMap[split[0]] = currentFile->getVarUnits(current.toAscii().data());
+    //                    std::cout << qPrintable(split[0]) << " Units: " << qPrintable(unitMap[split[0]]) << std::endl;
+    //                }
 
-                }
-            }
+    //            }
+    //            else
+    //            {
+    //                scalars.push_back(current);
+    //                if(currentFile->hasUnits(current))
+    //                {
+    //                    unitMap[current] = currentFile->getVarUnits(current.toAscii().data());
+    //                    std::cout << qPrintable(current) <<" Units: " << qPrintable(unitMap[current]) << std::endl;
 
-        }
+    //                }
+    //            }
 
-        //remove duplicate entries
-        vectors.removeDuplicates();
+    //        }
 
-        //process for scalar
-        for(int y = 0; y < scalars.size(); y++)
-        {
+    //        //remove duplicate entries
+    //        vectors.removeDuplicates();
 
-            vtkDoubleArray *Column = vtkDoubleArray::New();
-            Column->SetName(scalars[y].toAscii().data());
-            Column->SetNumberOfComponents(1);
-            QVector<double> currentColumn = currentFile->getVar(scalars[y].toAscii().data());
-            for(int z = 0; z < currentFile->getStepCount(); z++)
-            {
-                Column->InsertNextValue(currentColumn[z]);
-            }
+    //        //process for scalar
+    //        for(int y = 0; y < scalars.size(); y++)
+    //        {
 
-            this->_evoData[evoList[x]].push_back(Column);
-        }
+    //            vtkDoubleArray *Column = vtkDoubleArray::New();
+    //            Column->SetName(scalars[y].toAscii().data());
+    //            Column->SetNumberOfComponents(1);
+    //            QVector<double> currentColumn = currentFile->getVar(scalars[y].toAscii().data());
+    //            for(int z = 0; z < currentFile->getStepCount(); z++)
+    //            {
+    //                Column->InsertNextValue(currentColumn[z]);
+    //            }
 
-        //process vectors
-        for(int y=0; y< vectors.size();y++)
-        {
-            vtkDoubleArray *ColumnXYZ = vtkDoubleArray::New();
-            ColumnXYZ->SetName(QString(vectors[y]+"_XYZ").toAscii().data());
-            ColumnXYZ->SetNumberOfComponents(3);
+    //            this->_evoData[evoList[x]].push_back(Column);
+    //        }
 
-            vtkDoubleArray *ColumnRTP = vtkDoubleArray::New();
-            ColumnRTP->SetName(QString(vectors[y]+"_RTP").toAscii().data());
-            ColumnRTP->SetNumberOfComponents(3);
+    //        //process vectors
+    //        for(int y=0; y< vectors.size();y++)
+    //        {
+    //            vtkDoubleArray *ColumnXYZ = vtkDoubleArray::New();
+    //            ColumnXYZ->SetName(QString(vectors[y]+"_XYZ").toAscii().data());
+    //            ColumnXYZ->SetNumberOfComponents(3);
 
-            QVector<double> X = currentFile->getVar(QString(vectors[y] + "_X").toAscii().data());
-            QVector<double> Y = currentFile->getVar(QString(vectors[y] + "_Y").toAscii().data());
-            QVector<double> Z = currentFile->getVar(QString(vectors[y] + "_Z").toAscii().data());
+    //            vtkDoubleArray *ColumnRTP = vtkDoubleArray::New();
+    //            ColumnRTP->SetName(QString(vectors[y]+"_RTP").toAscii().data());
+    //            ColumnRTP->SetNumberOfComponents(3);
 
-            QVector<double> R = currentFile->getVar(QString(vectors[y] + "_R").toAscii().data());
-            QVector<double> T = currentFile->getVar(QString(vectors[y] + "_T").toAscii().data());
-            QVector<double> P = currentFile->getVar(QString(vectors[y] + "_P").toAscii().data());
+    //            QVector<double> X = currentFile->getVar(QString(vectors[y] + "_X").toAscii().data());
+    //            QVector<double> Y = currentFile->getVar(QString(vectors[y] + "_Y").toAscii().data());
+    //            QVector<double> Z = currentFile->getVar(QString(vectors[y] + "_Z").toAscii().data());
 
-
-            for(int z=0; z < X.count(); z++)
-            {
-                ColumnXYZ->InsertNextTuple3(X[z], Y[z], Z[z]);
-                ColumnRTP->InsertNextTuple3(R[z], T[z], P[z]);
-            }
-
-            this->_evoData[evoList[x]].push_back(ColumnXYZ);
-            this->_evoData[evoList[x]].push_back(ColumnRTP);
-
-        }
+    //            QVector<double> R = currentFile->getVar(QString(vectors[y] + "_R").toAscii().data());
+    //            QVector<double> T = currentFile->getVar(QString(vectors[y] + "_T").toAscii().data());
+    //            QVector<double> P = currentFile->getVar(QString(vectors[y] + "_P").toAscii().data());
 
 
+    //            for(int z=0; z < X.count(); z++)
+    //            {
+    //                ColumnXYZ->InsertNextTuple3(X[z], Y[z], Z[z]);
+    //                ColumnRTP->InsertNextTuple3(R[z], T[z], P[z]);
+    //            }
 
-        //process field data (Units)
-        QStringList unitKeys = unitMap.keys();
-        for(int u=0; u < unitKeys.count();u++)
-        {
-            vtkStringArray *unitsX = vtkStringArray::New();
-            unitsX->SetName(QString(unitKeys[u]+" Units").toAscii().data());
-            unitsX->SetNumberOfComponents(1);
-            unitsX->InsertNextValue(unitMap[unitKeys[u]].toAscii().data());
+    //            this->_evoData[evoList[x]].push_back(ColumnXYZ);
+    //            this->_evoData[evoList[x]].push_back(ColumnRTP);
 
-            this->_evoUnits[evoList[x]].push_back(unitsX);
-        }
-
-
-        //TODO: Process global field data
+    //        }
 
 
 
-    }
+    //        //process field data (Units)
+    //        QStringList unitKeys = unitMap.keys();
+    //        for(int u=0; u < unitKeys.count();u++)
+    //        {
+    //            vtkStringArray *unitsX = vtkStringArray::New();
+    //            unitsX->SetName(QString(unitKeys[u]+" Units").toAscii().data());
+    //            unitsX->SetNumberOfComponents(1);
+    //            unitsX->InsertNextValue(unitMap[unitKeys[u]].toAscii().data());
+
+    //            this->_evoUnits[evoList[x]].push_back(unitsX);
+    //        }
+
+
+    //        //TODO: Process global field data
+
+
+
+    //    }
 
     this->_EvoFilesProcessed = true;
 }
 
-void vtkEnlilReader::add3DFile(const char *FileName, double mjd)
+void vtkEnlilReader::add3DFile(enlil3DFile *file, double mjd)
 {
+    std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
 
+    if(_3dFiles.contains(mjd))
+    {
+        delete _3dFiles[mjd];
+    }
+    this->_3dFiles[mjd] = file;
 }
 
 
@@ -2407,6 +2519,8 @@ void vtkEnlilReader::add3DFile(const char *FileName, double mjd)
 
 void vtkEnlilReader::loadEvoData(vtkInformationVector* &outputVector)
 {
+    std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
+
     vtkInformation* info = outputVector->GetInformationObject(1);
     vtkDataObject* doOutput = info->Get(vtkDataObject::DATA_OBJECT());
     vtkMultiBlockDataSet* mb = vtkMultiBlockDataSet::SafeDownCast(doOutput);
@@ -2466,6 +2580,8 @@ void vtkEnlilReader::loadEvoData(vtkInformationVector* &outputVector)
 
 void vtkEnlilReader::process3DFiles()
 {
+    std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
+
     //see if load is clean
     if(this->_EvoFilesProcessed) return;
 
@@ -2479,9 +2595,9 @@ void vtkEnlilReader::process3DFiles()
         enlilEvoFile* currentFile = this->evoFiles[evoList[x]];
 
         //TODO: Place in a changable location... this is temp hard coding
-                currentFile->addUnitConversion("m/s", "km/s", UNITS::km2m);
-                currentFile->addUnitConversion("kg/m3", "N/cm^3", UNITS::emu * UNITS::km2cm);
-                currentFile->addUnitConversion("T", "nT", 1.0/1e9);
+        currentFile->addUnitConversion("m/s", "km/s", UNITS::km2m);
+        currentFile->addUnitConversion("kg/m3", "N/cm^3", UNITS::emu * UNITS::km2cm);
+        currentFile->addUnitConversion("T", "nT", 1.0/1e9);
 
         //switch to proccessed data
         currentFile->selectOutput(1);
@@ -2600,6 +2716,8 @@ void vtkEnlilReader::process3DFiles()
 
 void vtkEnlilReader::load3DData(vtkInformationVector* &outputVector)
 {
+    std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
+
     vtkInformation* info = outputVector->GetInformationObject(1);
     vtkDataObject* doOutput = info->Get(vtkDataObject::DATA_OBJECT());
     vtkMultiBlockDataSet* mb = vtkMultiBlockDataSet::SafeDownCast(doOutput);
@@ -2657,6 +2775,7 @@ void vtkEnlilReader::load3DData(vtkInformationVector* &outputVector)
 
 void vtkEnlilReader::clear3DData()
 {
+    std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
 
 }
 
@@ -2666,6 +2785,8 @@ void vtkEnlilReader::clear3DData()
 //--------------------------------------------------------------
 int vtkEnlilReader::FillOutputPortInformation(int port, vtkInformation* info)
 {
+    std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
+
 
     if (port==0)
     {
@@ -2690,11 +2811,27 @@ int vtkEnlilReader::FillOutputPortInformation(int port, vtkInformation* info)
 //------------------------------------------------------------
 void vtkEnlilReader::PrintSelf(ostream &os, vtkIndent indent)
 {
+    std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
+
     this->Superclass::PrintSelf(os, indent);
+}
+
+char *vtkEnlilReader::GetCurrentFileName()
+{
+    std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
+
+    if(this->CurrentFile)
+    {
+        return this->CurrentFile->getFileName().toAscii().data();
+    }
+
+    return NULL;
 }
 
 void vtkEnlilReader::updateControlFile(int status)
 {
+    std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
+
     if(status)
     {
         if(this->findControlFile())
@@ -2727,6 +2864,8 @@ void vtkEnlilReader::updateControlFile(int status)
 
 void vtkEnlilReader::setUseControlFile(int status)
 {
+    std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
+
     this->useControlFile = status;
     if(!status)
     {
