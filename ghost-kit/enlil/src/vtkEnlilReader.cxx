@@ -438,6 +438,11 @@ int vtkEnlilReader::RequestInformation(
         /*Set Information*/
         //Set Time
 
+        std::cout << "RI: Number of Time Steps: " << this->NumberOfTimeSteps << std::endl;
+        std::cout << "RI: Time Range: " << this->timeRange[0] << " - " << this->timeRange[1] << std::endl;
+        std::cout << "RI: WE: ";
+        this->printExtents(this->WholeExtent, "Whole Extents");
+
         DataOutputInfo->Set(
                     vtkStreamingDemandDrivenPipeline::TIME_STEPS(),
                     this->TimeSteps.toVector().data(),
@@ -529,11 +534,15 @@ double vtkEnlilReader::getRequestedTime(vtkInformationVector* outputVector)
 
     vtkInformation* outInfo = outputVector->GetInformationObject(0);
 
-    double requestedTimeValue = this->TimeSteps[0];
+    double requestedTimeValue = this->TimeSteps[0];  //Default Value
 
     if(outInfo->Has(vtkStreamingDemandDrivenPipeline::UPDATE_TIME_STEP()))
     {
+
+
         requestedTimeValue = outInfo->Get(vtkStreamingDemandDrivenPipeline::UPDATE_TIME_STEP());
+
+        std::cout << "Requested Time: " << requestedTimeValue << std::endl << std::flush;
 
         double upper =0;
         double lower =0;
@@ -1683,15 +1692,20 @@ int vtkEnlilReader::PopulateArrays()
 {
     std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
 
-    this->addPointArray((char*)"D");
-    this->addPointArray((char*)"DP");
-    this->addPointArray((char*)"T");
-    this->addPointArray((char*)"V1");
-    this->addPointArray((char*)"BP");
-    this->addPointArray((char*)"B1", (char*)"B2", (char*)"B3");
-    this->addPointArray((char*)"V1", (char*)"V2", (char*)"V3");
+    if(!this->CurrentFile) return 0;
+
+    qint64 arrayCount = this->CurrentFile->getNumberOfVars();
+    QStringList arrayList = this->CurrentFile->getVarNames();
+
+    int loop =0;
+    for(loop = 0; loop < arrayCount; loop++)
+    {
+        this->PointDataArraySelection->AddArray(this->CurrentFile->getVarLongName(arrayList[loop].toAscii().data()).toAscii().data());
+    }
 
     this->numberOfArrays = this->PointDataArraySelection->GetNumberOfArrays();
+
+    std::cout << "Number of Point Arrays: " << this->numberOfArrays << std::endl << std::flush;
 
     return 1;
 }
@@ -2120,96 +2134,7 @@ void vtkEnlilReader::extractDimensions(int dims[], int extent[])
     dims[2] = extent[5] - extent[4]+1;
 }
 
-//---------------------------------------------------------------------------------------------
-//add a point array
-void vtkEnlilReader::addPointArray(char* name)
-{
-    std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
 
-    //    NcFile file(this->FileName);
-    //    try
-    //    {
-
-    //        // look up the "Long Name" of the variable
-    //        std::string varname = file.get_var(name)->get_att("long_name")->as_string(0);
-
-    //        //Radial Veclocity Hack
-    //        if(varname == "X1-velocity")
-    //        {
-    //            varname = std::string("Radial Velocity");
-    //        }
-
-    //        //map the variable
-    //        this->ScalarVariableMap[varname] = std::string(name);
-
-    //        // Add it to the point grid
-    //        if(!this->PointDataArraySelection->ArrayExists(varname.c_str()))
-    //        {
-    //            this->PointDataArraySelection->AddArray(varname.c_str());
-    //        }
-
-    //    }
-    //    catch (...)
-    //    {
-    //        std::cerr << "Failed to retrieve variable " << name
-    //                  << ". Verify variable name." << std::endl;
-
-    //        file.close();
-    //        return;
-    //    }
-
-    //    file.close();
-}
-
-//---------------------------------------------------------------------------------------------
-void vtkEnlilReader::addPointArray(char* name1, char* name2, char* name3)
-{
-
-    std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
-
-    //    NcFile file(this->FileName);
-    //    try
-    //    {
-    //        //get the long name of the first variable in the vector
-    //        std::string varname1 = file.get_var(name1)->get_att("long_name")->as_string(0);
-
-    //        //remove the vector component of the name
-    //        size_t pos = varname1.find("-");
-    //        std::string varname2 = varname1.substr(pos+1);
-
-    //        //ensure that first work is capitalized
-    //        varname2[0] = toupper((unsigned char) varname2[0]);
-
-    //        //add components of vector to vector map
-    //        std::vector<std::string> nameArray;
-    //        nameArray.push_back(name1);
-    //        nameArray.push_back(name2);
-    //        nameArray.push_back(name3);
-    //        this->VectorVariableMap[varname2] = nameArray;
-
-    //        //add array to point array name list
-    //        if(!this->PointDataArraySelection->ArrayExists(varname2.c_str()))
-    //        {
-    //            this->PointDataArraySelection->AddArray(varname2.c_str());
-    //        }
-
-    //    }
-    //    catch(...)
-    //    {
-    //        std::cerr << "Failed to retrieve variable "
-    //                  << name1 << " or " << name2 << " or " << name3
-    //                  << ". Verify variable names." << std::endl;
-
-    //        file.close();
-    //        return;
-    //    }
-    //    file.close();
-}
-
-//---------------------------------------------------------------------------------------------
-//-- Return 0 for failure, 1 for success --//
-/* You will need to over-ride this method to provide
- * your own grid-information */
 int vtkEnlilReader::GenerateGrid()
 {
     std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;

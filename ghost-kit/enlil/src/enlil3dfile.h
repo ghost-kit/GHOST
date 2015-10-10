@@ -33,6 +33,7 @@ public:
     QVector<double> getVar(const char* name);
     QString getVarUnits(const char* name);
     QString getVarLongName(const char* name);
+    qint64 getNumberOfVars();
 
     QVariant getMetaData(const char* name);
 

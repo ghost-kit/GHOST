@@ -84,30 +84,30 @@ void enlil3DFile::_initializeFiles()
 
     //process vars
     //TODO: LOAD TIME FIRST. Then links to methods for getting data
+    //TODO: create method for loading the actual data.
     if(vars.contains(QString("TIME")))
     {
         this->_loadVariable(QString("TIME"));
         this->TIME = this->_variablesRaw["TIME"][0];
+
+        std::cout << "TIME: " << this->TIME << std::endl << std::flush;
     }
 
+        for(int x=0; x < vars.size(); x++)
+        {
+            std::cout << "Loading Var: " << vars[x].toAscii().data() << std::endl;
+            this->_loadVariable(vars[x]);
 
+            std::cout << "Loading Variable Attributes..." << std::endl << std::flush;
+            QStringList varAtts = this->_getAttListForVar(vars[x]);
 
-    //    for(int x=0; x < vars.size(); x++)
-    //    {
-    //        std::cout << "Loading Var: " << vars[x].toAscii().data() << std::endl;
-    //        this->_loadVariable(vars[x]);
-
-    //        QStringList varAtts = this->_getAttListForVar(vars[x]);
-
-    //                std::cout << "reading attributes" << std::endl;
-    //                for(int y=0; y < varAtts.size();y++)
-    //                {
-    //                    std::cout << "getting var attributes.." << std::flush << std::endl;
-    //                    //get specified vars if they exist
-    //                    if(varAtts[y] == QString("units") || varAtts[y] == QString("long_name"));
-    //                        this->_loadAttFromVar(vars[x], varAtts[y]);
-    //                }
-    //    }
+                    std::cout << "reading attributes" << std::endl;
+                    for(int y=0; y < varAtts.size();y++)
+                    {
+                        std::cout << "getting var attribute " << varAtts[y].toAscii().data() << std::flush << std::endl;
+                        this->_loadAttFromVar(vars[x], varAtts[y]);
+                    }
+        }
 
 
 
@@ -212,6 +212,11 @@ QString enlil3DFile::getVarLongName(const char *name)
 
     return this->longNamesOutput[QString(name)];
 
+}
+
+qint64 enlil3DFile::getNumberOfVars()
+{
+    return qint64(this->_getVaribleList().count());
 }
 
 QVariant enlil3DFile::getMetaData(const char *name)
@@ -389,22 +394,30 @@ QStringList enlil3DFile::_getAttListForVar(QString varName)
     std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
 
     QStringList values;
-    QStringList variables = this->_variablesRaw.keys();
+    QStringList variables = this->getVarNames();
 
     // IF data not available, return empty values
-    if(!variables.contains(varName)) return values;
+    if(!variables.contains(varName))
+    {
+        std::cerr << "Variable " << varName.toAscii().data()
+                  << " Cannot be found for loading attributes."
+                  << std::endl;
+        return values;
+    }
 
     NcVar* var = this->file->get_var(qPrintable(varName));
     qint64 numAtts = var->num_atts();
 
+    std::cout << "Number of Attributes for " << qPrintable(varName) << ": " << numAtts << std::endl;
+
     for(int x=0; x<numAtts; x++)
     {
-        //std::cout << "Getting Attribute: " << x << std::endl;
+        std::cout << "Getting Attribute: " << x << std::endl;
 
         NcAtt* att = var->get_att(x);
         if(att->is_valid()) values.push_back(QString(att->name()));
 
-        // std::cout << "Name: " << att->name() << std::flush << std::endl;
+        std::cout << "Name: " << att->name() << std::flush << std::endl;
     }
 
     //std::cout << "Returning to calling function..." << std::endl;
