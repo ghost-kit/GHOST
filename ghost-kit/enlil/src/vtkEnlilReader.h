@@ -261,7 +261,7 @@ protected:
     void extractDimensions(int dims[], int extent[]);
     void setMyExtents(int extentToSet[], int sourceExtent[]);
     void setMyExtents(int extentToSet[], int dim1, int dim2, int dim3, int dim4, int dim5, int dim6);
-    void printExtents(int extent[], char* description);
+    void printExtents(int extent[], const char* description);
 
     bool eq(int extent1[], int extent2[]);
     bool ExtentOutOfBounds(int extToCheck[], int extStandard[]);

@@ -21,29 +21,35 @@ public:
     void setName(const char* name);
     void addUnitConversion(const char* baseUnits, const char* newUnits, double divisor);
 
+    //File Level Routines
     QString getFileName();
     QString getName();
     int getDims(int xyz);
+    double getMJD() const;
+    double getScale_factor() const;
+    void setScale_factor(double scale_factor);
+
+    //Variable Routines
     QStringList getVarNames();
-    QStringList getMeataDataNames();
-
-    bool hasUnits(const char* name);
-    bool hasUnits(QString name);
-
     QVector<double> getVar(const char* name);
-    QString getVarUnits(const char* name);
-    QString getVarLongName(const char* name);
     qint64 getNumberOfVars();
 
-    QVariant getMetaData(const char* name);
+    //File Attribute Routines
+    QStringList getFileAttributeNames();
+    QVariant getFileAttribute(const char* name);
+    int getNumberOfFileAttributes();
+
+    //Variable Attribute Routines
+    bool hasUnits(const char* name);
+    bool hasUnits(QString name);
+    QString getVarUnits(const char* name);
+    QString getVarLongName(const char* name);
 
     //switch between raw and processed data
     void selectOutput(int version);
 
-    double getMJD() const;
 
-    double getScale_factor() const;
-    void setScale_factor(double scale_factor);
+
 
 protected:
     //basic info
@@ -55,22 +61,22 @@ protected:
     bool outputRaw;
 
     // data variables
-    QMap<QString, QVector<double> > varOutput;
+    QMap<QString, QVector<double> > *varOutput;
     QMap<QString, QVector<double> > _variablesRaw;
     QMap<QString, QVector<double> > _variablesProcessed;
 
     // units variables
-    QMap<QString, QString> varUnitsOutput;
+    QMap<QString, QString> *varUnitsOutput;
     QMap<QString, QString> _varUnitsRaw;
     QMap<QString, QString> _varUnitsProcessed;
 
     //long name variables
-    QMap<QString, QString> longNamesOutput;
+    QMap<QString, QString> *longNamesOutput;
     QMap<QString, QString> _longNamesRaw;
     QMap<QString, QString> _longNamesProcessed;
 
     // MetaData
-    QMap<QString, QVariant> fileMetaData;
+    QMap<QString, QVariant> fileAttributeData;
 
 private:
     //setup

@@ -2046,7 +2046,7 @@ void vtkEnlilReader::PopulateGridData()
 
 //---------------------------------------------------------------------------------------------
 //-- print extents --//
-void vtkEnlilReader::printExtents(int extent[], char* description)
+void vtkEnlilReader::printExtents(int extent[], const char* description)
 {
     std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
 

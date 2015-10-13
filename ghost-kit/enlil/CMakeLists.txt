@@ -38,6 +38,8 @@ Target_LINK_LIBRARIES(ENLILreader ${KIT_LIBS}
                 )
 
 
+
+
 add_custom_target(dist
     COMMAND ${CMAKE_COMMAND}  -E make_directory ${CMAKE_INSTALL_PREFIX}/release &&
             ${CMAKE_COMMAND}  -DBINARY_DIR:PATH=${CMAKE_CURRENT_BINARY_DIR}
