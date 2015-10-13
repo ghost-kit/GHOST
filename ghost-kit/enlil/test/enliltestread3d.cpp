@@ -81,8 +81,77 @@ int main(int argc, char* argv[])
     }
 
 
+    /**
+      * Test MJD retreval
+      */
+    double MJD = file.getMJD();
+    double refdate = file.getFileAttribute("refdate_mjd").toDouble(0);
+
+    std::cout << "MJD: " << MJD << std::endl;
+    std::cout << "refDate: " << refdate << std::endl;
+
+    std::cout << "File is " << MJD - refdate << " Days from the Reference date." << std::endl;
 
 
+    /**
+      *Test GetVar and Dims
+      */
+    int xyz[3];
+    xyz[0] = file.getDims(0);
+    xyz[1] = file.getDims(1);
+    xyz[2] = file.getDims(2);
 
+    QVector<double> data1 = file.getVar("X1");
+    QVector<double> data2 = file.getVar("X2");
+    QVector<double> data3 = file.getVar("X3");
+
+    std::cout << "Size of X1: " << data1.size() << std::endl;
+    std::cout << "Size of X2: " << data2.size() << std::endl;
+    std::cout << "Size of X3: " << data3.size() << std::endl;
+
+    if(xyz[0] != data1.size())
+    {
+        std::cerr << "Problem with Dimension X" << std::endl;
+    }
+    else
+    {
+        std::cout << "Dimension X Passed" << std::endl;
+    }
+
+    if(xyz[1] != data2.size())
+    {
+        std::cerr << "Problem with Dimension Y" << std::endl;
+    }
+    else
+    {
+        std::cout << "Dimension Y Passed" << std::endl;
+    }
+
+    if(xyz[2] != data3.size())
+    {
+        std::cerr << "Problem with Dimension Z" << std::endl;
+    }
+    else
+    {
+        std::cout << "Dimension Z Passed" << std::endl;
+    }
+
+    /**
+      *Test getting 3D data1
+      */
+
+    QVector<double> densityData = file.getVar("D");
+    int densityCount = densityData.count();
+
+    if(densityCount != xyz[0] * xyz[1] * xyz[2])
+    {
+        std::cerr << "Error in Reading 3D data... wrong number of entries read: Read "
+                    << densityCount << "Should have Been: "<< xyz[0] * xyz[1] * xyz[2] << std::endl;
+
+    }
+    else
+    {
+        std::cout << "Succesfully Read " << densityCount << " out of " << xyz[0] * xyz[1] * xyz[2]
+                     << " Data points on the 3D Density Scalar Array." << std::endl;    }
 
 }

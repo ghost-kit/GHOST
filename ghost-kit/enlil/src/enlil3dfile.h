@@ -25,6 +25,7 @@ public:
     QString getFileName();
     QString getName();
     int getDims(int xyz);
+    int get3Dcount();
     double getMJD() const;
     double getScale_factor() const;
     void setScale_factor(double scale_factor);
@@ -84,7 +85,7 @@ private:
 
     //file level
     void _loadVariable(QString name);
-    void _loadMetaData(QString name);
+    void _loadFileAttribute(QString name);
     QStringList _getVaribleList();
     QStringList _getAttributeList();
 

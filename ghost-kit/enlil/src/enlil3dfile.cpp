@@ -160,6 +160,11 @@ int enlil3DFile::getDims(int xyz)
 
 }
 
+int enlil3DFile::get3Dcount()
+{
+    return this->dims[0]*this->dims[1]*this->dims[2];
+}
+
 QStringList enlil3DFile::getVarNames()
 {
 //    std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
@@ -442,61 +447,65 @@ QStringList enlil3DFile::_getAttListForVar(QString varName)
 
 void enlil3DFile::_processLocation()
 {
-    //    std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
+        std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
 
-    //    //check existance of the position values
-    //    QStringList vars = this->_variablesRaw.keys();
+        //check existance of the position values
+        QStringList vars = this->_variablesRaw.keys();
 
-    //    if(vars.contains("X1") && vars.contains("X2") && vars.contains("X3"))
-    //    {
-    //        QVector<double> x1 = this->_variablesRaw["X1"];
-    //        QVector<double> x2 = this->_variablesRaw["X2"];
-    //        QVector<double> x3 = this->_variablesRaw["X3"];
+        if(vars.contains("X1") && vars.contains("X2") && vars.contains("X3"))
+        {
+            QVector<double> x1 = this->_variablesRaw["X1"];
+            QVector<double> x2 = this->_variablesRaw["X2"];
+            QVector<double> x3 = this->_variablesRaw["X3"];
 
-    //        QVector<double> X;
-    //        QVector<double> Y;
-    //        QVector<double> Z;
+            QVector<double> X;
+            QVector<double> Y;
+            QVector<double> Z;
 
-    //        QVector<double> R;
-    //        QVector<double> T;
-    //        QVector<double> P;
+            QVector<double> R;
+            QVector<double> T;
+            QVector<double> P;
 
-    //        double* rtp = new double[3];
-    //        double* xyz = NULL;
+            double* rtp = new double[3];
+            double* xyz = NULL;
 
-    //        for(int a = 0; a < this->stepCount; a++)
-    //        {
+            int numPoints = this->get3Dcount();
 
-    //            rtp[0] = x1[a];
-    //            rtp[1] = x2[a];
-    //            rtp[2] = x3[a];
+            //TODO: This needs to be a three way loop.
+            //FIXME: MUST FIX THIS LOOP NEXT
+            for(int a = 0; a < numPoints; a++)
+            {
 
-    //            xyz = this->_gridSphere2Cart(rtp);
+                rtp[0] = x1[a];
+                rtp[1] = x2[a];
+                rtp[2] = x3[a];
 
-    //            R.push_back(rtp[0]/this->__scale_factor);
-    //            T.push_back(rtp[1]);
-    //            P.push_back(rtp[2]);
+                xyz = this->_gridSphere2Cart(rtp);
 
-    //            X.push_back(xyz[0]/this->__scale_factor);
-    //            Y.push_back(xyz[1]/this->__scale_factor);
-    //            Z.push_back(xyz[2]/this->__scale_factor);
+                R.push_back(rtp[0]/this->__scale_factor);
+                T.push_back(rtp[1]);
+                P.push_back(rtp[2]);
 
-    //            delete [] xyz;
+                X.push_back(xyz[0]/this->__scale_factor);
+                Y.push_back(xyz[1]/this->__scale_factor);
+                Z.push_back(xyz[2]/this->__scale_factor);
 
-    //        }
+                delete [] xyz;
 
-    //        delete [] rtp;
+            }
 
-    //        //save converted results
-    //        this->_variablesProcessed["pos_X"] = X;
-    //        this->_variablesProcessed["pos_Y"] = Y;
-    //        this->_variablesProcessed["pos_Z"] = Z;
+            delete [] rtp;
 
-    //        //save processed data (RTP)
-    //        this->_variablesProcessed[QString("pos_R")] = R;
-    //        this->_variablesProcessed[QString("pos_T")] = T;
-    //        this->_variablesProcessed[QString("pos_P")] = P;
-    //    }
+            //save converted results
+            this->_variablesProcessed["pos_X"] = X;
+            this->_variablesProcessed["pos_Y"] = Y;
+            this->_variablesProcessed["pos_Z"] = Z;
+
+            //save processed data (RTP)
+            this->_variablesProcessed[QString("pos_R")] = R;
+            this->_variablesProcessed[QString("pos_T")] = T;
+            this->_variablesProcessed[QString("pos_P")] = P;
+        }
 
 }
 
