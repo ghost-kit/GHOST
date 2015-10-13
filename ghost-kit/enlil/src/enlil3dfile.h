@@ -11,115 +11,99 @@
 #include <vtknetcdf/cxx/netcdfcpp.h>
 #include <QtAlgorithms>
 
+
+#define ENLIL_GRIDSPACING_CT 0
+#define ENLIL_GRIDSPACING_SP 1
+
+
 class enlil3DFile
 {
 public:
+    // Class Level Functions
     enlil3DFile(const char* FileName, double scaleFactor);
     ~enlil3DFile();
 
-    void setFileName(const char *FileName);
-    void setName(const char* name);
-    void addUnitConversion(const char* baseUnits, const char* newUnits, double divisor);
+    //Easy Name
+    void setName(const char* _name);
 
     //File Level Routines
+    void setFileName(const char *FileName);
     QString getFileName();
     QString getName();
-    int getDims(int xyz);
-    int get3Dcount();
     double getMJD() const;
     double getScale_factor() const;
     void setScale_factor(double scale_factor);
 
+    //Grid Spacing
+    QVector<double *> *getGridSpacing();
+    int getDims(int xyz);
+    int get3Dcount();
+    QString getGridUnits();
+    void setGridSpacingType(int type);
+
     //Variable Routines
     QStringList getVarNames();
-    QVector<double> getVar(const char* name);
+    QVector<double> getVar(const char* _name);
     qint64 getNumberOfVars();
 
     //File Attribute Routines
     QStringList getFileAttributeNames();
-    QVariant getFileAttribute(const char* name);
+    QVariant getFileAttribute(const char* _name);
     int getNumberOfFileAttributes();
 
     //Variable Attribute Routines
-    bool hasUnits(const char* name);
-    bool hasUnits(QString name);
-    QString getVarUnits(const char* name);
-    QString getVarLongName(const char* name);
+    bool hasUnits(const char* _name);
+    bool hasUnits(QString _name);
+    QString getVarUnits(const char* _name);
+    QString getVarLongName(const char* _name);
 
     //switch between raw and processed data
     void selectOutput(int version);
+    void addUnitConversion(const char* baseUnits, const char* newUnits, double divisor);
 
 
-
-
-protected:
+protected:  //DATA
     //basic info
-    QString name;
-    QString fileName;
-    double MJD;
-    qint64 TIME;
-    int dims[3];
-    bool outputRaw;
+    QString _name;
+    QString _fileName;
+    NcFile *_file;
 
-    // data variables
-    QMap<QString, QVector<double> > *varOutput;
+    //Data Keeping
+    double _MJD;
+    qint64 _TIME;
+    int _dims[3];
+    double _enlil_version;
+
+    bool _retainRaw;      //Flag to determine if we will retain the raw data in memory.
+    bool _convertData;    //Flag to determine if we convert the raw data
+
+    //grid Data
+    QVector<double*> *_gridOutput;      //Current Output
+    QVector<double*> _gridPositionsCT;  //Cartesian
+    QVector<double*> _gridPositionsSP;  //Spherical
+    QString _gridUnits;                 //maintain the units for grid scaling
+    double _gridScaleFactor;            // how much to scale the grid
+
+    //data variables
+    QMap<QString, QVector<double> > *_varOutput;
     QMap<QString, QVector<double> > _variablesRaw;
     QMap<QString, QVector<double> > _variablesProcessed;
 
-    // units variables
-    QMap<QString, QString> *varUnitsOutput;
+    //units variables
+    QMap<QString, QString> *_varUnitsOutput;
     QMap<QString, QString> _varUnitsRaw;
     QMap<QString, QString> _varUnitsProcessed;
 
     //long name variables
-    QMap<QString, QString> *longNamesOutput;
+    QMap<QString, QString> *_longNamesOutput;
     QMap<QString, QString> _longNamesRaw;
     QMap<QString, QString> _longNamesProcessed;
 
-    // MetaData
-    QMap<QString, QVariant> fileAttributeData;
+    // MetaData Variables
+    QMap<QString, QVariant> _fileAttributeData;
 
-private:
-    //setup
-    void _initializeFiles();
-
-    //file level
-    void _loadVariable(QString name);
-    void _loadFileAttribute(QString name);
-    QStringList _getVaribleList();
-    QStringList _getAttributeList();
-
-    //var level
-    void _loadAttFromVar(QString VarName, QString AttName);
-    QStringList _getAttListForVar(QString varName);
-
-    //data processing
-    void _processLocation();
-    void _processSphericalVectors();
-    void _processScalars();
-    void _processTime();
-
-    //data conversions
-    //convMap holds conversions: form convMap[rawUnits][newUnits]=divisor
+    // Converstion Variables
     QMap<QString, QPair<QString, double> > _convMap;
-    void _addConversion(QString baseUnits, QString newUnits, double divisor);
-    QPair<QString, double> _getConvDivForVar(QString var);
-
-
-    //coordinate transforms (the basic ones)
-    //these vectors MUST be 3 tuples
-    //it is the responsibility of the calling function to
-    //   free the memory associated with these conversions
-    double *_gridSphere2Cart(const double rtp[]);
-    double *_sphere2Cart(const double rtp[], const double rtpOrigin[]);
-
-    // how much to scale the grid
-    double __scale_factor;
-
-    //file manipulations
-    NcFile *file;
-
-    double getMax(QVector<double> vector);
 
     /**
      * @brief runDataString
@@ -127,8 +111,45 @@ private:
      *      Enlil data file.
      * Version 2.6 and 2.7 -> refdate_mjd
      * Version 2.8 -> rundate_mjd
+     *
+     * FIXME: This should be a dictionary defining the different versions, and should be static.
      */
-    QString runDataString;
+    QString _runDataString;
+
+protected:  //METHODS
+    //setup
+    void __initializeFiles();
+
+    //file level
+    void __loadVariable(QString _name);
+    void __loadFileAttribute(QString _name);
+    QStringList __getVaribleList();
+    QStringList __getAttributeList();
+
+    //var level
+    void __loadAttFromVar(QString VarName, QString AttName);
+    QStringList __getAttListForVar(QString varName);
+
+    //data processing
+    void __processLocation();
+    void __processSphericalVectors();
+    void __processScalars();
+    void __processTime();
+
+    //data conversions
+    //convMap holds conversions: form convMap[rawUnits][newUnits]=divisor
+    void __addConversion(QString baseUnits, QString newUnits, double divisor);
+    QPair<QString, double> __getConvDivForVar(QString var);
+
+    //coordinate transforms (the basic ones)
+    //these vectors MUST be 3 tuples
+    //it is the responsibility of the calling function to
+    //   free the memory associated with these conversions
+    double *__gridSphere2Cart(const double rtp[]);
+    double *__sphere2Cart(const double rtp[], const double rtpOrigin[]);
+
+    //file manipulations
+    double __getMax(QVector<double> vector);
 
 };
 

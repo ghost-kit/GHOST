@@ -152,6 +152,35 @@ int main(int argc, char* argv[])
     else
     {
         std::cout << "Succesfully Read " << densityCount << " out of " << xyz[0] * xyz[1] * xyz[2]
-                     << " Data points on the 3D Density Scalar Array." << std::endl;    }
+                     << " Data points on the 3D Density Scalar Array." << std::endl;
+    }
+
+
+    /**
+      * Test grid positions
+      **/
+    QVector<double*> *gridSpace = file.getGridSpacing();
+    if(!gridSpace)
+    {
+        std::cerr << "ERROR: Grid Spacing Not properly defined." << std::endl;
+    }
+    else
+    {
+        std::cout << "Grid Spacing appears to be defined." << std::endl;
+    }
+
+    if(gridSpace->count() != file.get3Dcount())
+    {
+        std::cerr << "ERROR... Full grid space does not equal the size of data sets." << std::endl;
+
+    }
+    else
+    {
+        std::cout << "Grid Space is of the Correct Size." << std::endl;
+    }
+
+
+
+
 
 }
