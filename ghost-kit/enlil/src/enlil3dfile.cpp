@@ -10,23 +10,12 @@
  * @param FileName
  * @param scaleFactor
  */
-enlil3DFile::enlil3DFile(const char *FileName, double scaleFactor)
+void enlil3DFile::__ResetFile()
 {
-    //setup the object
-    this->setFileName(FileName);
-    this->_gridScaleFactor = scaleFactor;
-    this->_convertData = false;
-    this->_retainRaw = false;
-    this->_gridOutput = NULL;
-
-    //FIXME: The select output method needs to mirror the _convertData flag.
-    this->selectOutput(0);
-
-    //load the data from the file
     this->__initializeFiles();
 
     //process location
-    this->__processLocation();
+    this->__processGridLocations();
 
     //process Time
     this->__processTime();
@@ -38,6 +27,23 @@ enlil3DFile::enlil3DFile(const char *FileName, double scaleFactor)
     this->__processScalars();
 }
 
+enlil3DFile::enlil3DFile(const char *FileName, double scaleFactor)
+{
+    //setup the object
+    this->setFileName(FileName);
+    this->_gridScaleFactor = scaleFactor;
+    this->_convertData = false;
+    this->_retainRaw = false;
+    this->_gridOutput = NULL;
+    this->_varOutput = NULL;
+    this->_varUnitsOutput = NULL;
+    this->_longNamesOutput = NULL;
+
+
+    //load the data from the file
+    __ResetFile();
+}
+
 /**
  * @brief enlil3DFile::~enlil3DFile
  */
@@ -45,13 +51,124 @@ enlil3DFile::~enlil3DFile()
 {
     //FIXME: Need to manage all of the memory for the class
 
-    int loop = 0;
-    int lsize = this->_gridPositionsCT.count();
-    for(loop = 0; loop < lsize; loop++)
-    {
-        delete [] this->_gridPositionsCT[loop];
-        delete [] this->_gridPositionsSP[loop];
-    }
+
+}
+
+
+/**
+ * @brief enlil3DFile::cleanAll
+ */
+void enlil3DFile::__cleanAll()
+{
+    delete this->_file;
+    this->_MJD = 0;
+    this->_TIME = 0;
+    this->_name.clear();
+    this->_enlil_version = 0;
+    this->_gridScaleFactor = 1;
+    this->_extents[0]=0;
+    this->_extents[1]=0;
+    this->_extents[2]=0;
+    this->_extents[3]=0;
+    this->_extents[4]=0;
+    this->_extents[5]=0;
+
+    this->_gridOutput = NULL;
+    this->_gridPositionsCT.clear();
+    this->_gridPositionsSP.clear();
+    this->_gridUnits.clear();
+
+    this->_varOutput = NULL;
+    this->_variablesRaw.clear();
+    this->_variablesProcessed.clear();
+
+    this->_varUnitsOutput = NULL;
+    this->_varUnitsRaw.clear();
+    this->_varUnitsProcessed.clear();
+
+    this->_longNamesOutput = NULL;
+    this->_longNamesRaw.clear();
+    this->_longNamesProcessed.clear();
+
+    this->_fileAttributeData.clear();
+    this->_convMap.clear();
+
+}
+
+/**
+ * @brief enlil3DFile::cleanVar
+ * @param _name
+ */
+void enlil3DFile::cleanVar(const char *_name)
+{
+    std::cerr << __FUNCTION__ << " Not Implemented" << std::endl;
+    exit(EXIT_FAILURE);
+}
+
+/**
+ * @brief enlil3DFile::setExtents
+ * @param extents
+ */
+void enlil3DFile::setExtents(int extents[6])
+{
+    this->__setUseExtents(extents);
+}
+
+/**
+ * @brief enlil3DFile::setExtents
+ * @param X1
+ * @param X2
+ * @param Y1
+ * @param Y2
+ * @param Z1
+ * @param Z2
+ */
+void enlil3DFile::setExtents(int X1, int X2, int Y1, int Y2, int Z1, int Z2)
+{
+    int extents[6] = {X1, X2, Y1, Y2, Z1, Z2};
+    this->__setUseExtents(extents);
+}
+
+/**
+ * @brief enlil3DFile::getExtents
+ * @return
+ */
+QVector<int> enlil3DFile::getExtents()
+{
+    QVector<int> returnVal;
+    returnVal.push_back(this->_extents[0]);
+    returnVal.push_back(this->_extents[1]);
+    returnVal.push_back(this->_extents[2]);
+    returnVal.push_back(this->_extents[3]);
+    returnVal.push_back(this->_extents[4]);
+    returnVal.push_back(this->_extents[5]);
+
+    return returnVal;
+}
+
+/**
+ * @brief enlil3DFile::setUseExtents
+ * @param truth
+ */
+void enlil3DFile::__setUseExtents(int extents[6])
+{
+
+    //reset the current data
+    this->__cleanAll();
+
+    //set the extents needed
+    this->_extents[0] = extents[0];
+    this->_extents[1] = extents[1];
+    this->_extents[2] = extents[2];
+    this->_extents[3] = extents[3];
+    this->_extents[4] = extents[4];
+    this->_extents[5] = extents[5];
+
+    //set the use extents
+    this->_useExtents = true;
+
+    //initialize the files
+    this->__ResetFile();
 
 }
 
@@ -60,6 +177,8 @@ enlil3DFile::~enlil3DFile()
  */
 void enlil3DFile::__initializeFiles()
 {
+    this->selectOutput(0);
+
     //open the file
     this->_file = new NcFile(qPrintable(this->_fileName));
 
@@ -75,11 +194,17 @@ void enlil3DFile::__initializeFiles()
     dims[1] = this->_file->get_dim("n2");
     dims[2] = this->_file->get_dim("n3");
 
+
     if(dims[0]->is_valid() && dims[1]->is_valid() && dims[2]->is_valid())
     {
         this->_dims[0] = dims[0]->size();
         this->_dims[1] = dims[1]->size();
         this->_dims[2] = dims[2]->size();
+    }
+    else
+    {
+        std::cerr << "ERROR: Dimensional Failure... " << std::endl;
+        exit(EXIT_FAILURE);
     }
 
     //get list of variables
@@ -93,7 +218,6 @@ void enlil3DFile::__initializeFiles()
     }
 
     //process vars
-    //TODO: LOAD TIME FIRST. Then links to methods for getting data
     //TODO: create method for loading the actual data.
     if(vars.contains(QString("TIME")))
     {
@@ -102,17 +226,40 @@ void enlil3DFile::__initializeFiles()
 
     }
 
-    for(int x=0; x < vars.size(); x++)
+    //check to see if we are operating on extents
+    if(!this->_useExtents)
     {
-        this->__loadVariable(vars[x]);
-
-        QStringList varAtts = this->__getAttListForVar(vars[x]);
-
-        for(int y=0; y < varAtts.size();y++)
+        //Not using extents... ==> use entire file
+        for(int x=0; x < vars.size(); x++)
         {
-            this->__loadAttFromVar(vars[x], varAtts[y]);
+            this->__loadVariable(vars[x]);
+
+            QStringList varAtts = this->__getAttListForVar(vars[x]);
+
+            for(int y=0; y < varAtts.size();y++)
+            {
+                this->__loadAttFromVar(vars[x], varAtts[y]);
+            }
         }
     }
+    else
+    {
+        //Using Extents... ==> use selected extents only.
+
+        QVector<int> newDims = this->__getExtentDimensions(this->_extents);
+        this->_dims[0] = newDims[0];
+        this->_dims[1] = newDims[1];
+        this->_dims[2] = newDims[2];
+
+        for(int x=0; x < vars.size();x++)
+        {
+            this->__loadVariableExtents(vars[x]);
+        }
+
+
+
+    }
+
 
     this->_file->close();
 }
@@ -281,6 +428,28 @@ QVector<double> enlil3DFile::getVar(const char *name)
 
 }
 
+QVector<QVector<double> > enlil3DFile::getVar(const char *X, const char *Y, const char *Z)
+{
+    QVector<QVector<double> > XYZ;
+
+    QVector<double> X1 = this->getVar(X);
+    QVector<double> Y1 = this->getVar(Y);
+    QVector<double> Z1 = this->getVar(Z);
+
+    int loop = 0;
+    for(loop = 0; loop < this->get3Dcount(); loop++)
+    {
+        QVector<double> entry;
+        entry.push_back(X1[loop]);
+        entry.push_back(Y1[loop]);
+        entry.push_back(Z1[loop]);
+
+        XYZ.push_back(entry);
+    }
+
+    return XYZ;
+}
+
 /**
  * @brief enlil3DFile::getVarUnits
  * @param name
@@ -290,7 +459,6 @@ QString enlil3DFile::getVarUnits(const char *name)
 {
 
     return this->_varUnitsOutput->operator [](QString(name));
-
 }
 
 /**
@@ -404,6 +572,160 @@ void enlil3DFile::__loadVariable(QString name)
 }
 
 /**
+ * @brief enlil3DFile::__loadVariableExtents
+ * @param _name
+ */
+void enlil3DFile::__loadVariableExtents(QString _name)
+{
+    //FIXME: This is currently a direct copy from the old reader.  Must modify.
+    int extDims[3] = {0,0,0};
+    size_t readDims[4]   = {1,1,1,1};
+    long readStart[4]  = {0,extents[4],extents[2],extents[0]};
+
+    // get dimensions from extents
+    this->extractDimensions(extDims, extents);
+
+    // Enlil encodes in reverse, so reverse the order, add fourth dimension 1st.
+    readDims[1] = extDims[2];
+    readDims[2] = extDims[1];
+    readDims[3] = extDims[0];
+
+    //find all conditions that need to be accounted for
+    bool periodic = false;
+    bool periodicRead = false;
+    bool periodicOnly = false;
+
+    // this->printExtents(extents, (char*)"Loading Extents: ");
+
+    if(extents[5] == this->WholeExtent[5])
+    {
+        periodic = true;
+        // std::cout << "Set Periodic" << std::endl;
+
+        if(extents[4] > 0)
+        {
+            periodicRead = true;
+            // std::cout << "Set Periodic Read" << std::endl;
+            if(extents[4] == this->WholeExtent[5])
+            {
+                periodicOnly = true;
+                // std::cout << "Set Periodic Only" << std::endl;
+
+            }
+        }
+    }
+    else
+    {
+        //  std::cout << "Non-Periodic" << std::endl;
+        //  dont need to do anything
+
+    }
+
+    // allocate memory for complete array
+    double *array = new double[extDims[0]*extDims[1]*extDims[2]];
+
+    //open file
+    NcFile file(this->FileName);
+    NcVar* variable = file.get_var(arrayName);
+
+    // start to read in data
+    if(periodic && !periodicOnly)
+    {
+        //adjust dims
+        readDims[1] = readDims[1]-1;
+
+        //adjust the start point
+        variable->set_cur(readStart);
+
+        //read the file
+        variable->get(array, readDims);
+
+    }
+    else if(periodicOnly)
+    {
+        //set periodic only
+        readDims[1] = 1;
+        readStart[1] = 0;
+        readStart[2] = extents[2];
+        readStart[3] = extents[0];
+
+        //set read location
+        variable->set_cur(readStart);
+
+        //read the file
+        variable->get(array, readDims);
+
+    }
+    else
+    {
+        //set read location as stated
+        variable->set_cur(readStart);
+
+        //read as stated
+        variable->get(array, readDims);
+
+    }
+
+    // fix periodic boundary if necesary
+    if(periodic && !periodicRead && !periodicOnly)
+    {
+        //copy periodic data from begining to end
+        size_t wedgeSize = (extDims[0]*extDims[1]);
+        size_t wedgeLoc  = (extDims[0]*extDims[1])*(extDims[2]-1);
+
+        for(int x = 0; x < wedgeSize; x++)
+        {
+            //copy the wedge
+            array[wedgeLoc] = array[x];
+
+            //advance index
+            wedgeLoc++;
+        }
+
+    }
+    else if (periodic && periodicRead && !periodicOnly)  /*periodicRead &&*/
+    {
+        //read in periodic data and place at end of array
+        size_t wedgeSize = extDims[0]*extDims[1];
+        size_t wedgeLoc  = (extDims[0]*extDims[1])*(extDims[2]-1);
+
+        double * wedge = new double[wedgeSize];
+
+        //start at 0,0,0
+        readStart[0] = 0;
+        readStart[1] = 0;
+        readStart[2] = extents[2];
+        readStart[3] = extents[0];
+
+        //restrict to phi = 1 dimension
+        readDims[1] = 1;
+
+        //set start
+        variable->set_cur(readStart);
+
+        //read data
+        variable->get(wedge, readDims);
+
+        //populate wedge to array
+        for(int x = 0; x < wedgeSize; x++)
+        {
+            //copy the wedge
+            array[wedgeLoc] = wedge[x];
+
+            //advance index
+            wedgeLoc++;
+        }
+
+        //free temp memory
+        delete [] wedge; wedge = NULL;
+    }
+
+
+    //close file
+    file.close();
+}
+
+/**
  * @brief enlil3DFile::__loadFileAttribute
  * @param name
  */
@@ -450,6 +772,7 @@ void enlil3DFile::__loadFileAttribute(QString name)
 
     this->_fileAttributeData[name] = variant;
 
+    delete attribute;
 }
 
 /**
@@ -485,6 +808,7 @@ QStringList enlil3DFile::__getAttributeList()
     {
         NcAtt* att = this->_file->get_att(x);
         values.push_back(QString(att->name()));
+        delete att;
     }
 
     return values;
@@ -503,6 +827,7 @@ void enlil3DFile::__loadAttFromVar(QString VarName, QString AttName)
     NcVar* var = this->_file->get_var(VarName.toAscii().data());
     NcAtt* att = var->get_att(AttName.toAscii().data());
 
+    //FIXME: Memory Leak when doing this.  Need to controll the att->as_string memory apparently.
     value = QString(att->as_string(0));
 
     if(AttName == "units")
@@ -517,6 +842,10 @@ void enlil3DFile::__loadAttFromVar(QString VarName, QString AttName)
     {
         std::cerr << "Unknown Variable Attribute.  Consider revising the reader." << std::endl;
     }
+
+    delete att;
+    //    delete var;
+
 }
 
 /**
@@ -545,15 +874,17 @@ QStringList enlil3DFile::__getAttListForVar(QString varName)
     {
         NcAtt* att = var->get_att(x);
         if(att->is_valid()) values.push_back(QString(att->name()));
+        delete att;
     }
 
+    //delete var;
     return values;
 }
 
 /**
  * @brief enlil3DFile::__processLocation
  */
-void enlil3DFile::__processLocation()
+void enlil3DFile::__processGridLocations()
 {
     int loopX=0, loopY=0, loopZ=0;
 
@@ -567,10 +898,10 @@ void enlil3DFile::__processLocation()
         QVector<double> x2 = this->_variablesRaw["X2"];
         QVector<double> x3 = this->_variablesRaw["X3"];
 
-        QVector<double*> XYZ;
-        QVector<double*> RTP;
+        QVector<QVector<double> > XYZ;
+        QVector<QVector<double> > RTP;
 
-        double* xyz = NULL;
+        QVector<double> xyz;
 
         int xlen = this->getDims(0);
         int ylen = this->getDims(1);
@@ -586,11 +917,19 @@ void enlil3DFile::__processLocation()
             {
                 for(loopX = 0; loopX < xlen; loopX++)
                 {
-                    double* rtp = new double[3];
+                    QVector<double> rtp;
 
-                    rtp[0] = x1[loopX]/this->_gridScaleFactor;
-                    rtp[1] = x2[loopY];
-                    rtp[2] = x3[loopZ];
+                    if(this->_gridScaleFactor != 1)
+                    {
+                        rtp.push_back(x1[loopX]/this->_gridScaleFactor);
+                    }
+                    else
+                    {
+                        rtp.push_back(x1[loopX]);
+                    }
+
+                    rtp.push_back(x2[loopY]);
+                    rtp.push_back(x3[loopZ]);
 
                     xyz = this->__gridSphere2Cart(rtp);
 
@@ -607,6 +946,11 @@ void enlil3DFile::__processLocation()
 
         //define the grid output (Default to Cartesian grid)
         this->setGridSpacingType(ENLIL_GRIDSPACING_CT);
+    }
+    else
+    {
+        std::cerr << "ERROR: No Data Found..." << std::endl;
+        exit(EXIT_FAILURE);
     }
 }
 
@@ -889,13 +1233,13 @@ QPair<QString, double> enlil3DFile::__getConvDivForVar(QString var)
  * @param rtp
  * @return
  */
-double *enlil3DFile::__gridSphere2Cart(const double rtp[])
+QVector<double> enlil3DFile::__gridSphere2Cart(const QVector<double> rtp)
 {
     //calculate
-    double* xyz = new double[3];
-    xyz[0] = rtp[0] * sin(rtp[1]) * cos(rtp[2]);
-    xyz[1] = rtp[0] * sin(rtp[1]) * sin(rtp[2]);
-    xyz[2] = rtp[0] * cos(rtp[1]);
+    QVector<double> xyz;
+    xyz.push_back(rtp[0] * sin(rtp[1]) * cos(rtp[2]));
+    xyz.push_back(rtp[0] * sin(rtp[1]) * sin(rtp[2]));
+    xyz.push_back(rtp[0] * cos(rtp[1]));
 
     return xyz;
 }
@@ -940,9 +1284,19 @@ void enlil3DFile::setScale_factor(double scale_factor)
  * @brief enlil3DFile::getGridSpacing
  * @return
  */
-QVector<double *>* enlil3DFile::getGridSpacing()
+QVector<QVector< double > > enlil3DFile::getGridSpacing()
 {
-    return this->_gridOutput;
+    //FIXME: Get a copy of gridOutput, not the original!
+    //TODO: Make the _gridOutput data structure out of qvectors for safety?
+
+    if(!this->_gridOutput)
+    {
+        std::cerr << "ERROR: Grid Output Not Defined... " <<  __FUNCTION__ << " at line " << __LINE__ << std::endl;
+        exit(EXIT_FAILURE);
+    }
+    QVector<QVector<double > > currentGrid = *this->_gridOutput;
+
+    return currentGrid;
 }
 
 /**
@@ -956,5 +1310,20 @@ double enlil3DFile::__getMax(QVector<double> vector)
     double max = vector.last();
 
     return max;
+}
+
+/**
+ * @brief enlil3DFile::__getExtentDimensions
+ * @param extent
+ * @return
+ */
+QVector<int> enlil3DFile::__getExtentDimensions(int extent[6])
+{
+    QVector<int> dims;
+    dims.push_back(extent[1] - extent[0]+1);
+    dims.push_back(extent[3] - extent[2]+1);
+    dims.push_back(extent[5] - extent[4]+1);
+
+    return dims;
 }
 

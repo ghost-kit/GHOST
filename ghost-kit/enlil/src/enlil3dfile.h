@@ -23,6 +23,12 @@ public:
     enlil3DFile(const char* FileName, double scaleFactor);
     ~enlil3DFile();
 
+    //Reset Routines
+    void cleanVar(const char* _name);
+    void setExtents(int extents[]);
+    void setExtents(int X1, int X2, int Y1, int Y2, int Z1, int Z2);
+    QVector<int> getExtents();
+
     //Easy Name
     void setName(const char* _name);
 
@@ -35,7 +41,7 @@ public:
     void setScale_factor(double scale_factor);
 
     //Grid Spacing
-    QVector<double *> *getGridSpacing();
+    QVector<QVector<double> > getGridSpacing();
     int getDims(int xyz);
     int get3Dcount();
     QString getGridUnits();
@@ -44,6 +50,7 @@ public:
     //Variable Routines
     QStringList getVarNames();
     QVector<double> getVar(const char* _name);
+    QVector<QVector<double> > getVar(const char* X, const char* Y, const char* Z);
     qint64 getNumberOfVars();
 
     //File Attribute Routines
@@ -73,14 +80,16 @@ protected:  //DATA
     qint64 _TIME;
     int _dims[3];
     double _enlil_version;
+    int _extents[6];
 
     bool _retainRaw;      //Flag to determine if we will retain the raw data in memory.
     bool _convertData;    //Flag to determine if we convert the raw data
+    bool _useExtents;     //Use the set extents
 
     //grid Data
-    QVector<double*> *_gridOutput;      //Current Output
-    QVector<double*> _gridPositionsCT;  //Cartesian
-    QVector<double*> _gridPositionsSP;  //Spherical
+    QVector<QVector<double> > *_gridOutput;      //Current Output
+    QVector<QVector<double> > _gridPositionsCT;  //Cartesian
+    QVector<QVector<double> > _gridPositionsSP;  //Spherical
     QString _gridUnits;                 //maintain the units for grid scaling
     double _gridScaleFactor;            // how much to scale the grid
 
@@ -122,6 +131,7 @@ protected:  //METHODS
 
     //file level
     void __loadVariable(QString _name);
+    void __loadVariableExtents(QString _name);
     void __loadFileAttribute(QString _name);
     QStringList __getVaribleList();
     QStringList __getAttributeList();
@@ -131,10 +141,15 @@ protected:  //METHODS
     QStringList __getAttListForVar(QString varName);
 
     //data processing
-    void __processLocation();
+    void __cleanAll();
+    void __processGridLocations();
     void __processSphericalVectors();
     void __processScalars();
     void __processTime();
+    void __setUseExtents(int extents[]);
+    QVector<int> __getExtentDimensions(int extent[6]);
+
+
 
     //data conversions
     //convMap holds conversions: form convMap[rawUnits][newUnits]=divisor
@@ -145,12 +160,13 @@ protected:  //METHODS
     //these vectors MUST be 3 tuples
     //it is the responsibility of the calling function to
     //   free the memory associated with these conversions
-    double *__gridSphere2Cart(const double rtp[]);
+    QVector<double> __gridSphere2Cart(const QVector<double> rtp);
     double *__sphere2Cart(const double rtp[], const double rtpOrigin[]);
 
     //file manipulations
     double __getMax(QVector<double> vector);
 
+    void __ResetFile();
 };
 
 #endif // ENLIL3DFILE_H

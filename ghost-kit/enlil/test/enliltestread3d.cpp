@@ -10,6 +10,27 @@
 
 #include "../src/enlil3dfile.h"
 #include <QString>
+#include <cmath>
+#include <limits>
+
+
+//Code for this function  taken from
+// https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/
+//  and modified for my purposes
+bool doubleCompareEqual(double A, double B, double maxRelDiff)
+{
+    // Calculate the difference.
+    double diff = fabs(A - B);
+    A = fabs(A);
+    B = fabs(B);
+    // Find the largest
+    double largest = (B > A) ? B : A;
+
+    if (diff <= largest * maxRelDiff)
+        return true;
+    return false;
+}
+
 
 int main(int argc, char* argv[])
 {
@@ -112,6 +133,7 @@ int main(int argc, char* argv[])
     if(xyz[0] != data1.size())
     {
         std::cerr << "Problem with Dimension X" << std::endl;
+        exit(EXIT_FAILURE);
     }
     else
     {
@@ -121,6 +143,8 @@ int main(int argc, char* argv[])
     if(xyz[1] != data2.size())
     {
         std::cerr << "Problem with Dimension Y" << std::endl;
+        exit(EXIT_FAILURE);
+
     }
     else
     {
@@ -130,6 +154,8 @@ int main(int argc, char* argv[])
     if(xyz[2] != data3.size())
     {
         std::cerr << "Problem with Dimension Z" << std::endl;
+        exit(EXIT_FAILURE);
+
     }
     else
     {
@@ -137,16 +163,28 @@ int main(int argc, char* argv[])
     }
 
     /**
-      *Test getting 3D data1
+      *Test getting 3D data
       */
+
+    if(xyz[0]*xyz[1]*xyz[2] != file.get3Dcount())
+    {
+        std::cerr << "Dimensional Miss-match with get3Dcount()" << std::endl;
+        exit(EXIT_FAILURE);
+    }
+    else
+    {
+        std::cout << "get3Dcount() appears to be correct." << std::endl;
+    }
 
     QVector<double> densityData = file.getVar("D");
     int densityCount = densityData.count();
 
-    if(densityCount != xyz[0] * xyz[1] * xyz[2])
+    if(densityCount != file.get3Dcount())
     {
         std::cerr << "Error in Reading 3D data... wrong number of entries read: Read "
                     << densityCount << "Should have Been: "<< xyz[0] * xyz[1] * xyz[2] << std::endl;
+
+        exit(EXIT_FAILURE);
 
     }
     else
@@ -159,19 +197,13 @@ int main(int argc, char* argv[])
     /**
       * Test grid positions
       **/
-    QVector<double*> *gridSpace = file.getGridSpacing();
-    if(!gridSpace)
-    {
-        std::cerr << "ERROR: Grid Spacing Not properly defined." << std::endl;
-    }
-    else
-    {
-        std::cout << "Grid Spacing appears to be defined." << std::endl;
-    }
+    QVector<QVector< double > > gridSpace = file.getGridSpacing();
 
-    if(gridSpace->count() != file.get3Dcount())
+    if(gridSpace.count() != file.get3Dcount())
     {
         std::cerr << "ERROR... Full grid space does not equal the size of data sets." << std::endl;
+
+        exit(EXIT_FAILURE);
 
     }
     else
@@ -179,7 +211,138 @@ int main(int argc, char* argv[])
         std::cout << "Grid Space is of the Correct Size." << std::endl;
     }
 
+    int loopx=0;
+    int loopy=0;
+    int loopz=0;
+    int sizex = xyz[0];
+    int sizey = xyz[1];
+    int sizez = xyz[2];
+    loop = 0;
 
+    file.setGridSpacingType(ENLIL_GRIDSPACING_SP);
+    gridSpace = file.getGridSpacing();
+
+    for(loopz = 0; loopz < sizez; loopz++ )
+    {
+        for(loopy = 0; loopy < sizey; loopy++)
+        {
+            for(loopx = 0; loopx < sizex; loopx++)
+            {
+                double grid1[3];
+                grid1[0] = gridSpace[loop][0];
+                grid1[1] = gridSpace[loop][1];
+                grid1[2] = gridSpace[loop][2];
+
+                double grid2[3];
+                grid2[0] = data1[loopx];
+                grid2[1] = data2[loopy];
+                grid2[2] = data3[loopz];
+
+                if(grid1[0] != grid2[0] || grid1[1] != grid2[1] || grid1[2] != grid2[2])
+                {
+                    std::cerr << "Failure on Grid Data [" << loopx << "," << loopy << "," << loopz << "]" << std::endl;
+                    std::cerr << "Expected: " << grid2[0]<< "," << grid2[1] << "," << grid2[2] << std::endl;
+                    std::cerr << "Received: " << grid1[0] << "," << grid1[1] << "," << grid1[2] << std::endl;
+
+
+                    exit(EXIT_FAILURE);
+                }
+
+
+                loop++;
+            }
+        }
+    }
+
+    file.setGridSpacingType(ENLIL_GRIDSPACING_CT);
+
+    gridSpace = file.getGridSpacing();
+
+    loop=0;
+    double epsilon = 2*std::numeric_limits<double>::epsilon();
+
+    for(loopz = 0; loopz < sizez; loopz++ )
+    {
+        for(loopy = 0; loopy < sizey; loopy++)
+        {
+            for(loopx = 0; loopx < sizex; loopx++)
+            {
+                double grid1[3];
+                grid1[0] = gridSpace[loop][0];
+                grid1[1] = gridSpace[loop][1];
+                grid1[2] = gridSpace[loop][2];
+
+                double calcRadius = sqrt(pow(grid1[0],2) + pow(grid1[1],2) + pow(grid1[2],2));
+
+                double grid2 = data1[loopx];
+
+                if(!doubleCompareEqual(calcRadius, grid2, epsilon ))
+                {
+                    std::cerr << "Failure on Grid Location [" << loopx << "," << loopy << "," << loopz << "]" << std::endl;
+                    std::cerr << "Expected: " << grid2 << std::endl;
+                    std::cerr << "Received: " << calcRadius << std::endl;
+                    std::cerr << "Tollerance: " << epsilon << std::endl;
+
+                    exit(EXIT_FAILURE);
+                }
+
+                loop++;
+            }
+        }
+    }
+
+    std::cout << "Cartesian Grid Values are Consistant to within " << epsilon << " of the Spherical Coordinates for the calculated units" << std::endl;
+
+    /**
+      * Test Data Aqcuisition
+      *
+      **/
+    QVector<QVector<double> > VectorData = file.getVar("V1", "V2", "V3");
+    std::cout << "Velocity Vector Size: " << VectorData.count() << std::endl;
+
+    if(VectorData.count() != file.get3Dcount())
+    {
+        std::cerr << "Velocity Vector Size is Incorrect." << std::endl;
+        std::cerr << "Expected: " << file.get3Dcount() << std::endl;
+        std::cerr << "Received: " << VectorData.count() << std::endl;
+    }
+    else
+    {
+        std::cout << "Velocity Vector Size is Correct." << std::endl;
+    }
+
+    QVector<QVector<double> > VectorData2 = file.getVar("B1", "B2", "B3");
+    std::cout << "B Field Vector Size: " << VectorData2.count() << std::endl;
+    if(VectorData2.count() != file.get3Dcount())
+    {
+        std::cerr << "B Field Vector Size is Incorrect." << std::endl;
+        std::cerr << "Expected: " << file.get3Dcount() << std::endl;
+        std::cerr << "Received: " << VectorData2.count() << std::endl;
+    }
+    else
+    {
+        std::cout << "B Field Vector Size is Correct." << std::endl;
+    }
+
+
+    /**
+      * Test HyperCube retreval
+      **/
+    file.setExtents(0, 10, 0, 10, 0, 10);
+    QVector<QVector< double > > gridSpaceExtents = file.getGridSpacing();
+    int gridExentsSize = file.get3Dcount();
+
+    if(gridSpaceExtents.count() != gridExentsSize)
+    {
+        std::cerr << "Error in Array Counts for Extents" << std::endl;
+        std::cerr << "Expected: " << gridSpaceExtents.count() << std::endl;
+        std::cerr << "Received: " << gridExentsSize << std::endl;
+    }
+    else
+    {
+        std::cout << "grid 3D total points: " << file.get3Dcount() << std::endl;
+
+    }
 
 
 
