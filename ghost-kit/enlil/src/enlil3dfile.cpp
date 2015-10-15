@@ -245,7 +245,6 @@ void enlil3DFile::__initializeFiles()
     else
     {
         //Using Extents... ==> use selected extents only.
-
         QVector<int> newDims = this->__getExtentDimensions(this->_extents);
         this->_dims[0] = newDims[0];
         this->_dims[1] = newDims[1];
@@ -253,10 +252,19 @@ void enlil3DFile::__initializeFiles()
 
         for(int x=0; x < vars.size();x++)
         {
-            this->__loadVariableExtents(vars[x]);
+            //quick hack
+            if(vars[x] != "TIME" && vars[x] != "NSTEP")
+            {
+                this->__loadVariableExtents(vars[x]);
+
+                QStringList varAtts = this->__getAttListForVar(vars[x]);
+                for(int y=0; y < varAtts.size();y++)
+                {
+                    this->__loadAttFromVar(vars[x], varAtts[y]);
+                }
+            }
+
         }
-
-
 
     }
 
@@ -577,56 +585,50 @@ void enlil3DFile::__loadVariable(QString name)
  */
 void enlil3DFile::__loadVariableExtents(QString _name)
 {
-    //FIXME: This is currently a direct copy from the old reader.  Must modify.
-    int extDims[3] = {0,0,0};
+    //FIXME: This is getting better... it get the correct number of elements, but is still just garbage.
+    //FIXME: Problem is likely with the calculation of the type of read (look at the Extents Calculation)
     size_t readDims[4]   = {1,1,1,1};
-    long readStart[4]  = {0,extents[4],extents[2],extents[0]};
-
-    // get dimensions from extents
-    this->extractDimensions(extDims, extents);
+    long readStart[4]  = {0,this->_extents[4],this->_extents[2],this->_extents[0]};
 
     // Enlil encodes in reverse, so reverse the order, add fourth dimension 1st.
-    readDims[1] = extDims[2];
-    readDims[2] = extDims[1];
-    readDims[3] = extDims[0];
+    readDims[1] = this->_dims[2];
+    readDims[2] = this->_dims[1];
+    readDims[3] = this->_dims[0];
 
     //find all conditions that need to be accounted for
     bool periodic = false;
     bool periodicRead = false;
     bool periodicOnly = false;
 
-    // this->printExtents(extents, (char*)"Loading Extents: ");
+    //this->printExtents(extents, (char*)"Loading Extents: ");
 
-    if(extents[5] == this->WholeExtent[5])
+    if(this->_extents[5] == (this->_dims[2]-1))
     {
         periodic = true;
-        // std::cout << "Set Periodic" << std::endl;
+//        std::cout << "Set Periodic" << std::endl;
 
-        if(extents[4] > 0)
+        if(this->_extents[4] > 0)
         {
             periodicRead = true;
-            // std::cout << "Set Periodic Read" << std::endl;
-            if(extents[4] == this->WholeExtent[5])
+//            std::cout << "Set Periodic Read" << std::endl;
+            if(this->_extents[4] == this->_dims[2]-1)
             {
                 periodicOnly = true;
-                // std::cout << "Set Periodic Only" << std::endl;
+//                std::cout << "Set Periodic Only" << std::endl;
 
             }
         }
     }
     else
     {
-        //  std::cout << "Non-Periodic" << std::endl;
+//        std::cout << "Non-Periodic" << std::endl;
         //  dont need to do anything
 
     }
 
     // allocate memory for complete array
-    double *array = new double[extDims[0]*extDims[1]*extDims[2]];
-
-    //open file
-    NcFile file(this->FileName);
-    NcVar* variable = file.get_var(arrayName);
+    double *array = new double[this->get3Dcount()];
+    NcVar* variable = this->_file->get_var(_name.toAscii().data());
 
     // start to read in data
     if(periodic && !periodicOnly)
@@ -646,8 +648,8 @@ void enlil3DFile::__loadVariableExtents(QString _name)
         //set periodic only
         readDims[1] = 1;
         readStart[1] = 0;
-        readStart[2] = extents[2];
-        readStart[3] = extents[0];
+        readStart[2] = this->_extents[2];
+        readStart[3] = this->_extents[0];
 
         //set read location
         variable->set_cur(readStart);
@@ -670,8 +672,8 @@ void enlil3DFile::__loadVariableExtents(QString _name)
     if(periodic && !periodicRead && !periodicOnly)
     {
         //copy periodic data from begining to end
-        size_t wedgeSize = (extDims[0]*extDims[1]);
-        size_t wedgeLoc  = (extDims[0]*extDims[1])*(extDims[2]-1);
+        size_t wedgeSize = (this->_dims[0]*this->_dims[1]);
+        size_t wedgeLoc  = (this->_dims[0]*this->_dims[1])*(this->_dims[2]-1);
 
         for(int x = 0; x < wedgeSize; x++)
         {
@@ -686,16 +688,16 @@ void enlil3DFile::__loadVariableExtents(QString _name)
     else if (periodic && periodicRead && !periodicOnly)  /*periodicRead &&*/
     {
         //read in periodic data and place at end of array
-        size_t wedgeSize = extDims[0]*extDims[1];
-        size_t wedgeLoc  = (extDims[0]*extDims[1])*(extDims[2]-1);
+        size_t wedgeSize = this->_dims[0]*this->_dims[1];
+        size_t wedgeLoc  = (this->_dims[0]*this->_dims[1])*(this->_dims[2]-1);
 
         double * wedge = new double[wedgeSize];
 
         //start at 0,0,0
         readStart[0] = 0;
         readStart[1] = 0;
-        readStart[2] = extents[2];
-        readStart[3] = extents[0];
+        readStart[2] = this->_extents[2];
+        readStart[3] = this->_extents[0];
 
         //restrict to phi = 1 dimension
         readDims[1] = 1;
@@ -720,9 +722,17 @@ void enlil3DFile::__loadVariableExtents(QString _name)
         delete [] wedge; wedge = NULL;
     }
 
+    //create a data structure for storage
+    //FIXME: Need to loop only over size of the array. Skip TIME... it is not a vector.
+    QVector<double> qVals;
+    for(int x=0; x < this->get3Dcount(); x++)
+    {
+        qVals.push_back(array[x]);
+    }
 
-    //close file
-    file.close();
+    //save the variable
+    this->_variablesRaw[_name] = qVals;
+
 }
 
 /**
@@ -855,6 +865,8 @@ void enlil3DFile::__loadAttFromVar(QString VarName, QString AttName)
  */
 QStringList enlil3DFile::__getAttListForVar(QString varName)
 {
+    //FIXME: Make this routine independent from loading values.
+
     QStringList values;
     QStringList variables = this->getVarNames();
 

@@ -328,7 +328,7 @@ int main(int argc, char* argv[])
     /**
       * Test HyperCube retreval
       **/
-    file.setExtents(0, 10, 0, 10, 0, 10);
+    file.setExtents(4, 8, 1, 1, 0, 0);
     QVector<QVector< double > > gridSpaceExtents = file.getGridSpacing();
     int gridExentsSize = file.get3Dcount();
 
@@ -341,8 +341,19 @@ int main(int argc, char* argv[])
     else
     {
         std::cout << "grid 3D total points: " << file.get3Dcount() << std::endl;
+        std::cout << "Dims: [" << file.getDims(0) << "," << file.getDims(1) << "," << file.getDims(2) << "]" << std::endl;
 
     }
+
+    QVector<QVector<double> > Bextent = file.getVar("B1", "B2", "B3");
+
+    loop=0;
+    for(loop=0; loop < file.get3Dcount(); loop++)
+    {
+        std::cout << "Value: " << Bextent[loop][0] << "," << Bextent[loop][1] << "," << Bextent[loop][2] << std::endl;
+    }
+
+
 
 
 

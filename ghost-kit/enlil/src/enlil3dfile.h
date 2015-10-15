@@ -77,7 +77,7 @@ protected:  //DATA
 
     //Data Keeping
     double _MJD;
-    qint64 _TIME;
+    double _TIME;
     int _dims[3];
     double _enlil_version;
     int _extents[6];
