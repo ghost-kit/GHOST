@@ -222,7 +222,14 @@ void enlil3DFile::__initializeFiles()
     if(vars.contains(QString("TIME")))
     {
         this->__loadVariable(QString("TIME"));
-        this->_TIME = this->_variablesRaw["TIME"][0];
+        if(this->_variablesRaw.contains(QString("TIME")))
+        {
+            this->_TIME = this->_variablesRaw["TIME"][0];
+        }
+        else
+        {
+            std::cerr << "ERROR: Failure to get TIME from file." << std::endl;
+        }
 
     }
 
@@ -555,28 +562,37 @@ double enlil3DFile::getMJD() const
 void enlil3DFile::__loadVariable(QString name)
 {
 
-    long readStart[2] = {0,0};
-
     NcVar *variable = this->_file->get_var(name.toAscii().data());
-    variable->set_cur(readStart);
+    NcDim *varDim = NULL;
 
+    //check to see how many records are present
+    int numDims = variable->num_dims();
+    int recSize = variable->rec_size();
 
-    //get the values from file
-    NcValues* values = variable->values();
-    int numElem = values->num();
+    std::cout << "Number of Dimensions for " << qPrintable(name) << ": " << numDims << std::endl;
+    std::cout << "Record Size: " << recSize << std::endl;
 
-    //create a data structure for storage
-    QVector<double> qVals;
-    for(int x=0; x < numElem; x++)
+    for(int dim = 0; dim < numDims; dim++)
     {
-        qVals.push_back(values->as_double(x));
+        varDim = variable->get_dim(dim);
+        if(!varDim->is_valid()) break;
+        std::cout << "Dim " << varDim->name() << ": " << varDim->size() << std::endl;
     }
 
-    //save the variable
-    this->_variablesRaw[name] = qVals;
 
-    //free the memory
-    delete values;
+
+    //create a data structure for storage
+//    QVector<double> qVals;
+//    for(int x=0; x < numElem; x++)
+//    {
+//        qVals.push_back(values->as_double(x));
+//    }
+
+//    //save the variable
+//    this->_variablesRaw[name] = qVals;
+
+//    //free the memory
+//    delete values;
 }
 
 /**

@@ -9,27 +9,15 @@
 #include <fstream>
 
 #include "../src/enlil3dfile.h"
+#include "../src/enlilEvoFile.h"
+
 #include <QString>
 #include <cmath>
 #include <limits>
+#include "testhelpers.h"
 
-
-//Code for this function  taken from
-// https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/
-//  and modified for my purposes
-bool doubleCompareEqual(double A, double B, double maxRelDiff)
-{
-    // Calculate the difference.
-    double diff = fabs(A - B);
-    A = fabs(A);
-    B = fabs(B);
-    // Find the largest
-    double largest = (B > A) ? B : A;
-
-    if (diff <= largest * maxRelDiff)
-        return true;
-    return false;
-}
+#define _EVOTESTFILE "evo.earth.nc"
+#define _3DTESTFILE "tim.0038.nc"
 
 
 int main(int argc, char* argv[])
@@ -37,16 +25,10 @@ int main(int argc, char* argv[])
     int loop = 0;
     std::cout << "This is a test of the Enlil 3D File Reader C++ class for Paraview." << std::endl;
 
-    if(argc < 2)
-    {
-        std::cerr << "A File Name is Required in order to proceed.  The proper syntax is:" << std::endl
-                  << argv[0] << " <enlil 3D file name>" << std::endl;
-    }
-
     /**
      * Strat Testing File
      */
-    QString testFile = QString(argv[1]);
+    QString testFile = QString(_3DTESTFILE);
 
     std::cout << "Using File: " << qPrintable(testFile) << " to process tests...." << std::endl;
     std::cout << "I am assuming the file is correct, as this is just a test routine." << std::endl;
@@ -133,7 +115,9 @@ int main(int argc, char* argv[])
     if(xyz[0] != data1.size())
     {
         std::cerr << "Problem with Dimension X" << std::endl;
-        exit(EXIT_FAILURE);
+        std::cerr << "Expecting " << xyz[0] << std::endl;
+        std::cerr << "Received " << data1.size() << std::endl;
+        //exit(EXIT_FAILURE);
     }
     else
     {
@@ -143,7 +127,9 @@ int main(int argc, char* argv[])
     if(xyz[1] != data2.size())
     {
         std::cerr << "Problem with Dimension Y" << std::endl;
-        exit(EXIT_FAILURE);
+        std::cerr << "Expecting " << xyz[1] << std::endl;
+        std::cerr << "Received " << data2.size() << std::endl;
+        //exit(EXIT_FAILURE);
 
     }
     else
@@ -154,6 +140,8 @@ int main(int argc, char* argv[])
     if(xyz[2] != data3.size())
     {
         std::cerr << "Problem with Dimension Z" << std::endl;
+        std::cerr << "Expecting " << xyz[2] << std::endl;
+        std::cerr << "Received " << data3.size() << std::endl;
         exit(EXIT_FAILURE);
 
     }
@@ -355,6 +343,11 @@ int main(int argc, char* argv[])
 
 
 
+    /**
+      *     TEST THE EVO FILES
+      */
+
+    enlilEvoFile evoFile(_EVOTESTFILE, 1);
 
 
 }

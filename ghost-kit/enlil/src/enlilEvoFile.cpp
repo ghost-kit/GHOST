@@ -188,10 +188,16 @@ void enlilEvoFile::selectOutput(int version)
 void enlilEvoFile::_loadVariable(QString name)
 {
 
+
     long readStart[2] = {0,0};
 
     NcVar *variable = this->file->get_var(name.toAscii().data());
+
+    NcToken varName = name.toAscii().data();
     variable->set_cur(readStart);
+
+    std::cout << "Number of Dimensions: " << variable->num_dims() << std::endl;
+
 
 
     //get the values from file

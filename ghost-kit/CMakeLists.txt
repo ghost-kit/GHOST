@@ -10,10 +10,10 @@ endif()
 
 ###OPTIONS##
 ##Turn on or off the components of the tool kit
-option(GHOST_BUILD_LFM "Build the ParaView LFM Reader" OFF)
+option(GHOST_BUILD_LFM "Build the ParaView LFM Reader" ON)
 option(GHOST_BUILD_ENLIL "Build the ParaView ENLIL Reader" ON)
-option(GHOST_BUILD_CDAWEB "Build the ParaView CDAweb Tool Kit" OFF)
-option(GHOST_BUILD_CXFORM "Build the cxForm Tranform Filter" OFF)
+option(GHOST_BUILD_CDAWEB "Build the ParaView CDAweb Tool Kit" ON)
+option(GHOST_BUILD_CXFORM "Build the cxForm Tranform Filter" ON)
 option(GHOST_BUILD_PLOTS "Build the Plots Source" OFF)
 option(GHOST_BUILD_SWFT "Build SwFT Panels" OFF)
 
@@ -230,6 +230,13 @@ endif()
 
 #manual test files
 
+#Copy test files to destination
+message(STATUS "Copying Files for testing")
+configure_file(${CMAKE_CURRENT_LIST_DIR}/enlil/test/data/nc/evo/evo.earth.nc evo.earth.nc COPYONLY)
+configure_file(${CMAKE_CURRENT_LIST_DIR}/enlil/test/data/nc/3d/tim.0038.nc tim.0038.nc COPYONLY)
+
 add_executable(TestEnlilRead3d ${CMAKE_CURRENT_LIST_DIR}/enlil/test/enliltestread3d.cpp
-                               ${CMAKE_CURRENT_LIST_DIR}/enlil/src/enlil3dfile.cpp)
-target_link_libraries(TestEnlilRead3d ${GHOST_LIBS} ${GHOST_LIBS} ${QT_QTMAIN_LIBRARY} ${QT_LIBRARIES})
+                               ${CMAKE_CURRENT_LIST_DIR}/enlil/src/enlilEvoFile.cpp
+                               ${CMAKE_CURRENT_LIST_DIR}/enlil/src/enlil3dfile.cpp
+                               ${CMAKE_CURRENT_LIST_DIR}/enlil/test/testhelpers.cpp)
+target_link_libraries(TestEnlilRead3d ${GHOST_LIBS} ${QT_QTMAIN_LIBRARY} ${GHOST_LIBS} ${QT_LIBRARIES}  ${GHOST_LIBS} )
