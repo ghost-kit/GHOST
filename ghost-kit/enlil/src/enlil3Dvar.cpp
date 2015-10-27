@@ -1,4 +1,14 @@
-#include "enlilVar.h"
+/**
+  * File: enlil3Dvar.cpp
+  * Author: Joshua Murphy
+  * Date: 26 Oct 2015
+  *
+  * Description:  This file contains the routins and classes necessary to handle Enlil 3D Data Variables and their associated attributes.
+  *               These objects can only be used as childeren of an enlil3Dfile object.
+  *
+  */
+
+#include "enlil3Dvar.h"
 
 
 //ENLIL VARIABLES
@@ -9,21 +19,25 @@
  * @param type
  * @param Name
  */
-enlilVar::enlilVar(enlil3DFile *parent, qint64 type, QString Name)
+enlil3DVar::enlil3DVar(enlil3DFile *parent, QString Name)
 {
+    //record basic information (parent file object, variable name)
     this->__parent = parent;
-    this->__type = type;
     this->__varName = Name;
 
+    //mark default conditions
     this->__cached = false;
     this->__data = NULL;
     this->__atts = NULL;
+
+    //load meta-data into variable
+    this->_processMetaData();
 }
 
 /**
  * @brief enlilVar::~enlilVar
  */
-enlilVar::~enlilVar()
+enlil3DVar::~enlil3DVar()
 {
 
 }
@@ -32,7 +46,7 @@ enlilVar::~enlilVar()
  * @brief enlilVar::varLongName
  * @return
  */
-QString enlilVar::varLongName() const
+QString enlil3DVar::varLongName() const
 {
     return __varLongName;
 }
@@ -41,7 +55,7 @@ QString enlilVar::varLongName() const
  * @brief enlilVar::setVarLongName
  * @param varLongName
  */
-void enlilVar::setVarLongName(const QString &varLongName)
+void enlil3DVar::setVarLongName(const QString &varLongName)
 {
     __varLongName = varLongName;
 }
@@ -50,7 +64,7 @@ void enlilVar::setVarLongName(const QString &varLongName)
  * @brief enlilVar::cached
  * @return
  */
-bool enlilVar::cached() const
+bool enlil3DVar::cached() const
 {
     return __cached;
 }
@@ -59,7 +73,7 @@ bool enlilVar::cached() const
  * @brief enlilVar::setCached
  * @param cache
  */
-void enlilVar::setCached(bool cache)
+void enlil3DVar::setCached(bool cache)
 {
     __cached = cache;
 }
@@ -68,12 +82,7 @@ void enlilVar::setCached(bool cache)
  * @brief enlilVar::getData
  * @return
  */
-QVector<QVariant> *enlilVar::getData()
-{
-
-}
-
-QVector<QVariant> *enlilVar::getData(QVector<qint64> extents)
+QVector<QVariant> *enlil3DVar::getData()
 {
 
 }
@@ -83,12 +92,38 @@ QVector<QVariant> *enlilVar::getData(QVector<qint64> extents)
  * @param extents
  * @return
  */
-QVector<QVariant> *enlilVar::getData(const int extents[])
+QVector<QVariant> *enlil3DVar::getData(QVector<qint64> extents)
 {
 
 }
 
-QVector<QVariant> *enlilVar::getData(QPair<qint64, qint64> X, QPair<qint64, qint64> Y, QPair<qint64, qint64> Z)
+/**
+ * @brief enlilVar::getData
+ * @param extents
+ * @return
+ */
+QVector<QVariant> *enlil3DVar::getData(const int extents[])
+{
+
+}
+
+/**
+ * @brief enlilVar::getData
+ * @return
+ */
+QVector<QVariant> *enlil3DVar::getData(QVector<enlilExtent>)
+{
+
+}
+
+/**
+ * @brief enlilVar::getData
+ * @param X
+ * @param Y
+ * @param Z
+ * @return
+ */
+QVector<QVariant> *enlil3DVar::getData(enlilExtent X, enlilExtent Y, enlilExtent Z)
 {
 
 }
@@ -97,7 +132,7 @@ QVector<QVariant> *enlilVar::getData(QPair<qint64, qint64> X, QPair<qint64, qint
  * @brief enlilVar::recordCount
  * @return
  */
-qint64 enlilVar::recordCount()
+qint64 enlil3DVar::recordCount()
 {
 
 }
@@ -106,7 +141,7 @@ qint64 enlilVar::recordCount()
  * @brief enlilVar::getXextent
  * @return
  */
-QPair<qint64, qint64> enlilVar::getXextent()
+QPair<qint64, qint64> enlil3DVar::getXextent()
 {
 
 }
@@ -116,7 +151,7 @@ QPair<qint64, qint64> enlilVar::getXextent()
  * @param lower
  * @param upper
  */
-void enlilVar::setXextent(qint64 lower, qint64 upper)
+void enlil3DVar::setXextent(qint64 lower, qint64 upper)
 {
 
 }
@@ -126,7 +161,7 @@ void enlilVar::setXextent(qint64 lower, qint64 upper)
  * @param lower
  * @param upper
  */
-void enlilVar::setYextent(qint64 lower, qint64 upper)
+void enlil3DVar::setYextent(qint64 lower, qint64 upper)
 {
 
 }
@@ -135,7 +170,7 @@ void enlilVar::setYextent(qint64 lower, qint64 upper)
  * @brief enlilVar::getZextent
  * @return
  */
-QPair<qint64, qint64> enlilVar::getZextent()
+QPair<qint64, qint64> enlil3DVar::getZextent()
 {
 
 }
@@ -145,7 +180,24 @@ QPair<qint64, qint64> enlilVar::getZextent()
  * @param lower
  * @param upper
  */
-void enlilVar::setZextent(qint64 lower, qint64 upper)
+void enlil3DVar::setZextent(qint64 lower, qint64 upper)
+{
+
+}
+
+/**
+ * @brief enlilVar::_loadData
+ * @param subExtents
+ */
+void enlil3DVar::_loadData(QVector<enlilExtent> subExtents)
+{
+
+}
+
+/**
+ * @brief enlilVar::_processMetaData
+ */
+void enlil3DVar::_processMetaData()
 {
 
 }

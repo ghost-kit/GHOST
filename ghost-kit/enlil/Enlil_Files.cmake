@@ -16,7 +16,7 @@ set(ENLIL_SRC
         ${ENLIL_SOURCE_DIR}/src/enlilControlFile.cpp
         ${ENLIL_SOURCE_DIR}/src/enlilEvoFile.cpp
         ${ENLIL_SOURCE_DIR}/src/enlil3dfile.cpp
-        ${ENLIL_SOURCE_DIR}/src/enlilVar.cpp
+        ${ENLIL_SOURCE_DIR}/src/enlil3Dvar.cpp
 
     )
 
