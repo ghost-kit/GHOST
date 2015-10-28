@@ -11,13 +11,17 @@
 #include <vtknetcdf/cxx/netcdfcpp.h>
 #include <QtAlgorithms>
 
+#include "enlil3Dvar.h"
+
 
 #define ENLIL_GRIDSPACING_CT 0
 #define ENLIL_GRIDSPACING_SP 1
 
+class enlil3DVar;
 
 class enlil3DFile
 {
+    friend class enlil3DVar;
 public:
     // Class Level Functions
     enlil3DFile(const char* FileName, double scaleFactor);
@@ -42,7 +46,7 @@ public:
 
     //Grid Spacing
     QVector<QVector<double> > getGridSpacing();
-    int getDims(int xyz);
+    int getDims(const char* dim);
     int get3Dcount();
     QString getGridUnits();
     void setGridSpacingType(int type);
@@ -55,7 +59,7 @@ public:
 
     //File Attribute Routines
     QStringList getFileAttributeNames();
-    QVariant getFileAttribute(const char* _name);
+    enlilAtt *getFileAttribute(const char* _name);
     int getNumberOfFileAttributes();
 
     //Variable Attribute Routines
@@ -78,7 +82,7 @@ protected:  //DATA
     //Data Keeping
     double _MJD;
     double _TIME;
-    int _dims[3];
+    QMap<QString, qint64> _dims;
     double _enlil_version;
     int _extents[6];
 
@@ -94,22 +98,10 @@ protected:  //DATA
     double _gridScaleFactor;            // how much to scale the grid
 
     //data variables
-    QMap<QString, QVector<double> > *_varOutput;
-    QMap<QString, QVector<double> > _variablesRaw;
-    QMap<QString, QVector<double> > _variablesProcessed;
-
-    //units variables
-    QMap<QString, QString> *_varUnitsOutput;
-    QMap<QString, QString> _varUnitsRaw;
-    QMap<QString, QString> _varUnitsProcessed;
-
-    //long name variables
-    QMap<QString, QString> *_longNamesOutput;
-    QMap<QString, QString> _longNamesRaw;
-    QMap<QString, QString> _longNamesProcessed;
+    QMap<QString, enlil3DVar* > _varOutput;
 
     // MetaData Variables
-    QMap<QString, QVariant> _fileAttributeData;
+    QMap<QString, enlilAtt* > _fileAttributeData;
 
     // Converstion Variables
     QMap<QString, QPair<QString, double> > _convMap;

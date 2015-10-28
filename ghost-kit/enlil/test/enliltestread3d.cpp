@@ -88,7 +88,15 @@ int main(int argc, char* argv[])
       * Test MJD retreval
       */
     double MJD = file.getMJD();
-    double refdate = file.getFileAttribute("refdate_mjd").toDouble(0);
+    enlilAtt* refrenceDate = file.getFileAttribute("refdate_mjd");
+    if(!refrenceDate) refrenceDate = file.getFileAttribute("rundate_mjd");
+    if(!refrenceDate)
+    {
+        std::cerr << "ERROR: Reference Date Not Found" << std::endl;
+        exit(EXIT_FAILURE);
+    }
+
+    double refdate = refrenceDate->getValue().toDouble();
 
     std::cout << "MJD: " << MJD << std::endl;
     std::cout << "refDate: " << refdate << std::endl;
@@ -100,9 +108,9 @@ int main(int argc, char* argv[])
       *Test GetVar and Dims
       */
     int xyz[3];
-    xyz[0] = file.getDims(0);
-    xyz[1] = file.getDims(1);
-    xyz[2] = file.getDims(2);
+    xyz[0] = file.getDims("n1");
+    xyz[1] = file.getDims("n2");
+    xyz[2] = file.getDims("n3");
 
     QVector<double> data1 = file.getVar("X1");
     QVector<double> data2 = file.getVar("X2");
@@ -329,7 +337,7 @@ int main(int argc, char* argv[])
     else
     {
         std::cout << "grid 3D total points: " << file.get3Dcount() << std::endl;
-        std::cout << "Dims: [" << file.getDims(0) << "," << file.getDims(1) << "," << file.getDims(2) << "]" << std::endl;
+        std::cout << "Dims: [" << file.getDims("n1") << "," << file.getDims("n2") << "," << file.getDims("n3") << "]" << std::endl;
 
     }
 

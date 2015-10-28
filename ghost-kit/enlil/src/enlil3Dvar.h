@@ -9,7 +9,6 @@
   */
 
 //TODO: load variable data using parent file object
-//TODO: load attributes using parent file object
 //TODO: configure transforms for the variable
 //TODO: make sure we have units and long names
 //TODO: make sure transforms change the units tags
@@ -26,60 +25,64 @@
 #ifndef ENLILVAR_H
 #define ENLILVAR_H
 
+
 #include <QVector>
 #include <QVariant>
 #include <QString>
 #include <QPair>
 
+#include "enlilAtt.h"
 #include "enlil3dfile.h"
+
 
 typedef QPair<qint64,qint64> enlilExtent;
 
-
-/**
- * @brief The enlilAtts class
- */
-class enlilAtts
-{
-public:
-    enlilAtts(int type, QString name, QVariant value);
-    ~enlilAtts();
-
-    int getType() const;
-
-    QVariant getValue() const;
-
-    QString getAttName() const;
-
-
-private:
-
-    int __type;
-    QString __attName;
-    QVariant __value;
-
-};
+class enlil3DFile;
+class enlilAtt;
 
 /**
  * @brief The enlilVar class
  */
 class enlil3DVar
 {
+    friend class enlil3DFile;
 public:
-    enlil3DVar(enlil3DFile *__parent, QString Name);
+
+    enlil3DVar(enlil3DFile* parent, QString Name);
     ~enlil3DVar();
 
-    QString varLongName() const;
-    void setVarLongName(const QString &varLongName);
+    QString LongName() const;
+    void setVarLongName(const QString &LongName);
 
     bool cached() const;
     void setCached(bool cached);
 
-    QVector<QVariant>* getData();
-    QVector<QVariant> *getData(QVector<qint64> extents);
-    QVector<QVariant> *getData(const int extents[6]);
-    QVector<QVariant> *getData(enlilExtent X, enlilExtent Y, enlilExtent Z);
-    QVector<QVariant> *getData(QVector<enlilExtent>);
+    QString Units();
+
+
+    QVector<double> asDouble(int nblk=0);
+    QVector<double> asDouble(QVector<qint64> extents, int nblk=0);
+    QVector<double> asDouble(const int extents[6], int nblk=0);
+    QVector<double> asDouble(enlilExtent X, enlilExtent Y, enlilExtent Z, int nblk=0);
+    QVector<double> asDouble(QVector<enlilExtent>, int nblk=0);
+
+    QVector<float> asFloat(int nblk=0);
+    QVector<float> asFloat(QVector<qint64> extents, int nblk=0);
+    QVector<float> asFloat(const int extents[6], int nblk=0);
+    QVector<float> asFloat(enlilExtent X, enlilExtent Y, enlilExtent Z, int nblk=0);
+    QVector<float> asFloat(QVector<enlilExtent>, int nblk=0);
+
+    QVector<qint64> asInt64(int nblk=0);
+    QVector<qint64> asInt64(QVector<qint64> extents, int nblk=0);
+    QVector<qint64> asInt64(const int extents[6], int nblk=0);
+    QVector<qint64> asInt64(enlilExtent X, enlilExtent Y, enlilExtent Z, int nblk=0);
+    QVector<qint64> asInt64(QVector<enlilExtent>, int nblk=0);
+
+    QVector<QVariant> *getData(int nblk=0);
+    QVector<QVariant> *getData(QVector<qint64> extents, int nblk=0);
+    QVector<QVariant> *getData(const int extents[6], int nblk=0);
+    QVector<QVariant> *getData(enlilExtent X, enlilExtent Y, enlilExtent Z, int nblk=0);
+    QVector<QVariant> *getData(QVector<enlilExtent>, int nblk=0);
 
     qint64 recordCount();
 
@@ -93,19 +96,19 @@ public:
     void setZextent(qint64 lower, qint64 upper);
 
 private: //methods
-    void _loadData(QVector<enlilExtent> subExtents);
-    void _processMetaData();
+    void _loadData(QVector<enlilExtent> subExtents, int nblk);
+    void _loadMetaData();
 
 
 private: //data
 
-    enlil3DFile* __parent;
+    enlil3DFile *__parent;
 
     qint64 __type;
     QString __units;
     QString __varName;
     QString __varLongName;
-    QVector<enlilAtts> *__atts;
+    QMap<QString, enlilAtt*> __atts;
     QVector<QVariant> *__data;
     bool __cached;
 
@@ -115,6 +118,7 @@ private: //data
 
 
 
+    QVector<QVariant> *getVariantData(NcVar *var, int length, size_t counts[], long startLoc[]);
 };
 
 #endif // ENLILVAR_H

@@ -2024,9 +2024,9 @@ void vtkEnlilReader::PopulateGridData()
     {
         double firstTime = this->_3dFiles.keys().first();
 
-        this->Dimension[0] = this->_3dFiles[firstTime]->getDims(0);
-        this->Dimension[1] = this->_3dFiles[firstTime]->getDims(1);
-        this->Dimension[2] = this->_3dFiles[firstTime]->getDims(2);
+        this->Dimension[0] = this->_3dFiles[firstTime]->getDims("n1");
+        this->Dimension[1] = this->_3dFiles[firstTime]->getDims("n2");
+        this->Dimension[2] = this->_3dFiles[firstTime]->getDims("n3");
 
         //Populate Extents
         this->setMyExtents(this->WholeExtent,

@@ -236,7 +236,7 @@ configure_file(${CMAKE_CURRENT_LIST_DIR}/enlil/test/data/nc/evo/evo.earth.nc evo
 configure_file(${CMAKE_CURRENT_LIST_DIR}/enlil/test/data/nc/3d/tim.0038.nc tim.0038.nc COPYONLY)
 
 add_executable(TestEnlilRead3d ${CMAKE_CURRENT_LIST_DIR}/enlil/test/enliltestread3d.cpp
-                               ${CMAKE_CURRENT_LIST_DIR}/enlil/src/enlilEvoFile.cpp
-                               ${CMAKE_CURRENT_LIST_DIR}/enlil/src/enlil3dfile.cpp
-                               ${CMAKE_CURRENT_LIST_DIR}/enlil/test/testhelpers.cpp)
-target_link_libraries(TestEnlilRead3d ${GHOST_LIBS} ${QT_QTMAIN_LIBRARY} ${GHOST_LIBS} ${QT_LIBRARIES}  ${GHOST_LIBS} )
+                               ${CMAKE_CURRENT_LIST_DIR}/enlil/test/testhelpers.cpp
+                               ${ENLIL_SRC}
+)
+target_link_libraries(TestEnlilRead3d ${GHOST_LIBS} ${QT_QTMAIN_LIBRARY} ${QT_LIBRARIES} )
