@@ -112,9 +112,9 @@ int main(int argc, char* argv[])
     xyz[1] = file.getDims("n2");
     xyz[2] = file.getDims("n3");
 
-    QVector<double> data1 = file.getVar("X1");
-    QVector<double> data2 = file.getVar("X2");
-    QVector<double> data3 = file.getVar("X3");
+    QVector<double> data1 = file.asDouble("X1");
+    QVector<double> data2 = file.asDouble("X2");
+    QVector<double> data3 = file.asDouble("X3");
 
     std::cout << "Size of X1: " << data1.size() << std::endl;
     std::cout << "Size of X2: " << data2.size() << std::endl;
@@ -172,7 +172,7 @@ int main(int argc, char* argv[])
         std::cout << "get3Dcount() appears to be correct." << std::endl;
     }
 
-    QVector<double> densityData = file.getVar("D");
+    QVector<double> densityData = file.asDouble("D");
     int densityCount = densityData.count();
 
     if(densityCount != file.get3Dcount())
@@ -293,7 +293,7 @@ int main(int argc, char* argv[])
       * Test Data Aqcuisition
       *
       **/
-    QVector<QVector<double> > VectorData = file.getVar("V1", "V2", "V3");
+    QVector<QVector<double> > VectorData = file.asDouble("V1", "V2", "V3");
     std::cout << "Velocity Vector Size: " << VectorData.count() << std::endl;
 
     if(VectorData.count() != file.get3Dcount())
@@ -307,7 +307,7 @@ int main(int argc, char* argv[])
         std::cout << "Velocity Vector Size is Correct." << std::endl;
     }
 
-    QVector<QVector<double> > VectorData2 = file.getVar("B1", "B2", "B3");
+    QVector<QVector<double> > VectorData2 = file.asDouble("B1", "B2", "B3");
     std::cout << "B Field Vector Size: " << VectorData2.count() << std::endl;
     if(VectorData2.count() != file.get3Dcount())
     {
@@ -324,7 +324,7 @@ int main(int argc, char* argv[])
     /**
       * Test HyperCube retreval
       **/
-    file.setExtents(4, 8, 1, 1, 0, 0);
+//    file.setExtents(4, 8, 1, 1, 0, 0);
     QVector<QVector< double > > gridSpaceExtents = file.getGridSpacing();
     int gridExentsSize = file.get3Dcount();
 
@@ -341,7 +341,7 @@ int main(int argc, char* argv[])
 
     }
 
-    QVector<QVector<double> > Bextent = file.getVar("B1", "B2", "B3");
+    QVector<QVector<double> > Bextent = file.asDouble("B1", "B2", "B3");
 
     loop=0;
     for(loop=0; loop < file.get3Dcount(); loop++)

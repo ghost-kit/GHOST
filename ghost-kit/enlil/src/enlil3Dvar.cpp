@@ -68,7 +68,7 @@ QString enlil3DVar::LongName() const
  * @brief enlilVar::setVarLongName
  * @param varLongName
  */
-void enlil3DVar::setVarLongName(const QString &varLongName)
+void enlil3DVar::setLongName(const QString &varLongName)
 {
     __varLongName = varLongName;
 }
@@ -112,7 +112,7 @@ QVector<double> enlil3DVar::asDouble(int nblk)
     enlilExtent Y = this->__wholeExtents["n2"];
     enlilExtent Z = this->__wholeExtents["n3"];
 
-    return this->asDouble(X,Y,Z);
+    return this->asDouble(X,Y,Z, nblk);
 
 }
 
@@ -124,7 +124,15 @@ QVector<double> enlil3DVar::asDouble(int nblk)
  */
 QVector<double> enlil3DVar::asDouble(QVector<qint64> extents, int nblk)
 {
+enlilExtent X,Y,Z;
+X.first = extents[0];
+X.second = extents[1];
+Y.first = extents[2];
+Y.second = extents[3];
+Z.first = extents[4];
+Z.second = extents[5];
 
+return this->asDouble(X,Y,Z,nblk);
 }
 
 /**
@@ -135,6 +143,15 @@ QVector<double> enlil3DVar::asDouble(QVector<qint64> extents, int nblk)
  */
 QVector<double> enlil3DVar::asDouble(const int extents[], int nblk)
 {
+enlilExtent X, Y, Z;
+X.first = extents[0];
+X.second = extents[1];
+Y.first = extents[2];
+Y.second = extents[3];
+Z.first = extents[4];
+Z.second = extents[5];
+
+return this->asDouble(X,Y,Z,nblk);
 
 }
 
@@ -148,7 +165,7 @@ QVector<double> enlil3DVar::asDouble(const int extents[], int nblk)
  */
 QVector<double> enlil3DVar::asDouble(enlilExtent X, enlilExtent Y, enlilExtent Z, int nblk)
 {
-    QVector<QVariant> *raw = this->getData(X,Y,Z);
+    QVector<QVariant> *raw = this->_getData(X,Y,Z,nblk);
     QVector<double> asDouble;
 
     if(!raw)
@@ -182,8 +199,9 @@ QVector<double> enlil3DVar::asDouble(enlilExtent X, enlilExtent Y, enlilExtent Z
  * @param nblk
  * @return
  */
-QVector<double> enlil3DVar::asDouble(QVector<enlilExtent>, int nblk)
+QVector<double> enlil3DVar::asDouble(QVector<enlilExtent> extents, int nblk)
 {
+    return this->asDouble(extents[0],extents[1],extents[2],nblk);
 
 }
 
@@ -194,7 +212,11 @@ QVector<double> enlil3DVar::asDouble(QVector<enlilExtent>, int nblk)
  */
 QVector<float> enlil3DVar::asFloat(int nblk)
 {
+    enlilExtent X = this->__wholeExtents["n1"];
+    enlilExtent Y = this->__wholeExtents["n2"];
+    enlilExtent Z = this->__wholeExtents["n3"];
 
+    return this->asFloat(X,Y,Z, nblk);
 }
 
 /**
@@ -205,7 +227,15 @@ QVector<float> enlil3DVar::asFloat(int nblk)
  */
 QVector<float> enlil3DVar::asFloat(QVector<qint64> extents, int nblk)
 {
+    enlilExtent X,Y,Z;
+    X.first = extents[0];
+    X.second = extents[1];
+    Y.first = extents[2];
+    Y.second = extents[3];
+    Z.first = extents[4];
+    Z.second = extents[5];
 
+    return this->asFloat(X,Y,Z,nblk);
 }
 
 /**
@@ -216,7 +246,15 @@ QVector<float> enlil3DVar::asFloat(QVector<qint64> extents, int nblk)
  */
 QVector<float> enlil3DVar::asFloat(const int extents[], int nblk)
 {
+    enlilExtent X,Y,Z;
+    X.first = extents[0];
+    X.second = extents[1];
+    Y.first = extents[2];
+    Y.second = extents[3];
+    Z.first = extents[4];
+    Z.second = extents[5];
 
+    return this->asFloat(X,Y,Z,nblk);
 }
 
 /**
@@ -229,7 +267,33 @@ QVector<float> enlil3DVar::asFloat(const int extents[], int nblk)
  */
 QVector<float> enlil3DVar::asFloat(enlilExtent X, enlilExtent Y, enlilExtent Z, int nblk)
 {
+    QVector<QVariant> *raw = this->_getData(X,Y,Z, nblk);
+    QVector<float> asFloat;
 
+    if(!raw)
+    {
+        std::cerr << "ERROR: Failed to get Variable Data for " << qPrintable(this->__varLongName) << std::endl;
+        exit(1);
+    }
+
+    int count = raw->count();
+
+    for(int x = 0; x < count; x++)
+    {
+        bool status;
+        float value = raw[0][x].toFloat(&status);
+        if(!status)
+        {
+            std::cerr << "FAILURE TO CONVERT TO FLOAT." << std::endl;
+        }
+        else
+        {
+            asFloat.push_back(value);
+        }
+    }
+
+    delete raw;
+    return asFloat;
 }
 
 /**
@@ -237,8 +301,9 @@ QVector<float> enlil3DVar::asFloat(enlilExtent X, enlilExtent Y, enlilExtent Z, 
  * @param nblk
  * @return
  */
-QVector<float> enlil3DVar::asFloat(QVector<enlilExtent>, int nblk)
+QVector<float> enlil3DVar::asFloat(QVector<enlilExtent> extents, int nblk)
 {
+    return this->asFloat(extents[0],extents[1],extents[2],nblk);
 
 }
 
@@ -249,7 +314,11 @@ QVector<float> enlil3DVar::asFloat(QVector<enlilExtent>, int nblk)
  */
 QVector<qint64> enlil3DVar::asInt64(int nblk)
 {
+    enlilExtent X = this->__wholeExtents["n1"];
+    enlilExtent Y = this->__wholeExtents["n2"];
+    enlilExtent Z = this->__wholeExtents["n3"];
 
+    return this->asInt64(X,Y,Z, nblk);
 }
 
 /**
@@ -260,7 +329,15 @@ QVector<qint64> enlil3DVar::asInt64(int nblk)
  */
 QVector<qint64> enlil3DVar::asInt64(QVector<qint64> extents, int nblk)
 {
+    enlilExtent X,Y,Z;
+    X.first = extents[0];
+    X.second = extents[1];
+    Y.first = extents[2];
+    Y.second = extents[3];
+    Z.first = extents[4];
+    Z.second = extents[5];
 
+    return this->asInt64(X,Y,Z,nblk);
 }
 
 /**
@@ -271,7 +348,15 @@ QVector<qint64> enlil3DVar::asInt64(QVector<qint64> extents, int nblk)
  */
 QVector<qint64> enlil3DVar::asInt64(const int extents[], int nblk)
 {
+    enlilExtent X,Y,Z;
+    X.first = extents[0];
+    X.second = extents[1];
+    Y.first = extents[2];
+    Y.second = extents[3];
+    Z.first = extents[4];
+    Z.second = extents[5];
 
+    return this->asInt64(X,Y,Z,nblk);
 }
 
 /**
@@ -284,7 +369,33 @@ QVector<qint64> enlil3DVar::asInt64(const int extents[], int nblk)
  */
 QVector<qint64> enlil3DVar::asInt64(enlilExtent X, enlilExtent Y, enlilExtent Z, int nblk)
 {
+    QVector<QVariant> *raw = this->_getData(X,Y,Z, nblk);
+    QVector<qint64> asInt64;
 
+    if(!raw)
+    {
+        std::cerr << "ERROR: Failed to get Variable Data for " << qPrintable(this->__varLongName) << std::endl;
+        exit(1);
+    }
+
+    int count = raw->count();
+
+    for(int x = 0; x < count; x++)
+    {
+        bool status;
+        qint64 value = raw[0][x].toLongLong(&status);
+        if(!status)
+        {
+            std::cerr << "FAILURE TO CONVERT TO INT64." << std::endl;
+        }
+        else
+        {
+            asInt64.push_back(value);
+        }
+    }
+
+    delete raw;
+    return asInt64;
 }
 
 /**
@@ -292,52 +403,12 @@ QVector<qint64> enlil3DVar::asInt64(enlilExtent X, enlilExtent Y, enlilExtent Z,
  * @param nblk
  * @return
  */
-QVector<qint64> enlil3DVar::asInt64(QVector<enlilExtent>, int nblk)
+QVector<qint64> enlil3DVar::asInt64(QVector<enlilExtent> extents, int nblk)
 {
+    return this->asInt64(extents[0],extents[1],extents[2],nblk);
 
 }
 
-/**
- * @brief enlil3DVar::getData
- * @param nblk
- * @return
- */
-QVector<QVariant> *enlil3DVar::getData(int nblk)
-{
-
-}
-
-/**
- * @brief enlil3DVar::getData
- * @param extents
- * @param nblk
- * @return
- */
-QVector<QVariant> *enlil3DVar::getData(QVector<qint64> extents, int nblk)
-{
-
-}
-
-/**
- * @brief enlil3DVar::getData
- * @param extents
- * @param nblk
- * @return
- */
-QVector<QVariant> *enlil3DVar::getData(const int extents[], int nblk)
-{
-
-}
-
-/**
- * @brief enlil3DVar::getData
- * @param nblk
- * @return
- */
-QVector<QVariant> *enlil3DVar::getData(QVector<enlilExtent>, int nblk)
-{
-
-}
 
 /**
  * @brief enlil3DVar::getData
@@ -347,7 +418,7 @@ QVector<QVariant> *enlil3DVar::getData(QVector<enlilExtent>, int nblk)
  * @param nblk
  * @return
  */
-QVector<QVariant> *enlil3DVar::getVariantData(NcVar* var, int length, size_t counts[], long startLoc[])
+QVector<QVariant> *enlil3DVar::_getVariantData(NcVar* var, int length, size_t counts[], long startLoc[])
 {
     QVector<QVariant> * data = new QVector<QVariant>;
 
@@ -472,7 +543,7 @@ QVector<QVariant> *enlil3DVar::getVariantData(NcVar* var, int length, size_t cou
     return data;
 }
 
-QVector<QVariant> *enlil3DVar::getData(enlilExtent X, enlilExtent Y, enlilExtent Z, int nblk)
+QVector<QVariant> *enlil3DVar::_getData(enlilExtent N1, enlilExtent N2, enlilExtent N3, int nblk)
 {
 
     size_t *counts = NULL;
@@ -502,7 +573,7 @@ QVector<QVariant> *enlil3DVar::getData(enlilExtent X, enlilExtent Y, enlilExtent
         size_t localCounts = 1;
         long localStartLoc = 0;
 
-        data = this->getVariantData(current, 1,  &localCounts, &localStartLoc);
+        data = this->_getVariantData(current, 1,  &localCounts, &localStartLoc);
 
         break;
     }
@@ -513,15 +584,15 @@ QVector<QVariant> *enlil3DVar::getData(enlilExtent X, enlilExtent Y, enlilExtent
 
         if(this->__dims.contains("n1"))
         {
-            curExtent = &X;
+            curExtent = &N1;
         }
         else if(this->__dims.contains("n2"))
         {
-            curExtent = &Y;
+            curExtent = &N2;
         }
         else if(this->__dims.contains("n3"))
         {
-            curExtent = &Z;
+            curExtent = &N3;
         }
         else
         {
@@ -533,7 +604,7 @@ QVector<QVariant> *enlil3DVar::getData(enlilExtent X, enlilExtent Y, enlilExtent
         counts[0] = curExtent->second - curExtent->first + 1;
         startLoc[0] = curExtent->first;
 
-        data = this->getVariantData(current, 1, counts, startLoc);
+        data = this->_getVariantData(current, 1, counts, startLoc);
 
         break;
     }
@@ -544,15 +615,15 @@ QVector<QVariant> *enlil3DVar::getData(enlilExtent X, enlilExtent Y, enlilExtent
         {
             if(this->__dims.contains("n1"))
             {
-                curExtent = &X;
+                curExtent = &N1;
             }
             else if(this->__dims.contains("n2"))
             {
-                curExtent = &Y;
+                curExtent = &N2;
             }
             else if(this->__dims.contains("n3"))
             {
-                curExtent = &Z;
+                curExtent = &N3;
             }
             else
             {
@@ -567,7 +638,7 @@ QVector<QVariant> *enlil3DVar::getData(enlilExtent X, enlilExtent Y, enlilExtent
             counts[0]=1;
             counts[1]= curExtent->second - curExtent->first + 1;
 
-            data = this->getVariantData(current, 2, counts, startLoc);
+            data = this->_getVariantData(current, 2, counts, startLoc);
 
         }
         else
@@ -590,15 +661,15 @@ QVector<QVariant> *enlil3DVar::getData(enlilExtent X, enlilExtent Y, enlilExtent
         {
             //Enlil files encode 3d data in n3, n2, n1
             //this is a 3-D file with no Blocks
-            startLoc[0] = Z.first;
-            startLoc[1] = Y.first;
-            startLoc[2] = X.first;
+            startLoc[0] = N3.first;
+            startLoc[1] = N2.first;
+            startLoc[2] = N1.first;
 
-            counts[0] = Z.second - Z.first +1;
-            counts[1] = Y.second - Y.first +1;
-            counts[2] = X.second - X.first +1;
+            counts[0] = N3.second - N3.first +1;
+            counts[1] = N2.second - N2.first +1;
+            counts[2] = N1.second - N1.first +1;
 
-            data = this->getVariantData(current, 3, counts, startLoc);
+            data = this->_getVariantData(current, 3, counts, startLoc);
         }
 
         break;
@@ -613,16 +684,16 @@ QVector<QVariant> *enlil3DVar::getData(enlilExtent X, enlilExtent Y, enlilExtent
         //this is a 3-D file with blocks
         //Enlil files encode the data in nblk, n3, n2, n1
         startLoc[0] = nblk;
-        startLoc[1] = Z.first;
-        startLoc[2] = Y.first;
-        startLoc[3] = X.first;
+        startLoc[1] = N3.first;
+        startLoc[2] = N2.first;
+        startLoc[3] = N1.first;
 
         counts[0] = 1;
-        counts[1] = Z.second - Z.first +1;
-        counts[2] = Y.second - Y.first +1;
-        counts[3] = X.second - X.first +1;
+        counts[1] = N3.second - N3.first +1;
+        counts[2] = N2.second - N2.first +1;
+        counts[3] = N1.second - N1.first +1;
 
-        data = this->getVariantData(current, 4, counts, startLoc);
+        data = this->_getVariantData(current, 4, counts, startLoc);
 
         break;
     }
@@ -642,65 +713,32 @@ QVector<QVariant> *enlil3DVar::getData(enlilExtent X, enlilExtent Y, enlilExtent
  */
 qint64 enlil3DVar::recordCount()
 {
-
+    return this->__recordCount;
 }
 
 /**
- * @brief enlilVar::getXextent
+ * @brief enlil3DVar::getExtent
+ * @param name
  * @return
  */
-QPair<qint64, qint64> enlil3DVar::getXextent()
+enlilExtent enlil3DVar::getExtent(const char *name)
 {
+    if(this->__wholeExtents.contains(QString(name)))
+    {
+        return this->__wholeExtents[QString(name)];
+    }
+    else
+    {
+        std::cerr << "ERROR: Extent not found" << std::endl;
+        enlilExtent voidExtent;
+        voidExtent.first = 0;
+        voidExtent.second = 0;
+        return voidExtent;
+    }
 
 }
 
-/**
- * @brief enlilVar::setXextent
- * @param lower
- * @param upper
- */
-void enlil3DVar::setXextent(qint64 lower, qint64 upper)
-{
 
-}
-
-/**
- * @brief enlilVar::setYextent
- * @param lower
- * @param upper
- */
-void enlil3DVar::setYextent(qint64 lower, qint64 upper)
-{
-
-}
-
-/**
- * @brief enlilVar::getZextent
- * @return
- */
-QPair<qint64, qint64> enlil3DVar::getZextent()
-{
-
-}
-
-/**
- * @brief enlilVar::setZextent
- * @param lower
- * @param upper
- */
-void enlil3DVar::setZextent(qint64 lower, qint64 upper)
-{
-
-}
-
-/**
- * @brief enlilVar::_loadData
- * @param subExtents
- */
-void enlil3DVar::_loadData(QVector<enlilExtent> subExtents, int nblk)
-{
-
-}
 
 /**
  * @brief enlil3DVar::_loadMetaData

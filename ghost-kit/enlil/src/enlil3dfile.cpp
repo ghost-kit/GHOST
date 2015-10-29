@@ -35,7 +35,6 @@ enlil3DFile::enlil3DFile(const char *FileName, double scaleFactor)
     this->setFileName(FileName);
     this->_gridScaleFactor = scaleFactor;
     this->_convertData = false;
-    this->_retainRaw = false;
     this->_gridOutput = NULL;
 
 
@@ -66,99 +65,26 @@ void enlil3DFile::__cleanAll()
     this->_name.clear();
     this->_enlil_version = 0;
     this->_gridScaleFactor = 1;
-    this->_extents[0]=0;
-    this->_extents[1]=0;
-    this->_extents[2]=0;
-    this->_extents[3]=0;
-    this->_extents[4]=0;
-    this->_extents[5]=0;
-
     this->_gridOutput = NULL;
     this->_gridPositionsCT.clear();
     this->_gridPositionsSP.clear();
-    this->_gridUnits.clear();
 
     this->_fileAttributeData.clear();
     this->_convMap.clear();
 
 }
 
-/**
- * @brief enlil3DFile::cleanVar
- * @param _name
- */
-void enlil3DFile::cleanVar(const char *_name)
-{
-    std::cerr << __FUNCTION__ << " Not Implemented" << std::endl;
-    exit(EXIT_FAILURE);
-}
-
-/**
- * @brief enlil3DFile::setExtents
- * @param extents
- */
-void enlil3DFile::setExtents(int extents[6])
-{
-    this->__setUseExtents(extents);
-}
-
-/**
- * @brief enlil3DFile::setExtents
- * @param X1
- * @param X2
- * @param Y1
- * @param Y2
- * @param Z1
- * @param Z2
- */
-void enlil3DFile::setExtents(int X1, int X2, int Y1, int Y2, int Z1, int Z2)
-{
-    int extents[6] = {X1, X2, Y1, Y2, Z1, Z2};
-    this->__setUseExtents(extents);
-}
 
 /**
  * @brief enlil3DFile::getExtents
  * @return
  */
-QVector<int> enlil3DFile::getExtents()
+QMap<QString, enlilExtent> enlil3DFile::getWholeExtents()
 {
-    QVector<int> returnVal;
-    returnVal.push_back(this->_extents[0]);
-    returnVal.push_back(this->_extents[1]);
-    returnVal.push_back(this->_extents[2]);
-    returnVal.push_back(this->_extents[3]);
-    returnVal.push_back(this->_extents[4]);
-    returnVal.push_back(this->_extents[5]);
-
-    return returnVal;
+    return this->_wholeExtents;
 }
 
-/**
- * @brief enlil3DFile::setUseExtents
- * @param truth
- */
-void enlil3DFile::__setUseExtents(int extents[6])
-{
 
-    //reset the current data
-    this->__cleanAll();
-
-    //set the extents needed
-    this->_extents[0] = extents[0];
-    this->_extents[1] = extents[1];
-    this->_extents[2] = extents[2];
-    this->_extents[3] = extents[3];
-    this->_extents[4] = extents[4];
-    this->_extents[5] = extents[5];
-
-    //set the use extents
-    this->_useExtents = true;
-
-    //initialize the files
-    this->__ResetFile();
-
-}
 
 /**
  * @brief enlil3DFile::__initializeFiles
@@ -339,6 +265,8 @@ QStringList enlil3DFile::getVarNames()
 
 }
 
+
+
 /**
  * @brief enlil3DFile::getFileAttributeNames
  * @return
@@ -374,11 +302,38 @@ bool enlil3DFile::hasUnits(QString name)
 }
 
 /**
+ * @brief enlil3DFile::asFloat
+ * @param name
+ * @return
+ */
+QVector<float> enlil3DFile::asFloat(const char *name, int block)
+{
+    QVector<float> returnValue;
+    enlil3DVar* currentVar = this->_varOutput[QString(name)];
+
+    if(currentVar) returnValue = currentVar->asFloat();
+
+    return returnValue;
+}
+
+/**
+ * @brief enlil3DFile::asFloat
+ * @param X
+ * @param Y
+ * @param Z
+ * @return
+ */
+QVector<QVector<float> > enlil3DFile::asFloat(const char *X, const char *Y, const char *Z, int block)
+{
+
+}
+
+/**
  * @brief enlil3DFile::getVar
  * @param name
  * @return
  */
-QVector<double> enlil3DFile::getVar(const char *name)
+QVector<double> enlil3DFile::asDouble(const char *name, int block)
 {
     QVector<double> returnValue;
     enlil3DVar* currentVar = this->_varOutput[QString(name)];
@@ -389,13 +344,20 @@ QVector<double> enlil3DFile::getVar(const char *name)
 
 }
 
-QVector<QVector<double> > enlil3DFile::getVar(const char *X, const char *Y, const char *Z)
+/**
+ * @brief enlil3DFile::asDouble
+ * @param X
+ * @param Y
+ * @param Z
+ * @return
+ */
+QVector<QVector<double> > enlil3DFile::asDouble(const char *X, const char *Y, const char *Z, int block)
 {
     QVector<QVector<double> > XYZ;
 
-    QVector<double> X1 = this->getVar(X);
-    QVector<double> Y1 = this->getVar(Y);
-    QVector<double> Z1 = this->getVar(Z);
+    QVector<double> X1 = this->asDouble(X);
+    QVector<double> Y1 = this->asDouble(Y);
+    QVector<double> Z1 = this->asDouble(Z);
 
     int count = X1.count();
 
@@ -413,6 +375,33 @@ QVector<QVector<double> > enlil3DFile::getVar(const char *X, const char *Y, cons
     }
 
     return XYZ;
+}
+
+/**
+ * @brief enlil3DFile::asInt64
+ * @param name
+ * @return
+ */
+QVector<qint64> enlil3DFile::asInt64(const char *name, int block)
+{
+    QVector<qint64> returnValue;
+    enlil3DVar* currentVar = this->_varOutput[QString(name)];
+
+    if(currentVar) returnValue = currentVar->asInt64();
+
+    return returnValue;
+}
+
+/**
+ * @brief enlil3DFile::asInt64
+ * @param X
+ * @param Y
+ * @param Z
+ * @return
+ */
+QVector<QVector<qint64> > enlil3DFile::asInt64(const char *X, const char *Y, const char *Z, int block)
+{
+
 }
 
 /**
@@ -458,6 +447,24 @@ QString enlil3DFile::getVarLongName(const char *name)
 qint64 enlil3DFile::getNumberOfVars()
 {
     return qint64(this->getVarNames().count());
+}
+
+/**
+ * @brief enlil3DFile::getNumberOfBlocks
+ * @param name
+ * @return
+ */
+qint64 enlil3DFile::getNumberOfBlocks(const char *name)
+{
+    if(this->_varOutput.contains(QString(name)))
+    {
+        return this->_varOutput[QString(name)]->recordCount();
+    }
+    else
+    {
+        std::cerr << "ERROR: Variable " << name << " Not Found." << std::endl;
+    }
+    return 0;
 }
 
 /**
@@ -521,161 +528,6 @@ void enlil3DFile::__loadVariable(QString name)
 
 }
 
-/**
- * @brief enlil3DFile::__loadVariableExtents
- * @param _name
- */
-void enlil3DFile::__loadVariableExtents(QString _name)
-{
-//    //FIXME: This is getting better... it get the correct number of elements, but is still just garbage.
-//    //FIXME: Problem is likely with the calculation of the type of read (look at the Extents Calculation)
-//    size_t readDims[4]   = {1,1,1,1};
-//    long readStart[4]  = {0,this->_extents[4],this->_extents[2],this->_extents[0]};
-
-//    // Enlil encodes in reverse, so reverse the order, add fourth dimension 1st.
-//    readDims[1] = this->_dims[2];
-//    readDims[2] = this->_dims[1];
-//    readDims[3] = this->_dims[0];
-
-//    //find all conditions that need to be accounted for
-//    bool periodic = false;
-//    bool periodicRead = false;
-//    bool periodicOnly = false;
-
-//    //this->printExtents(extents, (char*)"Loading Extents: ");
-
-//    if(this->_extents[5] == (this->_dims[2]-1))
-//    {
-//        periodic = true;
-////        std::cout << "Set Periodic" << std::endl;
-
-//        if(this->_extents[4] > 0)
-//        {
-//            periodicRead = true;
-////            std::cout << "Set Periodic Read" << std::endl;
-//            if(this->_extents[4] == this->_dims[2]-1)
-//            {
-//                periodicOnly = true;
-////                std::cout << "Set Periodic Only" << std::endl;
-
-//            }
-//        }
-//    }
-//    else
-//    {
-////        std::cout << "Non-Periodic" << std::endl;
-//        //  dont need to do anything
-
-//    }
-
-//    // allocate memory for complete array
-//    double *array = new double[this->get3Dcount()];
-//    NcVar* variable = this->_file->get_var(_name.toAscii().data());
-
-//    // start to read in data
-//    if(periodic && !periodicOnly)
-//    {
-//        //adjust dims
-//        readDims[1] = readDims[1]-1;
-
-//        //adjust the start point
-//        variable->set_cur(readStart);
-
-//        //read the file
-//        variable->get(array, readDims);
-
-//    }
-//    else if(periodicOnly)
-//    {
-//        //set periodic only
-//        readDims[1] = 1;
-//        readStart[1] = 0;
-//        readStart[2] = this->_extents[2];
-//        readStart[3] = this->_extents[0];
-
-//        //set read location
-//        variable->set_cur(readStart);
-
-//        //read the file
-//        variable->get(array, readDims);
-
-//    }
-//    else
-//    {
-//        //set read location as stated
-//        variable->set_cur(readStart);
-
-//        //read as stated
-//        variable->get(array, readDims);
-
-//    }
-
-//    // fix periodic boundary if necesary
-//    if(periodic && !periodicRead && !periodicOnly)
-//    {
-//        //copy periodic data from begining to end
-//        size_t wedgeSize = (this->_dims[0]*this->_dims[1]);
-//        size_t wedgeLoc  = (this->_dims[0]*this->_dims[1])*(this->_dims[2]-1);
-
-//        for(int x = 0; x < wedgeSize; x++)
-//        {
-//            //copy the wedge
-//            array[wedgeLoc] = array[x];
-
-//            //advance index
-//            wedgeLoc++;
-//        }
-
-//    }
-//    else if (periodic && periodicRead && !periodicOnly)  /*periodicRead &&*/
-//    {
-//        //read in periodic data and place at end of array
-//        size_t wedgeSize = this->_dims[0]*this->_dims[1];
-//        size_t wedgeLoc  = (this->_dims[0]*this->_dims[1])*(this->_dims[2]-1);
-
-//        double * wedge = new double[wedgeSize];
-
-//        //start at 0,0,0
-//        readStart[0] = 0;
-//        readStart[1] = 0;
-//        readStart[2] = this->_extents[2];
-//        readStart[3] = this->_extents[0];
-
-//        //restrict to phi = 1 dimension
-//        readDims[1] = 1;
-
-//        //set start
-//        variable->set_cur(readStart);
-
-//        //read data
-//        variable->get(wedge, readDims);
-
-//        //populate wedge to array
-//        for(int x = 0; x < wedgeSize; x++)
-//        {
-//            //copy the wedge
-//            array[wedgeLoc] = wedge[x];
-
-//            //advance index
-//            wedgeLoc++;
-//        }
-
-//        //free temp memory
-//        delete [] wedge; wedge = NULL;
-//    }
-
-//    //create a data structure for storage
-//    //FIXME: Need to loop only over size of the array. Skip TIME... it is not a vector.
-//    QVector<double> qVals;
-//    for(int x=0; x < this->get3Dcount(); x++)
-//    {
-//        qVals.push_back(array[x]);
-//    }
-
-//    //save the variable
-//    this->_variablesRaw[_name] = qVals;
-
-}
 
 /**
  * @brief enlil3DFile::__loadFileAttribute
@@ -768,75 +620,6 @@ QStringList enlil3DFile::__getAttributeList()
     return values;
 }
 
-/**
- * @brief enlil3DFile::__loadAttFromVar
- * @param VarName
- * @param AttName
- */
-void enlil3DFile::__loadAttFromVar(QString VarName, QString AttName)
-{
-    //FIXME: REMOVE THIS FUNCTION
-//    //TODO: There should be a better way to handle Varaiable Attributes
-//    //TODO: Find way to handle any variable attribute.
-//    QString value;
-//    NcVar* var = this->_file->get_var(VarName.toAscii().data());
-//    NcAtt* att = var->get_att(AttName.toAscii().data());
-
-//    //FIXME: Memory Leak when doing this.  Need to controll the att->as_string memory apparently.
-//    value = QString(att->as_string(0));
-
-//    if(AttName == "units")
-//    {
-//        this->_varUnitsRaw[VarName] = value;
-//    }
-//    else if(AttName == "long_name")
-//    {
-//        this->_longNamesRaw[VarName] = value;
-//    }
-//    else
-//    {
-//        std::cerr << "Unknown Variable Attribute.  Consider revising the reader." << std::endl;
-//    }
-
-//    delete att;
-//    //    delete var;
-
-}
-
-/**
- * @brief enlil3DFile::__getAttListForVar
- * @param varName
- * @return
- */
-QStringList enlil3DFile::__getAttListForVar(QString varName)
-{
-    //FIXME: Make this routine independent from loading values.
-
-    QStringList values;
-    QStringList variables = this->getVarNames();
-
-    // IF data not available, return empty values
-    if(!variables.contains(varName))
-    {
-        std::cerr << "Variable " << varName.toAscii().data()
-                  << " Cannot be found for loading attributes."
-                  << std::endl;
-        return values;
-    }
-
-    NcVar* var = this->_file->get_var(qPrintable(varName));
-    qint64 numAtts = var->num_atts();
-
-    for(int x=0; x<numAtts; x++)
-    {
-        NcAtt* att = var->get_att(x);
-        if(att->is_valid()) values.push_back(QString(att->name()));
-        delete att;
-    }
-
-    //delete var;
-    return values;
-}
 
 /**
  * @brief enlil3DFile::__processLocation
@@ -863,6 +646,13 @@ void enlil3DFile::__processGridLocations()
         int xlen = this->getDims("n1");
         int ylen = this->getDims("n2");
         int zlen = this->getDims("n3");
+
+        this->_wholeExtents[QString("n1")] = this->_varOutput["X1"]->getExtent("n1");
+        this->_wholeExtents[QString("n2")] = this->_varOutput["X2"]->getExtent("n2");
+        this->_wholeExtents[QString("n3")] = this->_varOutput["X3"]->getExtent("n3");
+        this->_wholeExtents[QString("nblk")] = this->_varOutput["X1"]->getExtent("nblk");
+
+
 
         /**
              *  xyz is generated and populated from _gridSphere2Cart() routine.

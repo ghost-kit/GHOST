@@ -13,6 +13,8 @@
 
 #include "enlil3Dvar.h"
 
+typedef QPair<qint64,qint64> enlilExtent;
+
 
 #define ENLIL_GRIDSPACING_CT 0
 #define ENLIL_GRIDSPACING_SP 1
@@ -27,13 +29,6 @@ public:
     enlil3DFile(const char* FileName, double scaleFactor);
     ~enlil3DFile();
 
-    //Reset Routines
-    void cleanVar(const char* _name);
-    void setExtents(int extents[]);
-    void setExtents(int X1, int X2, int Y1, int Y2, int Z1, int Z2);
-    QVector<int> getExtents();
-
-    //Easy Name
     void setName(const char* _name);
 
     //File Level Routines
@@ -53,9 +48,19 @@ public:
 
     //Variable Routines
     QStringList getVarNames();
-    QVector<double> getVar(const char* _name);
-    QVector<QVector<double> > getVar(const char* X, const char* Y, const char* Z);
+
+    QVector<float> asFloat(const char* name, int block=0);
+    QVector<QVector<float> > asFloat(const char* X, const char* Y, const char* Z, int block=0);
+
+    QVector<double> asDouble(const char* _name, int block=0);
+    QVector<QVector<double> > asDouble(const char* X, const char* Y, const char* Z, int block=0);
+
+    QVector<qint64> asInt64(const char* name, int block=0);
+    QVector<QVector<qint64> > asInt64(const char* X, const char* Y, const char* Z, int block=0);
+
+    QMap<QString, enlilExtent> getWholeExtents();
     qint64 getNumberOfVars();
+    qint64 getNumberOfBlocks(const char* name);
 
     //File Attribute Routines
     QStringList getFileAttributeNames();
@@ -84,11 +89,9 @@ protected:  //DATA
     double _TIME;
     QMap<QString, qint64> _dims;
     double _enlil_version;
-    int _extents[6];
+    QMap<QString, enlilExtent> _wholeExtents;
 
-    bool _retainRaw;      //Flag to determine if we will retain the raw data in memory.
     bool _convertData;    //Flag to determine if we convert the raw data
-    bool _useExtents;     //Use the set extents
 
     //grid Data
     QVector<QVector<double> > *_gridOutput;      //Current Output
@@ -123,13 +126,11 @@ protected:  //METHODS
 
     //file level
     void __loadVariable(QString _name);
-    void __loadVariableExtents(QString _name);
     void __loadFileAttribute(QString _name);
     QStringList __getVaribleList();
     QStringList __getAttributeList();
 
     //var level
-    void __loadAttFromVar(QString VarName, QString AttName);
     QStringList __getAttListForVar(QString varName);
 
     //data processing
