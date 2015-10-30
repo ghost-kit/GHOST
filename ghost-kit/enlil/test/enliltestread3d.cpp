@@ -178,7 +178,7 @@ int main(int argc, char* argv[])
     if(densityCount != file.get3Dcount())
     {
         std::cerr << "Error in Reading 3D data... wrong number of entries read: Read "
-                    << densityCount << "Should have Been: "<< xyz[0] * xyz[1] * xyz[2] << std::endl;
+                  << densityCount << "Should have Been: "<< xyz[0] * xyz[1] * xyz[2] << std::endl;
 
         exit(EXIT_FAILURE);
 
@@ -186,7 +186,7 @@ int main(int argc, char* argv[])
     else
     {
         std::cout << "Succesfully Read " << densityCount << " out of " << xyz[0] * xyz[1] * xyz[2]
-                     << " Data points on the 3D Density Scalar Array." << std::endl;
+                << " Data points on the 3D Density Scalar Array." << std::endl;
     }
 
 
@@ -342,7 +342,6 @@ int main(int argc, char* argv[])
     /**
       * Test scaling
       **/
-//    file.setExtents(4, 8, 1, 1, 0, 0);
     QVector<QVector< double > > gridSpaceExtents = file.getGridSpacing();
     int gridExentsSize = file.get3Dcount();
 
@@ -361,22 +360,36 @@ int main(int argc, char* argv[])
 
     QVector<double> x1scaleTest = file.asDouble("X3");
 
-    loop=0;
-    for(loop=0; loop < x1scaleTest.count(); loop++)
-    {
-        std::cout << "Value: " << x1scaleTest[loop] << std::endl;
-    }
-
     std::cout << "Units for X1: " << qPrintable(file.getVarUnits("X1")) << std::endl;
     std::cout << "Units for X2: " << qPrintable(file.getVarUnits("X2")) << std::endl;
     std::cout << "Units for X3: " << qPrintable(file.getVarUnits("X3")) << std::endl;
 
+    /**
+      * Test cartesian conversion
+      */
 
-//    /**
-//      *     TEST THE EVO FILES
-//      */
+    QVector<QVector<double> > rtpValues = file.asDouble("V1", "V2", "V3", 0, false);
+    QVector<QVector<double> > xyzValues = file.asDouble("V1", "V2", "V3", 0, true);
 
-//    enlilEvoFile evoFile(_EVOTESTFILE, 1);
+    for(int x = 0; x < rtpValues.count(); x++)
+    {
+        double checkVal = sqrt(pow(xyzValues[x][0],2) + pow(xyzValues[x][1],2) + pow(xyzValues[x][2],2));
+        if(!doubleCompareEqual(checkVal, rtpValues[x][0], epsilon))
+        {
+            std::cerr << "ERROR: Cartesian Conversion from Spherical Failed for Velocity." << std::endl;
+            std::cerr << "Expected: " << rtpValues[x][0] << std::endl;
+            std::cerr << "Recieved: " <<  checkVal << std::endl;
+            exit(EXIT_FAILURE);
+        }
+
+    }
+    std::cout << "Cartesian conversion appears to be correct within " << epsilon << " of the spherical equivilant." << std::endl;
+
+    //    /**
+    //      *     TEST THE EVO FILES
+    //      */
+
+    //    enlilEvoFile evoFile(_EVOTESTFILE, 1);
 
 
 }

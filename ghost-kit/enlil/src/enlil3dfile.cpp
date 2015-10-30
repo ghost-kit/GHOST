@@ -25,8 +25,6 @@ void enlil3DFile::__ResetFile()
     //process Time
     this->__processTime();
 
-    //process spherical vectors
-    this->__processSphericalVectors();
 
 }
 
@@ -352,8 +350,9 @@ QVector<double> enlil3DFile::asDouble(const char *name, int block)
 QVector<QVector<double> > enlil3DFile::asDouble(const char *X, const char *Y, const char *Z, int block, bool cart)
 {
     QVector<QVector<double> > XYZ;
+    QVector<double> xyz;
 
-    //TODO: Validate Input here.
+    //TODO: Validate Input here. Include size of arrays.
 
     QVector<double> X1 = this->asDouble(X);
     QVector<double> Y1 = this->asDouble(Y);
@@ -366,11 +365,17 @@ QVector<QVector<double> > enlil3DFile::asDouble(const char *X, const char *Y, co
         QVector<double> entry;
         if(cart)
         {
-        // get the location data
-           QVector<double> R = this->_varOutput["X1"]->asDouble();
-           QVector<double> T = this->_varOutput["X2"]->asDouble();
-           QVector<double> P = this->_varOutput["X3"]->asDouble();
+            QVector<double> rtp;
 
+            rtp.push_back(X1[loop]);
+            rtp.push_back(Y1[loop]);
+            rtp.push_back(Z1[loop]);
+
+            xyz = this->__sphere2Cart(rtp);
+
+            entry.push_back(xyz[0]);
+            entry.push_back(xyz[1]);
+            entry.push_back(xyz[2]);
 
 
         }
@@ -638,7 +643,6 @@ void enlil3DFile::__processGridLocations()
     int loopX=0, loopY=0, loopZ=0;
 
     //check existance of the position values
-    //TODO: Need selective Read routines that DO NOT store the values permanently.
     QStringList vars = this->_varOutput.keys();
 
     if(vars.contains("X1") && vars.contains("X2") && vars.contains("X3"))
@@ -679,7 +683,7 @@ void enlil3DFile::__processGridLocations()
                     rtp.push_back(x2[loopY]);
                     rtp.push_back(x3[loopZ]);
 
-                    xyz = this->__gridSphere2Cart(rtp);
+                    xyz = this->__sphere2Cart(rtp);
 
                     RTP.push_back(rtp);
                     XYZ.push_back(xyz);
@@ -702,81 +706,6 @@ void enlil3DFile::__processGridLocations()
     }
 }
 
-/**
- * @brief enlil3DFile::__processSphericalVectors
- */
-void enlil3DFile::__processSphericalVectors()
-{
-    double divisor = 1;
-    QString newUnits;
-
-    return;
-    //if we don't have position data, we cannot convert.
-    //if(!vectors.contains("X")) return;
-
-
-    //process the remaining data
-    //    for(int x = 0; x < vectors.count(); x++)
-    //    {
-    //        //skip the location variable
-    //        if(vectors[x] == "X") continue;
-
-    //        //get the units for the FIRST part of the vector... so as not to get radians
-    //        QPair<QString, double> conversion = this->__getConvDivForVar(vectors[x]+"1");
-    //        divisor = conversion.second;
-    //        newUnits = conversion.first;
-
-    //        //get variables to process
-    //        QVector<double> DR = this->_variablesRaw[(QString(vectors[x] + "1").toAscii().data())];
-    //        QVector<double> DT = this->_variablesRaw[(QString(vectors[x] + "2").toAscii().data())];
-    //        QVector<double> DP = this->_variablesRaw[(QString(vectors[x] + "3").toAscii().data())];
-
-    //        QVector<double> DRc;
-    //        QVector<double> DTc;
-    //        QVector<double> DPc;
-
-    //        QVector<double> X;
-    //        QVector<double> Y;
-    //        QVector<double> Z;
-
-    //        double* rtp = new double[3];
-    //        double* rtpOrigin = new double[3];
-    //        double* xyz = NULL;
-
-    //process
-    //        for(int y=0; y < this->stepCount; y++)
-    //        {
-    //            //data origin
-    //            rtpOrigin[0] = R[y];
-    //            rtpOrigin[1] = T[y];
-    //            rtpOrigin[2] = P[y];
-
-    //            rtp[0] = DR[y];
-    //            rtp[1] = DT[y];
-    //            rtp[2] = DP[y];
-
-    //            //convert
-    //            xyz = this->_sphere2Cart(rtp, rtpOrigin);
-
-    //            DRc.push_back(DR[y]/divisor);
-    //            DTc.push_back(DT[y]/divisor);
-    //            DPc.push_back(DP[y]/divisor);
-
-    //            X.push_back(xyz[0]/divisor);
-    //            Y.push_back(xyz[1]/divisor);
-    //            Z.push_back(xyz[2]/divisor);
-
-    //            delete [] xyz;
-    //        }
-
-    //        delete [] rtp;
-    //        delete [] rtpOrigin;
-
-
-
-    //    }
-
-}
 
 /**
  * @brief enlil3DFile::__getScalarList
@@ -916,7 +845,6 @@ void enlil3DFile::__processTime()
 void enlil3DFile::__addConversion(QString baseUnits, QString newUnits, double divisor)
 {
     this->_convMap->operator [](baseUnits) = qMakePair(newUnits, divisor);
-    this->__processSphericalVectors();
 }
 
 
@@ -925,7 +853,7 @@ void enlil3DFile::__addConversion(QString baseUnits, QString newUnits, double di
  * @param rtp
  * @return
  */
-QVector<double> enlil3DFile::__gridSphere2Cart(const QVector<double> rtp)
+QVector<double> enlil3DFile::__sphere2Cart(const QVector<double> rtp)
 {
     //calculate
     QVector<double> xyz;
@@ -936,22 +864,7 @@ QVector<double> enlil3DFile::__gridSphere2Cart(const QVector<double> rtp)
     return xyz;
 }
 
-/**
- * @brief enlil3DFile::__sphere2Cart
- * @param rtp
- * @param rtpOrigin
- * @return
- */
-double *enlil3DFile::__sphere2Cart(const double rtp[], const double rtpOrigin[])
-{
-    double *vector = new double[3];
 
-    vector[0] = (rtp[0] * sin(rtpOrigin[1]) * cos(rtpOrigin[2])) + (rtp[1] * cos(rtpOrigin[1]) * cos(rtpOrigin[2])) + (-1.0*rtp[2] * sin(rtpOrigin[2]));
-    vector[1] = (rtp[0] * sin(rtpOrigin[1]) * sin(rtpOrigin[2])) + (rtp[1] * cos(rtpOrigin[1]) * sin(rtpOrigin[2])) + (rtp[2] * cos(rtpOrigin[2]));
-    vector[2] = (rtp[0] * cos(rtpOrigin[1])) + (-1.0*rtp[1] * sin(rtpOrigin[1]));
-
-    return vector;
-}
 
 /**
  * @brief enlil3DFile::getScale_factor

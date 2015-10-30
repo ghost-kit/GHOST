@@ -1,6 +1,6 @@
 //TODO: Check function of Hypercube
 //TODO: Complete getting Vectors
-//TODO: Complete/test conversions
+//TODO: Test Units Conversions (other than GridScale)
 
 
 #ifndef ENLIL3DFILE_H
@@ -145,7 +145,6 @@ protected:  //METHODS
     //data processing
     void __cleanAll();
     void __processGridLocations();
-    void __processSphericalVectors();
     void __processTime();
     void __setUseExtents(int extents[]);
     QVector<int> __getExtentDimensions(int extent[6]);
@@ -158,8 +157,8 @@ protected:  //METHODS
     //these vectors MUST be 3 tuples
     //it is the responsibility of the calling function to
     //   free the memory associated with these conversions
-    QVector<double> __gridSphere2Cart(const QVector<double> rtp);
-    double *__sphere2Cart(const double rtp[], const double rtpOrigin[]);
+    QVector<double> __sphere2Cart(const QVector<double> rtp);
+    QVector<double> __sphere2Cart(const double rtp[], const double rtpOrigin[]);
 
     //file manipulations
     double __getMax(QVector<double> vector);
