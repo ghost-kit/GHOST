@@ -359,7 +359,7 @@ int main(int argc, char* argv[])
 
     }
 
-    QVector<double> x1scaleTest = file.asDouble("X1");
+    QVector<double> x1scaleTest = file.asDouble("X3");
 
     loop=0;
     for(loop=0; loop < x1scaleTest.count(); loop++)
@@ -367,6 +367,9 @@ int main(int argc, char* argv[])
         std::cout << "Value: " << x1scaleTest[loop] << std::endl;
     }
 
+    std::cout << "Units for X1: " << qPrintable(file.getVarUnits("X1")) << std::endl;
+    std::cout << "Units for X2: " << qPrintable(file.getVarUnits("X2")) << std::endl;
+    std::cout << "Units for X3: " << qPrintable(file.getVarUnits("X3")) << std::endl;
 
 
 //    /**

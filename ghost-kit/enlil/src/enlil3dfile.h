@@ -1,3 +1,8 @@
+//TODO: Check function of Hypercube
+//TODO: Complete getting Vectors
+//TODO: Complete/test conversions
+
+
 #ifndef ENLIL3DFILE_H
 #define ENLIL3DFILE_H
 
@@ -54,13 +59,13 @@ public:
     QStringList getVarNames();
 
     QVector<float> asFloat(const char* name, int block=0);
-    QVector<QVector<float> > asFloat(const char* X, const char* Y, const char* Z, int block=0);
+    QVector<QVector<float> > asFloat(const char* X, const char* Y, const char* Z, int block=0, bool cart=true);
 
     QVector<double> asDouble(const char* _name, int block=0);
-    QVector<QVector<double> > asDouble(const char* X, const char* Y, const char* Z, int block=0);
+    QVector<QVector<double> > asDouble(const char* X, const char* Y, const char* Z, int block=0, bool cart=true);
 
     QVector<qint64> asInt64(const char* name, int block=0);
-    QVector<QVector<qint64> > asInt64(const char* X, const char* Y, const char* Z, int block=0);
+    QVector<QVector<qint64> > asInt64(const char* X, const char* Y, const char* Z, int block=0, bool cart=true);
 
     QMap<QString, enlilExtent> getWholeExtents();
     qint64 getNumberOfVars();

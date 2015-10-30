@@ -321,7 +321,7 @@ QVector<float> enlil3DFile::asFloat(const char *name, int block)
  * @param Z
  * @return
  */
-QVector<QVector<float> > enlil3DFile::asFloat(const char *X, const char *Y, const char *Z, int block)
+QVector<QVector<float> > enlil3DFile::asFloat(const char *X, const char *Y, const char *Z, int block, bool cart)
 {
 
 }
@@ -349,26 +349,37 @@ QVector<double> enlil3DFile::asDouble(const char *name, int block)
  * @param Z
  * @return
  */
-QVector<QVector<double> > enlil3DFile::asDouble(const char *X, const char *Y, const char *Z, int block)
+QVector<QVector<double> > enlil3DFile::asDouble(const char *X, const char *Y, const char *Z, int block, bool cart)
 {
     QVector<QVector<double> > XYZ;
+
+    //TODO: Validate Input here.
 
     QVector<double> X1 = this->asDouble(X);
     QVector<double> Y1 = this->asDouble(Y);
     QVector<double> Z1 = this->asDouble(Z);
 
     int count = X1.count();
-
-    std::cout << "Count Total: " << count << std::endl;
-
     int loop = 0;
     for(loop = 0; loop < count; loop++)
     {
         QVector<double> entry;
-        entry.push_back(X1[loop]);
-        entry.push_back(Y1[loop]);
-        entry.push_back(Z1[loop]);
+        if(cart)
+        {
+        // get the location data
+           QVector<double> R = this->_varOutput["X1"]->asDouble();
+           QVector<double> T = this->_varOutput["X2"]->asDouble();
+           QVector<double> P = this->_varOutput["X3"]->asDouble();
 
+
+
+        }
+        else
+        {
+            entry.push_back(X1[loop]);
+            entry.push_back(Y1[loop]);
+            entry.push_back(Z1[loop]);
+        }
         XYZ.push_back(entry);
     }
 
@@ -397,7 +408,7 @@ QVector<qint64> enlil3DFile::asInt64(const char *name, int block)
  * @param Z
  * @return
  */
-QVector<QVector<qint64> > enlil3DFile::asInt64(const char *X, const char *Y, const char *Z, int block)
+QVector<QVector<qint64> > enlil3DFile::asInt64(const char *X, const char *Y, const char *Z, int block, bool cart)
 {
 
 }
@@ -703,10 +714,6 @@ void enlil3DFile::__processSphericalVectors()
     //if we don't have position data, we cannot convert.
     //if(!vectors.contains("X")) return;
 
-    //get the location data
-    //    QVector<double> R = this->_varOutput["X1"];
-    //    QVector<double> T = this->_varOutput["X2"];
-    //    QVector<double> P = this->_varOutput["X3"];
 
     //process the remaining data
     //    for(int x = 0; x < vectors.count(); x++)
@@ -765,24 +772,7 @@ void enlil3DFile::__processSphericalVectors()
     //        delete [] rtp;
     //        delete [] rtpOrigin;
 
-    //        //save processed data (XYZ)
-    //        this->_variablesProcessed[QString(vectors[x]+"_X")] = X;
-    //        this->_variablesProcessed[QString(vectors[x]+"_Y")] = Y;
-    //        this->_variablesProcessed[QString(vectors[x]+"_Z")] = Z;
 
-    //        this->_varUnitsProcessed[QString(vectors[x]+"_X")] = newUnits;
-    //        this->_varUnitsProcessed[QString(vectors[x]+"_Y")] = newUnits;
-    //        this->_varUnitsProcessed[QString(vectors[x]+"_Z")] = newUnits;
-
-
-    //        //save processed data (RTP)
-    //        this->_variablesProcessed[QString(vectors[x]+"_R")] = DRc;
-    //        this->_variablesProcessed[QString(vectors[x]+"_T")] = DTc;
-    //        this->_variablesProcessed[QString(vectors[x]+"_P")] = DPc;
-
-    //        this->_varUnitsProcessed[QString(vectors[x]+"_R")] = newUnits;
-    //        this->_varUnitsProcessed[QString(vectors[x]+"_T")] = newUnits;
-    //        this->_varUnitsProcessed[QString(vectors[x]+"_P")] = newUnits;
 
     //    }
 
