@@ -35,7 +35,7 @@ int main(int argc, char* argv[])
 
 
     std::cout << std::endl << "Testing File Load..." << std::endl;
-    enlil3DFile file(qPrintable(testFile),1);
+    enlil3DFile file(testFile,"AU", 149597870700.0);
 
     /**
      * Test Variable Counts
@@ -322,7 +322,25 @@ int main(int argc, char* argv[])
 
 
     /**
-      * Test HyperCube retreval
+      * Test list of scalars
+      */
+    QStringList ScalarList = file.getScalarList();
+    QStringList VectorList = file.getVectorList();
+
+    for(int x =0; x < ScalarList.count();x++)
+    {
+        std::cout << "Scalar: " << qPrintable(ScalarList[x]) << std::endl;
+    }
+
+    for(int x=0; x < VectorList.count();x++)
+    {
+        std::cout << "Vector: " << qPrintable(VectorList[x]) << std::endl;
+    }
+
+
+
+    /**
+      * Test scaling
       **/
 //    file.setExtents(4, 8, 1, 1, 0, 0);
     QVector<QVector< double > > gridSpaceExtents = file.getGridSpacing();
@@ -341,21 +359,21 @@ int main(int argc, char* argv[])
 
     }
 
-    QVector<QVector<double> > Bextent = file.asDouble("B1", "B2", "B3");
+    QVector<double> x1scaleTest = file.asDouble("X1");
 
     loop=0;
-    for(loop=0; loop < file.get3Dcount(); loop++)
+    for(loop=0; loop < x1scaleTest.count(); loop++)
     {
-        std::cout << "Value: " << Bextent[loop][0] << "," << Bextent[loop][1] << "," << Bextent[loop][2] << std::endl;
+        std::cout << "Value: " << x1scaleTest[loop] << std::endl;
     }
 
 
 
-    /**
-      *     TEST THE EVO FILES
-      */
+//    /**
+//      *     TEST THE EVO FILES
+//      */
 
-    enlilEvoFile evoFile(_EVOTESTFILE, 1);
+//    enlilEvoFile evoFile(_EVOTESTFILE, 1);
 
 
 }

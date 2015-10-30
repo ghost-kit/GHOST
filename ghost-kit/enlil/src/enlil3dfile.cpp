@@ -14,6 +14,9 @@
  */
 void enlil3DFile::__ResetFile()
 {
+    if(this->_convMap) delete this->_convMap;
+    this->_convMap = new enlilConversion;
+
     this->__initializeFiles();
 
     //process location
@@ -25,22 +28,23 @@ void enlil3DFile::__ResetFile()
     //process spherical vectors
     this->__processSphericalVectors();
 
-    //process scalars
-    this->__processScalars();
 }
 
-enlil3DFile::enlil3DFile(const char *FileName, double scaleFactor)
+enlil3DFile::enlil3DFile(QString FileName, const char *newUnits, double scaleFactor)
 {
     //setup the object
     this->setFileName(FileName);
-    this->_gridScaleFactor = scaleFactor;
     this->_convertData = false;
     this->_gridOutput = NULL;
-
-
+    this->_convMap = NULL;
+    this->_scaleFactor = NULL;
+    //set scale factor
+    this->setScale_factor(QString(newUnits), scaleFactor);
 
     //load the data from the file
     __ResetFile();
+
+
 }
 
 /**
@@ -48,8 +52,10 @@ enlil3DFile::enlil3DFile(const char *FileName, double scaleFactor)
  */
 enlil3DFile::~enlil3DFile()
 {
-    //FIXME: Need to manage all of the memory for the class
-
+    if(this->_convMap) delete this->_convMap;
+    if(this->_file) delete this->_file;
+    //TODO: delete all of the variables
+    //TODO: delete all of the attributes
 
 }
 
@@ -64,13 +70,10 @@ void enlil3DFile::__cleanAll()
     this->_TIME = 0;
     this->_name.clear();
     this->_enlil_version = 0;
-    this->_gridScaleFactor = 1;
     this->_gridOutput = NULL;
     this->_gridPositionsCT.clear();
     this->_gridPositionsSP.clear();
-
     this->_fileAttributeData.clear();
-    this->_convMap.clear();
 
 }
 
@@ -128,9 +131,6 @@ void enlil3DFile::__initializeFiles()
         exit(EXIT_FAILURE);
     }
 
-
-
-
     //get list of variables
     QStringList vars = this->__getVaribleList();
     QStringList atts = this->__getAttributeList();
@@ -148,17 +148,15 @@ void enlil3DFile::__initializeFiles()
         this->__loadVariable(vars[x]);
     }
 
-
-
 }
 
 /**
  * @brief enlil3DFile::setFileName
  * @param FileName
  */
-void enlil3DFile::setFileName(const char *FileName)
+void enlil3DFile::setFileName(QString FileName)
 {
-    this->_fileName = QString(FileName);
+    this->_fileName = FileName;
 }
 
 /**
@@ -286,7 +284,7 @@ QStringList enlil3DFile::getFileAttributeNames()
 bool enlil3DFile::hasUnits(const char *name)
 {
 
-    if(this->_varOutput[QString(name)]->Units() != "") return true;
+    if(this->_varOutput[QString(name)]->units() != "") return true;
     else return false;
 }
 
@@ -413,7 +411,7 @@ QString enlil3DFile::getVarUnits(const char *name)
 {
     if(this->_varOutput.contains(QString(name)))
     {
-        return this->_varOutput[QString(name)]->Units();
+        return this->_varOutput[QString(name)]->units();
     }
     else
     {
@@ -432,7 +430,7 @@ QString enlil3DFile::getVarLongName(const char *name)
 
     if(this->_varOutput.contains(QString(name)))
     {
-        return this->_varOutput[QString(name)]->LongName();
+        return this->_varOutput[QString(name)]->longName();
     }
     else
     {
@@ -523,7 +521,7 @@ double enlil3DFile::getMJD() const
 void enlil3DFile::__loadVariable(QString name)
 {
 
-    enlil3DVar* newVar = new enlil3DVar(this,name);
+    enlil3DVar* newVar = new enlil3DVar(this,name, this->_convMap, this->_scaleFactor);
     this->_varOutput[name] = newVar;
 
 }
@@ -666,15 +664,7 @@ void enlil3DFile::__processGridLocations()
                 {
                     QVector<double> rtp;
 
-                    if(this->_gridScaleFactor != 1)
-                    {
-                        rtp.push_back(x1[loopX]/this->_gridScaleFactor);
-                    }
-                    else
-                    {
-                        rtp.push_back(x1[loopX]);
-                    }
-
+                    rtp.push_back(x1[loopX]);
                     rtp.push_back(x2[loopY]);
                     rtp.push_back(x3[loopZ]);
 
@@ -709,6 +699,123 @@ void enlil3DFile::__processSphericalVectors()
     double divisor = 1;
     QString newUnits;
 
+    return;
+    //if we don't have position data, we cannot convert.
+    //if(!vectors.contains("X")) return;
+
+    //get the location data
+    //    QVector<double> R = this->_varOutput["X1"];
+    //    QVector<double> T = this->_varOutput["X2"];
+    //    QVector<double> P = this->_varOutput["X3"];
+
+    //process the remaining data
+    //    for(int x = 0; x < vectors.count(); x++)
+    //    {
+    //        //skip the location variable
+    //        if(vectors[x] == "X") continue;
+
+    //        //get the units for the FIRST part of the vector... so as not to get radians
+    //        QPair<QString, double> conversion = this->__getConvDivForVar(vectors[x]+"1");
+    //        divisor = conversion.second;
+    //        newUnits = conversion.first;
+
+    //        //get variables to process
+    //        QVector<double> DR = this->_variablesRaw[(QString(vectors[x] + "1").toAscii().data())];
+    //        QVector<double> DT = this->_variablesRaw[(QString(vectors[x] + "2").toAscii().data())];
+    //        QVector<double> DP = this->_variablesRaw[(QString(vectors[x] + "3").toAscii().data())];
+
+    //        QVector<double> DRc;
+    //        QVector<double> DTc;
+    //        QVector<double> DPc;
+
+    //        QVector<double> X;
+    //        QVector<double> Y;
+    //        QVector<double> Z;
+
+    //        double* rtp = new double[3];
+    //        double* rtpOrigin = new double[3];
+    //        double* xyz = NULL;
+
+    //process
+    //        for(int y=0; y < this->stepCount; y++)
+    //        {
+    //            //data origin
+    //            rtpOrigin[0] = R[y];
+    //            rtpOrigin[1] = T[y];
+    //            rtpOrigin[2] = P[y];
+
+    //            rtp[0] = DR[y];
+    //            rtp[1] = DT[y];
+    //            rtp[2] = DP[y];
+
+    //            //convert
+    //            xyz = this->_sphere2Cart(rtp, rtpOrigin);
+
+    //            DRc.push_back(DR[y]/divisor);
+    //            DTc.push_back(DT[y]/divisor);
+    //            DPc.push_back(DP[y]/divisor);
+
+    //            X.push_back(xyz[0]/divisor);
+    //            Y.push_back(xyz[1]/divisor);
+    //            Z.push_back(xyz[2]/divisor);
+
+    //            delete [] xyz;
+    //        }
+
+    //        delete [] rtp;
+    //        delete [] rtpOrigin;
+
+    //        //save processed data (XYZ)
+    //        this->_variablesProcessed[QString(vectors[x]+"_X")] = X;
+    //        this->_variablesProcessed[QString(vectors[x]+"_Y")] = Y;
+    //        this->_variablesProcessed[QString(vectors[x]+"_Z")] = Z;
+
+    //        this->_varUnitsProcessed[QString(vectors[x]+"_X")] = newUnits;
+    //        this->_varUnitsProcessed[QString(vectors[x]+"_Y")] = newUnits;
+    //        this->_varUnitsProcessed[QString(vectors[x]+"_Z")] = newUnits;
+
+
+    //        //save processed data (RTP)
+    //        this->_variablesProcessed[QString(vectors[x]+"_R")] = DRc;
+    //        this->_variablesProcessed[QString(vectors[x]+"_T")] = DTc;
+    //        this->_variablesProcessed[QString(vectors[x]+"_P")] = DPc;
+
+    //        this->_varUnitsProcessed[QString(vectors[x]+"_R")] = newUnits;
+    //        this->_varUnitsProcessed[QString(vectors[x]+"_T")] = newUnits;
+    //        this->_varUnitsProcessed[QString(vectors[x]+"_P")] = newUnits;
+
+    //    }
+
+}
+
+/**
+ * @brief enlil3DFile::__getScalarList
+ */
+QStringList enlil3DFile::getScalarList()
+{
+    QStringList vars = this->_varOutput.keys();
+    QStringList scalars;
+    QString var;
+
+    for(int x = 0; x < vars.size(); x++)
+    {
+        //look for vectors of the format ?1, ?2, ?3
+        var = vars[x];
+        if(!var.endsWith("1") && !var.endsWith("2") && !var.endsWith("3"))
+        {
+            scalars.push_back(var);
+        }
+    }
+    scalars.removeDuplicates();
+
+    return scalars;
+}
+
+/**
+ * @brief enlil3DFile::__getVectorList
+ */
+QStringList enlil3DFile::getVectorList()
+{
     QStringList vars = this->_varOutput.keys();
     QStringList vectors;
     QString var;
@@ -727,138 +834,12 @@ void enlil3DFile::__processSphericalVectors()
         }
     }
     vectors.removeDuplicates();
+    vectors.removeOne(QString("X"));
 
-    //if we don't have position data, we cannot convert.
-    if(!vectors.contains("X")) return;
-
-    //get the location data
-//    QVector<double> R = this->_varOutput["X1"];
-//    QVector<double> T = this->_varOutput["X2"];
-//    QVector<double> P = this->_varOutput["X3"];
-
-    //process the remaining data
-//    for(int x = 0; x < vectors.count(); x++)
-//    {
-//        //skip the location variable
-//        if(vectors[x] == "X") continue;
-
-//        //get the units for the FIRST part of the vector... so as not to get radians
-//        QPair<QString, double> conversion = this->__getConvDivForVar(vectors[x]+"1");
-//        divisor = conversion.second;
-//        newUnits = conversion.first;
-
-//        //get variables to process
-//        QVector<double> DR = this->_variablesRaw[(QString(vectors[x] + "1").toAscii().data())];
-//        QVector<double> DT = this->_variablesRaw[(QString(vectors[x] + "2").toAscii().data())];
-//        QVector<double> DP = this->_variablesRaw[(QString(vectors[x] + "3").toAscii().data())];
-
-//        QVector<double> DRc;
-//        QVector<double> DTc;
-//        QVector<double> DPc;
-
-//        QVector<double> X;
-//        QVector<double> Y;
-//        QVector<double> Z;
-
-//        double* rtp = new double[3];
-//        double* rtpOrigin = new double[3];
-//        double* xyz = NULL;
-
-        //process
-        //        for(int y=0; y < this->stepCount; y++)
-        //        {
-        //            //data origin
-        //            rtpOrigin[0] = R[y];
-        //            rtpOrigin[1] = T[y];
-        //            rtpOrigin[2] = P[y];
-
-        //            rtp[0] = DR[y];
-        //            rtp[1] = DT[y];
-        //            rtp[2] = DP[y];
-
-        //            //convert
-        //            xyz = this->_sphere2Cart(rtp, rtpOrigin);
-
-        //            DRc.push_back(DR[y]/divisor);
-        //            DTc.push_back(DT[y]/divisor);
-        //            DPc.push_back(DP[y]/divisor);
-
-        //            X.push_back(xyz[0]/divisor);
-        //            Y.push_back(xyz[1]/divisor);
-        //            Z.push_back(xyz[2]/divisor);
-
-        //            delete [] xyz;
-        //        }
-
-//        delete [] rtp;
-//        delete [] rtpOrigin;
-
-//        //save processed data (XYZ)
-//        this->_variablesProcessed[QString(vectors[x]+"_X")] = X;
-//        this->_variablesProcessed[QString(vectors[x]+"_Y")] = Y;
-//        this->_variablesProcessed[QString(vectors[x]+"_Z")] = Z;
-
-//        this->_varUnitsProcessed[QString(vectors[x]+"_X")] = newUnits;
-//        this->_varUnitsProcessed[QString(vectors[x]+"_Y")] = newUnits;
-//        this->_varUnitsProcessed[QString(vectors[x]+"_Z")] = newUnits;
-
-
-//        //save processed data (RTP)
-//        this->_variablesProcessed[QString(vectors[x]+"_R")] = DRc;
-//        this->_variablesProcessed[QString(vectors[x]+"_T")] = DTc;
-//        this->_variablesProcessed[QString(vectors[x]+"_P")] = DPc;
-
-//        this->_varUnitsProcessed[QString(vectors[x]+"_R")] = newUnits;
-//        this->_varUnitsProcessed[QString(vectors[x]+"_T")] = newUnits;
-//        this->_varUnitsProcessed[QString(vectors[x]+"_P")] = newUnits;
-
-//    }
-
+    return vectors;
 }
 
-/**
- * @brief enlil3DFile::__processScalars
- */
-void enlil3DFile::__processScalars()
-{
-//    double divisor=1;
-//    QString newUnits;
-//    QStringList vars = this->_varOutput.keys();
-//    QStringList scalars;
-//    QString var;
 
-//    //get list of scalars
-//    for(int x = 0; x < vars.size(); x++)
-//    {
-//        var = vars[x];
-
-//        //get the scalar name
-//        if(var.endsWith("1") || var.endsWith("2") || var.endsWith("3")) continue;
-
-//        scalars.push_back(var);
-//    }
-
-//    //convert as necessary
-//    for(int x = 0; x < scalars.count(); x++)
-//    {
-//        QVector<double> oldValues = this->_variablesRaw[(scalars[x].toAscii().data())];
-//        QVector<double> newValues;
-
-//        QPair<QString, double> conversion = this->__getConvDivForVar(scalars[x]);
-//        divisor = conversion.second;
-//        newUnits = conversion.first;
-
-//        for(int y = 0; y < oldValues.count(); y++)
-//        {
-//            newValues.push_back(oldValues[y]/divisor);
-//        }
-
-//        this->_variablesProcessed[scalars[x]] = newValues;
-//        this->_varUnitsProcessed[scalars[x]] = newUnits;
-//        this->_longNamesProcessed[scalars[x]] = this->_longNamesRaw[scalars[x]];
-//    }
-
-}
 
 /**
  * @brief enlil3DFile::__processTime
@@ -944,38 +925,10 @@ void enlil3DFile::__processTime()
  */
 void enlil3DFile::__addConversion(QString baseUnits, QString newUnits, double divisor)
 {
-    this->_convMap[baseUnits] = qMakePair(newUnits, divisor);
+    this->_convMap->operator [](baseUnits) = qMakePair(newUnits, divisor);
     this->__processSphericalVectors();
-    this->__processScalars();
 }
 
-/**
- * @brief enlil3DFile::__getConvDivForVar
- * @param var
- * @return
- */
-QPair<QString, double> enlil3DFile::__getConvDivForVar(QString var)
-{
-
-
-//    QString base;
-//    if(this->_varUnitsRaw.keys().contains(var))
-//    {
-//        base = this->_varUnitsRaw[var];
-//    }
-
-//    if(this->_convMap.keys().contains(base))
-//    {
-//        //if there is a conversion loaded, use it
-//        return _convMap[base];
-//    }
-//    else
-//    {
-//        //else use the original
-//        return qMakePair(base, 1.0);
-//    }
-
-}
 
 /**
  * @brief enlil3DFile::__gridSphere2Cart
@@ -1016,17 +969,30 @@ double *enlil3DFile::__sphere2Cart(const double rtp[], const double rtpOrigin[])
  */
 double enlil3DFile::getScale_factor() const
 {
-    return _gridScaleFactor;
+    if(!this->_scaleFactor->isEmpty())
+    {
+        QStringList keys = this->_scaleFactor->keys();
+        return this->_scaleFactor[0][keys[0]].second;
+    }
+    else
+    {
+        return 1.0;
+    }
 }
 
 /**
  * @brief enlil3DFile::setScale_factor
  * @param scale_factor
  */
-void enlil3DFile::setScale_factor(double scale_factor)
+void enlil3DFile::setScale_factor(QString units, double scale_factor)
 {
-    //FIXME: Must re-calculate after scale-factor is set.
-    _gridScaleFactor = scale_factor;
+    if(!this->_scaleFactor)
+    {
+        this->_scaleFactor = new enlilConversion();
+    }
+
+    this->_scaleFactor[0]["m"] = qMakePair(units, scale_factor);
+
 }
 
 /**

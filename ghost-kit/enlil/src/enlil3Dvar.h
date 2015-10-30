@@ -8,14 +8,10 @@
   *
   */
 
-//TODO: configure transforms for the variable
-//TODO: make sure transforms change the units tags
-//TODO: make sure we can have the STATE of the variable set (transforms, scaling,etc.)
 //TODO: make sure we check for errors everywhere as to avoid inadvertant crashes.
 //TODO: make sure all attributes are released after loaded (applies to NC_Att* returns)
 //TODO: Make sure we can read a hypercube of data properly.
 //TODO: Make sure we know how to handle variables that are a single data point.
-//TODO: Make sure we can get data "as_double", "as_float", "as_int", etc.
 
 #ifndef ENLILVAR_H
 #define ENLILVAR_H
@@ -25,12 +21,15 @@
 #include <QVariant>
 #include <QString>
 #include <QPair>
+#include <QStack>
 
 #include "enlilAtt.h"
 #include "enlil3dfile.h"
 
 
 typedef QPair<qint64,qint64> enlilExtent;
+typedef QMap<QString, QPair <QString, double> > enlilConversion;
+typedef QPair<QString, QPair<QString, double> > enlilConversionPair;
 
 class enlil3DFile;
 class enlilAtt;
@@ -43,16 +42,17 @@ class enlil3DVar
     friend class enlil3DFile;
 public:
 
-    enlil3DVar(enlil3DFile* parent, QString Name);
+    enlil3DVar(enlil3DFile* parent, QString Name, enlilConversion *conversionMap=NULL, enlilConversion *scaleFactor=NULL);
     ~enlil3DVar();
 
-    QString LongName() const;
-    void setLongName(const QString &LongName);
+    QString longName() const;
+    void setLongName(const QString &longName);
 
     bool cached() const;
     void setCached(bool cached);
 
-    QString Units();
+    QString units();
+    QString unitsBase();
 
     QVector<double> asDouble(int nblk=0);
     QVector<double> asDouble(QVector<qint64> extents, int nblk=0);
@@ -76,18 +76,29 @@ public:
 
     enlilExtent getExtent(const char* name);
 
+    enlilConversion *getConversionFactor() const;
+    void setConversionFactor(enlilConversion *value);
+    void setConversionFactor(const char* oldUnits, const char* newUnits, double divisor);
+
+    bool useConversions() const;
+    void setUseConversions(bool useConversions);
+
 private: //methods
     void _loadMetaData();
 
     QVector<QVariant> *_getData(enlilExtent N1, enlilExtent N2, enlilExtent N3, int nblk=0);
     QVector<QVariant> *_getVariantData(NcVar *var, int length, size_t counts[], long startLoc[]);
+    enlilConversionPair _unitsPair();
 
 private: //data
 
     enlil3DFile *__parent;
 
     qint64 __type;
-    QString __units;
+    QStack<enlilConversionPair> __unitStack;
+    QString __rawUnits;
+    QString __convUnits;
+    QString __scaledUnits;
     QString __varName;
     QString __varLongName;
     QMap<QString, enlilAtt*> __atts;
@@ -98,7 +109,10 @@ private: //data
     QMap<QString, enlilExtent > __wholeExtents;
     qint64 __recordCount;
 
-
+    enlilConversion *__conversionFactor;
+    enlilConversion *__scaleFactor;
+    double __conversionValue;
+    bool __useConversions;
 
 };
 

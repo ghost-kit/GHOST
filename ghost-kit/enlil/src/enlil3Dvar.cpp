@@ -18,7 +18,7 @@
  * @param type
  * @param Name
  */
-enlil3DVar::enlil3DVar(enlil3DFile* parent, QString Name)
+enlil3DVar::enlil3DVar(enlil3DFile* parent, QString Name, enlilConversion *conversionMap, enlilConversion *scaleFactor)
 {
     //record basic information (parent file object, variable name)
     this->__parent = parent;
@@ -27,9 +27,17 @@ enlil3DVar::enlil3DVar(enlil3DFile* parent, QString Name)
     //mark default conditions
     this->__cached = false;
     this->__data = NULL;
+    this->__scaleFactor = scaleFactor;
 
     //load meta-data into variable
     this->_loadMetaData();
+
+    //clear conversion factor
+    this->__useConversions = false;
+    this->__conversionFactor = conversionMap;
+    this->__conversionValue = 1;
+
+
 }
 
 /**
@@ -59,7 +67,7 @@ enlil3DVar::~enlil3DVar()
  * @brief enlilVar::varLongName
  * @return
  */
-QString enlil3DVar::LongName() const
+QString enlil3DVar::longName() const
 {
     return __varLongName;
 }
@@ -79,7 +87,8 @@ void enlil3DVar::setLongName(const QString &varLongName)
  */
 bool enlil3DVar::cached() const
 {
-    return __cached;
+    std::cerr << "ERROR: Cache System is not yet implemented" << std::endl;
+    return false;
 }
 
 /**
@@ -95,9 +104,52 @@ void enlil3DVar::setCached(bool cache)
  * @brief enlil3DVar::Units
  * @return
  */
-QString enlil3DVar::Units()
+QString enlil3DVar::units()
 {
-    return this->__units;
+    if(!this->__unitStack.isEmpty())
+    {
+        return this->__unitStack.top().second.first;
+    }
+    else
+    {
+        return QString();
+    }
+}
+
+/**
+ * @brief enlil3DVar::UnitsBase
+ * @return
+ */
+QString enlil3DVar::unitsBase()
+{
+    if(!this->__unitStack.isEmpty())
+    {
+        return this->__unitStack.back().second.first;
+    }
+    else
+    {
+        return QString();
+    }
+}
+
+/**
+ * @brief enlil3DVar::UnitPair
+ * @return
+ */
+enlilConversionPair enlil3DVar::_unitsPair()
+{
+    if(!this->__unitStack.isEmpty())
+    {
+        return this->__unitStack.top();
+    }
+    else
+    {
+        enlilConversionPair nullPair;
+        nullPair.first = "NULL";
+        nullPair.second.first = "NULL";
+        nullPair.second.second = 1.0;
+        return nullPair;
+    }
 }
 
 /**
@@ -124,15 +176,15 @@ QVector<double> enlil3DVar::asDouble(int nblk)
  */
 QVector<double> enlil3DVar::asDouble(QVector<qint64> extents, int nblk)
 {
-enlilExtent X,Y,Z;
-X.first = extents[0];
-X.second = extents[1];
-Y.first = extents[2];
-Y.second = extents[3];
-Z.first = extents[4];
-Z.second = extents[5];
+    enlilExtent X,Y,Z;
+    X.first = extents[0];
+    X.second = extents[1];
+    Y.first = extents[2];
+    Y.second = extents[3];
+    Z.first = extents[4];
+    Z.second = extents[5];
 
-return this->asDouble(X,Y,Z,nblk);
+    return this->asDouble(X,Y,Z,nblk);
 }
 
 /**
@@ -143,15 +195,15 @@ return this->asDouble(X,Y,Z,nblk);
  */
 QVector<double> enlil3DVar::asDouble(const int extents[], int nblk)
 {
-enlilExtent X, Y, Z;
-X.first = extents[0];
-X.second = extents[1];
-Y.first = extents[2];
-Y.second = extents[3];
-Z.first = extents[4];
-Z.second = extents[5];
+    enlilExtent X, Y, Z;
+    X.first = extents[0];
+    X.second = extents[1];
+    Y.first = extents[2];
+    Y.second = extents[3];
+    Z.first = extents[4];
+    Z.second = extents[5];
 
-return this->asDouble(X,Y,Z,nblk);
+    return this->asDouble(X,Y,Z,nblk);
 
 }
 
@@ -400,6 +452,7 @@ QVector<qint64> enlil3DVar::asInt64(enlilExtent X, enlilExtent Y, enlilExtent Z,
 
 /**
  * @brief enlil3DVar::asInt64
+ * @param extents
  * @param nblk
  * @return
  */
@@ -411,17 +464,57 @@ QVector<qint64> enlil3DVar::asInt64(QVector<enlilExtent> extents, int nblk)
 
 
 /**
- * @brief enlil3DVar::getData
- * @param X
- * @param Y
- * @param Z
- * @param nblk
+ * @brief enlil3DVar::_getVariantData
+ * @param var
+ * @param length
+ * @param counts
+ * @param startLoc
  * @return
  */
 QVector<QVariant> *enlil3DVar::_getVariantData(NcVar* var, int length, size_t counts[], long startLoc[])
 {
     QVector<QVariant> * data = new QVector<QVariant>;
 
+    //set conversions
+    if(this->__scaleFactor)
+    {
+        if(this->__scaleFactor->contains(this->units()))
+        {
+            //set conversion
+            this->__conversionValue *= this->__scaleFactor[0][this->units()].second;
+
+            //configure new units definition
+            enlilConversionPair newConvPair;
+            newConvPair.first = this->units();
+            newConvPair.second.first = this->__scaleFactor[0][this->units()].first;
+            newConvPair.second.second = this->__scaleFactor[0][this->units()].second;
+
+            //set new units
+            this->__unitStack.push(newConvPair);
+
+            std::cout << "Units: " << qPrintable(this->units()) << " | Conversion: " << this->__conversionValue << std::endl;
+
+        }
+    }
+    if(this->__conversionFactor && this->__useConversions)
+    {
+        if(this->__conversionFactor->contains(this->units()))
+        {
+            //set the conversion
+            this->__conversionValue *= this->__conversionFactor[0][this->units()].second;
+
+            //configure new units definition
+            enlilConversionPair newConvPair;
+            newConvPair.first = this->units();
+            newConvPair.second.first = this->__conversionFactor[0][this->units()].first;
+            newConvPair.second.second = this->__conversionFactor[0][this->units()].second;
+
+            //set new units
+            this->__unitStack.push(newConvPair);
+        }
+    }
+
+    //set read size
     long readSize = 1;
 
     for(int loop = 0; loop < length; loop++)
@@ -434,6 +527,7 @@ QVector<QVariant> *enlil3DVar::_getVariantData(NcVar* var, int length, size_t co
     {
     case ncNoType:
     {
+        std::cerr << "ERROR: Not a valid type." << std::endl;
         break;
     }
     case ncByte:
@@ -445,7 +539,7 @@ QVector<QVariant> *enlil3DVar::_getVariantData(NcVar* var, int length, size_t co
         for(int loop = 0; loop < readSize; loop++)
         {
             //put the data in the data array
-            data->push_back(QVariant(newData[loop]));
+            data->push_back(QVariant(newData[loop]/this->__conversionValue));
         }
 
         //clean up temp memory
@@ -462,7 +556,7 @@ QVector<QVariant> *enlil3DVar::_getVariantData(NcVar* var, int length, size_t co
         for(int loop = 0; loop < readSize; loop++)
         {
             //put the data in the data array
-            data->push_back(QVariant(newData[loop]));
+            data->push_back(QVariant(newData[loop]/this->__conversionValue));
         }
 
         //clean up temp memory
@@ -478,7 +572,7 @@ QVector<QVariant> *enlil3DVar::_getVariantData(NcVar* var, int length, size_t co
         for(int loop = 0; loop < readSize; loop++)
         {
             //put the data in the data array
-            data->push_back(QVariant(newData[loop]));
+            data->push_back(QVariant(newData[loop]/this->__conversionValue));
         }
 
         //clean up temp memory
@@ -494,7 +588,7 @@ QVector<QVariant> *enlil3DVar::_getVariantData(NcVar* var, int length, size_t co
         for(int loop = 0; loop < readSize; loop++)
         {
             //put the data in the data array
-            data->push_back(QVariant(newData[loop]));
+            data->push_back(QVariant(newData[loop]/this->__conversionValue));
         }
 
         //clean up temp memory
@@ -510,7 +604,7 @@ QVector<QVariant> *enlil3DVar::_getVariantData(NcVar* var, int length, size_t co
         for(int loop = 0; loop < readSize; loop++)
         {
             //put the data in the data array
-            data->push_back(QVariant(newData[loop]));
+            data->push_back(QVariant(newData[loop]/this->__conversionValue));
         }
 
         //clean up temp memory
@@ -526,7 +620,7 @@ QVector<QVariant> *enlil3DVar::_getVariantData(NcVar* var, int length, size_t co
         for(int loop = 0; loop < readSize; loop++)
         {
             //put the data in the data array
-            data->push_back(QVariant(newData[loop]));
+            data->push_back(QVariant(newData[loop]/this->__conversionValue));
         }
 
         //clean up temp memory
@@ -535,6 +629,7 @@ QVector<QVariant> *enlil3DVar::_getVariantData(NcVar* var, int length, size_t co
     }
     default:
     {
+        std::cerr << "ERROR: Not a valid type." << std::endl;
         break;
     }
 
@@ -543,6 +638,52 @@ QVector<QVariant> *enlil3DVar::_getVariantData(NcVar* var, int length, size_t co
     return data;
 }
 
+/**
+ * @brief enlil3DVar::getUseConversions
+ * @return
+ */
+bool enlil3DVar::useConversions() const
+{
+    return this->__useConversions;
+}
+
+/**
+ * @brief enlil3DVar::setUseConversions
+ * @param useConversions
+ */
+void enlil3DVar::setUseConversions(bool useConversions)
+{
+    this->__useConversions = useConversions;
+}
+
+/**
+ * @brief enlil3DVar::getConversionFactor
+ * @return
+ */
+enlilConversion *enlil3DVar::getConversionFactor() const
+{
+    return this->__conversionFactor;
+}
+
+/**
+ * @brief enlil3DVar::setConversionFactor
+ * @param value
+ */
+void enlil3DVar::setConversionFactor(enlilConversion *value)
+{
+
+    this->__conversionFactor = value;
+}
+
+
+/**
+ * @brief enlil3DVar::_getData
+ * @param N1
+ * @param N2
+ * @param N3
+ * @param nblk
+ * @return
+ */
 QVector<QVariant> *enlil3DVar::_getData(enlilExtent N1, enlilExtent N2, enlilExtent N3, int nblk)
 {
 
@@ -739,7 +880,6 @@ enlilExtent enlil3DVar::getExtent(const char *name)
 }
 
 
-
 /**
  * @brief enlil3DVar::_loadMetaData
  */
@@ -849,7 +989,13 @@ void enlil3DVar::_loadMetaData()
     if(this->__atts.contains(QString("units")))
     {
         //add units
-        this->__units = this->__atts[QString("units")]->getValue().toString();
+        enlilConversionPair unitPair;
+        unitPair.first = QString("");
+        unitPair.second.first = this->__atts[QString("units")]->getValue().toString();
+        unitPair.second.second = 1.0;
+
+        //this is the base units.
+        this->__unitStack.push(unitPair);
     }
 
 }

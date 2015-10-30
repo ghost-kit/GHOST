@@ -14,6 +14,7 @@
 #include "enlil3Dvar.h"
 
 typedef QPair<qint64,qint64> enlilExtent;
+typedef QMap<QString, QPair <QString, double> > enlilConversion;
 
 
 #define ENLIL_GRIDSPACING_CT 0
@@ -26,18 +27,21 @@ class enlil3DFile
     friend class enlil3DVar;
 public:
     // Class Level Functions
-    enlil3DFile(const char* FileName, double scaleFactor);
+    enlil3DFile(QString FileName, const char *newUnits, double scaleFactor);
     ~enlil3DFile();
 
     void setName(const char* _name);
 
     //File Level Routines
-    void setFileName(const char *FileName);
+    void setFileName(QString FileName);
     QString getFileName();
     QString getName();
     double getMJD() const;
     double getScale_factor() const;
-    void setScale_factor(double scale_factor);
+    void setScale_factor(QString units, double scale_factor);
+
+    QStringList getScalarList();
+    QStringList getVectorList();
 
     //Grid Spacing
     QVector<QVector<double> > getGridSpacing();
@@ -98,7 +102,6 @@ protected:  //DATA
     QVector<QVector<double> > _gridPositionsCT;  //Cartesian
     QVector<QVector<double> > _gridPositionsSP;  //Spherical
     QString _gridUnits;                 //maintain the units for grid scaling
-    double _gridScaleFactor;            // how much to scale the grid
 
     //data variables
     QMap<QString, enlil3DVar* > _varOutput;
@@ -107,7 +110,8 @@ protected:  //DATA
     QMap<QString, enlilAtt* > _fileAttributeData;
 
     // Converstion Variables
-    QMap<QString, QPair<QString, double> > _convMap;
+    enlilConversion *_convMap;
+    enlilConversion *_scaleFactor;
 
     /**
      * @brief runDataString
@@ -137,17 +141,13 @@ protected:  //METHODS
     void __cleanAll();
     void __processGridLocations();
     void __processSphericalVectors();
-    void __processScalars();
     void __processTime();
     void __setUseExtents(int extents[]);
     QVector<int> __getExtentDimensions(int extent[6]);
 
-
-
     //data conversions
     //convMap holds conversions: form convMap[rawUnits][newUnits]=divisor
     void __addConversion(QString baseUnits, QString newUnits, double divisor);
-    QPair<QString, double> __getConvDivForVar(QString var);
 
     //coordinate transforms (the basic ones)
     //these vectors MUST be 3 tuples

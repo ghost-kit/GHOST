@@ -611,7 +611,7 @@ void vtkEnlilReader::AddFileName(const char *fname)
     //TODO: when adding file, must open briefly, get the time stamp, and close.
     double timestamp=0;
 
-    enlil3DFile* file = new enlil3DFile(fname, 1);
+    enlil3DFile* file = new enlil3DFile(fname, "AU", 1.5e11);
     timestamp = file->getMJD();
 
     this->add3DFile(file,timestamp);
