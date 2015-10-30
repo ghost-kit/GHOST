@@ -33,6 +33,7 @@ enlil3DFile::enlil3DFile(QString FileName, const char *newUnits, double scaleFac
     //setup the object
     this->setFileName(FileName);
     this->_convertData = false;
+    this->_useSubExtents = false;
     this->_gridOutput = NULL;
     this->_convMap = NULL;
     this->_scaleFactor = NULL;
@@ -93,6 +94,22 @@ void enlil3DFile::__cleanAll()
 QMap<QString, enlilExtent> enlil3DFile::getWholeExtents()
 {
     return this->_wholeExtents;
+}
+
+/**
+* @brief enlil3DFile::getCurrentExtents
+* @return
+*/
+QMap<QString, enlilExtent> enlil3DFile::getCurrentExtents()
+{
+    if(this->_useSubExtents)
+    {
+        return this->_currentExtents;
+    }
+    else
+    {
+        return this->_wholeExtents;
+    }
 }
 
 
@@ -321,9 +338,22 @@ QVector<float> enlil3DFile::asFloat(const char *name, int block)
 {
     QVector<float> returnValue;
     enlil3DVar* currentVar = this->_varOutput[QString(name)];
+    if(currentVar)
+    {
+        if(this->_useSubExtents)
+        {
+            QVector<enlilExtent> subExtents;
+            subExtents.push_back(this->_currentExtents["n1"]);
+            subExtents.push_back(this->_currentExtents["n2"]);
+            subExtents.push_back(this->_currentExtents["n3"]);
 
-    if(currentVar) returnValue = currentVar->asFloat();
-
+            returnValue = currentVar->asFloat(subExtents, block);
+        }
+        else
+        {
+            returnValue = currentVar->asFloat(block);
+        }
+    }
     return returnValue;
 }
 
@@ -336,7 +366,57 @@ QVector<float> enlil3DFile::asFloat(const char *name, int block)
  */
 QVector<QVector<float> > enlil3DFile::asFloat(const char *X, const char *Y, const char *Z, int block, bool cart)
 {
+    QVector<QVector<float> > XYZ;
+    QVector<float> xyz;
 
+    if(!this->contains(X) && !this->contains(Y) && !this->contains(Z))
+    {
+        return QVector<QVector<float> > ();
+    }
+
+    QVector<float> X1 = this->asFloat(X, block);
+    QVector<float> Y1 = this->asFloat(Y, block);
+    QVector<float> Z1 = this->asFloat(Z, block);
+
+    int X1count = X1.count();
+    int Y1count = Y1.count();
+    int Z1count = Z1.count();
+
+    if(X1count != Y1count && X1count != Z1count)
+    {
+        return QVector<QVector<float> > ();
+    }
+
+    int count = X1.count();
+    int loop = 0;
+    for(loop = 0; loop < count; loop++)
+    {
+        QVector<float> entry;
+        if(cart)
+        {
+            QVector<float> rtp;
+
+            rtp.push_back(X1[loop]);
+            rtp.push_back(Y1[loop]);
+            rtp.push_back(Z1[loop]);
+
+            xyz = this->__sphere2Cart(rtp);
+
+            entry.push_back(xyz[0]);
+            entry.push_back(xyz[1]);
+            entry.push_back(xyz[2]);
+
+        }
+        else
+        {
+            entry.push_back(X1[loop]);
+            entry.push_back(Y1[loop]);
+            entry.push_back(Z1[loop]);
+        }
+        XYZ.push_back(entry);
+    }
+
+    return XYZ;
 }
 
 /**
@@ -349,7 +429,23 @@ QVector<double> enlil3DFile::asDouble(const char *name, int block)
     QVector<double> returnValue;
     enlil3DVar* currentVar = this->_varOutput[QString(name)];
 
-    if(currentVar) returnValue = currentVar->asDouble();
+    if(currentVar)
+    {
+        if(this->_useSubExtents)
+        {
+            QVector<enlilExtent> subExtents;
+            subExtents.push_back(this->_currentExtents["n1"]);
+            subExtents.push_back(this->_currentExtents["n2"]);
+            subExtents.push_back(this->_currentExtents["n3"]);
+
+            returnValue = currentVar->asDouble(subExtents, block);
+        }
+        else
+        {
+            returnValue = currentVar->asDouble(block);
+        }
+    }
+
 
     return returnValue;
 
@@ -372,9 +468,9 @@ QVector<QVector<double> > enlil3DFile::asDouble(const char *X, const char *Y, co
         return QVector<QVector<double> > ();
     }
 
-    QVector<double> X1 = this->asDouble(X);
-    QVector<double> Y1 = this->asDouble(Y);
-    QVector<double> Z1 = this->asDouble(Z);
+    QVector<double> X1 = this->asDouble(X, block);
+    QVector<double> Y1 = this->asDouble(Y, block);
+    QVector<double> Z1 = this->asDouble(Z, block);
 
     int X1count = X1.count();
     int Y1count = Y1.count();
@@ -404,7 +500,6 @@ QVector<QVector<double> > enlil3DFile::asDouble(const char *X, const char *Y, co
             entry.push_back(xyz[1]);
             entry.push_back(xyz[2]);
 
-
         }
         else
         {
@@ -428,8 +523,22 @@ QVector<qint64> enlil3DFile::asInt64(const char *name, int block)
     QVector<qint64> returnValue;
     enlil3DVar* currentVar = this->_varOutput[QString(name)];
 
-    if(currentVar) returnValue = currentVar->asInt64();
+    if(currentVar)
+    {
+        if(this->_useSubExtents)
+        {
+            QVector<enlilExtent> subExtents;
+            subExtents.push_back(this->_currentExtents["n1"]);
+            subExtents.push_back(this->_currentExtents["n2"]);
+            subExtents.push_back(this->_currentExtents["n3"]);
 
+            returnValue = currentVar->asInt64(subExtents, block);
+        }
+        else
+        {
+            returnValue = currentVar->asInt64(block);
+        }
+    }
     return returnValue;
 }
 
@@ -442,7 +551,57 @@ QVector<qint64> enlil3DFile::asInt64(const char *name, int block)
  */
 QVector<QVector<qint64> > enlil3DFile::asInt64(const char *X, const char *Y, const char *Z, int block, bool cart)
 {
+    QVector<QVector<qint64> > XYZ;
+    QVector<qint64> xyz;
 
+    if(!this->contains(X) && !this->contains(Y) && !this->contains(Z))
+    {
+        return QVector<QVector<qint64> > ();
+    }
+
+    QVector<qint64> X1 = this->asInt64(X, block);
+    QVector<qint64> Y1 = this->asInt64(Y, block);
+    QVector<qint64> Z1 = this->asInt64(Z, block);
+
+    int X1count = X1.count();
+    int Y1count = Y1.count();
+    int Z1count = Z1.count();
+
+    if(X1count != Y1count && X1count != Z1count)
+    {
+        return QVector<QVector<qint64> > ();
+    }
+
+    int count = X1.count();
+    int loop = 0;
+    for(loop = 0; loop < count; loop++)
+    {
+        QVector<qint64> entry;
+        if(cart)
+        {
+            QVector<qint64> rtp;
+
+            rtp.push_back(X1[loop]);
+            rtp.push_back(Y1[loop]);
+            rtp.push_back(Z1[loop]);
+
+            xyz = this->__sphere2Cart(rtp);
+
+            entry.push_back(xyz[0]);
+            entry.push_back(xyz[1]);
+            entry.push_back(xyz[2]);
+
+        }
+        else
+        {
+            entry.push_back(X1[loop]);
+            entry.push_back(Y1[loop]);
+            entry.push_back(Z1[loop]);
+        }
+        XYZ.push_back(entry);
+    }
+
+    return XYZ;
 }
 
 /**
@@ -542,6 +701,7 @@ int enlil3DFile::getNumberOfFileAttributes()
 void enlil3DFile::selectOutput(int version)
 {
 
+    //TODO: Determine if this is needed
     std::cerr << __FUNCTION__ << " is not yet implemented" << std::endl;
 
 }
@@ -665,6 +825,7 @@ QStringList enlil3DFile::__getAttributeList()
 /**
  * @brief enlil3DFile::__processLocation
  */
+//TODO: Must adjust these to the current extents
 void enlil3DFile::__processGridLocations()
 {
     int loopX=0, loopY=0, loopZ=0;
@@ -674,6 +835,12 @@ void enlil3DFile::__processGridLocations()
 
     if(vars.contains("X1") && vars.contains("X2") && vars.contains("X3"))
     {
+
+        this->_wholeExtents[QString("n1")] = this->_varOutput["X1"]->getExtent("n1");
+        this->_wholeExtents[QString("n2")] = this->_varOutput["X2"]->getExtent("n2");
+        this->_wholeExtents[QString("n3")] = this->_varOutput["X3"]->getExtent("n3");
+        this->_wholeExtents[QString("nblk")] = this->_varOutput["X1"]->getExtent("nblk");
+
         QVector<double> x1 = this->_varOutput["X1"]->asDouble();
         QVector<double> x2 = this->_varOutput["X2"]->asDouble();
         QVector<double> x3 = this->_varOutput["X3"]->asDouble();
@@ -686,12 +853,6 @@ void enlil3DFile::__processGridLocations()
         int xlen = this->getDims("n1");
         int ylen = this->getDims("n2");
         int zlen = this->getDims("n3");
-
-        this->_wholeExtents[QString("n1")] = this->_varOutput["X1"]->getExtent("n1");
-        this->_wholeExtents[QString("n2")] = this->_varOutput["X2"]->getExtent("n2");
-        this->_wholeExtents[QString("n3")] = this->_varOutput["X3"]->getExtent("n3");
-        this->_wholeExtents[QString("nblk")] = this->_varOutput["X1"]->getExtent("nblk");
-
 
 
         /**
@@ -890,7 +1051,37 @@ QVector<double> enlil3DFile::__sphere2Cart(const QVector<double> rtp)
     return xyz;
 }
 
+/**
+ * @brief enlil3DFile::__sphere2Cart
+ * @param rtp
+ * @return
+ */
+QVector<float> enlil3DFile::__sphere2Cart(const QVector<float> rtp)
+{
+    //calculate
+    QVector<float> xyz;
+    xyz.push_back(rtp[0] * sin(rtp[1]) * cos(rtp[2]));
+    xyz.push_back(rtp[0] * sin(rtp[1]) * sin(rtp[2]));
+    xyz.push_back(rtp[0] * cos(rtp[1]));
 
+    return xyz;
+}
+
+/**
+ * @brief enlil3DFile::__sphere2Cart
+ * @param rtp
+ * @return
+ */
+QVector<qint64> enlil3DFile::__sphere2Cart(const QVector<qint64> rtp)
+{
+    //calculate
+    QVector<qint64> xyz;
+    xyz.push_back(rtp[0] * sin(rtp[1]) * cos(rtp[2]));
+    xyz.push_back(rtp[0] * sin(rtp[1]) * sin(rtp[2]));
+    xyz.push_back(rtp[0] * cos(rtp[1]));
+
+    return xyz;
+}
 
 /**
  * @brief enlil3DFile::getScale_factor
@@ -924,10 +1115,38 @@ void enlil3DFile::setScale_factor(QString units, double scale_factor)
 
 }
 
+/**
+ * @brief enlil3DFile::contains
+ * @param var
+ * @return
+ */
 bool enlil3DFile::contains(const char *var)
 {
     if(this->_varOutput.contains(QString(var))) return true;
     else return false;
+}
+
+/**
+ * @brief enlil3DFile::setUseSubExtents
+ * @param truth
+ */
+void enlil3DFile::setUseSubExtents(bool truth)
+{
+    this->_useSubExtents = truth;
+}
+
+/**
+ * @brief enlil3DFile::setSubExtents
+ * @param subExtents
+ */
+void enlil3DFile::setSubExtents(int subExtents[])
+{
+    this->_currentExtents["n1"] = qMakePair(qint64(subExtents[0]), qint64(subExtents[1]));
+    this->_currentExtents["n2"] = qMakePair(qint64(subExtents[2]), qint64(subExtents[3]));
+    this->_currentExtents["n3"] = qMakePair(qint64(subExtents[4]), qint64(subExtents[5]));
+
+    this->_useSubExtents = true;
+    this->__processGridLocations();
 }
 
 /**

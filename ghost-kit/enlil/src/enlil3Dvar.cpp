@@ -543,7 +543,7 @@ QVector<QVariant> *enlil3DVar::_getVariantData(NcVar* var, int length, size_t co
         }
 
         //clean up temp memory
-        delete newData;
+        delete [] newData;
 
         break;
     }
@@ -560,7 +560,7 @@ QVector<QVariant> *enlil3DVar::_getVariantData(NcVar* var, int length, size_t co
         }
 
         //clean up temp memory
-        delete newData;
+        delete [] newData;
         break;
     }
     case ncShort:
@@ -576,7 +576,7 @@ QVector<QVariant> *enlil3DVar::_getVariantData(NcVar* var, int length, size_t co
         }
 
         //clean up temp memory
-        delete newData;
+        delete [] newData;
         break;
     }
     case ncInt:
@@ -592,7 +592,7 @@ QVector<QVariant> *enlil3DVar::_getVariantData(NcVar* var, int length, size_t co
         }
 
         //clean up temp memory
-        delete newData;
+        delete [] newData;
         break;
     }
     case ncFloat:
@@ -608,7 +608,7 @@ QVector<QVariant> *enlil3DVar::_getVariantData(NcVar* var, int length, size_t co
         }
 
         //clean up temp memory
-        delete newData;
+        delete [] newData;
         break;
     }
     case ncDouble:
@@ -624,7 +624,7 @@ QVector<QVariant> *enlil3DVar::_getVariantData(NcVar* var, int length, size_t co
         }
 
         //clean up temp memory
-        delete newData;
+        delete [] newData;
         break;
     }
     default:

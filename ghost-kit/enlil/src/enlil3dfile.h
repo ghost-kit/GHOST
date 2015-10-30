@@ -46,6 +46,9 @@ public:
     void setScale_factor(QString units, double scale_factor);
     bool contains(const char* var);
 
+    void setUseSubExtents(bool truth);
+    void setSubExtents(int subExtents[6]);
+
     QStringList getScalarList();
     QStringList getVectorList();
 
@@ -69,6 +72,7 @@ public:
     QVector<QVector<qint64> > asInt64(const char* X, const char* Y, const char* Z, int block=0, bool cart=true);
 
     QMap<QString, enlilExtent> getWholeExtents();
+    QMap<QString, enlilExtent> getCurrentExtents();
     qint64 getNumberOfVars();
     qint64 getNumberOfBlocks(const char* name);
 
@@ -100,8 +104,10 @@ protected:  //DATA
     QMap<QString, qint64> _dims;
     double _enlil_version;
     QMap<QString, enlilExtent> _wholeExtents;
+    QMap<QString, enlilExtent> _currentExtents;
 
     bool _convertData;    //Flag to determine if we convert the raw data
+    bool _useSubExtents;
 
     //grid Data
     QVector<QVector<double> > *_gridOutput;      //Current Output
@@ -159,12 +165,14 @@ protected:  //METHODS
     //it is the responsibility of the calling function to
     //   free the memory associated with these conversions
     QVector<double> __sphere2Cart(const QVector<double> rtp);
-    QVector<double> __sphere2Cart(const double rtp[], const double rtpOrigin[]);
+    QVector<float> __sphere2Cart(const QVector<float> rtp);
+    QVector<qint64> __sphere2Cart(const QVector<qint64> rtp);
 
     //file manipulations
     double __getMax(QVector<double> vector);
 
     void __ResetFile();
+
 };
 
 #endif // ENLIL3DFILE_H

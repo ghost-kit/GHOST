@@ -390,6 +390,23 @@ int main(int argc, char* argv[])
         std::cout << "Velocity Value: " << xyzValues[x][0] << "," << xyzValues[x][1] << "," << xyzValues[x][2] << " " << qPrintable(file.getVarUnits("V1")) << std::endl;
     }
 
+
+    /**
+      * Test the Subextent Read
+      */
+    int extent[]={5,10,3,6,2,9};
+    file.setSubExtents(extent);
+
+    QVector<QVector<float> > testFloatExtent = file.asFloat("B1", "B2", "B3",1,true);
+
+    for(int x =0; x < testFloatExtent.count(); x++)
+    {
+        std::cout << "B Value: " << testFloatExtent[x][0] << "," << testFloatExtent[x][1] << "," << testFloatExtent[x][2] << " " << qPrintable(file.getVarUnits("B1")) << std::endl;
+    }
+
+
+
+
     //    /**
     //      *     TEST THE EVO FILES
     //      */
