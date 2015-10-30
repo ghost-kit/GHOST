@@ -52,8 +52,18 @@ enlil3DFile::~enlil3DFile()
 {
     if(this->_convMap) delete this->_convMap;
     if(this->_file) delete this->_file;
-    //TODO: delete all of the variables
-    //TODO: delete all of the attributes
+
+    QStringList VarKeys = this->_varOutput.keys();
+    for(int x=0; x < VarKeys.count(); x++)
+    {
+        delete this->_varOutput[VarKeys[x]];
+    }
+
+    QStringList AttKeys = this->_fileAttributeData.keys();
+    for(int x =0; x < AttKeys.count(); x++)
+    {
+        delete this->_fileAttributeData[AttKeys[x]];
+    }
 
 }
 
@@ -220,9 +230,14 @@ int enlil3DFile::get3Dcount()
  */
 QString enlil3DFile::getGridUnits()
 {
-    //TODO: Fix Reader to handle grid unit changes.
-    QString Units;
-    return Units;
+    if(this->_varOutput.contains("X1"))
+    {
+        return this->_varOutput["X1"]->units();
+    }
+    else
+    {
+        return QString();
+    }
 }
 
 /**
@@ -352,11 +367,23 @@ QVector<QVector<double> > enlil3DFile::asDouble(const char *X, const char *Y, co
     QVector<QVector<double> > XYZ;
     QVector<double> xyz;
 
-    //TODO: Validate Input here. Include size of arrays.
+    if(!this->contains(X) && !this->contains(Y) && !this->contains(Z))
+    {
+        return QVector<QVector<double> > ();
+    }
 
     QVector<double> X1 = this->asDouble(X);
     QVector<double> Y1 = this->asDouble(Y);
     QVector<double> Z1 = this->asDouble(Z);
+
+    int X1count = X1.count();
+    int Y1count = Y1.count();
+    int Z1count = Z1.count();
+
+    if(X1count != Y1count && X1count != Z1count)
+    {
+        return QVector<QVector<double> > ();
+    }
 
     int count = X1.count();
     int loop = 0;
@@ -801,7 +828,6 @@ void enlil3DFile::__processTime()
     //Get the reference date
     double refmjd = this->getFileAttribute(this->_runDataString.toAscii().data())->getValue().toDouble(0);
 
-    //TODO: Get time ... this is a variable read, so I need to figure out how to dynamically do this...
     QVector<double> timeVec = this->_varOutput[QString("TIME")]->asDouble();
 
     double timeMax = this->__getMax(timeVec);
@@ -898,15 +924,18 @@ void enlil3DFile::setScale_factor(QString units, double scale_factor)
 
 }
 
+bool enlil3DFile::contains(const char *var)
+{
+    if(this->_varOutput.contains(QString(var))) return true;
+    else return false;
+}
+
 /**
  * @brief enlil3DFile::getGridSpacing
  * @return
  */
 QVector<QVector< double > > enlil3DFile::getGridSpacing()
 {
-    //FIXME: Get a copy of gridOutput, not the original!
-    //TODO: Make the _gridOutput data structure out of qvectors for safety?
-
     if(!this->_gridOutput)
     {
         std::cerr << "ERROR: Grid Output Not Defined... " <<  __FUNCTION__ << " at line " << __LINE__ << std::endl;

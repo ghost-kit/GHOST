@@ -44,6 +44,7 @@ public:
     double getMJD() const;
     double getScale_factor() const;
     void setScale_factor(QString units, double scale_factor);
+    bool contains(const char* var);
 
     QStringList getScalarList();
     QStringList getVectorList();

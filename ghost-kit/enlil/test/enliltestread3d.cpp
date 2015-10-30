@@ -385,6 +385,11 @@ int main(int argc, char* argv[])
     }
     std::cout << "Cartesian conversion appears to be correct within " << epsilon << " of the spherical equivilant." << std::endl;
 
+    for(int x =0; x < 10; x++)
+    {
+        std::cout << "Velocity Value: " << xyzValues[x][0] << "," << xyzValues[x][1] << "," << xyzValues[x][2] << " " << qPrintable(file.getVarUnits("V1")) << std::endl;
+    }
+
     //    /**
     //      *     TEST THE EVO FILES
     //      */
