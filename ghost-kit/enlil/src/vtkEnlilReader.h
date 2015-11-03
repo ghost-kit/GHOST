@@ -68,11 +68,11 @@ enum dataType{
 
 
 /** READER PRIME **/
-class VTKIOPARALLELNETCDF_EXPORT vtkEnlilReader : public vtkStructuredGridAlgorithm
+class VTKIOPARALLELNETCDF_EXPORT enlilReader : public vtkStructuredGridAlgorithm
 {
 
 public:
-    static vtkEnlilReader* New();
+    static enlilReader* New();
 
     vtkTypeMacro(vtkEnlilReader, vtkStructuredGridAlgorithm)
     void PrintSelf(ostream &os, vtkIndent indent);
@@ -136,17 +136,14 @@ public:
     unsigned int GetNumberOfFileNames();
     const char *GetFileName(unsigned int idx);
 
-//    vtkGetStringMacro(CurrentFileName)
-
-
     void readVector(std::string array, vtkFloatArray *DataArray, vtkInformationVector* outputVector, const int &dataID);
     void readScalar(vtkStructuredGrid *Data, vtkFloatArray *DataArray, std::string array, vtkInformationVector* outputVector, int dataID);
     void getDataID(std::string array, int &dataID);
     void updateControlFile(int status);
 protected:
 
-    vtkEnlilReader();
-    ~vtkEnlilReader();
+    enlilReader();
+    ~enlilReader();
 
     int GridScaleType;
     int DataUnits;
@@ -241,20 +238,8 @@ protected:
 
     // Request Information Helpers
     double getRequestedTime(vtkInformationVector *outputVector);
-    int PopulateArrays();
-    int LoadMetaData(vtkInformationVector* outputVector);
     int calculateTimeSteps();
     int checkStatus(void* Object, char* name);
-
-    void calculateArtifacts();
-
-    double* read3dPartialToArray(char *array, int extents[]);
-    double* readGridPartialToArray(char *arrayName, int subExtents[], bool periodic);
-    void loadVarMetaData(const char *array,
-                         const char *title,
-                         vtkInformationVector* outputVector,
-                         bool vector = false);
-
 
     void addPointArray(char* name);
     void addPointArray(char* name1, char* name2, char* name3);
@@ -290,61 +275,19 @@ protected:
 
 private:
 
-    //Caching implimentation
-//    RCache::ReaderCache pDensityCache;
-//    RCache::ReaderCache cDensityCache;
-//    RCache::ReaderCache temperatureCache;
-//    RCache::ReaderCache polarityCache;
-//    RCache::ReaderCache bFieldCache;
-//    RCache::ReaderCache velocityCache;
-//    RCache::ReaderCache rVelocityCache;
 
-    void cleanCache();
 
     //EVO files
     QMap<QString, enlilEvoFile*> evoFiles;   //environment files mapped by environment
-    void addEvoFile(const char* FileName, const char *refName);
-    void locateAndLoadEvoFiles();
-    void loadEvoData(vtkInformationVector *&outputVector);
-    void clearEvoData();
-    void processEVOFiles();
-    bool _useEvoFiles;
-    bool _EvoFilesLoaded;
-    bool _EvoFilesProcessed;
-
-    //EVO Data Storage
-    QMap<QString, QVector<vtkDoubleArray*> > _evoData;
-    QMap<QString, QVector<vtkStringArray*> > _evoUnits;
-
-
-    //TODO: This 3D Data section is currention just a copy of the EVO data section
-    //  above.  It will be tweaked for 3D data soon.
-    /***
-     * 1) parse all files for
-     *      a) mjd
-     *      b) field data
-     *      c) extents
-     * 2) provide interface for getting hypercubes
-     * 3) cache common data (field data, grid, etc.)
-     ***/
 
     //3D Data Files
     QMap<double, enlil3DFile*> _3dFiles;    //3D Files mapped by mjd
     void add3DFile(enlil3DFile *file, double mjd);
     void load3DData(vtkInformationVector *&outputVector);
     void clear3DData();
-    void process3DFiles();
-    bool _3DFilesLoaded;
-    bool _3DFilesProcessed;
 
-    //3D Data Storage
-    QMap<double, QMap<QString, QVector<vtkDoubleArray*> > > _3DData;
-    QMap<double, QMap<QString, QVector<vtkStringArray*> > > _3DUnits;
-
-
-
-    vtkEnlilReader(const vtkEnlilReader&);  // Not implemented.
-    void operator=(const vtkEnlilReader&);  // Not implemented.
+    enlilReader(const enlilReader&);  // Not implemented.
+    void operator=(const enlilReader&);  // Not implemented.
 };
 
 

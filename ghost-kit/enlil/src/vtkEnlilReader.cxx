@@ -63,7 +63,7 @@ vtkStandardNewMacro(vtkEnlilReader)
 //---------------------------------------------------------------
 //    Constructors and Destructors
 //---------------------------------------------------------------
-vtkEnlilReader::vtkEnlilReader()
+enlilReader::enlilReader()
 {
 
     std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
@@ -100,7 +100,7 @@ vtkEnlilReader::vtkEnlilReader()
     this->setMyExtents(this->SubExtent, nulExtent);
 
     this->SelectionObserver = vtkCallbackCommand::New();
-    this->SelectionObserver->SetCallback(&vtkEnlilReader::SelectionCallback);
+    this->SelectionObserver->SetCallback(&enlilReader::SelectionCallback);
     this->SelectionObserver->SetClientData(this);
     this->PointDataArraySelection->AddObserver(vtkCommand::ModifiedEvent, this->SelectionObserver);
     this->CellDataArraySelection->AddObserver(vtkCommand::ModifiedEvent, this->SelectionObserver);
@@ -115,7 +115,7 @@ vtkEnlilReader::vtkEnlilReader()
 }
 
 //---------------------------------------------------------------------------------------------
-vtkEnlilReader::~vtkEnlilReader()
+enlilReader::~enlilReader()
 {
     std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
 
@@ -132,7 +132,7 @@ vtkEnlilReader::~vtkEnlilReader()
 
 }
 
-void vtkEnlilReader::clearEvoData()
+void enlilReader::clearEvoData()
 {
     std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
 
@@ -146,7 +146,7 @@ void vtkEnlilReader::clearEvoData()
     }
 }
 
-int vtkEnlilReader::findControlFile()
+int enlilReader::findControlFile()
 {
     std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
 
@@ -180,7 +180,7 @@ int vtkEnlilReader::findControlFile()
     return false;
 }
 
-void vtkEnlilReader::SetCurrentFile(const char *fname)
+void enlilReader::SetCurrentFile(const char *fname)
 {
     std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
 
@@ -203,7 +203,7 @@ void vtkEnlilReader::SetCurrentFile(const char *fname)
  * The Number of Point Arrays in current selection
  *  This is an internal function
  */
-int vtkEnlilReader::GetNumberOfPointArrays()
+int enlilReader::GetNumberOfPointArrays()
 {
     std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
 
@@ -214,7 +214,7 @@ int vtkEnlilReader::GetNumberOfPointArrays()
  * The Number of Cell Arrays in current selection
  *  This is an internal function
  */
-int vtkEnlilReader::GetNumberOfCellArrays()
+int enlilReader::GetNumberOfCellArrays()
 {
     std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
 
@@ -225,7 +225,7 @@ int vtkEnlilReader::GetNumberOfCellArrays()
  *Return the NAME (characters) of the Point array at index
  *   This is an internal function
  */
-const char* vtkEnlilReader::GetPointArrayName(int index)
+const char* enlilReader::GetPointArrayName(int index)
 {
     std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
 
@@ -237,7 +237,7 @@ const char* vtkEnlilReader::GetPointArrayName(int index)
  *Return the NAME (characters) of the Cell array at index
  *   This is an internal function
  */
-const char* vtkEnlilReader::GetCellArrayName(int index)
+const char* enlilReader::GetCellArrayName(int index)
 {
     std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
 
@@ -249,7 +249,7 @@ const char* vtkEnlilReader::GetCellArrayName(int index)
  *Get the status of the Point Array of "name"
  *   This is an internal function
  */
-int vtkEnlilReader::GetPointArrayStatus(const char *name)
+int enlilReader::GetPointArrayStatus(const char *name)
 {
     std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
 
@@ -261,7 +261,7 @@ int vtkEnlilReader::GetPointArrayStatus(const char *name)
  *Get the status of the Cell Array of "name"
  *   This is an internal function
  */
-int vtkEnlilReader::GetCellArrayStatus(const char *name)
+int enlilReader::GetCellArrayStatus(const char *name)
 {
     std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
 
@@ -273,7 +273,7 @@ int vtkEnlilReader::GetCellArrayStatus(const char *name)
  *Set the status of the Point Array of "name"
  *   This is an internal function
  */
-void vtkEnlilReader::SetPointArrayStatus(const char *name, int status)
+void enlilReader::SetPointArrayStatus(const char *name, int status)
 {
     std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
 
@@ -304,7 +304,7 @@ void vtkEnlilReader::SetPointArrayStatus(const char *name, int status)
  *Set the status of the Cell Array of "name"
  *   This is an internal function
  */
-void vtkEnlilReader::SetCellArrayStatus(const char *name, int status)
+void enlilReader::SetCellArrayStatus(const char *name, int status)
 {
     std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
 
@@ -325,7 +325,7 @@ void vtkEnlilReader::SetCellArrayStatus(const char *name, int status)
  *Disables ALL Point arrays registered in system
  *   This is an internal function
  */
-void vtkEnlilReader::DisableAllPointArrays()
+void enlilReader::DisableAllPointArrays()
 {
     std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
 
@@ -339,7 +339,7 @@ void vtkEnlilReader::DisableAllPointArrays()
  *Disables ALL Cell arrays registered in system
  *   This is an internal function
  */
-void vtkEnlilReader::DisableAllCellArrays()
+void enlilReader::DisableAllCellArrays()
 {
     std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
 
@@ -353,7 +353,7 @@ void vtkEnlilReader::DisableAllCellArrays()
  *Enables ALL Point arrays registered in system
  *   This is an internal function
  */
-void vtkEnlilReader::EnableAllPointArrays()
+void enlilReader::EnableAllPointArrays()
 {
     std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
 
@@ -367,7 +367,7 @@ void vtkEnlilReader::EnableAllPointArrays()
  *Enables ALL Cell arrays registered in system
  *   This is an internal function
  */
-void vtkEnlilReader::EnableAllCellArrays()
+void enlilReader::EnableAllCellArrays()
 {
     std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
 
@@ -384,7 +384,7 @@ void vtkEnlilReader::EnableAllCellArrays()
 //  is implemented.
 //------------------------------------------------------------
 
-int vtkEnlilReader::CanReadFiles(const char *filename)
+int enlilReader::CanReadFiles(const char *filename)
 {
     std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
 
@@ -393,7 +393,7 @@ int vtkEnlilReader::CanReadFiles(const char *filename)
 }
 
 //---------------------------------------------------------------------------------------------
-int vtkEnlilReader::RequestInformation(
+int enlilReader::RequestInformation(
         vtkInformation* request,
         vtkInformationVector** inputVector,
         vtkInformationVector* outputVector)
@@ -487,7 +487,7 @@ int vtkEnlilReader::RequestInformation(
 
 
 //---------------------------------------------------------------------------------------------
-int vtkEnlilReader::RequestData(
+int enlilReader::RequestData(
         vtkInformation* request,
         vtkInformationVector** inputVector,
         vtkInformationVector* outputVector)
@@ -528,7 +528,7 @@ int vtkEnlilReader::RequestData(
 
 //---------------------------------------------------------------------------------------------
 //Get the Requested Time Step
-double vtkEnlilReader::getRequestedTime(vtkInformationVector* outputVector)
+double enlilReader::getRequestedTime(vtkInformationVector* outputVector)
 {
     std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
 
@@ -604,7 +604,7 @@ double vtkEnlilReader::getRequestedTime(vtkInformationVector* outputVector)
 
 
 
-void vtkEnlilReader::AddFileName(const char *fname)
+void enlilReader::AddFileName(const char *fname)
 {
     std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
 
@@ -621,14 +621,14 @@ void vtkEnlilReader::AddFileName(const char *fname)
 
 }
 
-const char* vtkEnlilReader::GetFileName(unsigned int idx)
+const char* enlilReader::GetFileName(unsigned int idx)
 {
     std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
 
     return this->fileNames[idx].c_str();
 }
 
-void vtkEnlilReader::RemoveAllFileNames()
+void enlilReader::RemoveAllFileNames()
 {
     std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
 
@@ -646,7 +646,7 @@ void vtkEnlilReader::RemoveAllFileNames()
     //    this->Modified();
 }
 
-unsigned int vtkEnlilReader::GetNumberOfFileNames()
+unsigned int enlilReader::GetNumberOfFileNames()
 {
     std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
 
@@ -657,7 +657,7 @@ unsigned int vtkEnlilReader::GetNumberOfFileNames()
 
 //---------------------------------------------------------------------------------------------
 //-- Callback
-void vtkEnlilReader::SelectionCallback(
+void enlilReader::SelectionCallback(
         vtkObject* object,
         unsigned long vtkNotUsed(eventid),
         void* clientdata,
@@ -666,7 +666,7 @@ void vtkEnlilReader::SelectionCallback(
     std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
 
 
-    static_cast<vtkEnlilReader*>(clientdata)->Modified();
+    static_cast<enlilReader*>(clientdata)->Modified();
 }
 
 
@@ -681,7 +681,7 @@ void vtkEnlilReader::SelectionCallback(
 
 
 //-- Return 0 for failure, 1 for success --//
-int vtkEnlilReader::LoadVariableData(vtkInformationVector* outputVector)
+int enlilReader::LoadVariableData(vtkInformationVector* outputVector)
 {
     std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
 
@@ -772,7 +772,7 @@ int vtkEnlilReader::LoadVariableData(vtkInformationVector* outputVector)
 //This method will load the data and convert to the assigned "DataUnits" value.
 //Currently, this process includes 2 types of units: Native and SWPC. As this changes,
 //we will need to incorporate the changes here.
-void vtkEnlilReader::readVector(std::string array, vtkFloatArray *DataArray,  vtkInformationVector* outputVector, const int &dataID)
+void enlilReader::readVector(std::string array, vtkFloatArray *DataArray,  vtkInformationVector* outputVector, const int &dataID)
 {
 
     std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
@@ -868,7 +868,7 @@ void vtkEnlilReader::readVector(std::string array, vtkFloatArray *DataArray,  vt
 }
 
 //---------------------------------------------------------------------------------------------
-void vtkEnlilReader::readScalar(vtkStructuredGrid *Data, vtkFloatArray *DataArray, std::string array, vtkInformationVector* outputVector, int dataID)
+void enlilReader::readScalar(vtkStructuredGrid *Data, vtkFloatArray *DataArray, std::string array, vtkInformationVector* outputVector, int dataID)
 {
     std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
 
@@ -928,7 +928,7 @@ void vtkEnlilReader::readScalar(vtkStructuredGrid *Data, vtkFloatArray *DataArra
 
 
 //---------------------------------------------------------------------------------------------
-void vtkEnlilReader::getDataID(std::string array, int &dataID)
+void enlilReader::getDataID(std::string array, int &dataID)
 {
     std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
 
@@ -966,7 +966,7 @@ void vtkEnlilReader::getDataID(std::string array, int &dataID)
 
 
 //---------------------------------------------------------------------------------------------
-int vtkEnlilReader::LoadArrayValues(std::string array, vtkInformationVector* outputVector)
+int enlilReader::LoadArrayValues(std::string array, vtkInformationVector* outputVector)
 {
     std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
 
@@ -1294,7 +1294,7 @@ int vtkEnlilReader::LoadArrayValues(std::string array, vtkInformationVector* out
 //-- returns array read via partial IO limited by extents --//
 /* This method will automatically adjust for the periodic boundary
  *  condition that does not exist sequentially in file */
-double* vtkEnlilReader::read3dPartialToArray(char* arrayName, int extents[])
+double* enlilReader::read3dPartialToArray(char* arrayName, int extents[])
 {
 
     std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
@@ -1454,7 +1454,7 @@ double* vtkEnlilReader::read3dPartialToArray(char* arrayName, int extents[])
 //-- returns array read via partial IO limited by extents --//
 /* This method will automatically adjust for the periodic boundary
  *  condition that does not exist sequentially in file */
-double* vtkEnlilReader::readGridPartialToArray(char *arrayName, int subExtents[], bool isPeriodic = false)
+double* enlilReader::readGridPartialToArray(char *arrayName, int subExtents[], bool isPeriodic = false)
 {
     std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
 
@@ -1574,7 +1574,7 @@ double* vtkEnlilReader::readGridPartialToArray(char *arrayName, int subExtents[]
 
 //---------------------------------------------------------------------------------------------
 //Loading Meta-Data from Variables
-void vtkEnlilReader::loadVarMetaData(const char *array, const char* title,
+void enlilReader::loadVarMetaData(const char *array, const char* title,
                                      vtkInformationVector *outputVector,
                                      bool vector)
 {
@@ -1688,7 +1688,7 @@ void vtkEnlilReader::loadVarMetaData(const char *array, const char* title,
 //-- Return 0 for failure, 1 for success --//
 /* You will want to over-ride this method to
  * Populate the system with your own arrays */
-int vtkEnlilReader::PopulateArrays()
+int enlilReader::PopulateArrays()
 {
     std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
 
@@ -1712,7 +1712,7 @@ int vtkEnlilReader::PopulateArrays()
 
 //---------------------------------------------------------------------------------------------
 //-- Meta Data Population
-int vtkEnlilReader::LoadMetaData(vtkInformationVector *outputVector)
+int enlilReader::LoadMetaData(vtkInformationVector *outputVector)
 {
     std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
 
@@ -1946,7 +1946,7 @@ int vtkEnlilReader::LoadMetaData(vtkInformationVector *outputVector)
 
 //---------------------------------------------------------------------------------------------
 //Status Check
-int vtkEnlilReader::checkStatus(void *Object, char *name)
+int enlilReader::checkStatus(void *Object, char *name)
 {
     std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
 
@@ -1967,7 +1967,7 @@ int vtkEnlilReader::checkStatus(void *Object, char *name)
 //-- Return 0 for failure, 1 for success --//
 /* Over-ride this method to provide the
  * extents of your data */
-int vtkEnlilReader::calculateTimeSteps()
+int enlilReader::calculateTimeSteps()
 {
     std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
 
@@ -2015,7 +2015,7 @@ int vtkEnlilReader::calculateTimeSteps()
 //---------------------------------------------------------------------------------------------
 //this function populates the grid data.  used to be calcuated with time steps, but
 //  the new timestep handling routine makes more sense to not include this.
-void vtkEnlilReader::PopulateGridData()
+void enlilReader::PopulateGridData()
 {
 
     std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
@@ -2046,7 +2046,7 @@ void vtkEnlilReader::PopulateGridData()
 
 //---------------------------------------------------------------------------------------------
 //-- print extents --//
-void vtkEnlilReader::printExtents(int extent[], const char* description)
+void enlilReader::printExtents(int extent[], const char* description)
 {
     std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
 
@@ -2060,7 +2060,7 @@ void vtkEnlilReader::printExtents(int extent[], const char* description)
 }
 
 //---------------------------------------------------------------------------------------------
-void vtkEnlilReader::setMyExtents(int extentToSet[], int sourceExtent[])
+void enlilReader::setMyExtents(int extentToSet[], int sourceExtent[])
 {
     std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
 
@@ -2075,7 +2075,7 @@ void vtkEnlilReader::setMyExtents(int extentToSet[], int sourceExtent[])
 
 //---------------------------------------------------------------------------------------------
 //set exents to given array
-void vtkEnlilReader::setMyExtents(int extentToSet[], int dim1, int dim2, int dim3, int dim4, int dim5, int dim6)
+void enlilReader::setMyExtents(int extentToSet[], int dim1, int dim2, int dim3, int dim4, int dim5, int dim6)
 {
     std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
 
@@ -2089,7 +2089,7 @@ void vtkEnlilReader::setMyExtents(int extentToSet[], int dim1, int dim2, int dim
 
 //---------------------------------------------------------------------------------------------
 //check equality of extents
-bool vtkEnlilReader::eq(int extent1[], int extent2[])
+bool enlilReader::eq(int extent1[], int extent2[])
 {
     std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
 
@@ -2100,7 +2100,7 @@ bool vtkEnlilReader::eq(int extent1[], int extent2[])
 
 //---------------------------------------------------------------------------------------------
 //check bounds of extents
-bool vtkEnlilReader::ExtentOutOfBounds(int extToCheck[], int extStandard[])
+bool enlilReader::ExtentOutOfBounds(int extToCheck[], int extStandard[])
 {
     std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
 
@@ -2125,7 +2125,7 @@ bool vtkEnlilReader::ExtentOutOfBounds(int extToCheck[], int extStandard[])
 
 //---------------------------------------------------------------------------------------------
 //get the dimensions from the extents provided
-void vtkEnlilReader::extractDimensions(int dims[], int extent[])
+void enlilReader::extractDimensions(int dims[], int extent[])
 {
     std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
 
@@ -2135,7 +2135,7 @@ void vtkEnlilReader::extractDimensions(int dims[], int extent[])
 }
 
 
-int vtkEnlilReader::GenerateGrid()
+int enlilReader::GenerateGrid()
 {
     std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
 
@@ -2220,7 +2220,7 @@ int vtkEnlilReader::GenerateGrid()
 
 //---------------------------------------------------------------------------------------------
 //=================== Cache Control Methods ====================
-void vtkEnlilReader::cleanCache()
+void enlilReader::cleanCache()
 {
     std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
 
@@ -2232,7 +2232,7 @@ void vtkEnlilReader::cleanCache()
     //    this->bFieldCache.cleanCache();
 }
 
-void vtkEnlilReader::addEvoFile(const char *FileName, const char *refName)
+void enlilReader::addEvoFile(const char *FileName, const char *refName)
 {
     std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
 
@@ -2240,7 +2240,7 @@ void vtkEnlilReader::addEvoFile(const char *FileName, const char *refName)
     this->evoFiles[refName] = new enlilEvoFile(FileName, GRID_SCALE::ScaleFactor[this->GetGridScaleType()]);
 }
 
-void vtkEnlilReader::locateAndLoadEvoFiles()
+void enlilReader::locateAndLoadEvoFiles()
 {
     std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
 
@@ -2294,7 +2294,7 @@ void vtkEnlilReader::locateAndLoadEvoFiles()
     this->_EvoFilesLoaded = true;
 }
 
-void vtkEnlilReader::processEVOFiles()
+void enlilReader::processEVOFiles()
 {
     std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
 
@@ -2428,7 +2428,7 @@ void vtkEnlilReader::processEVOFiles()
     this->_EvoFilesProcessed = true;
 }
 
-void vtkEnlilReader::add3DFile(enlil3DFile *file, double mjd)
+void enlilReader::add3DFile(enlil3DFile *file, double mjd)
 {
     std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
 
@@ -2442,7 +2442,7 @@ void vtkEnlilReader::add3DFile(enlil3DFile *file, double mjd)
 
 
 
-void vtkEnlilReader::loadEvoData(vtkInformationVector* &outputVector)
+void enlilReader::loadEvoData(vtkInformationVector* &outputVector)
 {
     std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
 
@@ -2503,7 +2503,7 @@ void vtkEnlilReader::loadEvoData(vtkInformationVector* &outputVector)
 
 //3D Data File Loading
 
-void vtkEnlilReader::process3DFiles()
+void enlilReader::process3DFiles()
 {
     std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
 
@@ -2639,7 +2639,7 @@ void vtkEnlilReader::process3DFiles()
 
 
 
-void vtkEnlilReader::load3DData(vtkInformationVector* &outputVector)
+void enlilReader::load3DData(vtkInformationVector* &outputVector)
 {
     std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
 
@@ -2698,7 +2698,7 @@ void vtkEnlilReader::load3DData(vtkInformationVector* &outputVector)
 
 }
 
-void vtkEnlilReader::clear3DData()
+void enlilReader::clear3DData()
 {
     std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
 
@@ -2708,7 +2708,7 @@ void vtkEnlilReader::clear3DData()
 //--------------------------------------------------------------
 //    Output Port Configuration
 //--------------------------------------------------------------
-int vtkEnlilReader::FillOutputPortInformation(int port, vtkInformation* info)
+int enlilReader::FillOutputPortInformation(int port, vtkInformation* info)
 {
     std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
 
@@ -2734,14 +2734,14 @@ int vtkEnlilReader::FillOutputPortInformation(int port, vtkInformation* info)
 //------------------------------------------------------------
 //    Internal functions -- required for system to work
 //------------------------------------------------------------
-void vtkEnlilReader::PrintSelf(ostream &os, vtkIndent indent)
+void enlilReader::PrintSelf(ostream &os, vtkIndent indent)
 {
     std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
 
     this->Superclass::PrintSelf(os, indent);
 }
 
-char *vtkEnlilReader::GetCurrentFileName()
+char *enlilReader::GetCurrentFileName()
 {
     std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
 
@@ -2753,7 +2753,7 @@ char *vtkEnlilReader::GetCurrentFileName()
     return NULL;
 }
 
-void vtkEnlilReader::updateControlFile(int status)
+void enlilReader::updateControlFile(int status)
 {
     std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
 
@@ -2787,7 +2787,7 @@ void vtkEnlilReader::updateControlFile(int status)
     }
 }
 
-void vtkEnlilReader::setUseControlFile(int status)
+void enlilReader::setUseControlFile(int status)
 {
     std::cout << "Function: " << __FUNCTION__ << std::endl << std::flush;
 
