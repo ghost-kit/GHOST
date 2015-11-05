@@ -25,6 +25,5 @@ set(ENLIL_SM_SRC
     )
 
 set(ENLIL_GUI_XML
-        ${ENLIL_SOURCE_DIR}/xml/vtkEnlilGUI.xml
     )
 

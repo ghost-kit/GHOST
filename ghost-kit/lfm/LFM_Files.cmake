@@ -12,5 +12,5 @@ set(LFM_SM_XML
 set(LFM_SM_SRC
         ${LFM_SOURCE_DIR}/src/vtkLFMReader.cxx)
 set(LFM_GUI_XML
-        ${LFM_SOURCE_DIR}/xml/vtkLFMGUI.xml)
+        )
 

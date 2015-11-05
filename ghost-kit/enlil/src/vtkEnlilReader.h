@@ -1,29 +1,80 @@
 #ifndef vtkEnlilReader_H
 #define vtkEnlilReader_H
 
-#include "vtkMultiBlockDataSetAlgorithm.h"
-#include "vtkStructuredGrid.h"
-#include "vtkTable.h"
-#include "vtkType.h"
-#include "vtkDataArraySelection.h"
+
+#include "vtkStructuredGridAlgorithm.h"
+#include "vtkIOParallelNetCDFModule.h" // For export macro
 #include "vtkSmartPointer.h"
-#include "vtkFloatArray.h"
-#include "vtkDoubleArray.h"
-#include "vtkCallbackCommand.h"
+#include<map>
+#include<string>
+#include<vector>
+#include<QString>
 
 #include "enlilControlFile.h"
-#include "enlil3dfile.h"
 #include "enlilEvoFile.h"
 
-class  enlilReader : public vtkMultiBlockDataSetAlgorithm
+
+class vtkDataArraySelection;
+class vtkCallbackCommand;
+class vtkMultibockProcessController;
+class vtkStringArray;
+class vtkFloatArray;
+class vtkFloatArray;
+class vtkIntArray;
+class vtkPoints;
+class vtkTable;
+class vtkStructuredGrid;
+class vtkStructuredGridAlgorithm;
+
+
+namespace GRID_SCALE
+{
+enum ScaleType{
+    NONE   = 0,
+    REARTH = 1,
+    RSOLAR = 2,
+    AU     = 3
+};
+static const float ScaleFactor[4] = { 1.0,
+                                      6.5e6,
+                                      6.955e8,
+                                      1.5e11 };
+}
+
+namespace UNITS
+{
+static const double emu = 1.67262158e-27;
+static const double km2cm = 1e6;
+static const double km2m = 1e3;
+}
+
+namespace DATA_TYPE
+{
+enum dataType{
+    PDENSITY = 0,
+    CDENSITY = 1,
+    TEMP = 2,
+    POLARITY = 3,
+    BFIELD = 4,
+    VELOCITY = 5,
+    RVELOCITY = 6
+};
+
+
+}
+
+
+/** READER PRIME **/
+class VTKIOPARALLELNETCDF_EXPORT vtkEnlilReader : public vtkStructuredGridAlgorithm
 {
 
 public:
-    static enlilReader* New();
+    static vtkEnlilReader* New();
 
-    vtkTypeMacro(enlilReader, vtkMultiBlockDataSetAlgorithm)
+    vtkTypeMacro(vtkEnlilReader, vtkStructuredGridAlgorithm)
     void PrintSelf(ostream &os, vtkIndent indent);
 
+    // Set/get macros
     void SetGridScaleType(int value)
     {
         this->GridScaleType = value;
@@ -37,12 +88,19 @@ public:
     void SetDataUnits(int _arg)
     {
 
+        std::cout << "Updating Units: " << std::endl;
+        this->DataUnits = _arg;
+        this->cleanCache();
+
+        this->gridClean=false;
         this->Modified();
     }
 
-    char* GetCurrentFileName();
-
     vtkGetMacro(DataUnits, int)
+
+
+    vtkSetStringMacro(FileName)
+    vtkGetStringMacro(FileName)
 
     vtkSetVector6Macro(WholeExtent, int)
     vtkGetVector6Macro(WholeExtent, int)
@@ -77,13 +135,134 @@ public:
     unsigned int GetNumberOfFileNames();
     const char *GetFileName(unsigned int idx);
 
+    vtkGetStringMacro(CurrentFileName);
+
+
+    void readVector(std::string array, vtkFloatArray *DataArray, vtkInformationVector* outputVector, const int &dataID);
+    void readScalar(vtkStructuredGrid *Data, vtkFloatArray *DataArray, std::string array, vtkInformationVector* outputVector, int dataID);
+    void getDataID(std::string array, int &dataID);
+    void updateControlFile(int status);
 protected:
 
-    enlilReader();
-    ~enlilReader();
+    vtkEnlilReader();
+    ~vtkEnlilReader();
+
+    char* FileName;            // Base file name
+    int GridScaleType;
+    int DataUnits;
+    bool gridClean;
+    int numberOfArrays;
+    bool useControlFile;
+
+    //control file
+    enlilControlFile *controlFile;
+    QString controlFileName;
+    int findControlFile();
+
+    // Extent information
+    vtkIdType NumberOfTuples;  // Number of tuples in subextent
+
+    // Field
+    int WholeExtent[6];       // Extents of entire grid
+    int SubExtent[6];         // Processor grid extent
+    int UpdateExtent[6];
+    int Dimension[3];         // Size of entire grid
+    int SubDimension[3];      // Size of processor grid
+
+    // Check to see if info is clean
+    bool infoClean;
+
+    //Data interface information
+    vtkSmartPointer<vtkPoints> Points;        // Structured grid geometry
+    vtkSmartPointer<vtkFloatArray> Radius;   // Radius Grid Data
+
+    std::vector<std::string> MetaDataNames;
+    std::map<std::string, std::string> ScalarVariableMap;
+    std::map<std::string, std::vector<std::string> > VectorVariableMap;
+    std::vector<std::vector<double> > sphericalGridCoords;
+
+    std::string dateString;
+    std::vector<std::string> fileNames;
+
+    std::map<double,std::string> time2fileMap;
+    std::map<double,double> time2physicaltimeMap;
+    std::map<double,std::string> time2datestringMap;
+
+    //this map holds the positions of artifacts based on time step
+    std::map< double, std::map<std::string, std::vector<double> > > positions;
+
+    // Time step information
+    int NumberOfTimeSteps;                 // Number of time steps
+    std::vector<double> TimeSteps;        // Actual times available for request
+
+    double timeRange[2];
+    double CurrentPhysicalTime;
+    double current_MJD;
+    char* CurrentDateTimeString;
+    bool timesCalulated;
+
+    char* CurrentFileName;
+    void SetCurrentFileName(const char* fname);
+
+    // Selected field of interest
+    vtkDataArraySelection* PointDataArraySelection;
+    vtkDataArraySelection* CellDataArraySelection;
+
+    // Observer to modify this object when array selections are modified
+    vtkCallbackCommand* SelectionObserver;
+
+    // Load a variable from data file
+
+    int GenerateGrid();
+    int LoadVariableData(vtkInformationVector *outputVector);
+    int LoadArrayValues(std::string array, vtkInformationVector* outputVector);
+
+    void PopulateGridData();
+
+    int getSerialNumber()
+    {
+        static int number = 0;
+        return ++number;
+    }
+
+    inline void clearString(char* string, int size)
+    {
+        for(int x = 0; x < size; x++)
+        {
+            string[x] = '\0';
+        }
+    }
+
+
+    // Request Information Helpers
+    double getRequestedTime(vtkInformationVector *outputVector);
+    int PopulateArrays();
+    int LoadMetaData(vtkInformationVector* outputVector);
+    int calculateTimeSteps();
+    int checkStatus(void* Object, char* name);
+
+    void calculateArtifacts();
+
+    double* read3dPartialToArray(char *array, int extents[]);
+    double* readGridPartialToArray(char *arrayName, int subExtents[], bool periodic);
+    void loadVarMetaData(const char *array,
+                         const char *title,
+                         vtkInformationVector* outputVector,
+                         bool vector = false);
+
+
+    void addPointArray(char* name);
+    void addPointArray(char* name1, char* name2, char* name3);
+    void extractDimensions(int dims[], int extent[]);
+    void setMyExtents(int extentToSet[], int sourceExtent[]);
+    void setMyExtents(int extentToSet[], int dim1, int dim2, int dim3, int dim4, int dim5, int dim6);
+    void printExtents(int extent[], char* description);
+
+    bool eq(int extent1[], int extent2[]);
+    bool ExtentOutOfBounds(int extToCheck[], int extStandard[]);
 
     // Required Paraview Functions
-    static int CanReadFile(const char* filename);
+    static int CanReadFiles(const char* filename);
 
     virtual int RequestData(
             vtkInformation* request,
@@ -104,72 +283,29 @@ protected:
     virtual int FillOutputPortInformation(int, vtkInformation*);
 
 
-private:    //data
-    // Selected field of interest
-    vtkDataArraySelection* PointDataArraySelection;
-    vtkDataArraySelection* CellDataArraySelection;
-
-    // Observer to modify this object when array selections are modified
-    vtkCallbackCommand* SelectionObserver;
-
-    //Data interface information
-    vtkSmartPointer<vtkPoints> Points;       // Structured grid geometry
-    vtkSmartPointer<vtkFloatArray> Radius;   // Radius Grid Data
-
-    QStringList _3DfileNames;
-    QStringList _EVOfileNames;
-    QString     _controlFileName;
-
-    // Time step information
-    int NumberOfTimeSteps;                 // Number of time steps
-
-    // Extent information
-    vtkIdType NumberOfTuples;  // Number of tuples in subextent
-
-    // Field
-    int WholeExtent[6];       // Extents of entire grid
-    int SubExtent[6];         // Processor grid extent
-    int UpdateExtent[6];
-    int Dimension[3];         // Size of entire grid
-    int SubDimension[3];      // Size of processor grid
+private:
 
 
-    int GridScaleType;
-    int DataUnits;
-    bool gridClean;
-    int numberOfArrays;
-    bool useControlFile;
+    void cleanCache();
 
-    //EVO Data
-    QMap<QString, enlilEvoFile*> evoFiles;   //environment files mapped by environment
+    //EVO files
+    QMap<QString, enlilEvoFile*> evoFiles;   //environment files
+    void addEvoFile(const char* FileName, const char *refName);
+    void locateAndLoadEvoFiles();
+    void loadEvoData(vtkInformationVector *&outputVector);
+    void clearEvoData();
+    void processEVOFiles();
+    bool useEvoFiles;
+    bool EvoFilesLoaded;
+    bool EvoFilesProcessed;
 
-    //3D Data
-    QMap<double, enlil3DFile*> _3dFiles;    //3D Files mapped by mjd
-
-    //Control File
-    enlilControlFile *_controlFile;          //CCMC Control File
+    //EVO Data Storage
+    QMap<QString, QVector<vtkDoubleArray*> > evoData;
+    QMap<QString, QVector<vtkStringArray*> > evoUnits;
 
 
-private:    //methods
-    // Request Information Helpers
-    double getRequestedTime(vtkInformationVector *outputVector);
-    int calculateTimeSteps();
-    int checkStatus(void* Object, char* name);
-
-    void addPointArray(char* name);
-    void addPointArray(char* name1, char* name2, char* name3);
-    void extractDimensions(int dims[], int extent[]);
-
-    //control file
-    int findControlFile();
-
-    //3D Data Files
-    void add3DFile(enlil3DFile *file, double mjd);
-    void load3DData(vtkInformationVector *&outputVector);
-    void clear3DData();
-
-    enlilReader(const enlilReader&);  // Not implemented.
-    void operator=(const enlilReader&);  // Not implemented.
+    vtkEnlilReader(const vtkEnlilReader&);  // Not implemented.
+    void operator=(const vtkEnlilReader&);  // Not implemented.
 };
 
 

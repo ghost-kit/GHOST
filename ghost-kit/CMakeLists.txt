@@ -197,7 +197,6 @@ set(GHOST_LIBS ${HDF4_LIBS} ${HDF_EXTRA_LIBS} ${CDF_LIBS} ${BOOST_LIBS} ${SHARED
 
 message("GHOST_LIBS: ${GHOST_LIBS}")
 
-#AWEFUL HACK, but it works.
 target_link_libraries(GhostKit ${GHOST_LIBS} ${GHOST_LIBS})
 
 # Adding 'dist' Make target to deploy plugin that's compatible with
