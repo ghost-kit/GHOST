@@ -9,6 +9,6 @@ add_external_project(
    echo "No Build"
 
    INSTALL_COMMAND
-   ln -s <INSTALL_DIR>/include/freetype2/freetype <INSTALL_DIR>/include/freetype
+   ln -s <INSTALL_DIR>/include/freetype2 <INSTALL_DIR>/include/freetype
 
       )
