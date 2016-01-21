@@ -163,7 +163,7 @@ endif()
 
 # ----------------------------------------------------------------------------
 # You choose to download ParaView source form GIT or other URL/FILE tarball
-option(ParaView_FROM_GIT "If enabled then the repository is fetched from git" ON)
+option(ParaView_FROM_GIT "If enabled then the repository is fetched from git" OFF)
 
 if (ParaView_FROM_GIT)
   # Download PV from GIT
