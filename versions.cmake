@@ -60,8 +60,8 @@ add_revision(png
   URL_MD5 49c6e05be5fa88ed815945d7ca7d4aa9)
 
 add_revision(freetype
-  URL "http://paraview.org/files/dependencies/freetype-2.4.8.tar.gz"
-  URL_MD5 "5d82aaa9a4abc0ebbd592783208d9c76")
+  URL "http://download.savannah.gnu.org/releases/freetype/freetype-2.5.5.tar.gz"
+  URL_MD5 "7448edfbd40c7aa5088684b0a3edb2b8")
 
 add_revision(szip
   URL "http://paraview.org/files/dependencies/szip-2.1.tar.gz"
