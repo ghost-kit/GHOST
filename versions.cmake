@@ -17,8 +17,8 @@ add_revision(jpeg
         URL_MD5 83992a9466af7536da30efe6b51d4064)
 
 add_revision(cdf
-    URL "http://cdaweb.gsfc.nasa.gov/pub/software/cdf/dist/cdf35_0_2/unix/cdf35_0-dist-all.tar.gz"
-    URL_MD5 2b11c8ea7ef189aca140fa4edcaa2771)
+    URL "http://cdaweb.gsfc.nasa.gov/pub/software/cdf/dist/cdf36_1/unix/cdf36_1-dist-all.tar.gz"
+    URL_MD5 9a2120adb512838742dbb344f96fdf3b)
 
 add_revision(ghost
     SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/ghost-kit)
