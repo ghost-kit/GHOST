@@ -63,6 +63,9 @@ add_revision(freetype
   URL "http://download.savannah.gnu.org/releases/freetype/freetype-2.5.5.tar.gz"
   URL_MD5 "7448edfbd40c7aa5088684b0a3edb2b8")
 
+add_revsion(fixFreetype
+	SOURC_DIR ${CMAKE_CURRENT_LIST_DIR}/dep-libs/fixFreetype)
+
 add_revision(szip
   URL "http://paraview.org/files/dependencies/szip-2.1.tar.gz"
   URL_MD5 902f831bcefb69c6b635374424acbead)

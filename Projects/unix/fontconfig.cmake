@@ -1,6 +1,6 @@
 add_external_project(
   fontconfig
-  DEPENDS freetype libxml2
+  DEPENDS freetype fixFreetype libxml2
   BUILD_IN_SOURCE 1
   CONFIGURE_COMMAND <SOURCE_DIR>/configure
                     --prefix=<INSTALL_DIR>
