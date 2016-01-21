@@ -7,10 +7,4 @@ add_external_project(
 	-DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
 	-DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
 	-DBUILD_SHARED_LIBS:BOOL=true
-
-
-#  CONFIGURE_COMMAND <SOURCE_DIR>/configure
-#                    --prefix=<INSTALL_DIR>
-#                    --enable-static=no
-#                     --with-sysroot=<INSTALL_DIR>
 ) 
