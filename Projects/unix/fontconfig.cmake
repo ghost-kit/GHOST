@@ -7,10 +7,10 @@ add_external_project(
                     --disable-docs
                     --enable-libxml2
                     --enable-static=no
-                    --with-freetype-config=<INSTALL_DIR>/include/freetype/config
+                    
   PROCESS_ENVIRONMENT
                     LIBXML2_CFLAGS -I<INSTALL_DIR>/include/libxml2 
                     LIBXML2_LIBS -lxml2
-		    LIBFREETYPE_CFLAGS -I<INSTALL_DIR>/include/freetype
-		    LIBFREETYPE_LIBS -lfreetype
+		    CFLAGS -I<INSTALL_DIR>/include/freetype
+		    LIBS -L<INSTALL_DIR>/lib/libfreetype.so
 )
