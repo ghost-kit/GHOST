@@ -169,12 +169,12 @@ if (ParaView_FROM_GIT)
   # Download PV from GIT
   add_revision(paraview
     GIT_REPOSITORY git://paraview.org/ParaView.git
-    GIT_TAG "v4.1.0")
+    GIT_TAG "v4.4.0")
 else()
   # Variables to hold the URL and MD5 (optional)
-  set (ParaView_URL "http://www.paraview.org/files/v4.2/ParaView-v4.2.0-source.tar.gz" CACHE
+  set (ParaView_URL "http://www.paraview.org/files/v4.4/ParaView-v4.4.0-source.tar.gz" CACHE
     STRING "Specify the url for ParaView tarball")
-  set (ParaView_URL_MD5 "77cf0e3804eb7bb91d2d94b10bd470f4" CACHE
+  set (ParaView_URL_MD5 "fa1569857dd680ebb4d7ff89c2227378" CACHE
     STRING "MD5 of the ParaView tarball")
 
   # Get the length of the URL specified.
