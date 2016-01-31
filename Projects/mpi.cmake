@@ -1,5 +1,8 @@
 add_external_project_or_use_system(mpi
   CONFIGURE_COMMAND <SOURCE_DIR>/configure
+		    CC=${CMAKE_C_COMPILER}
+		    CXX=${CMAKE_CXX_COMPILER}
+		    FC=${CMAKE_Fortran_COMPILER}
                     --prefix=<INSTALL_DIR>
                     --enable-shared
                     --disable-static

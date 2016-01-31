@@ -15,6 +15,8 @@ add_external_project(
    CONFIGURE_COMMAND #(From HDF4 4.2.9)
 
        <SOURCE_DIR>/configure
+       CXX=${CMAKE_CXX_COMPILER}
+       CC=${CMAKE_C_COMPILER}
        CFLAGS=-I${install_location}/include
        CXXFLAGS=-I${install_location}/include
        LDFLAGS=-L${install_location}/lib

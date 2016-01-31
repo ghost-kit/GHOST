@@ -10,7 +10,8 @@ endif()
 add_external_project_or_use_system(python
   DEPENDS zlib png
   CONFIGURE_COMMAND <SOURCE_DIR>/configure
-                    --prefix=<INSTALL_DIR>
+	    	    CXX=${CMAKE_CXX_COMPILER}
+		    --prefix=<INSTALL_DIR>
                     --enable-unicode
                     --enable-shared
 		    #${libtype}

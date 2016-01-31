@@ -12,6 +12,9 @@ add_external_project_step(patch_zlib_cmakelists
   COMMAND ${CMAKE_COMMAND} -E copy_if_different
           "${SuperBuild_PROJECTS_DIR}/patches/zlib.CMakeLists.txt"
           "<SOURCE_DIR>/CMakeLists.txt"
+
+#CMAKE_ARGS -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER} -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+
 DEPENDEES update # do after update
 DEPENDERS patch  # do before patch
 )
