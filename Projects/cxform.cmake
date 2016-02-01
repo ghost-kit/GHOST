@@ -5,7 +5,7 @@ endif()
 
 add_external_project(
     cxform
-    DEPENDS DateTime
+    DEPENDS DateTime python
 
 
     CMAKE_ARGS
