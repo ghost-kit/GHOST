@@ -26,7 +26,7 @@ endif()
 
 add_external_project(paraview
   DEPENDS
-    python mpi qt matplotlib
+    qt mpi python
 
   DEPENDS_OPTIONAL
     boost cosmotools ffmpeg hdf5 libxml3 manta matplotlib mpi numpy png python qt visitbridge zlib silo cgns

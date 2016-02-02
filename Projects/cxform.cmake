@@ -5,10 +5,12 @@ endif()
 
 add_external_project(
     cxform
-    DEPENDS DateTime
+    DEPENDS DateTime python
 
 
     CMAKE_ARGS
+	-DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+	-DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
         -DMACOSX_VERSION_MIN=${CMAKE_OSX_DEPLOYMENT_TARGET}
         -DPREFIX=<INSTALL_DIR>
 

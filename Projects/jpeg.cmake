@@ -13,6 +13,8 @@ add_external_project(
                    <SOURCE_DIR>/config.sub
 
     CONFIGURE_COMMAND   <SOURCE_DIR>/configure
+			            CC=${CMAKE_C_COMPILER}
+				    CXX=${CMAKE_CXX_COMPILER}
                                     --enable-static
                                     --enable-shared
                                     --prefix=<INSTALL_DIR>

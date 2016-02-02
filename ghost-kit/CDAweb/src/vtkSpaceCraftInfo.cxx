@@ -47,7 +47,7 @@
 
 #include <vector>
 #include <vtkSmartPointer.h>
-#include <vtksys/ios/sstream>
+//#include <vtksys/ios/sstream>
 
 #include "cdf.h"
 #include "cdflib.h"

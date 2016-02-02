@@ -1,6 +1,6 @@
 add_external_project(
     hdf4
-    DEPENDS jpeg zlib szip
+    DEPENDS jpeg zlib
 
 #     CMAKE_ARGS
 #         -DMACOSX_VERSION_MIN=${CMAKE_OSX_DEPLOYMENT_TARGET}
@@ -15,6 +15,8 @@ add_external_project(
    CONFIGURE_COMMAND #(From HDF4 4.2.9)
 
        <SOURCE_DIR>/configure
+       CXX=${CMAKE_CXX_COMPILER}
+       CC=${CMAKE_C_COMPILER}
        CFLAGS=-I${install_location}/include
        CXXFLAGS=-I${install_location}/include
        LDFLAGS=-L${install_location}/lib
@@ -24,5 +26,5 @@ add_external_project(
        --enable-static
        --enable-production
        --disable-fortran
-       --with-szlib
+       
       )

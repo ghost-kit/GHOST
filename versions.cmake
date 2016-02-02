@@ -17,8 +17,8 @@ add_revision(jpeg
         URL_MD5 83992a9466af7536da30efe6b51d4064)
 
 add_revision(cdf
-    URL "http://cdaweb.gsfc.nasa.gov/pub/software/cdf/dist/cdf35_0_2/unix/cdf35_0-dist-all.tar.gz"
-    URL_MD5 2b11c8ea7ef189aca140fa4edcaa2771)
+    URL "http://cdaweb.gsfc.nasa.gov/pub/software/cdf/dist/cdf36_1/unix/cdf36_1-dist-all.tar.gz"
+    URL_MD5 9a2120adb512838742dbb344f96fdf3b)
 
 add_revision(ghost
     SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/ghost-kit)
@@ -62,8 +62,11 @@ add_revision(png
   URL_MD5 49c6e05be5fa88ed815945d7ca7d4aa9)
 
 add_revision(freetype
-  URL "http://paraview.org/files/dependencies/freetype-2.4.8.tar.gz"
-  URL_MD5 "5d82aaa9a4abc0ebbd592783208d9c76")
+  URL "http://download.savannah.gnu.org/releases/freetype/freetype-2.5.5.tar.gz"
+  URL_MD5 "7448edfbd40c7aa5088684b0a3edb2b8")
+
+add_revision(fixFreetype
+    SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/dep-libs/fixFreetype)
 
 add_revision(fixFreetype
     SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/dep-libs/fixFreetype)
@@ -171,12 +174,17 @@ if (ParaView_FROM_GIT)
   # Download PV from GIT
   add_revision(paraview
     GIT_REPOSITORY git://paraview.org/ParaView.git
-    GIT_TAG "v4.1.0")
+    GIT_TAG "v4.4.0")
 else()
   # Variables to hold the URL and MD5 (optional)
-  set (ParaView_URL "http://www.paraview.org/files/v4.2/ParaView-v4.2.0-source.tar.gz" CACHE
+#  set (ParaView_URL "http://www.paraview.org/files/v4.2/ParaView-v4.2.0-source.tar.gz" CACHE
+#    STRING "Specify the url for ParaView tarball")
+#  set (ParaView_URL_MD5 "77cf0e3804eb7bb91d2d94b10bd470f4" CACHE
+
+  set (ParaView_URL "http://www.paraview.org/files/v4.4/ParaView-v4.4.0-source.tar.gz" CACHE
     STRING "Specify the url for ParaView tarball")
-  set (ParaView_URL_MD5 "77cf0e3804eb7bb91d2d94b10bd470f4" CACHE
+  set (ParaView_URL_MD5 "fa1569857dd680ebb4d7ff89c2227378" CACHE
+
     STRING "MD5 of the ParaView tarball")
 
   # Get the length of the URL specified.
