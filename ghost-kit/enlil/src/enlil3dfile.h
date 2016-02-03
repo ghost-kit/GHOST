@@ -32,7 +32,7 @@ class enlil3DFile
     friend class enlil3DVar;
 public:
     // Class Level Functions
-    enlil3DFile(QString FileName, const char *newUnits, double scaleFactor);
+    enlil3DFile(QString FileName, const char *scaleUnits, double scaleFactor);
     ~enlil3DFile();
 
     void setName(const char* _name);
@@ -152,6 +152,7 @@ protected:  //METHODS
     //data processing
     void __cleanAll();
     void __processGridLocations();
+    void __processExtents();
     void __processTime();
     void __setUseExtents(int extents[]);
     QVector<int> __getExtentDimensions(int extent[6]);

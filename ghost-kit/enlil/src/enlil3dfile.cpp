@@ -19,16 +19,14 @@ void enlil3DFile::__ResetFile()
 
     this->__initializeFiles();
 
-    //process location
-    this->__processGridLocations();
+    //process extents
+    this->__processExtents();
 
     //process Time
     this->__processTime();
-
-
 }
 
-enlil3DFile::enlil3DFile(QString FileName, const char *newUnits, double scaleFactor)
+enlil3DFile::enlil3DFile(QString FileName, const char *scaleUnits, double scaleFactor)
 {
     //setup the object
     this->setFileName(FileName);
@@ -38,7 +36,7 @@ enlil3DFile::enlil3DFile(QString FileName, const char *newUnits, double scaleFac
     this->_convMap = NULL;
     this->_scaleFactor = NULL;
     //set scale factor
-    this->setScale_factor(QString(newUnits), scaleFactor);
+    this->setScale_factor(QString(scaleUnits), scaleFactor);
 
     //load the data from the file
     __ResetFile();
@@ -826,6 +824,25 @@ QStringList enlil3DFile::__getAttributeList()
  * @brief enlil3DFile::__processLocation
  */
 //TODO: Must adjust these to the current extents
+void enlil3DFile::__processExtents()
+{
+    //check existence of vars before trying to access them
+    QStringList vars = this->_varOutput.keys();
+    if(vars.contains("X1") && vars.contains("X2") && vars.contains("X3"))
+    {
+        this->_wholeExtents[QString("n1")] = this->_varOutput["X1"]->getExtent("n1");
+        this->_wholeExtents[QString("n2")] = this->_varOutput["X2"]->getExtent("n2");
+        this->_wholeExtents[QString("n3")] = this->_varOutput["X3"]->getExtent("n3");
+        this->_wholeExtents[QString("nblk")] = this->_varOutput["X1"]->getExtent("nblk");
+    }
+    else
+    {
+        std::cerr << "ERROR: NO DATA FOUND: Unable to process file extents" << std::endl;
+        std::cerr << "FUNCTION: " << __FUNCTION__ << " FILE: " << __FILE__ << std::endl;
+        exit(EXIT_FAILURE);
+    }
+}
+
 void enlil3DFile::__processGridLocations()
 {
     int loopX=0, loopY=0, loopZ=0;
@@ -835,11 +852,6 @@ void enlil3DFile::__processGridLocations()
 
     if(vars.contains("X1") && vars.contains("X2") && vars.contains("X3"))
     {
-
-        this->_wholeExtents[QString("n1")] = this->_varOutput["X1"]->getExtent("n1");
-        this->_wholeExtents[QString("n2")] = this->_varOutput["X2"]->getExtent("n2");
-        this->_wholeExtents[QString("n3")] = this->_varOutput["X3"]->getExtent("n3");
-        this->_wholeExtents[QString("nblk")] = this->_varOutput["X1"]->getExtent("nblk");
 
         QVector<double> x1 = this->_varOutput["X1"]->asDouble();
         QVector<double> x2 = this->_varOutput["X2"]->asDouble();
@@ -890,6 +902,8 @@ void enlil3DFile::__processGridLocations()
     else
     {
         std::cerr << "ERROR: No Data Found..." << std::endl;
+        std::cerr << "FUNCTION: " << __FUNCTION__ << " FILE: " << __FILE__ << std::endl;
+
         exit(EXIT_FAILURE);
     }
 }
@@ -1157,8 +1171,7 @@ QVector<QVector< double > > enlil3DFile::getGridSpacing()
 {
     if(!this->_gridOutput)
     {
-        std::cerr << "ERROR: Grid Output Not Defined... " <<  __FUNCTION__ << " at line " << __LINE__ << std::endl;
-        exit(EXIT_FAILURE);
+        this->__processGridLocations();
     }
     QVector<QVector<double > > currentGrid = *this->_gridOutput;
 

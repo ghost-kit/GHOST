@@ -275,6 +275,7 @@ else()
   endif()
 
   #GHOSTkit related builds
+   include(GKbuildDep)
    include(ghost)
    include(DateTime)
    include(cdf)

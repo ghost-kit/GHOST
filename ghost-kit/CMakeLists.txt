@@ -3,6 +3,23 @@ cmake_minimum_required(VERSION 2.8.9)
 
 message("BUILDING GHOST!!! IF you got this far, you have won half the battle!")
 
+
+if(DEP_TREE)
+    message(STATUS "Configuring with DEP_TREE")
+    set(CMAKE_INSTALL_PREFIX ${DEP_TREE}/install)
+    include_directories(BEFORE SYSTEM ${DEP_TREE}/include)
+    set(ParaView_DIR ${DEP_TREE}/paraview/src/paraview-build)
+endif()
+
+if(DEBUG)
+
+    set(CMAKE_BUILD_TYPE "debug")
+
+else()
+    set(CMAKE_BUILD_TYPE "release")
+endif()
+
+
 if(DEP_INCLUDE_DIR)
     include_directories(BEFORE SYSTEM ${DEP_INCLUDE_DIR})
 endif()
@@ -14,7 +31,7 @@ option(GHOST_BUILD_LFM "Build the ParaView LFM Reader" ON)
 option(GHOST_BUILD_ENLIL "Build the ParaView ENLIL Reader" ON)
 option(GHOST_BUILD_CDAWEB "Build the ParaView CDAweb Tool Kit" ON)
 option(GHOST_BUILD_CXFORM "Build the cxForm Tranform Filter" ON)
-option(GHOST_BUILD_PLOTS "Build the Plots Source" OFF)
+option(GHOST_BUILD_PLOTS "Build the Plots Source" ON)
 option(GHOST_BUILD_SWFT "Build SwFT Panels" OFF)
 
 option(GHOST_MASTER_BUILD "Plugin Being being built as Master Build (DO NOT SET MANUALLY)" OFF)
@@ -47,8 +64,8 @@ include(CMakeDependentOption)
         )
 
     set(HDF5_LIBS
-       hdf5
-       hdf5_hl
+       ${CMAKE_INSTALL_PREFIX}/lib/${CMAKE_SHARED_LIBRARY_PREFIX}hdf5${CMAKE_SHARED_LIBRARY_SUFFIX}
+       ${CMAKE_INSTALL_PREFIX}/lib/${CMAKE_SHARED_LIBRARY_PREFIX}hdf5_hl${CMAKE_SHARED_LIBRARY_SUFFIX}
         )
 
     set(SHARED_LIBS

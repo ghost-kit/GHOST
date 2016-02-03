@@ -68,7 +68,7 @@ add_revision(freetype
 add_revision(fixFreetype
     SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/dep-libs/fixFreetype)
 
-add_revision(fixFreetype
+add_revision(GKbuildDep
     SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/dep-libs/fixFreetype)
 
 add_revision(szip

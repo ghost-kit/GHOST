@@ -12,6 +12,9 @@
 
 #include "enlilControlFile.h"
 #include "enlilEvoFile.h"
+#include "enlil3dfile.h"
+#include "enlil3Dvar.h"
+#include "enlilAtt.h"
 
 
 class vtkDataArraySelection;
@@ -88,19 +91,15 @@ public:
     void SetDataUnits(int _arg)
     {
 
-        std::cout << "Updating Units: " << std::endl;
-        this->DataUnits = _arg;
-        this->cleanCache();
+//        std::cout << "Updating Units: " << std::endl;
+//        this->DataUnits = _arg;
 
-        this->gridClean=false;
-        this->Modified();
+//        this->gridClean=false;
+//        this->Modified();
     }
 
     vtkGetMacro(DataUnits, int)
 
-
-    vtkSetStringMacro(FileName)
-    vtkGetStringMacro(FileName)
 
     vtkSetVector6Macro(WholeExtent, int)
     vtkGetVector6Macro(WholeExtent, int)
@@ -135,7 +134,7 @@ public:
     unsigned int GetNumberOfFileNames();
     const char *GetFileName(unsigned int idx);
 
-    vtkGetStringMacro(CurrentFileName);
+    const char *GetCurrentFileName();
 
 
     void readVector(std::string array, vtkFloatArray *DataArray, vtkInformationVector* outputVector, const int &dataID);
@@ -172,21 +171,8 @@ protected:
     // Check to see if info is clean
     bool infoClean;
 
-    //Data interface information
-    vtkSmartPointer<vtkPoints> Points;        // Structured grid geometry
-    vtkSmartPointer<vtkFloatArray> Radius;   // Radius Grid Data
-
-    std::vector<std::string> MetaDataNames;
-    std::map<std::string, std::string> ScalarVariableMap;
-    std::map<std::string, std::vector<std::string> > VectorVariableMap;
-    std::vector<std::vector<double> > sphericalGridCoords;
-
-    std::string dateString;
-    std::vector<std::string> fileNames;
-
-    std::map<double,std::string> time2fileMap;
-    std::map<double,double> time2physicaltimeMap;
-    std::map<double,std::string> time2datestringMap;
+    //FileNames
+    QStringList fileNames;
 
     //this map holds the positions of artifacts based on time step
     std::map< double, std::map<std::string, std::vector<double> > > positions;
@@ -196,10 +182,6 @@ protected:
     std::vector<double> TimeSteps;        // Actual times available for request
 
     double timeRange[2];
-    double CurrentPhysicalTime;
-    double current_MJD;
-    char* CurrentDateTimeString;
-    bool timesCalulated;
 
     char* CurrentFileName;
     void SetCurrentFileName(const char* fname);
@@ -210,14 +192,6 @@ protected:
 
     // Observer to modify this object when array selections are modified
     vtkCallbackCommand* SelectionObserver;
-
-    // Load a variable from data file
-
-    int GenerateGrid();
-    int LoadVariableData(vtkInformationVector *outputVector);
-    int LoadArrayValues(std::string array, vtkInformationVector* outputVector);
-
-    void PopulateGridData();
 
     int getSerialNumber()
     {
@@ -237,32 +211,10 @@ protected:
     // Request Information Helpers
     double getRequestedTime(vtkInformationVector *outputVector);
     int PopulateArrays();
-    int LoadMetaData(vtkInformationVector* outputVector);
-    int calculateTimeSteps();
-    int checkStatus(void* Object, char* name);
 
-    void calculateArtifacts();
-
-    double* read3dPartialToArray(char *array, int extents[]);
-    double* readGridPartialToArray(char *arrayName, int subExtents[], bool periodic);
-    void loadVarMetaData(const char *array,
-                         const char *title,
-                         vtkInformationVector* outputVector,
-                         bool vector = false);
-
-
-    void addPointArray(char* name);
-    void addPointArray(char* name1, char* name2, char* name3);
-    void extractDimensions(int dims[], int extent[]);
-    void setMyExtents(int extentToSet[], int sourceExtent[]);
-    void setMyExtents(int extentToSet[], int dim1, int dim2, int dim3, int dim4, int dim5, int dim6);
-    void printExtents(int extent[], char* description);
-
-    bool eq(int extent1[], int extent2[]);
-    bool ExtentOutOfBounds(int extToCheck[], int extStandard[]);
 
     // Required Paraview Functions
-    static int CanReadFiles(const char* filename);
+    virtual int CanReadFile(const char* filename);
 
     virtual int RequestData(
             vtkInformation* request,
@@ -284,28 +236,24 @@ protected:
 
 
 private:
+    //Data manipulators
+    void __PopulateArrays();
 
 
-    void cleanCache();
+    //STATE
+    double current_MJD;
+
+    //3D Data Files
+    QMap<double, enlil3DFile*> _3Dfiles;    //3D Grid/data files
 
     //EVO files
     QMap<QString, enlilEvoFile*> evoFiles;   //environment files
     void addEvoFile(const char* FileName, const char *refName);
     void locateAndLoadEvoFiles();
-    void loadEvoData(vtkInformationVector *&outputVector);
-    void clearEvoData();
-    void processEVOFiles();
-    bool useEvoFiles;
-    bool EvoFilesLoaded;
-    bool EvoFilesProcessed;
-
-    //EVO Data Storage
-    QMap<QString, QVector<vtkDoubleArray*> > evoData;
-    QMap<QString, QVector<vtkStringArray*> > evoUnits;
-
 
     vtkEnlilReader(const vtkEnlilReader&);  // Not implemented.
     void operator=(const vtkEnlilReader&);  // Not implemented.
+    int checkStatus(void *Object, char *name);
 };
 
 
