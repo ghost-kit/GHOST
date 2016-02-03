@@ -17,7 +17,7 @@ then
 elif [ $1 -eq 44 ] 
 then
 	cmake $2 -DNUM_CORES=$3 -DENABLE_ghost=true -DCMAKE_BUILD_TYPE=release -DParaView_URL=http://www.paraview.org/files/v4.4/ParaView-v4.4.0-source.tar.gz -DParaView_URL_MD5=fa1569857dd680ebb4d7ff89c2227378
-	gmake
+	make
 elif [ $1 -eq 50 ] 
 then
 	cmake $2 -DNUM_CORES=$3 -DENABLE_ghost=true -DCMAKE_BUILD_TYPE=release -DParaView_URL=http://www.paraview.org/files/v5.0/ParaView-v5.0.0-source.tar.gz -DParaView_URL_MD5=4598f0b421460c8bbc635c9a1c3bdbee
