@@ -565,15 +565,18 @@ void vtkEnlilReader::__PopulateArrays()
     {
         if(!this->_3Dfiles[this->current_MJD]->isSingularity(scalars[x]))
         {
+            //get the long name
             QString lname = this->_3Dfiles[this->current_MJD]->getVarLongName(qPrintable(scalars[x]));
             QStringList llist;
+
+            //store the variable name to the map
             llist.push_back(scalars[x]);
+            this->ArrayNameMap[lname] = llist;
 
             //add the name to the list
             this->PointDataArraySelection->AddArray(qPrintable(lname));
 
-            //record what variable the name belongs to
-            this->ArrayNameMap[lname] = llist;
+
         }
     }
 
@@ -581,10 +584,13 @@ void vtkEnlilReader::__PopulateArrays()
     {
         QString longName = this->_3Dfiles[this->current_MJD]->getVarLongName(qPrintable(vectors[x]+ QString("1"))) ;
         QStringList llist;
+
+        //create the names of the indivual components of the vector
         llist.push_back(vectors[x]+"1");
         llist.push_back(vectors[x]+"2");
         llist.push_back(vectors[x]+"3");
 
+        //Fix the long name to make it pretty
         QStringList nameParts = longName.split("-");
         if(nameParts.count() >= 2)
         {
@@ -592,11 +598,13 @@ void vtkEnlilReader::__PopulateArrays()
             longName[0] = longName[0].toTitleCase();
         }
 
+        //record what variable the names belongs to
+        this->ArrayNameMap[longName] = llist;
+
         //Add the name to the list
         this->PointDataArraySelection->AddArray(qPrintable(longName));
 
-        //record what variable the names belongs to
-        this->ArrayNameMap[longName] = llist;
+
     }
 }
 
