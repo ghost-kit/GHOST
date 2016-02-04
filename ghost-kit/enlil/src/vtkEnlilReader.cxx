@@ -341,10 +341,6 @@ int vtkEnlilReader::RequestInformation(
                 (char*)" Array Name: Data Info Output Information");
 
 
-
-
-
-
     //get information from the first file in the list... it has to come from somewhere...
 
     if(status)
@@ -567,15 +563,40 @@ void vtkEnlilReader::__PopulateArrays()
 
     for(int x=0; x < numScalars; x++)
     {
-        this->PointDataArraySelection->AddArray(qPrintable(this->_3Dfiles[this->current_MJD]->getVarLongName(qPrintable(scalars[x]))));
+        if(!this->_3Dfiles[this->current_MJD]->isSingularity(scalars[x]))
+        {
+            QString lname = this->_3Dfiles[this->current_MJD]->getVarLongName(qPrintable(scalars[x]));
+            QStringList llist;
+            llist.push_back(scalars[x]);
+
+            //add the name to the list
+            this->PointDataArraySelection->AddArray(qPrintable(lname));
+
+            //record what variable the name belongs to
+            this->ArrayNameMap[lname] = llist;
+        }
     }
 
     for(int x=0; x < numVectors; x++)
     {
         QString longName = this->_3Dfiles[this->current_MJD]->getVarLongName(qPrintable(vectors[x]+ QString("1"))) ;
-        std::cout << "Long Name: " << qPrintable(longName) << std::endl;
+        QStringList llist;
+        llist.push_back(vectors[x]+"1");
+        llist.push_back(vectors[x]+"2");
+        llist.push_back(vectors[x]+"3");
 
+        QStringList nameParts = longName.split("-");
+        if(nameParts.count() >= 2)
+        {
+            longName = nameParts[1];
+            longName[0] = longName[0].toTitleCase();
+        }
+
+        //Add the name to the list
         this->PointDataArraySelection->AddArray(qPrintable(longName));
+
+        //record what variable the names belongs to
+        this->ArrayNameMap[longName] = llist;
     }
 }
 
