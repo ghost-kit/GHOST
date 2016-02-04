@@ -559,6 +559,8 @@ int vtkEnlilReader::FillOutputPortInformation(int port, vtkInformation* info)
 
 void vtkEnlilReader::__PopulateArrays()
 {
+    //TODO: Need to have a map of these names to variable.  Maybe a reverse lookup within enlil3dfile?
+
     QStringList scalars = this->_3Dfiles[this->current_MJD]->getScalarList();
     QStringList vectors = this->_3Dfiles[this->current_MJD]->getVectorList();
 
