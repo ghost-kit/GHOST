@@ -879,6 +879,16 @@ enlilExtent enlil3DVar::getExtent(const char *name)
 
 }
 
+/**
+ * @brief enlil3DVar::getExtentNames
+ * @param name
+ * @return Keys of map
+ */
+QStringList enlil3DVar::getExtentNames(QString name)
+{
+    return this->__wholeExtents.keys();
+}
+
 
 /**
  * @brief enlil3DVar::_loadMetaData

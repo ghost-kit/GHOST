@@ -292,6 +292,36 @@ QStringList enlil3DFile::getVarNames()
 }
 
 
+/**
+ * @brief enlil3DFile::singularity
+ * @param varName
+ * @return
+ */
+bool enlil3DFile::isSingularity(QString varName)
+{
+   QStringList names = this->_varOutput[varName]->getExtentNames(varName);
+   std::cout << "Name: " << qPrintable(varName) << std::endl;
+   std::cout << "Number of Names: " << names.count() << std::endl;
+   for(int x = 0; x < names.count(); x++)
+   {
+       std::cout << "Dim: " << qPrintable(names[x]) << std::endl;
+   }
+
+   if(names.contains("n1"))
+   {
+       std::cout << "N1: " << this->_varOutput[varName]->getExtent("n1").first
+                  << "," << this->_varOutput[varName]->getExtent("n1").second << std::endl;
+
+       enlilExtent varExtent = this->_varOutput[varName]->getExtent("n1");
+
+       if(varExtent.first == 0 && varExtent.second == 0) return true;
+   }
+
+   if(names.count() == 0) return true;
+   else return false;
+}
+
+
 
 /**
  * @brief enlil3DFile::getFileAttributeNames

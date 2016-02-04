@@ -238,7 +238,7 @@ protected:
 private:
     //Data manipulators
     void __PopulateArrays();
-
+    QMap<QString, QStringList> ArrayNameMap;
 
     //STATE
     double current_MJD;

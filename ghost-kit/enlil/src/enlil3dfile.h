@@ -62,6 +62,8 @@ public:
     //Variable Routines
     QStringList getVarNames();
 
+    bool isSingularity(QString varName);
+
     QVector<float> asFloat(const char* name, int block=0);
     QVector<QVector<float> > asFloat(const char* X, const char* Y, const char* Z, int block=0, bool cart=true);
 

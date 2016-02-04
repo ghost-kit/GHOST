@@ -75,6 +75,7 @@ public:
     qint64 recordCount();
 
     enlilExtent getExtent(const char* name);
+    QStringList getExtentNames(QString name);
 
     enlilConversion *getConversionFactor() const;
     void setConversionFactor(enlilConversion *value);
