@@ -76,13 +76,16 @@ vtkEnlilReader::vtkEnlilReader()
 
     std::cout << "Ports Set" << std::endl << std::flush;
 
-//    //configure array status selectors
+    //    //configure array status selectors
     this->PointDataArraySelection = vtkDataArraySelection::New();
     this->CellDataArraySelection  = vtkDataArraySelection::New();
     this->PointDataArraySelection->DisableAllArrays();
     this->CellDataArraySelection->DisableAllArrays();
 
     this->numberOfArrays = 0;
+
+    this->__grid = NULL;
+    this->__gridClean = false;
 
     std::cout << "Arrays Set" << std::endl << std::flush;
 
@@ -107,6 +110,8 @@ vtkEnlilReader::~vtkEnlilReader()
     this->CellDataArraySelection->Delete();
     this->SelectionObserver->Delete();
 
+    if(this->__grid) this->__grid->Delete();
+
 }
 
 
@@ -118,6 +123,22 @@ int vtkEnlilReader::findControlFile()
 
 
     return false;
+}
+
+/**
+ * @brief vtkEnlilReader::getWholeExtent
+ * @return
+ */
+QVector<enlilExtent> vtkEnlilReader::getWholeExtent()
+{
+    QMap<QString, enlilExtent>  extentMap = this->_3Dfiles[current_MJD]->getWholeExtents();
+    QVector<enlilExtent> wholeExtents;
+    wholeExtents.push_back(extentMap["n1"]);
+    wholeExtents.push_back(extentMap["n2"]);
+    wholeExtents.push_back(extentMap["n3"]);
+
+    return wholeExtents;
+
 }
 
 //---------------------------------------------------------------------------------------------
@@ -207,7 +228,7 @@ int vtkEnlilReader::GetCellArrayStatus(const char *name)
  */
 void vtkEnlilReader::SetPointArrayStatus(const char *name, int status)
 {
-      std::cout << __FUNCTION__ << " Called with status: " << status << std::endl << std::flush;
+    std::cout << __FUNCTION__ << " Called with status: " << status << std::endl << std::flush;
 
     if(status)
     {
@@ -329,9 +350,7 @@ int vtkEnlilReader::RequestInformation(
         vtkInformationVector** inputVector,
         vtkInformationVector* outputVector)
 {
-    std::cout << __FUNCTION__ << " Start" << std::endl << std::flush;
-
-    std::cerr << "Starting Request Information" << std::flush << std::endl;
+    std::cerr << "Starting " << __FUNCTION__ << std::flush << std::endl;
     int status = 0;
 
     // Array names and extents
@@ -369,30 +388,45 @@ int vtkEnlilReader::RequestInformation(
 
         /*Set Information*/
         //Set Time
+        double timeRange[2];
+        QPair<double, double> minmax = this->getTimeStepRange();
 
+        timeRange[0] = minmax.first;
+        timeRange[1] = minmax.second;
+
+        //get the extents from the file
+        int WholeExtent[6];
+        QVector<enlilExtent> extents = this->getWholeExtent();
+        WholeExtent[0] = extents[0].first;
+        WholeExtent[1] = extents[0].second;
+        WholeExtent[2] = extents[1].first;
+        WholeExtent[3] = extents[1].second;
+        WholeExtent[4] = extents[2].first;
+        WholeExtent[5] = extents[2].second;
+
+        //set the time step data itself
         DataOutputInfo->Set(
                     vtkStreamingDemandDrivenPipeline::TIME_STEPS(),
-                    this->TimeSteps.data(),
-                    this->NumberOfTimeSteps);
+                    this->_3Dfiles.keys().toVector().toStdVector().data(),
+                    this->_3Dfiles.count());
 
+        //set the start and end times
         DataOutputInfo->Set(
                     vtkStreamingDemandDrivenPipeline::TIME_RANGE(),
-                    this->timeRange,
+                    timeRange,
                     2);
 
-
-
-        //Set Extents
+        //provide Paraview with the range of extents in this file
         DataOutputInfo->Set(
                     vtkStreamingDemandDrivenPipeline::WHOLE_EXTENT(),
-                    this->WholeExtent,
+                    WholeExtent,
                     6);
 
 
     }
 
 
-    //we need port 1 to be only one time step.
+    //Set Port 1 (EVO Data) to be one time step
     DataOutputInfo = outputVector->GetInformationObject(1);
     status = this->checkStatus(
                 DataOutputInfo,
@@ -419,7 +453,73 @@ int vtkEnlilReader::RequestData(
         vtkInformationVector** inputVector,
         vtkInformationVector* outputVector)
 {
-        std::cout << __FUNCTION__ << " Start" << std::endl << std::flush;
+    std::cout << __FUNCTION__ << " Start" << std::endl << std::flush;
+    this->SetProgressText("Loading Data...");
+    double progress = 0.0;
+
+    this->SetProgress(progress);
+
+    //get correct time postions
+    this->current_MJD = this->getRequestedTime(outputVector);
+    progress += 0.1;
+    this->SetProgress(progress);
+
+    //Prep the output
+    int newExtent[6];
+
+    vtkStructuredGrid* Data = vtkStructuredGrid::GetData(outputVector, 0);
+    vtkInformation* fieldInfo = outputVector->GetInformationObject(0);
+
+    int status = this->checkStatus(Data, (char*)"Data Array Structured Grid");
+
+    if(status)
+    {
+        //get the requested extent from ParaView
+        fieldInfo->Get(vtkStreamingDemandDrivenPipeline::UPDATE_EXTENT(), newExtent);
+
+        //check to see if the extents have changed
+
+        if(!__eq(newExtent, this->__getCurrentExtents()))
+        {
+            this->__gridClean = false;
+        }
+
+
+        //set current file extent
+        this->_3Dfiles[current_MJD]->setSubExtents(newExtent);
+
+        //acknowledge paraview on extents
+        Data->SetExtent(newExtent);
+
+        //set grid
+        Data->SetPoints(this->getGrid());
+
+        progress += 0.4;
+        this->SetProgress(progress);
+
+        //set the data requested
+        int totalNumberArrays = this->PointDataArraySelection->GetNumberOfArrays();
+
+        for(int arrayNum=0; arrayNum < totalNumberArrays; arrayNum++)
+        {
+            QString Name(this->PointDataArraySelection->GetArrayName(arrayNum));
+            if(this->PointDataArraySelection->ArrayIsEnabled(qPrintable(Name)))
+            {
+                vtkFloatArray* data = this->getDataFromFile(Name);
+                Data->GetPointData()->AddArray(data);
+                data->Delete();
+            }
+
+            progress += (.5/totalNumberArrays);
+            this->SetProgress(progress);
+        }
+
+    }
+
+
+    this->SetProgress(1.0);
+
+    //this->PopulateRequestedData();
 
 
 
@@ -433,8 +533,113 @@ double vtkEnlilReader::getRequestedTime(vtkInformationVector* outputVector)
 {
     std::cout << __FUNCTION__ << " Start" << std::endl << std::flush;
 
+    vtkInformation* outInfo = outputVector->GetInformationObject(0);
 
-    return 0;
+    double requestedTimeValue = outInfo->Get(vtkStreamingDemandDrivenPipeline::UPDATE_TIME_STEP());
+
+    return requestedTimeValue;
+}
+
+/**
+* @brief vtkEnlilReader::buildGrid
+* @return
+*/
+vtkPoints *vtkEnlilReader::buildGrid()
+{
+    //FIXME: Memory Managment - look for best way to deal with this
+    vtkPoints *grid = vtkPoints::New(VTK_FLOAT);
+
+    this->_3Dfiles[current_MJD]->setGridSpacingType(ENLIL_GRIDSPACING_CT);
+
+    QVector<QVector<double> > gridSpace = this->_3Dfiles[current_MJD]->getGridSpacing();
+
+    int loop=0;
+    int loopMax= gridSpace.count();
+
+    for(loop =0; loop < loopMax; loop++)
+    {
+        grid->InsertNextPoint(gridSpace[loop][0], gridSpace[loop][1], gridSpace[loop][2]);
+    }
+
+    return grid;
+
+}
+
+/**
+ * @brief vtkEnlilReader::getGrid
+ * @return
+ */
+vtkPoints *vtkEnlilReader::getGrid()
+{
+    if(!this->__gridClean || !this->__grid)
+    {
+        this->__grid = this->buildGrid();
+    }
+
+    //mark the grid as clean
+    this->__gridClean = true;
+
+    return this->__grid;
+}
+
+/**
+ * @brief vtkEnlilReader::__getCurrentExtents
+ * @return
+ */
+int *vtkEnlilReader::__getCurrentExtents()
+{
+    QMap<QString, enlilExtent> extents = this->_3Dfiles[this->current_MJD]->getCurrentExtents();
+
+    this->__currentExtents[0] = extents["n1"].first;
+    this->__currentExtents[1] = extents["n1"].second;
+    this->__currentExtents[2] = extents["n2"].first;
+    this->__currentExtents[3] = extents["n2"].second;
+    this->__currentExtents[4] = extents["n3"].first;
+    this->__currentExtents[5] = extents["n3"].second;
+
+    return this->__currentExtents;
+}
+
+/**
+ * @brief vtkEnlilReader::getDataFromFile
+ * @return
+ */
+vtkFloatArray *vtkEnlilReader::getDataFromFile(QString arrayName)
+{
+    QStringList vars = this->__ArrayNameMap[arrayName];
+    //setup new array
+    vtkFloatArray *newArray = vtkFloatArray::New();
+    newArray->SetName(arrayName.toAscii().data());
+
+    //check to see if it is a vector or scalar
+    if(vars.count() > 1)
+    {
+        //Vector
+        newArray->SetNumberOfComponents(3);
+        QVector<QVector<float> > data;
+        data = this->_3Dfiles[this->current_MJD]->asFloat(qPrintable(vars[0]), qPrintable(vars[1]), qPrintable(vars[2]));
+        int dataSize = data.count();
+        for(int x = 0; x < dataSize; x++)
+        {
+            newArray->InsertNextTuple3(data[x][0], data[x][1], data[x][2]);
+        }
+
+    }
+    else
+    {
+        //Scalar
+        newArray->SetNumberOfComponents(1);
+        QVector<float> data;
+        data = this->_3Dfiles[this->current_MJD]->asFloat(qPrintable(vars[0]));
+        int dataSize = data.count();
+        for(int x = 0; x < dataSize; x++)
+        {
+            newArray->InsertNextValue(data[x]);
+        }
+    }
+
+    //return the VTK array
+    return newArray;
 }
 
 
@@ -487,14 +692,14 @@ void vtkEnlilReader::RemoveAllFileNames()
     std::cout << __FUNCTION__ << " Start" << std::endl << std::flush;
 
     this->fileNames.clear();
-//    this->numberOfArrays = 0;
-//    this->timesCalulated = false;
-//    this->NumberOfTimeSteps = 0;
-//    this->TimeSteps.clear();
-//    this->gridClean = false;
-//    this->EvoFilesLoaded = false;
-//    this->EvoFilesProcessed = false;
-//    this->clearEvoData();
+    //    this->numberOfArrays = 0;
+    //    this->timesCalulated = false;
+    //    this->NumberOfTimeSteps = 0;
+    //    this->TimeSteps.clear();
+    //    this->gridClean = false;
+    //    this->EvoFilesLoaded = false;
+    //    this->EvoFilesProcessed = false;
+    //    this->clearEvoData();
 
     this->FileName = NULL;
     this->Modified();
@@ -573,7 +778,7 @@ void vtkEnlilReader::__PopulateArrays()
 
             //store the variable name to the map
             llist.push_back(scalars[x]);
-            this->ArrayNameMap[lname] = llist;
+            this->__ArrayNameMap[lname] = llist;
 
             //add the name to the list
             this->PointDataArraySelection->AddArray(qPrintable(lname));
@@ -601,7 +806,7 @@ void vtkEnlilReader::__PopulateArrays()
         }
 
         //record what variable the names belongs to
-        this->ArrayNameMap[longName] = llist;
+        this->__ArrayNameMap[longName] = llist;
 
         //Add the name to the list
         this->PointDataArraySelection->AddArray(qPrintable(longName));
@@ -609,6 +814,8 @@ void vtkEnlilReader::__PopulateArrays()
 
     }
 }
+
+
 
 void vtkEnlilReader::locateAndLoadEvoFiles()
 {
@@ -667,15 +874,6 @@ void vtkEnlilReader::setUseControlFile(int status)
 {
     std::cout << __FUNCTION__ << " Start" << std::endl << std::flush;
 
-//    this->useControlFile = status;
-//    if(!status)
-//    {
-//        //this will deactivate the control file
-//        this->updateControlFile(false);
-
-//    }
-
-//    this->Modified();
 }
 
 //---------------------------------------------------------------------------------------------
@@ -692,5 +890,29 @@ int vtkEnlilReader::checkStatus(void *Object, char *name)
     }
 
     return 1;
+}
+
+/**
+ * @brief vtkEnlilReader::getTimeStepRange
+ * @return
+ */
+QPair<double, double> vtkEnlilReader::getTimeStepRange()
+{
+    QList<double> keys = this->_3Dfiles.keys();
+
+    QPair<double, double> minMax;
+
+    minMax.first = keys.first();
+    minMax.second = keys.last();
+
+    return minMax;
+}
+
+
+bool vtkEnlilReader::__eq(int extent1[], int extent2[])
+{
+    return(extent1[0] == extent2[0] && extent1[1] == extent2[1]
+            && extent1[2] == extent2[2] && extent1[3] == extent2[3]
+            && extent1[4] == extent2[4] && extent1[5] == extent2[5]);
 }
 

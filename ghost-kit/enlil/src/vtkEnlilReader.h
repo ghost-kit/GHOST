@@ -101,11 +101,7 @@ public:
     vtkGetMacro(DataUnits, int)
 
 
-    vtkSetVector6Macro(WholeExtent, int)
-    vtkGetVector6Macro(WholeExtent, int)
 
-    vtkSetVector6Macro(SubExtent, int)
-    vtkGetVector6Macro(SubExtent, int)
 
     void setUseControlFile(int status);
 
@@ -162,11 +158,7 @@ protected:
     vtkIdType NumberOfTuples;  // Number of tuples in subextent
 
     // Field
-    int WholeExtent[6];       // Extents of entire grid
-    int SubExtent[6];         // Processor grid extent
-    int UpdateExtent[6];
-    int Dimension[3];         // Size of entire grid
-    int SubDimension[3];      // Size of processor grid
+    QVector<enlilExtent> getWholeExtent();
 
     // Check to see if info is clean
     bool infoClean;
@@ -176,12 +168,6 @@ protected:
 
     //this map holds the positions of artifacts based on time step
     std::map< double, std::map<std::string, std::vector<double> > > positions;
-
-    // Time step information
-    int NumberOfTimeSteps;                 // Number of time steps
-    std::vector<double> TimeSteps;        // Actual times available for request
-
-    double timeRange[2];
 
     char* CurrentFileName;
     void SetCurrentFileName(const char* fname);
@@ -237,23 +223,34 @@ protected:
 
 private:
     //Data manipulators
-    void __PopulateArrays();
-    QMap<QString, QStringList> ArrayNameMap;
+    void __PopulateArrays();                    //method to populate names from variable
+    QMap<QString, QStringList> __ArrayNameMap;    //map for names to variables
+    vtkPoints *buildGrid();                     //builds the grid regardless of cache
+    vtkPoints *getGrid();                       //returns either the cached grid or calls the build grid
+    bool __gridClean;                           //provides status of the grid
+    vtkPoints *__grid;                            //grid cache
+    int* __getCurrentExtents();                   //current data extents that are set
+    vtkFloatArray* getDataFromFile(QString arrayName);             //retrieves the data from file and places in vtkFloat
 
     //STATE
-    double current_MJD;
+    double current_MJD;                         //current timestep
 
     //3D Data Files
-    QMap<double, enlil3DFile*> _3Dfiles;    //3D Grid/data files
+    QMap<double, enlil3DFile*> _3Dfiles;        //3D Grid/data files
 
     //EVO files
-    QMap<QString, enlilEvoFile*> evoFiles;   //environment files
+    QMap<QString, enlilEvoFile*> evoFiles;      //environment files
     void addEvoFile(const char* FileName, const char *refName);
     void locateAndLoadEvoFiles();
 
-    vtkEnlilReader(const vtkEnlilReader&);  // Not implemented.
-    void operator=(const vtkEnlilReader&);  // Not implemented.
+    vtkEnlilReader(const vtkEnlilReader&);      // Not implemented.
+    void operator=(const vtkEnlilReader&);      // Not implemented.
     int checkStatus(void *Object, char *name);
+
+    QPair<double, double> getTimeStepRange();
+    bool __eq(int extent1[], int extent2[]);
+
+    int __currentExtents[6];                      // use ONLY with __getCurrentExtents, or it may be inconsistant.
 };
 
 

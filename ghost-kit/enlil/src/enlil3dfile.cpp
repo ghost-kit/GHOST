@@ -32,7 +32,7 @@ enlil3DFile::enlil3DFile(QString FileName, const char *scaleUnits, double scaleF
     this->setFileName(FileName);
     this->_convertData = false;
     this->_useSubExtents = false;
-    this->_gridOutput = NULL;
+    this->_gridCT = true;
     this->_convMap = NULL;
     this->_scaleFactor = NULL;
     //set scale factor
@@ -77,9 +77,7 @@ void enlil3DFile::__cleanAll()
     this->_TIME = 0;
     this->_name.clear();
     this->_enlil_version = 0;
-    this->_gridOutput = NULL;
-    this->_gridPositionsCT.clear();
-    this->_gridPositionsSP.clear();
+    this->_gridOutput.clear();
     this->_fileAttributeData.clear();
 
 }
@@ -265,16 +263,16 @@ void enlil3DFile::setGridSpacingType(int type)
     switch(type)
     {
     case ENLIL_GRIDSPACING_CT:
-        this->_gridOutput = &_gridPositionsCT;
+        this->_gridCT = true;
         break;
 
     case ENLIL_GRIDSPACING_SP:
-        this->_gridOutput = &_gridPositionsSP;
+        this->_gridCT = false;
         break;
 
     default:
         std::cerr << "Undefined GridSpacing Type" << std::endl;
-        this->_gridOutput = NULL;
+        this->_gridOutput.clear();
         break;
     }
 
@@ -402,6 +400,15 @@ QVector<QVector<float> > enlil3DFile::asFloat(const char *X, const char *Y, cons
         return QVector<QVector<float> > ();
     }
 
+    if(!this->contains("X1") && !this->contains("X2") && !this->contains("X3"))
+    {
+        return QVector<QVector<float> > ();
+    }
+
+    QVector<double> gX1 = this->asDouble("X1", block);
+    QVector<double> gX2 = this->asDouble("X2", block);
+    QVector<double> gX3 = this->asDouble("X3", block);
+
     QVector<float> X1 = this->asFloat(X, block);
     QVector<float> Y1 = this->asFloat(Y, block);
     QVector<float> Z1 = this->asFloat(Z, block);
@@ -423,12 +430,18 @@ QVector<QVector<float> > enlil3DFile::asFloat(const char *X, const char *Y, cons
         if(cart)
         {
             QVector<float> rtp;
+            QVector<double> grid_rtp;
+
 
             rtp.push_back(X1[loop]);
             rtp.push_back(Y1[loop]);
             rtp.push_back(Z1[loop]);
 
-            xyz = this->__sphere2Cart(rtp);
+            grid_rtp.push_back(gX1[loop]);
+            grid_rtp.push_back(gX2[loop]);
+            grid_rtp.push_back(gX3[loop]);
+
+            xyz = this->__sphere2CartData(rtp, grid_rtp);
 
             entry.push_back(xyz[0]);
             entry.push_back(xyz[1]);
@@ -496,6 +509,14 @@ QVector<QVector<double> > enlil3DFile::asDouble(const char *X, const char *Y, co
         return QVector<QVector<double> > ();
     }
 
+    if(!this->contains("X1") && !this->contains("X2") && !this->contains("X3"))
+    {
+        return QVector<QVector<double> > ();
+    }
+
+    QVector<QVector<double> > grid = this->asDouble("X1", "X2", "X3", block, false);
+
+
     QVector<double> X1 = this->asDouble(X, block);
     QVector<double> Y1 = this->asDouble(Y, block);
     QVector<double> Z1 = this->asDouble(Z, block);
@@ -516,13 +537,14 @@ QVector<QVector<double> > enlil3DFile::asDouble(const char *X, const char *Y, co
         QVector<double> entry;
         if(cart)
         {
+
             QVector<double> rtp;
 
             rtp.push_back(X1[loop]);
             rtp.push_back(Y1[loop]);
             rtp.push_back(Z1[loop]);
 
-            xyz = this->__sphere2Cart(rtp);
+            xyz = this->__sphere2CartData(rtp, grid[loop]);
 
             entry.push_back(xyz[0]);
             entry.push_back(xyz[1]);
@@ -873,8 +895,14 @@ void enlil3DFile::__processExtents()
     }
 }
 
+/**
+ * @brief enlil3DFile::__processGridLocations
+ *          This function should determine which type of grid
+ *          we want, and then produce it.  Delete it when done.
+ */
 void enlil3DFile::__processGridLocations()
 {
+    this->_gridOutput.clear();
     int loopX=0, loopY=0, loopZ=0;
 
     //check existance of the position values
@@ -886,9 +914,6 @@ void enlil3DFile::__processGridLocations()
         QVector<double> x1 = this->_varOutput["X1"]->asDouble();
         QVector<double> x2 = this->_varOutput["X2"]->asDouble();
         QVector<double> x3 = this->_varOutput["X3"]->asDouble();
-
-        QVector<QVector<double> > XYZ;
-        QVector<QVector<double> > RTP;
 
         QVector<double> xyz;
 
@@ -913,21 +938,20 @@ void enlil3DFile::__processGridLocations()
                     rtp.push_back(x2[loopY]);
                     rtp.push_back(x3[loopZ]);
 
-                    xyz = this->__sphere2Cart(rtp);
-
-                    RTP.push_back(rtp);
-                    XYZ.push_back(xyz);
+                    if(this->_gridCT)
+                    {
+                        xyz = this->__sphere2Cart(rtp);
+                        this->_gridOutput.push_back(xyz);
+                    }
+                    else
+                    {
+                        this->_gridOutput.push_back(rtp);
+                    }
 
                 }
             }
         }
 
-        //save converted results
-        this->_gridPositionsCT = XYZ;
-        this->_gridPositionsSP = RTP;
-
-        //define the grid output (Default to Cartesian grid)
-        this->setGridSpacingType(ENLIL_GRIDSPACING_CT);
     }
     else
     {
@@ -1079,6 +1103,7 @@ void enlil3DFile::__addConversion(QString baseUnits, QString newUnits, double di
 }
 
 
+
 /**
  * @brief enlil3DFile::__gridSphere2Cart
  * @param rtp
@@ -1126,6 +1151,57 @@ QVector<qint64> enlil3DFile::__sphere2Cart(const QVector<qint64> rtp)
 
     return xyz;
 }
+
+/**
+ * @brief enlil3DFile::__sphere2CartData
+ * @param data
+ * @param grid_rtp
+ * @return
+ */
+QVector<double> enlil3DFile::__sphere2CartData(const QVector<double> data, const QVector<double> grid_rtp)
+{
+    QVector<double> vector;
+
+    vector.push_back((data[0] * sin(grid_rtp[1]) * cos(grid_rtp[2])) + (data[1] * cos(grid_rtp[1]) * cos(grid_rtp[2])) + (-1.0*data[2] * sin(grid_rtp[2])));
+    vector.push_back((data[0] * sin(grid_rtp[1]) * sin(grid_rtp[2])) + (data[1] * cos(grid_rtp[1]) * sin(grid_rtp[2])) + (data[2] * cos(grid_rtp[2])));
+    vector.push_back((data[0] * cos(grid_rtp[1])) + (-1.0*data[1] * sin(grid_rtp[1])));
+
+    return vector;
+}
+
+/**
+ * @brief enlil3DFile::__sphere2CartData
+ * @param data
+ * @param grid_rtp
+ * @return
+ */
+QVector<float> enlil3DFile::__sphere2CartData(const QVector<float> data, const QVector<double> grid_rtp)
+{
+    QVector<float> vector;
+
+    vector.push_back((data[0] * sin(grid_rtp[1]) * cos(grid_rtp[2])) + (data[1] * cos(grid_rtp[1]) * cos(grid_rtp[2])) + (-1.0*data[2] * sin(grid_rtp[2])));
+    vector.push_back((data[0] * sin(grid_rtp[1]) * sin(grid_rtp[2])) + (data[1] * cos(grid_rtp[1]) * sin(grid_rtp[2])) + (data[2] * cos(grid_rtp[2])));
+    vector.push_back((data[0] * cos(grid_rtp[1])) + (-1.0*data[1] * sin(grid_rtp[1])));
+
+    return vector;
+}
+
+/**
+ * @brief enlil3DFile::__sphere2CartData
+ * @param data
+ * @param grid_rtp
+ * @return
+ */
+QVector<qint64> enlil3DFile::__sphere2CartData(const QVector<qint64> data, const QVector<double> grid_rtp)
+{
+    QVector<qint64> vector;
+
+    vector.push_back((data[0] * sin(grid_rtp[1]) * cos(grid_rtp[2])) + (data[1] * cos(grid_rtp[1]) * cos(grid_rtp[2])) + (-1.0*data[2] * sin(grid_rtp[2])));
+    vector.push_back((data[0] * sin(grid_rtp[1]) * sin(grid_rtp[2])) + (data[1] * cos(grid_rtp[1]) * sin(grid_rtp[2])) + (data[2] * cos(grid_rtp[2])));
+    vector.push_back((data[0] * cos(grid_rtp[1])) + (-1.0*data[1] * sin(grid_rtp[1])));
+
+    return vector;
+ }
 
 /**
  * @brief enlil3DFile::getScale_factor
@@ -1199,12 +1275,17 @@ void enlil3DFile::setSubExtents(int subExtents[])
  */
 QVector<QVector< double > > enlil3DFile::getGridSpacing()
 {
-    if(!this->_gridOutput)
-    {
-        this->__processGridLocations();
-    }
-    QVector<QVector<double > > currentGrid = *this->_gridOutput;
 
+    //make the grid
+    this->__processGridLocations();
+
+    //copy the grid
+    QVector<QVector<double > > currentGrid = this->_gridOutput;
+
+    //clear the local copy
+    this->_gridOutput.clear();
+
+    //send it on back!
     return currentGrid;
 }
 
