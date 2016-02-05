@@ -255,7 +255,7 @@ int main(int argc, char* argv[])
     gridSpace = file.getGridSpacing();
 
     loop=0;
-    double epsilon = 2*std::numeric_limits<double>::epsilon();
+    double epsilon = 3*std::numeric_limits<double>::epsilon();
 
     for(loopz = 0; loopz < sizez; loopz++ )
     {
@@ -293,7 +293,7 @@ int main(int argc, char* argv[])
       * Test Data Aqcuisition
       *
       **/
-    QVector<QVector<double> > VectorData = file.asDouble("V1", "V2", "V3");
+    QVector<QVector<double> > VectorData = file.asDouble("V1", "V2", "V3", 1);
     std::cout << "Velocity Vector Size: " << VectorData.count() << std::endl;
 
     if(VectorData.count() != file.get3Dcount())
@@ -370,20 +370,33 @@ int main(int argc, char* argv[])
 
     QVector<QVector<double> > rtpValues = file.asDouble("V1", "V2", "V3", 0, false);
     QVector<QVector<double> > xyzValues = file.asDouble("V1", "V2", "V3", 0, true);
+    int ErrorCount = 0;
 
     for(int x = 0; x < rtpValues.count(); x++)
     {
         double checkVal = sqrt(pow(xyzValues[x][0],2) + pow(xyzValues[x][1],2) + pow(xyzValues[x][2],2));
-        if(!doubleCompareEqual(checkVal, rtpValues[x][0], epsilon))
+        double rtpCheck = sqrt(pow(rtpValues[x][0],2) + pow(rtpValues[x][1],2) + pow(rtpValues[x][2],2));
+        if(!doubleCompareEqual(checkVal, rtpCheck, epsilon))
         {
             std::cerr << "ERROR: Cartesian Conversion from Spherical Failed for Velocity." << std::endl;
-            std::cerr << "Expected: " << rtpValues[x][0] << std::endl;
+            std::cerr << "Locaation: " << x << std::endl;
+            std::cerr << "Expected: " << rtpCheck << std::endl;
             std::cerr << "Recieved: " <<  checkVal << std::endl;
-            exit(EXIT_FAILURE);
+            ErrorCount++;
         }
 
+
     }
-    std::cout << "Cartesian conversion appears to be correct within " << epsilon << " of the spherical equivilant." << std::endl;
+    if(ErrorCount)
+    {
+        std::cerr << ErrorCount << " Errors were encounterd in the conversion Velocity Vector Conversion process." << std::endl;
+    }
+    else
+    {
+        std::cout << "Cartesian conversion appears to be correct within " << epsilon << " of the spherical equivilant." << std::endl;
+
+    }
+
 
     for(int x =0; x < 10; x++)
     {

@@ -822,6 +822,7 @@ QVector<QVariant> *enlil3DVar::_getData(enlilExtent N1, enlilExtent N2, enlilExt
             std::cerr << "We don't know how to handle a 4-D file for Enlil..." << std::endl;
             break;
         }
+
         //this is a 3-D file with blocks
         //Enlil files encode the data in nblk, n3, n2, n1
         startLoc[0] = nblk;

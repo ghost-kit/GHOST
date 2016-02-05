@@ -230,7 +230,7 @@ private:
     bool __gridClean;                           //provides status of the grid
     vtkPoints *__grid;                            //grid cache
     int* __getCurrentExtents();                   //current data extents that are set
-    vtkFloatArray* getDataFromFile(QString arrayName);             //retrieves the data from file and places in vtkFloat
+    vtkFloatArray* getDataFromFile(QString arrayName, int block=0);             //retrieves the data from file and places in vtkFloat
 
     //STATE
     double current_MJD;                         //current timestep

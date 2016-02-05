@@ -166,16 +166,16 @@ protected:  //METHODS
     //these vectors MUST be 3 tuples
     //it is the responsibility of the calling function to
     //   free the memory associated with these conversions
-    QVector<double> __sphere2Cart(const QVector<double> rtp);
-    QVector<float> __sphere2Cart(const QVector<float> rtp);
-    QVector<qint64> __sphere2Cart(const QVector<qint64> rtp);
+    QVector<double> __sphere2Cart(const QVector<double> &rtp);
+    QVector<float> __sphere2Cart(const QVector<float> &rtp);
+    QVector<qint64> __sphere2Cart(const QVector<qint64> &rtp);
 
     QVector<double> __sphere2CartData(const QVector<double> &data, const QVector<double> &grid_rtp);
     QVector<float> __sphere2CartData(const QVector<float> &data, const QVector<double> &grid_rtp);
     QVector<qint64> __sphere2CartData(const QVector<qint64> &data, const QVector<double> &grid_rtp);
 
     //file manipulations
-    double __getMax(QVector<double> vector);
+    double __getMax(const QVector<double> &vector);
 
     void __ResetFile();
 

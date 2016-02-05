@@ -503,13 +503,21 @@ int vtkEnlilReader::RequestData(
         for(int arrayNum=0; arrayNum < totalNumberArrays; arrayNum++)
         {
             QString Name(this->PointDataArraySelection->GetArrayName(arrayNum));
-            if(this->PointDataArraySelection->ArrayIsEnabled(qPrintable(Name)))
-            {
-                vtkFloatArray* data = this->getDataFromFile(Name);
-                Data->GetPointData()->AddArray(data);
-                data->Delete();
-            }
+            QStringList Var = this->__ArrayNameMap[Name];
+            int numBlocks = this->_3Dfiles[current_MJD]->getNumberOfBlocks(qPrintable(Var[0]));
 
+            std::cerr << "Number of Blocks: " << numBlocks << std::endl;
+
+            for(int block=0; block < numBlocks; block++)
+            {
+                if(this->PointDataArraySelection->ArrayIsEnabled(qPrintable(Name)))
+                {
+                    vtkFloatArray* data = this->getDataFromFile(Name, block);
+                    Data->GetPointData()->AddArray(data);
+                    data->Delete();
+                }
+
+            }
             progress += (.5/totalNumberArrays);
             this->SetProgress(progress);
         }
@@ -612,12 +620,20 @@ int *vtkEnlilReader::__getCurrentExtents()
  * @brief vtkEnlilReader::getDataFromFile
  * @return
  */
-vtkFloatArray *vtkEnlilReader::getDataFromFile(QString arrayName)
+vtkFloatArray *vtkEnlilReader::getDataFromFile(QString arrayName, int block)
 {
+
     QStringList vars = this->__ArrayNameMap[arrayName];
     //setup new array
     vtkFloatArray *newArray = vtkFloatArray::New();
-    newArray->SetName(arrayName.toAscii().data());
+    QString newArrayName = arrayName;
+
+
+
+    newArrayName += (" " + QString::number(block));
+
+
+    newArray->SetName(qPrintable(newArrayName));
 
     //check to see if it is a vector or scalar
     if(vars.count() > 1)
@@ -625,7 +641,7 @@ vtkFloatArray *vtkEnlilReader::getDataFromFile(QString arrayName)
         //Vector
         newArray->SetNumberOfComponents(3);
         QVector<QVector<float> > data;
-        data = this->_3Dfiles[this->current_MJD]->asFloat(qPrintable(vars[0]), qPrintable(vars[1]), qPrintable(vars[2]));
+        data = this->_3Dfiles[this->current_MJD]->asFloat(qPrintable(vars[0]), qPrintable(vars[1]), qPrintable(vars[2]), block);
         int dataSize = data.count();
         for(int x = 0; x < dataSize; x++)
         {
@@ -638,7 +654,7 @@ vtkFloatArray *vtkEnlilReader::getDataFromFile(QString arrayName)
         //Scalar
         newArray->SetNumberOfComponents(1);
         QVector<float> data;
-        data = this->_3Dfiles[this->current_MJD]->asFloat(qPrintable(vars[0]));
+        data = this->_3Dfiles[this->current_MJD]->asFloat(qPrintable(vars[0]), block);
         int dataSize = data.count();
         for(int x = 0; x < dataSize; x++)
         {
@@ -780,19 +796,24 @@ void vtkEnlilReader::__PopulateArrays()
     {
         if(!this->_3Dfiles[this->current_MJD]->isSingularity(scalars[x]))
         {
+
             //get the long name
             QString lname = this->_3Dfiles[this->current_MJD]->getVarLongName(qPrintable(scalars[x]));
+
+            std::cout << "new LName: " << qPrintable(lname) << std::endl;
             QStringList llist;
 
             //store the variable name to the map
+
             llist.push_back(scalars[x]);
+
             this->__ArrayNameMap[lname] = llist;
 
             //add the name to the list
             this->PointDataArraySelection->AddArray(qPrintable(lname));
 
-
         }
+
     }
 
     for(int x=0; x < numVectors; x++)

@@ -407,7 +407,7 @@ QVector<QVector<float> > enlil3DFile::asFloat(const char *X, const char *Y, cons
         //this gets the spherical grid
         grid = this->__getGrid(false);
 
-        std::cerr << "SIZE OF GRID: " << grid.count() << std::endl;
+//        std::cerr << "SIZE OF GRID: " << grid.count() << std::endl;
     }
 
 
@@ -500,7 +500,7 @@ QVector<QVector<double> > enlil3DFile::asDouble(const char *X, const char *Y, co
     QVector<QVector<double> > XYZ;
     QVector<double> xyz;
 
-    std::cerr << "X: " << X << " Y: " << Y << " Z: " << Z << std::endl;
+//    std::cerr << "X: " << X << " Y: " << Y << " Z: " << Z << std::endl;
 
     if(!this->contains(X) && !this->contains(Y) && !this->contains(Z))
     {
@@ -515,7 +515,7 @@ QVector<QVector<double> > enlil3DFile::asDouble(const char *X, const char *Y, co
         //this gets the spherical grid
         grid = this->__getGrid(false);
 
-        std::cerr << "SIZE OF GRID: " << grid.count() << std::endl;
+//        std::cerr << "SIZE OF GRID: " << grid.count() << std::endl;
     }
 
     QVector<double> X1 = this->asDouble(X, block);
@@ -546,12 +546,6 @@ QVector<QVector<double> > enlil3DFile::asDouble(const char *X, const char *Y, co
             rtp.push_back(Z1[loop]);
 
             xyz = this->__sphere2CartData(rtp, grid[loop]);
-
-            if(xyz.count() < 3)
-            {
-                std::cout << "Failure to Transform Grid Data to Cartesian Vectors" << std::endl;
-                exit(EXIT_FAILURE);
-            }
 
             entry.push_back(xyz[0]);
             entry.push_back(xyz[1]);
@@ -624,7 +618,7 @@ QVector<QVector<qint64> > enlil3DFile::asInt64(const char *X, const char *Y, con
         //this gets the spherical grid
         grid = this->__getGrid(false);
 
-        std::cerr << "SIZE OF GRID: " << grid.count() << std::endl;
+//        std::cerr << "SIZE OF GRID: " << grid.count() << std::endl;
     }
 
     QVector<qint64> X1 = this->asInt64(X, block);
@@ -916,7 +910,7 @@ void enlil3DFile::__processExtents()
 
 QVector<QVector<double> > enlil3DFile::__getGrid(bool cart)
 {
-    std::cerr << "STARTING " << __FUNCTION__ << std::endl;
+//    std::cerr << "STARTING " << __FUNCTION__ << std::endl;
     QVector<QVector<double> > GridOutput;
     int loopX=0, loopY=0, loopZ=0;
 
@@ -1137,7 +1131,7 @@ void enlil3DFile::__addConversion(QString baseUnits, QString newUnits, double di
  * @param rtp
  * @return
  */
-QVector<double> enlil3DFile::__sphere2Cart(const QVector<double> rtp)
+QVector<double> enlil3DFile::__sphere2Cart(const QVector<double> &rtp)
 {
 //    std::cerr << "STARTING " << __FUNCTION__ << std::endl;
 
@@ -1155,7 +1149,7 @@ QVector<double> enlil3DFile::__sphere2Cart(const QVector<double> rtp)
  * @param rtp
  * @return
  */
-QVector<float> enlil3DFile::__sphere2Cart(const QVector<float> rtp)
+QVector<float> enlil3DFile::__sphere2Cart(const QVector<float> &rtp)
 {
 //    std::cerr << "STARTING " << __FUNCTION__ << std::endl;
 
@@ -1173,7 +1167,7 @@ QVector<float> enlil3DFile::__sphere2Cart(const QVector<float> rtp)
  * @param rtp
  * @return
  */
-QVector<qint64> enlil3DFile::__sphere2Cart(const QVector<qint64> rtp)
+QVector<qint64> enlil3DFile::__sphere2Cart(const QVector<qint64> &rtp)
 {
 //    std::cerr << "STARTING " << __FUNCTION__ << std::endl;
 
@@ -1365,7 +1359,7 @@ QVector<QVector< double > > enlil3DFile::getGridSpacing()
  * @param vector
  * @return
  */
-double enlil3DFile::__getMax(QVector<double> vector)
+double enlil3DFile::__getMax(const QVector<double> &vector)
 {
     QVector<double> sortVector = vector;
     qSort(sortVector);
