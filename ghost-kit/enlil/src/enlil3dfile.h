@@ -170,9 +170,9 @@ protected:  //METHODS
     QVector<float> __sphere2Cart(const QVector<float> rtp);
     QVector<qint64> __sphere2Cart(const QVector<qint64> rtp);
 
-    QVector<double> __sphere2CartData(const QVector<double> data, const QVector<double> grid_rtp);
-    QVector<float> __sphere2CartData(const QVector<float> data, const QVector<double> grid_rtp);
-    QVector<qint64> __sphere2CartData(const QVector<qint64> data, const QVector<double> grid_rtp);
+    QVector<double> __sphere2CartData(const QVector<double> &data, const QVector<double> &grid_rtp);
+    QVector<float> __sphere2CartData(const QVector<float> &data, const QVector<double> &grid_rtp);
+    QVector<qint64> __sphere2CartData(const QVector<qint64> &data, const QVector<double> &grid_rtp);
 
     //file manipulations
     double __getMax(QVector<double> vector);

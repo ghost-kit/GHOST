@@ -297,26 +297,26 @@ QStringList enlil3DFile::getVarNames()
  */
 bool enlil3DFile::isSingularity(QString varName)
 {
-   QStringList names = this->_varOutput[varName]->getExtentNames(varName);
-   std::cout << "Name: " << qPrintable(varName) << std::endl;
-   std::cout << "Number of Names: " << names.count() << std::endl;
-   for(int x = 0; x < names.count(); x++)
-   {
-       std::cout << "Dim: " << qPrintable(names[x]) << std::endl;
-   }
+    QStringList names = this->_varOutput[varName]->getExtentNames(varName);
+    std::cout << "Name: " << qPrintable(varName) << std::endl;
+    std::cout << "Number of Names: " << names.count() << std::endl;
+    for(int x = 0; x < names.count(); x++)
+    {
+        std::cout << "Dim: " << qPrintable(names[x]) << std::endl;
+    }
 
-   if(names.contains("n1"))
-   {
-       std::cout << "N1: " << this->_varOutput[varName]->getExtent("n1").first
+    if(names.contains("n1"))
+    {
+        std::cout << "N1: " << this->_varOutput[varName]->getExtent("n1").first
                   << "," << this->_varOutput[varName]->getExtent("n1").second << std::endl;
 
-       enlilExtent varExtent = this->_varOutput[varName]->getExtent("n1");
+        enlilExtent varExtent = this->_varOutput[varName]->getExtent("n1");
 
-       if(varExtent.first == 0 && varExtent.second == 0) return true;
-   }
+        if(varExtent.first == 0 && varExtent.second == 0) return true;
+    }
 
-   if(names.count() == 0) return true;
-   else return false;
+    if(names.count() == 0) return true;
+    else return false;
 }
 
 
@@ -400,14 +400,16 @@ QVector<QVector<float> > enlil3DFile::asFloat(const char *X, const char *Y, cons
         return QVector<QVector<float> > ();
     }
 
-    if(!this->contains("X1") && !this->contains("X2") && !this->contains("X3"))
+    QVector<QVector<double> > grid;
+
+    if(cart)
     {
-        return QVector<QVector<float> > ();
+        //this gets the spherical grid
+        grid = this->__getGrid(false);
+
+        std::cerr << "SIZE OF GRID: " << grid.count() << std::endl;
     }
 
-    QVector<double> gX1 = this->asDouble("X1", block);
-    QVector<double> gX2 = this->asDouble("X2", block);
-    QVector<double> gX3 = this->asDouble("X3", block);
 
     QVector<float> X1 = this->asFloat(X, block);
     QVector<float> Y1 = this->asFloat(Y, block);
@@ -430,18 +432,12 @@ QVector<QVector<float> > enlil3DFile::asFloat(const char *X, const char *Y, cons
         if(cart)
         {
             QVector<float> rtp;
-            QVector<double> grid_rtp;
-
 
             rtp.push_back(X1[loop]);
             rtp.push_back(Y1[loop]);
             rtp.push_back(Z1[loop]);
 
-            grid_rtp.push_back(gX1[loop]);
-            grid_rtp.push_back(gX2[loop]);
-            grid_rtp.push_back(gX3[loop]);
-
-            xyz = this->__sphere2CartData(rtp, grid_rtp);
+            xyz = this->__sphere2CartData(rtp, grid[loop]);
 
             entry.push_back(xyz[0]);
             entry.push_back(xyz[1]);
@@ -511,12 +507,7 @@ QVector<QVector<double> > enlil3DFile::asDouble(const char *X, const char *Y, co
         return QVector<QVector<double> > ();
     }
 
-    if(!this->contains("X1") && !this->contains("X2") && !this->contains("X3"))
-    {
-        return QVector<QVector<double> > ();
-    }
-
-     QVector<QVector<double> > grid;
+    QVector<QVector<double> > grid;
 
 
     if(cart)
@@ -555,6 +546,12 @@ QVector<QVector<double> > enlil3DFile::asDouble(const char *X, const char *Y, co
             rtp.push_back(Z1[loop]);
 
             xyz = this->__sphere2CartData(rtp, grid[loop]);
+
+            if(xyz.count() < 3)
+            {
+                std::cout << "Failure to Transform Grid Data to Cartesian Vectors" << std::endl;
+                exit(EXIT_FAILURE);
+            }
 
             entry.push_back(xyz[0]);
             entry.push_back(xyz[1]);
@@ -619,6 +616,17 @@ QVector<QVector<qint64> > enlil3DFile::asInt64(const char *X, const char *Y, con
         return QVector<QVector<qint64> > ();
     }
 
+    QVector<QVector<double> > grid;
+
+
+    if(cart)
+    {
+        //this gets the spherical grid
+        grid = this->__getGrid(false);
+
+        std::cerr << "SIZE OF GRID: " << grid.count() << std::endl;
+    }
+
     QVector<qint64> X1 = this->asInt64(X, block);
     QVector<qint64> Y1 = this->asInt64(Y, block);
     QVector<qint64> Z1 = this->asInt64(Z, block);
@@ -645,7 +653,7 @@ QVector<QVector<qint64> > enlil3DFile::asInt64(const char *X, const char *Y, con
             rtp.push_back(Y1[loop]);
             rtp.push_back(Z1[loop]);
 
-            xyz = this->__sphere2Cart(rtp);
+            xyz = this->__sphere2CartData(rtp,grid[loop]);
 
             entry.push_back(xyz[0]);
             entry.push_back(xyz[1]);
@@ -908,6 +916,7 @@ void enlil3DFile::__processExtents()
 
 QVector<QVector<double> > enlil3DFile::__getGrid(bool cart)
 {
+    std::cerr << "STARTING " << __FUNCTION__ << std::endl;
     QVector<QVector<double> > GridOutput;
     int loopX=0, loopY=0, loopZ=0;
 
@@ -1130,6 +1139,8 @@ void enlil3DFile::__addConversion(QString baseUnits, QString newUnits, double di
  */
 QVector<double> enlil3DFile::__sphere2Cart(const QVector<double> rtp)
 {
+//    std::cerr << "STARTING " << __FUNCTION__ << std::endl;
+
     //calculate
     QVector<double> xyz;
     xyz.push_back(rtp[0] * sin(rtp[1]) * cos(rtp[2]));
@@ -1146,6 +1157,8 @@ QVector<double> enlil3DFile::__sphere2Cart(const QVector<double> rtp)
  */
 QVector<float> enlil3DFile::__sphere2Cart(const QVector<float> rtp)
 {
+//    std::cerr << "STARTING " << __FUNCTION__ << std::endl;
+
     //calculate
     QVector<float> xyz;
     xyz.push_back(rtp[0] * sin(rtp[1]) * cos(rtp[2]));
@@ -1162,6 +1175,8 @@ QVector<float> enlil3DFile::__sphere2Cart(const QVector<float> rtp)
  */
 QVector<qint64> enlil3DFile::__sphere2Cart(const QVector<qint64> rtp)
 {
+//    std::cerr << "STARTING " << __FUNCTION__ << std::endl;
+
     //calculate
     QVector<qint64> xyz;
     xyz.push_back(rtp[0] * sin(rtp[1]) * cos(rtp[2]));
@@ -1177,14 +1192,26 @@ QVector<qint64> enlil3DFile::__sphere2Cart(const QVector<qint64> rtp)
  * @param grid_rtp
  * @return
  */
-QVector<double> enlil3DFile::__sphere2CartData(const QVector<double> data, const QVector<double> grid_rtp)
+QVector<double> enlil3DFile::__sphere2CartData(const QVector<double> &data, const QVector<double> &grid_rtp)
 {
+//    std::cerr << "STARTING " << __FUNCTION__ << std::endl;
     QVector<double> vector;
+    if(grid_rtp.count() != 3 || data.count() != 3)
+    {
+        std::cout << "Counts: DATA: " << data.count() << " GRID: " << grid_rtp.count() << std::endl;
+        std::cout << data[0] << ":" << data[1] << ":" << data[2] << std::endl << std::flush;
+        std::cout << grid_rtp[0] << ":" << grid_rtp[1] << ":" << grid_rtp[2] << std::endl << std::flush;
+        std::cout << "ERROR: Incompatable grid size for conversion." << std::endl;
+        return vector;
+    }
+
+
 
     vector.push_back((data[0] * sin(grid_rtp[1]) * cos(grid_rtp[2])) + (data[1] * cos(grid_rtp[1]) * cos(grid_rtp[2])) + (-1.0*data[2] * sin(grid_rtp[2])));
     vector.push_back((data[0] * sin(grid_rtp[1]) * sin(grid_rtp[2])) + (data[1] * cos(grid_rtp[1]) * sin(grid_rtp[2])) + (data[2] * cos(grid_rtp[2])));
     vector.push_back((data[0] * cos(grid_rtp[1])) + (-1.0*data[1] * sin(grid_rtp[1])));
 
+//    std::cerr << "LEAVING" << __FUNCTION__ << std::endl;
     return vector;
 }
 
@@ -1194,14 +1221,29 @@ QVector<double> enlil3DFile::__sphere2CartData(const QVector<double> data, const
  * @param grid_rtp
  * @return
  */
-QVector<float> enlil3DFile::__sphere2CartData(const QVector<float> data, const QVector<double> grid_rtp)
+QVector<float> enlil3DFile::__sphere2CartData(const QVector<float> &data, const QVector<double> &grid_rtp)
 {
+
+//    std::cerr << "STARTING " << __FUNCTION__ << std::endl;
+
     QVector<float> vector;
 
+    if(grid_rtp.count() != 3 || data.count() != 3)
+    {
+        std::cout << "Counts: DATA: " << data.count() << " GRID: " << grid_rtp.count() << std::endl;
+        std::cout << data[0] << ":" << data[1] << ":" << data[2] << std::endl << std::flush;
+        std::cout << grid_rtp[0] << ":" << grid_rtp[1] << ":" << grid_rtp[2] << std::endl << std::flush;
+        std::cout << "ERROR: Incompatable grid size for conversion." << std::endl;
+        return vector;
+    }
+
+
+
     vector.push_back((data[0] * sin(grid_rtp[1]) * cos(grid_rtp[2])) + (data[1] * cos(grid_rtp[1]) * cos(grid_rtp[2])) + (-1.0*data[2] * sin(grid_rtp[2])));
     vector.push_back((data[0] * sin(grid_rtp[1]) * sin(grid_rtp[2])) + (data[1] * cos(grid_rtp[1]) * sin(grid_rtp[2])) + (data[2] * cos(grid_rtp[2])));
     vector.push_back((data[0] * cos(grid_rtp[1])) + (-1.0*data[1] * sin(grid_rtp[1])));
 
+//    std::cerr << "LEAVING" << __FUNCTION__ << std::endl;
     return vector;
 }
 
@@ -1211,16 +1253,26 @@ QVector<float> enlil3DFile::__sphere2CartData(const QVector<float> data, const Q
  * @param grid_rtp
  * @return
  */
-QVector<qint64> enlil3DFile::__sphere2CartData(const QVector<qint64> data, const QVector<double> grid_rtp)
+QVector<qint64> enlil3DFile::__sphere2CartData(const QVector<qint64> &data, const QVector<double> &grid_rtp)
 {
+//    std::cerr << "STARTING " << __FUNCTION__ << std::endl;
     QVector<qint64> vector;
+    if(grid_rtp.count() != 3 || data.count() != 3)
+    {
+        std::cout << "Counts: DATA: " << data.count() << " GRID: " << grid_rtp.count() << std::endl;
+        std::cout << data[0] << ":" << data[1] << ":" << data[2] << std::endl << std::flush;
+        std::cout << grid_rtp[0] << ":" << grid_rtp[1] << ":" << grid_rtp[2] << std::endl << std::flush;
+        std::cout << "ERROR: Incompatable grid size for conversion." << std::endl;
+        return vector;
+    }
 
     vector.push_back((data[0] * sin(grid_rtp[1]) * cos(grid_rtp[2])) + (data[1] * cos(grid_rtp[1]) * cos(grid_rtp[2])) + (-1.0*data[2] * sin(grid_rtp[2])));
     vector.push_back((data[0] * sin(grid_rtp[1]) * sin(grid_rtp[2])) + (data[1] * cos(grid_rtp[1]) * sin(grid_rtp[2])) + (data[2] * cos(grid_rtp[2])));
     vector.push_back((data[0] * cos(grid_rtp[1])) + (-1.0*data[1] * sin(grid_rtp[1])));
 
+//    std::cerr << "LEAVING" << __FUNCTION__ << std::endl;
     return vector;
- }
+}
 
 /**
  * @brief enlil3DFile::getScale_factor
