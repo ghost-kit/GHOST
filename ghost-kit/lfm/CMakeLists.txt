@@ -1,21 +1,23 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 project(LFMreader)
 
-if(TMLMP8)
-    set(PREFIX "/Users/developer/Developer/GK/GHOST-build/install")
-    set(ParaView_DIR "/Users/developer/Developer/GK/build3/paraview/src/paraview-build")
-    set(CMAKE_INSTALL_PREFIX "/Users/developer/Developer/GK/Install")
-    set(PV_SUPERBUILD_LIST_DIR "/Users/developer/Developer/GK/GHOST")
+message("BUILDING LFM Reader!!!")
+
+
+if(DEP_TREE)
+    message(STATUS "Configuring with DEP_TREE")
+    set(PREFIX ${DEP_TREE}/install)
+    include_directories(BEFORE SYSTEM ${DEP_TREE}/include)
+    set(ParaView_DIR ${DEP_TREE}/paraview/src/paraview-build)
 endif()
 
-
-if(HAL)
-    set(PREFIX "/home/jjm390/Developer/gkbuild/install")
-    set(ParaView_DIR "${PREFIX}/../paraview/src/paraview-build")
-    set(CMAKE_INSTALL_PREFIX "/home/jjm390/Developer/gkbuild/install")
-    set(PV_SUPERBUILD_LIST_DIR "/home/jjm390/Developer/GHOST")
+if(DEBUG)
+    message(STATUS "Building with DEBUG symbols")
+    set(CMAKE_BUILD_TYPE "debug")
+else()
+    message(STATUS "Building in RELEASE mode")
+    set(CMAKE_BUILD_TYPE "release")
 endif()
-
 
 if( PREFIX )
   set( CMAKE_INCLUDE_PATH /usr/include ${PREFIX}/include ${CMAKE_INCLUDE_PATH} )

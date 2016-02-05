@@ -12,17 +12,11 @@ if(DEP_TREE)
 endif()
 
 if(DEBUG)
-
     set(CMAKE_BUILD_TYPE "debug")
-
 else()
     set(CMAKE_BUILD_TYPE "release")
 endif()
 
-
-if(DEP_INCLUDE_DIR)
-    include_directories(BEFORE SYSTEM ${DEP_INCLUDE_DIR})
-endif()
 
 
 ###OPTIONS##

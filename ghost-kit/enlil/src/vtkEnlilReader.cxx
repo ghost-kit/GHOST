@@ -74,8 +74,6 @@ vtkEnlilReader::vtkEnlilReader()
     //set the number of input ports (Default 0)
     this->SetNumberOfInputPorts(0);
 
-    std::cout << "Ports Set" << std::endl << std::flush;
-
     //    //configure array status selectors
     this->PointDataArraySelection = vtkDataArraySelection::New();
     this->CellDataArraySelection  = vtkDataArraySelection::New();
@@ -87,15 +85,11 @@ vtkEnlilReader::vtkEnlilReader()
     this->__grid = NULL;
     this->__gridClean = false;
 
-    std::cout << "Arrays Set" << std::endl << std::flush;
-
     this->SelectionObserver = vtkCallbackCommand::New();
     this->SelectionObserver->SetCallback(&vtkEnlilReader::SelectionCallback);
     this->SelectionObserver->SetClientData(this);
     this->PointDataArraySelection->AddObserver(vtkCommand::ModifiedEvent, this->SelectionObserver);
     this->CellDataArraySelection->AddObserver(vtkCommand::ModifiedEvent, this->SelectionObserver);
-
-    std::cout << "Callbacks Set" << std::endl << std::flush;
 
 
 }
@@ -506,8 +500,6 @@ int vtkEnlilReader::RequestData(
             QStringList Var = this->__ArrayNameMap[Name];
             int numBlocks = this->_3Dfiles[current_MJD]->getNumberOfBlocks(qPrintable(Var[0]));
 
-            std::cerr << "Number of Blocks: " << numBlocks << std::endl;
-
             for(int block=0; block < numBlocks; block++)
             {
                 if(this->PointDataArraySelection->ArrayIsEnabled(qPrintable(Name)))
@@ -680,7 +672,7 @@ void vtkEnlilReader::AddFileName(const char *fname)
 
     this->_3Dfiles[mjd] = newFile;
 
-    std::cerr << "Added FileName for timestep: " << mjd << std::endl;
+//    std::cerr << "Added FileName for timestep: " << mjd << std::endl;
 
     this->Modified();
 }
@@ -799,8 +791,6 @@ void vtkEnlilReader::__PopulateArrays()
 
             //get the long name
             QString lname = this->_3Dfiles[this->current_MJD]->getVarLongName(qPrintable(scalars[x]));
-
-            std::cout << "new LName: " << qPrintable(lname) << std::endl;
             QStringList llist;
 
             //store the variable name to the map

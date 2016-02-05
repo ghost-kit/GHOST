@@ -298,17 +298,17 @@ QStringList enlil3DFile::getVarNames()
 bool enlil3DFile::isSingularity(QString varName)
 {
     QStringList names = this->_varOutput[varName]->getExtentNames(varName);
-    std::cout << "Name: " << qPrintable(varName) << std::endl;
-    std::cout << "Number of Names: " << names.count() << std::endl;
-    for(int x = 0; x < names.count(); x++)
-    {
-        std::cout << "Dim: " << qPrintable(names[x]) << std::endl;
-    }
+//    std::cout << "Name: " << qPrintable(varName) << std::endl;
+//    std::cout << "Number of Names: " << names.count() << std::endl;
+//    for(int x = 0; x < names.count(); x++)
+//    {
+//        std::cout << "Dim: " << qPrintable(names[x]) << std::endl;
+//    }
 
     if(names.contains("n1"))
     {
-        std::cout << "N1: " << this->_varOutput[varName]->getExtent("n1").first
-                  << "," << this->_varOutput[varName]->getExtent("n1").second << std::endl;
+//        std::cout << "N1: " << this->_varOutput[varName]->getExtent("n1").first
+//                  << "," << this->_varOutput[varName]->getExtent("n1").second << std::endl;
 
         enlilExtent varExtent = this->_varOutput[varName]->getExtent("n1");
 

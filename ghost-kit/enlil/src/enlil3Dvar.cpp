@@ -492,7 +492,7 @@ QVector<QVariant> *enlil3DVar::_getVariantData(NcVar* var, int length, size_t co
             //set new units
             this->__unitStack.push(newConvPair);
 
-            std::cout << "Units: " << qPrintable(this->units()) << " | Conversion: " << this->__conversionValue << std::endl;
+//            std::cout << "Units: " << qPrintable(this->units()) << " | Conversion: " << this->__conversionValue << std::endl;
 
         }
     }
