@@ -3,9 +3,20 @@ cmake_minimum_required(VERSION 2.8.9)
 
 message("BUILDING GHOST!!! IF you got this far, you have won half the battle!")
 
-if(DEP_INCLUDE_DIR)
-    include_directories(BEFORE SYSTEM ${DEP_INCLUDE_DIR})
+
+if(DEP_TREE)
+    message(STATUS "Configuring with DEP_TREE")
+    set(CMAKE_INSTALL_PREFIX ${DEP_TREE}/install)
+    include_directories(BEFORE SYSTEM ${DEP_TREE}/include)
+    set(ParaView_DIR ${DEP_TREE}/paraview/src/paraview-build)
 endif()
+
+if(DEBUG)
+    set(CMAKE_BUILD_TYPE "debug")
+else()
+    set(CMAKE_BUILD_TYPE "release")
+endif()
+
 
 
 ###OPTIONS##
@@ -41,14 +52,14 @@ include(CMakeDependentOption)
 
     set(HDF_EXTRA_LIBS
         z
-       sz
+       ${CMAKE_INSTALL_PREFIX}/lib/${CMAKE_SHARED_LIBRARY_PREFIX}sz${CMAKE_SHARED_LIBRARY_SUFFIX}
        ${CMAKE_INSTALL_PREFIX}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}jpeg${CMAKE_STATIC_LIBRARY_SUFFIX}
        m
         )
 
     set(HDF5_LIBS
-       hdf5
-       hdf5_hl
+       ${CMAKE_INSTALL_PREFIX}/lib/${CMAKE_SHARED_LIBRARY_PREFIX}hdf5${CMAKE_SHARED_LIBRARY_SUFFIX}
+       ${CMAKE_INSTALL_PREFIX}/lib/${CMAKE_SHARED_LIBRARY_PREFIX}hdf5_hl${CMAKE_SHARED_LIBRARY_SUFFIX}
         )
 
     set(SHARED_LIBS
@@ -197,7 +208,6 @@ set(GHOST_LIBS ${HDF4_LIBS} ${HDF_EXTRA_LIBS} ${CDF_LIBS} ${BOOST_LIBS} ${SHARED
 
 message("GHOST_LIBS: ${GHOST_LIBS}")
 
-#AWEFUL HACK, but it works.
 target_link_libraries(GhostKit ${GHOST_LIBS} ${GHOST_LIBS})
 
 # Adding 'dist' Make target to deploy plugin that's compatible with
@@ -226,3 +236,17 @@ if(UNIX AND (NOT APPLE))
     )
 
 endif()
+
+
+#manual test files
+
+#Copy test files to destination
+message(STATUS "Copying Files for testing")
+configure_file(${CMAKE_CURRENT_LIST_DIR}/enlil/test/data/nc/evo/evo.earth.nc evo.earth.nc COPYONLY)
+configure_file(${CMAKE_CURRENT_LIST_DIR}/enlil/test/data/nc/3d/tim.0038.nc tim.0038.nc COPYONLY)
+
+add_executable(TestEnlilRead3d ${CMAKE_CURRENT_LIST_DIR}/enlil/test/enliltestread3d.cpp
+                               ${CMAKE_CURRENT_LIST_DIR}/enlil/test/testhelpers.cpp
+                               ${ENLIL_SRC}
+)
+target_link_libraries(TestEnlilRead3d ${GHOST_LIBS} ${QT_QTMAIN_LIBRARY} ${QT_LIBRARIES} )
