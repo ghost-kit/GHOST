@@ -537,6 +537,14 @@ double vtkEnlilReader::getRequestedTime(vtkInformationVector* outputVector)
 
     double requestedTimeValue = outInfo->Get(vtkStreamingDemandDrivenPipeline::UPDATE_TIME_STEP());
 
+    std::cout << "requested time: " << requestedTimeValue << std::endl;
+
+    if(requestedTimeValue == 0)
+    {
+        //single time step
+        requestedTimeValue = this->_3Dfiles.keys()[0];
+    }
+
     return requestedTimeValue;
 }
 

@@ -152,7 +152,7 @@ protected:  //METHODS
 
     //data processing
     void __cleanAll();
-    void __processGridLocations();
+    void __processGridLocations(bool cart = true);
     void __processExtents();
     void __processTime();
     void __setUseExtents(int extents[]);
@@ -179,6 +179,8 @@ protected:  //METHODS
 
     void __ResetFile();
 
+private:
+    QVector<QVector<double> > __getGrid(bool cart);
 };
 
 #endif // ENLIL3DFILE_H

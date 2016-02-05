@@ -504,6 +504,8 @@ QVector<QVector<double> > enlil3DFile::asDouble(const char *X, const char *Y, co
     QVector<QVector<double> > XYZ;
     QVector<double> xyz;
 
+    std::cerr << "X: " << X << " Y: " << Y << " Z: " << Z << std::endl;
+
     if(!this->contains(X) && !this->contains(Y) && !this->contains(Z))
     {
         return QVector<QVector<double> > ();
@@ -514,8 +516,16 @@ QVector<QVector<double> > enlil3DFile::asDouble(const char *X, const char *Y, co
         return QVector<QVector<double> > ();
     }
 
-    QVector<QVector<double> > grid = this->asDouble("X1", "X2", "X3", block, false);
+     QVector<QVector<double> > grid;
 
+
+    if(cart)
+    {
+        //this gets the spherical grid
+        grid = this->__getGrid(false);
+
+        std::cerr << "SIZE OF GRID: " << grid.count() << std::endl;
+    }
 
     QVector<double> X1 = this->asDouble(X, block);
     QVector<double> Y1 = this->asDouble(Y, block);
@@ -895,14 +905,10 @@ void enlil3DFile::__processExtents()
     }
 }
 
-/**
- * @brief enlil3DFile::__processGridLocations
- *          This function should determine which type of grid
- *          we want, and then produce it.  Delete it when done.
- */
-void enlil3DFile::__processGridLocations()
+
+QVector<QVector<double> > enlil3DFile::__getGrid(bool cart)
 {
-    this->_gridOutput.clear();
+    QVector<QVector<double> > GridOutput;
     int loopX=0, loopY=0, loopZ=0;
 
     //check existance of the position values
@@ -938,14 +944,14 @@ void enlil3DFile::__processGridLocations()
                     rtp.push_back(x2[loopY]);
                     rtp.push_back(x3[loopZ]);
 
-                    if(this->_gridCT)
+                    if(cart)
                     {
                         xyz = this->__sphere2Cart(rtp);
-                        this->_gridOutput.push_back(xyz);
+                        GridOutput.push_back(xyz);
                     }
                     else
                     {
-                        this->_gridOutput.push_back(rtp);
+                        GridOutput.push_back(rtp);
                     }
 
                 }
@@ -960,6 +966,19 @@ void enlil3DFile::__processGridLocations()
 
         exit(EXIT_FAILURE);
     }
+
+    return GridOutput;
+}
+
+/**
+ * @brief enlil3DFile::__processGridLocations
+ *          This function should determine which type of grid
+ *          we want, and then produce it.  Delete it when done.
+ */
+void enlil3DFile::__processGridLocations(bool cart)
+{
+    this->_gridOutput.clear();
+    this->_gridOutput = __getGrid(cart);
 }
 
 
@@ -1266,7 +1285,7 @@ void enlil3DFile::setSubExtents(int subExtents[])
     this->_currentExtents["n3"] = qMakePair(qint64(subExtents[4]), qint64(subExtents[5]));
 
     this->_useSubExtents = true;
-    this->__processGridLocations();
+    this->__processGridLocations(this->_gridCT);
 }
 
 /**
@@ -1277,7 +1296,7 @@ QVector<QVector< double > > enlil3DFile::getGridSpacing()
 {
 
     //make the grid
-    this->__processGridLocations();
+    this->__processGridLocations(this->_gridCT);
 
     //copy the grid
     QVector<QVector<double > > currentGrid = this->_gridOutput;
