@@ -9,8 +9,8 @@
 # endif()
 
 add_revision(hdf4
-    URL "http://www.hdfgroup.org/ftp/HDF/HDF_Current/src/hdf-4.2.11.tar"
-    URL_MD5 da1e9c9a814f6b160a38a786fc4a6c8a)
+    URL "http://www.hdfgroup.org/ftp/HDF/HDF_Current/src/hdf-4.2.11.tar.gz"
+    URL_MD5 063f9928f3a19cc21367b71c3b8bbf19)
 
 add_revision(jpeg
         URL "http://www.hdfgroup.org/ftp/lib-external/jpeg/src/jpegsrc.v6b.tar.gz"
@@ -49,6 +49,8 @@ add_revision(cxform
 add_revision(CDFreader
     SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/dep-libs/CDFreader)
 
+
+
 add_revision(zlib
   URL "http://www.paraview.org/files/dependencies/zlib-1.2.7.tar.gz"
   URL_MD5 60df6a37c56e7c1366cca812414f7b85)
@@ -64,6 +66,9 @@ add_revision(freetype
   URL_MD5 "7448edfbd40c7aa5088684b0a3edb2b8")
 
 add_revision(fixFreetype
+    SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/dep-libs/fixFreetype)
+
+add_revision(GKbuildDep
     SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/dep-libs/fixFreetype)
 
 add_revision(szip
@@ -172,9 +177,14 @@ if (ParaView_FROM_GIT)
     GIT_TAG "v4.4.0")
 else()
   # Variables to hold the URL and MD5 (optional)
+#  set (ParaView_URL "http://www.paraview.org/files/v4.2/ParaView-v4.2.0-source.tar.gz" CACHE
+#    STRING "Specify the url for ParaView tarball")
+#  set (ParaView_URL_MD5 "77cf0e3804eb7bb91d2d94b10bd470f4" CACHE
+
   set (ParaView_URL "http://www.paraview.org/files/v4.4/ParaView-v4.4.0-source.tar.gz" CACHE
     STRING "Specify the url for ParaView tarball")
   set (ParaView_URL_MD5 "fa1569857dd680ebb4d7ff89c2227378" CACHE
+
     STRING "MD5 of the ParaView tarball")
 
   # Get the length of the URL specified.
