@@ -73,6 +73,7 @@ public:
     QVector<qint64> asInt64(QVector<enlilExtent> extents, int nblk=0);
 
     qint64 recordCount();
+    int numDims();
 
     enlilExtent getExtent(const char* name);
     QStringList getExtentNames(QString name);
@@ -107,6 +108,7 @@ private: //data
     bool __cached;
 
     QMap<QString, qint64> __dims;
+    int __numDims;
     QMap<QString, enlilExtent > __wholeExtents;
     qint64 __recordCount;
 

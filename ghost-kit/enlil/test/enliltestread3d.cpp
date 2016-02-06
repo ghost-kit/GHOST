@@ -159,6 +159,52 @@ int main(int argc, char* argv[])
     }
 
     /**
+      * Test Extents
+      */
+    QMap<QString, enlilExtent> wholeExtents = file.getWholeExtents();
+    int WEdimX = wholeExtents["n1"].second - wholeExtents["n1"].first +1;
+    int WEdimY = wholeExtents["n2"].second - wholeExtents["n2"].first +1;
+    int WEdimZ = wholeExtents["n3"].second - wholeExtents["n3"].first +1;
+
+    if(xyz[0] == WEdimX)
+    {
+        std::cout << "Whole Extents for X has passed: " << WEdimX << ":" << xyz[0] << std::endl;
+    }
+    else
+    {
+        std::cerr << "Whole Extents for X has FAILED: " << std::endl;
+        std::cerr << "WEX = " << WEdimX << std::endl;
+        std::cerr << "Dim X = " << xyz[0] << std::endl;
+        exit(EXIT_FAILURE);
+    }
+
+
+    if(xyz[1] == WEdimY)
+    {
+        std::cout << "Whole Extents for Y has passed: " << WEdimY << ":" << xyz[1] << std::endl;
+    }
+    else
+    {
+        std::cerr << "Whole Extents for Y has FAILED: " << std::endl;
+        std::cerr << "WEY = " << WEdimY << std::endl;
+        std::cerr << "Dim Y = " << xyz[1] << std::endl;
+        exit(EXIT_FAILURE);
+    }
+
+
+    if(xyz[2] == WEdimZ)
+    {
+        std::cout << "Whole Extents for Z has passed: " << WEdimZ << ":" << xyz[2] << std::endl;
+    }
+    else
+    {
+        std::cerr << "Whole Extents for Z has FAILED: " << std::endl;
+        std::cerr << "WEZ = " << WEdimZ << std::endl;
+        std::cerr << "Dim Z = " << xyz[2] << std::endl;
+        exit(EXIT_FAILURE);
+    }
+
+    /**
       *Test getting 3D data
       */
 
@@ -193,12 +239,15 @@ int main(int argc, char* argv[])
     /**
       * Test grid positions
       **/
+    std::cout << "Staring Grid Position Test:" << std::endl;
     QVector<QVector< double > > gridSpace = file.getGridSpacing();
+    QVector< double > Density = file.asDouble("D");
 
-    if(gridSpace.count() != file.get3Dcount())
+    if(gridSpace.count() != Density.count())
     {
         std::cerr << "ERROR... Full grid space does not equal the size of data sets." << std::endl;
-
+        std::cerr << "Expected: " << gridSpace.count() << std::endl;
+        std::cerr << "Received: " << Density.count() << std::endl;
         exit(EXIT_FAILURE);
 
     }
@@ -417,6 +466,37 @@ int main(int argc, char* argv[])
         std::cout << "B Value: " << testFloatExtent[x][0] << "," << testFloatExtent[x][1] << "," << testFloatExtent[x][2] << " " << qPrintable(file.getVarUnits("B1")) << std::endl;
     }
 
+
+
+    int extent2[]={5,10,3,6,85,91};
+    file.setSubExtents(extent2);
+
+    //get the grid
+    QVector<QVector<double> > grid2 = file.getGridSpacing();
+
+
+    QVector<QVector<float> > testFloatExtent2 = file.asFloat("V1", "V2", "V3",1,true);
+
+    int answerSize = 6*4*7;
+
+    int answer = 0;
+    if(!testFloatExtent2.isEmpty())
+    {
+        answer = testFloatExtent2.count();
+    }
+
+    if(answer != answerSize)
+    {
+        std::cerr << "ERROR: Dimensional Missmatch on request past last phi" << std::endl;
+        std::cerr << "Expected: " << answerSize << std::endl;
+        std::cerr << "Received: " << testFloatExtent2.count() << std::endl;
+        exit(EXIT_FAILURE);
+
+    }
+    else
+    {
+        std::cout << "Dimensional Read beyond last phi successfull." << std::endl;
+    }
 
 
 

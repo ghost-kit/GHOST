@@ -26,6 +26,8 @@ void enlil3DFile::__ResetFile()
     this->__processTime();
 }
 
+
+
 enlil3DFile::enlil3DFile(QString FileName, const char *scaleUnits, double scaleFactor)
 {
     //setup the object
@@ -134,17 +136,21 @@ void enlil3DFile::__initializeFiles()
 
     if(dims[0] && dims[1] && dims[2])
     {
-        this->_dims["n1"] = dims[0]->size();
-        this->_dims["n2"] = dims[1]->size();
-        this->_dims["n3"] = dims[2]->size();
+        this->_trueDims["n1"] = this->_dims["n1"] = dims[0]->size();
+        this->_trueDims["n2"] = this->_dims["n2"] = dims[1]->size();
+        this->_trueDims["n3"] = this->_dims["n3"] = dims[2]->size();
         if(dims[3])
         {
-            this->_dims["nblk"] = dims[3]->size();
+            this->_trueDims["nblk"] = this->_dims["nblk"] = dims[3]->size();
         }
         else
         {
-            this->_dims["nblk"] = 1;
+            this->_trueDims["nblk"] = this->_dims["nblk"] = 1;
         }
+
+        //adjust phi size
+        this->_dims["n3"] += 1;
+
     }
     else
     {
@@ -298,20 +304,10 @@ QStringList enlil3DFile::getVarNames()
 bool enlil3DFile::isSingularity(QString varName)
 {
     QStringList names = this->_varOutput[varName]->getExtentNames(varName);
-//    std::cout << "Name: " << qPrintable(varName) << std::endl;
-//    std::cout << "Number of Names: " << names.count() << std::endl;
-//    for(int x = 0; x < names.count(); x++)
-//    {
-//        std::cout << "Dim: " << qPrintable(names[x]) << std::endl;
-//    }
 
     if(names.contains("n1"))
     {
-//        std::cout << "N1: " << this->_varOutput[varName]->getExtent("n1").first
-//                  << "," << this->_varOutput[varName]->getExtent("n1").second << std::endl;
-
         enlilExtent varExtent = this->_varOutput[varName]->getExtent("n1");
-
         if(varExtent.first == 0 && varExtent.second == 0) return true;
     }
 
@@ -366,18 +362,44 @@ QVector<float> enlil3DFile::asFloat(const char *name, int block)
     enlil3DVar* currentVar = this->_varOutput[QString(name)];
     if(currentVar)
     {
+        if(this->_currentExtents["n1"] == this->_wholeExtents["n1"]
+                && this->_currentExtents["n2"] == this->_wholeExtents["n2"]
+                && this->_currentExtents["n3"] == this->_wholeExtents["n3"])
+        {
+            //changing to a full read
+            this->_useSubExtents = false;
+        }
+
         if(this->_useSubExtents)
         {
             QVector<enlilExtent> subExtents;
             subExtents.push_back(this->_currentExtents["n1"]);
             subExtents.push_back(this->_currentExtents["n2"]);
-            subExtents.push_back(this->_currentExtents["n3"]);
+            subExtents.push_back(this->_currentExtents["n3"]);            
 
             returnValue = currentVar->asFloat(subExtents, block);
         }
         else
         {
             returnValue = currentVar->asFloat(block);
+
+            //fix for phi
+            if(currentVar->numDims() >= 3)
+            {
+                int phiCount = this->_dims["n1"] * this->_dims["n2"];
+                for(int x=0; x < phiCount; x++)
+                {
+                    returnValue.push_back(returnValue[x]);
+                }
+            }
+            else
+            {
+                if(currentVar->getExtent("n3").second > 0)
+                {
+                    returnValue.push_back(returnValue.first());
+                }
+
+            }
         }
     }
     return returnValue;
@@ -406,8 +428,6 @@ QVector<QVector<float> > enlil3DFile::asFloat(const char *X, const char *Y, cons
     {
         //this gets the spherical grid
         grid = this->__getGrid(false);
-
-//        std::cerr << "SIZE OF GRID: " << grid.count() << std::endl;
     }
 
 
@@ -476,10 +496,39 @@ QVector<double> enlil3DFile::asDouble(const char *name, int block)
             subExtents.push_back(this->_currentExtents["n3"]);
 
             returnValue = currentVar->asDouble(subExtents, block);
+
+            if(subExtents[2].second >= this->_trueDims["n3"])
+            {
+                //fix for phi
+                //FIXME: We need to get the pieces from the file
+                // and insert them here.
+
+            }
         }
         else
         {
+            //get whole extents
             returnValue = currentVar->asDouble(block);
+
+            //fix for phi
+            if(currentVar->numDims() >= 3)
+            {
+                int phiCount = this->_dims["n1"] * this->_dims["n2"];
+                for(int x=0; x < phiCount; x++)
+                {
+                    returnValue.push_back(returnValue[x]);
+                }
+            }
+            else
+            {
+                if(currentVar->getExtent("n3").second > 0)
+                {
+                    returnValue.push_back(returnValue.first());
+                }
+
+            }
+
+
         }
     }
 
@@ -500,8 +549,6 @@ QVector<QVector<double> > enlil3DFile::asDouble(const char *X, const char *Y, co
     QVector<QVector<double> > XYZ;
     QVector<double> xyz;
 
-//    std::cerr << "X: " << X << " Y: " << Y << " Z: " << Z << std::endl;
-
     if(!this->contains(X) && !this->contains(Y) && !this->contains(Z))
     {
         return QVector<QVector<double> > ();
@@ -515,7 +562,6 @@ QVector<QVector<double> > enlil3DFile::asDouble(const char *X, const char *Y, co
         //this gets the spherical grid
         grid = this->__getGrid(false);
 
-//        std::cerr << "SIZE OF GRID: " << grid.count() << std::endl;
     }
 
     QVector<double> X1 = this->asDouble(X, block);
@@ -618,7 +664,6 @@ QVector<QVector<qint64> > enlil3DFile::asInt64(const char *X, const char *Y, con
         //this gets the spherical grid
         grid = this->__getGrid(false);
 
-//        std::cerr << "SIZE OF GRID: " << grid.count() << std::endl;
     }
 
     QVector<qint64> X1 = this->asInt64(X, block);
@@ -887,7 +932,6 @@ QStringList enlil3DFile::__getAttributeList()
 /**
  * @brief enlil3DFile::__processLocation
  */
-//TODO: Must adjust these to the current extents
 void enlil3DFile::__processExtents()
 {
     //check existence of vars before trying to access them
@@ -898,6 +942,9 @@ void enlil3DFile::__processExtents()
         this->_wholeExtents[QString("n2")] = this->_varOutput["X2"]->getExtent("n2");
         this->_wholeExtents[QString("n3")] = this->_varOutput["X3"]->getExtent("n3");
         this->_wholeExtents[QString("nblk")] = this->_varOutput["X1"]->getExtent("nblk");
+
+        //Adjust the whole extent for phi (n3) so we can process the entire sphere
+        this->_wholeExtents[QString("n3")].second += 1;
     }
     else
     {
@@ -907,10 +954,16 @@ void enlil3DFile::__processExtents()
     }
 }
 
+/**
+ * @brief enlil3DFile::__getGrid
+ * @param cart
+ * @return
+ */
 
+//FIXME: Must adjust the grid for the current extents, else we will have the wrong transforms
 QVector<QVector<double> > enlil3DFile::__getGrid(bool cart)
 {
-//    std::cerr << "STARTING " << __FUNCTION__ << std::endl;
+    std::cout << "Starting " << __FUNCTION__ << std::endl;
     QVector<QVector<double> > GridOutput;
     int loopX=0, loopY=0, loopZ=0;
 
@@ -920,15 +973,34 @@ QVector<QVector<double> > enlil3DFile::__getGrid(bool cart)
     if(vars.contains("X1") && vars.contains("X2") && vars.contains("X3"))
     {
 
-        QVector<double> x1 = this->_varOutput["X1"]->asDouble();
-        QVector<double> x2 = this->_varOutput["X2"]->asDouble();
-        QVector<double> x3 = this->_varOutput["X3"]->asDouble();
+        QVector<enlilExtent> curExt;
+
+        if(this->_useSubExtents)
+        {
+            curExt.push_back(this->_currentExtents["n1"]);
+            curExt.push_back(this->_currentExtents["n2"]);
+            curExt.push_back(this->_currentExtents["n3"]);
+        }
+        else
+        {
+            curExt.push_back(this->_wholeExtents["n1"]);
+            curExt.push_back(this->_wholeExtents["n2"]);
+            curExt.push_back(this->_wholeExtents["n3"]);
+        }
+
+        int xlen = curExt[0].second - curExt[0].first + 1;
+        int ylen = curExt[1].second - curExt[1].first + 1;
+        int zlen = curExt[2].second - curExt[2].first + 1;
+
+        QVector<double> x1 = this->asDouble("X1");
+        QVector<double> x2 = this->asDouble("X2");
+        QVector<double> x3 = this->asDouble("X3");
+
+        //fix phi grid
+        x3.push_back(x3.front());
 
         QVector<double> xyz;
 
-        int xlen = this->getDims("n1");
-        int ylen = this->getDims("n2");
-        int zlen = this->getDims("n3");
 
 
         /**
@@ -969,6 +1041,8 @@ QVector<QVector<double> > enlil3DFile::__getGrid(bool cart)
 
         exit(EXIT_FAILURE);
     }
+
+    std::cout << "Grid Size: " << GridOutput.count() << std::endl;
 
     return GridOutput;
 }
@@ -1102,7 +1176,14 @@ void enlil3DFile::__processTime()
     }
 
     //this->_variablesProcessed["MJD"] = mjd;
-    this->_MJD = mjd[0];
+    if(!mjd.isEmpty())
+    {
+        this->_MJD = mjd[0];
+    }
+    else
+    {
+        this->_MJD = 0;
+    }
 }
 
 /**
@@ -1127,7 +1208,7 @@ void enlil3DFile::__addConversion(QString baseUnits, QString newUnits, double di
 
 
 /**
- * @brief enlil3DFile::__gridSphere2Cart
+ * @brief enlil3DFile::__Sphere2Cart
  * @param rtp
  * @return
  */
@@ -1188,7 +1269,6 @@ QVector<qint64> enlil3DFile::__sphere2Cart(const QVector<qint64> &rtp)
  */
 QVector<double> enlil3DFile::__sphere2CartData(const QVector<double> &data, const QVector<double> &grid_rtp)
 {
-//    std::cerr << "STARTING " << __FUNCTION__ << std::endl;
     QVector<double> vector;
     if(grid_rtp.count() != 3 || data.count() != 3)
     {
@@ -1199,13 +1279,10 @@ QVector<double> enlil3DFile::__sphere2CartData(const QVector<double> &data, cons
         return vector;
     }
 
-
-
     vector.push_back((data[0] * sin(grid_rtp[1]) * cos(grid_rtp[2])) + (data[1] * cos(grid_rtp[1]) * cos(grid_rtp[2])) + (-1.0*data[2] * sin(grid_rtp[2])));
     vector.push_back((data[0] * sin(grid_rtp[1]) * sin(grid_rtp[2])) + (data[1] * cos(grid_rtp[1]) * sin(grid_rtp[2])) + (data[2] * cos(grid_rtp[2])));
     vector.push_back((data[0] * cos(grid_rtp[1])) + (-1.0*data[1] * sin(grid_rtp[1])));
 
-//    std::cerr << "LEAVING" << __FUNCTION__ << std::endl;
     return vector;
 }
 
@@ -1218,8 +1295,6 @@ QVector<double> enlil3DFile::__sphere2CartData(const QVector<double> &data, cons
 QVector<float> enlil3DFile::__sphere2CartData(const QVector<float> &data, const QVector<double> &grid_rtp)
 {
 
-//    std::cerr << "STARTING " << __FUNCTION__ << std::endl;
-
     QVector<float> vector;
 
     if(grid_rtp.count() != 3 || data.count() != 3)
@@ -1231,13 +1306,10 @@ QVector<float> enlil3DFile::__sphere2CartData(const QVector<float> &data, const 
         return vector;
     }
 
-
-
     vector.push_back((data[0] * sin(grid_rtp[1]) * cos(grid_rtp[2])) + (data[1] * cos(grid_rtp[1]) * cos(grid_rtp[2])) + (-1.0*data[2] * sin(grid_rtp[2])));
     vector.push_back((data[0] * sin(grid_rtp[1]) * sin(grid_rtp[2])) + (data[1] * cos(grid_rtp[1]) * sin(grid_rtp[2])) + (data[2] * cos(grid_rtp[2])));
     vector.push_back((data[0] * cos(grid_rtp[1])) + (-1.0*data[1] * sin(grid_rtp[1])));
 
-//    std::cerr << "LEAVING" << __FUNCTION__ << std::endl;
     return vector;
 }
 
@@ -1249,7 +1321,6 @@ QVector<float> enlil3DFile::__sphere2CartData(const QVector<float> &data, const 
  */
 QVector<qint64> enlil3DFile::__sphere2CartData(const QVector<qint64> &data, const QVector<double> &grid_rtp)
 {
-//    std::cerr << "STARTING " << __FUNCTION__ << std::endl;
     QVector<qint64> vector;
     if(grid_rtp.count() != 3 || data.count() != 3)
     {
@@ -1264,7 +1335,6 @@ QVector<qint64> enlil3DFile::__sphere2CartData(const QVector<qint64> &data, cons
     vector.push_back((data[0] * sin(grid_rtp[1]) * sin(grid_rtp[2])) + (data[1] * cos(grid_rtp[1]) * sin(grid_rtp[2])) + (data[2] * cos(grid_rtp[2])));
     vector.push_back((data[0] * cos(grid_rtp[1])) + (-1.0*data[1] * sin(grid_rtp[1])));
 
-//    std::cerr << "LEAVING" << __FUNCTION__ << std::endl;
     return vector;
 }
 
@@ -1361,11 +1431,18 @@ QVector<QVector< double > > enlil3DFile::getGridSpacing()
  */
 double enlil3DFile::__getMax(const QVector<double> &vector)
 {
-    QVector<double> sortVector = vector;
-    qSort(sortVector);
-    double max = sortVector.last();
+    if(!vector.isEmpty())
+    {
+        QVector<double> sortVector = vector;
+        qSort(sortVector);
+        double max = sortVector.last();
 
-    return max;
+        return max;
+    }
+    else
+    {
+        return -0;
+    }
 }
 
 /**
@@ -1382,4 +1459,5 @@ QVector<int> enlil3DFile::__getExtentDimensions(int extent[6])
 
     return dims;
 }
+
 

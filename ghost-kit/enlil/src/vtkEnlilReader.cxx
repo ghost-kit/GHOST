@@ -519,10 +519,6 @@ int vtkEnlilReader::RequestData(
 
     this->SetProgress(1.0);
 
-    //this->PopulateRequestedData();
-
-
-
     return 1;
 
 }

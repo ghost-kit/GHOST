@@ -217,6 +217,7 @@ QVector<double> enlil3DVar::asDouble(const int extents[], int nblk)
  */
 QVector<double> enlil3DVar::asDouble(enlilExtent X, enlilExtent Y, enlilExtent Z, int nblk)
 {
+
     QVector<QVariant> *raw = this->_getData(X,Y,Z,nblk);
     QVector<double> asDouble;
 
@@ -319,6 +320,8 @@ QVector<float> enlil3DVar::asFloat(const int extents[], int nblk)
  */
 QVector<float> enlil3DVar::asFloat(enlilExtent X, enlilExtent Y, enlilExtent Z, int nblk)
 {
+
+
     QVector<QVariant> *raw = this->_getData(X,Y,Z, nblk);
     QVector<float> asFloat;
 
@@ -421,6 +424,7 @@ QVector<qint64> enlil3DVar::asInt64(const int extents[], int nblk)
  */
 QVector<qint64> enlil3DVar::asInt64(enlilExtent X, enlilExtent Y, enlilExtent Z, int nblk)
 {
+
     QVector<QVariant> *raw = this->_getData(X,Y,Z, nblk);
     QVector<qint64> asInt64;
 
@@ -686,6 +690,8 @@ void enlil3DVar::setConversionFactor(enlilConversion *value)
  */
 QVector<QVariant> *enlil3DVar::_getData(enlilExtent N1, enlilExtent N2, enlilExtent N3, int nblk)
 {
+    //FIXME: Must account for phi overlap and fix.
+    //FIXME: Must respond to out of bounds read.
 
     size_t *counts = NULL;
     long *startLoc = NULL;
@@ -756,14 +762,32 @@ QVector<QVariant> *enlil3DVar::_getData(enlilExtent N1, enlilExtent N2, enlilExt
         {
             if(this->__dims.contains("n1"))
             {
+                //check limits
+                if(N1.second > this->__dims["n1"] )
+                {
+                    std::cerr << "Out of Bounds Read" << std::endl;
+                    break;
+                }
                 curExtent = &N1;
             }
             else if(this->__dims.contains("n2"))
             {
+                //check limits
+                if( N2.second > this->__dims["n2"])
+                {
+                    std::cerr << "Out of Bounds Read" << std::endl;
+                    break;
+                }
                 curExtent = &N2;
             }
             else if(this->__dims.contains("n3"))
             {
+                //check limits
+                if(N3.second > this->__dims["n3"])
+                {
+                    std::cerr << "Out of Bounds Read" << std::endl;
+                    break;
+                }
                 curExtent = &N3;
             }
             else
@@ -810,6 +834,13 @@ QVector<QVariant> *enlil3DVar::_getData(enlilExtent N1, enlilExtent N2, enlilExt
             counts[1] = N2.second - N2.first +1;
             counts[2] = N1.second - N1.first +1;
 
+            //check limits
+            if(N1.second > this->__dims["n1"] || N2.second > this->__dims["n2"] || N3.second > this->__dims["n3"])
+            {
+                std::cerr << "Out of Bounds Read" << std::endl;
+                break;
+            }
+
             data = this->_getVariantData(current, 3, counts, startLoc);
         }
 
@@ -835,6 +866,13 @@ QVector<QVariant> *enlil3DVar::_getData(enlilExtent N1, enlilExtent N2, enlilExt
         counts[2] = N2.second - N2.first +1;
         counts[3] = N1.second - N1.first +1;
 
+        //check limits
+        if(N1.second > this->__dims["n1"] || N2.second > this->__dims["n2"] || N3.second > this->__dims["n3"] || nblk > this->__dims["nblk"])
+        {
+            std::cerr << "Out of Bounds Read" << std::endl;
+            break;
+        }
+
         data = this->_getVariantData(current, 4, counts, startLoc);
 
         break;
@@ -856,6 +894,15 @@ QVector<QVariant> *enlil3DVar::_getData(enlilExtent N1, enlilExtent N2, enlilExt
 qint64 enlil3DVar::recordCount()
 {
     return this->__recordCount;
+}
+
+/**
+ * @brief enlil3DVar::numDims
+ * @return
+ */
+int enlil3DVar::numDims()
+{
+    return this->__numDims;
 }
 
 /**
@@ -909,6 +956,9 @@ void enlil3DVar::_loadMetaData()
     numDims = variable->num_dims();
     numAtts = variable->num_atts();
 
+    //record number of dims
+    this->__numDims = numDims;
+
     //get all of the dimension records
     for(int loop = 0; loop < numDims; loop++)
     {
@@ -922,6 +972,7 @@ void enlil3DVar::_loadMetaData()
 
         this->__dims[QString(dim1->name())] = extent.second + 1;
         this->__wholeExtents[QString(dim1->name())] = extent;
+
     }
 
     //see if we have multiple records in the file

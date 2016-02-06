@@ -104,6 +104,7 @@ protected:  //DATA
     double _MJD;
     double _TIME;
     QMap<QString, qint64> _dims;
+    QMap<QString, qint64> _trueDims;
     double _enlil_version;
     QMap<QString, enlilExtent> _wholeExtents;
     QMap<QString, enlilExtent> _currentExtents;
@@ -178,6 +179,7 @@ protected:  //METHODS
     double __getMax(const QVector<double> &vector);
 
     void __ResetFile();
+
 
 private:
     QVector<QVector<double> > __getGrid(bool cart);
