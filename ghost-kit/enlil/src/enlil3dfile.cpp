@@ -360,27 +360,66 @@ QVector<float> enlil3DFile::asFloat(const char *name, int block)
 {
     QVector<float> returnValue;
     enlil3DVar* currentVar = this->_varOutput[QString(name)];
+
     if(currentVar)
     {
-        if(this->_currentExtents["n1"] == this->_wholeExtents["n1"]
-                && this->_currentExtents["n2"] == this->_wholeExtents["n2"]
-                && this->_currentExtents["n3"] == this->_wholeExtents["n3"])
-        {
-            //changing to a full read
-            this->_useSubExtents = false;
-        }
-
         if(this->_useSubExtents)
         {
+            bool loadPhi0 = false;
             QVector<enlilExtent> subExtents;
             subExtents.push_back(this->_currentExtents["n1"]);
             subExtents.push_back(this->_currentExtents["n2"]);
-            subExtents.push_back(this->_currentExtents["n3"]);            
+            subExtents.push_back(this->_currentExtents["n3"]);
 
+            if(subExtents[2].second >= this->_trueDims["n3"])
+            {
+                loadPhi0 = true;
+                subExtents[2].second -=1;
+            }
             returnValue = currentVar->asFloat(subExtents, block);
+
+            if(currentVar->numDims() >= 3)
+            {
+                if(loadPhi0)
+                {
+                    std::cout << "3 dimensional matrix" << std::endl;
+                    //fix for phi
+                    //FIXME: We need to get the pieces from the file
+                    // and insert them here.
+
+                    subExtents[2].first = 0;
+                    subExtents[2].second = 0;
+
+                    QVector<float> phi0 = currentVar->asFloat(subExtents, block);
+
+                    int phiCount = phi0.count();
+                    for(int list=0; list < phiCount; list++)
+                    {
+                        returnValue.push_back(phi0[list]);
+                    }
+                }
+            }
+            else
+            {
+                if(currentVar->getExtent("n3").second > 0)
+                {
+                    std::cout << "adding phi0" << std::endl;
+
+                    subExtents[2].first = 0;
+                    subExtents[2].second = 0;
+                    QVector<float> phi0 = currentVar->asFloat(subExtents, block);
+
+                    returnValue.push_back(phi0[0]);
+
+                    std::cout << qPrintable(currentVar->longName()) << ": " << returnValue.count() << std::endl;
+
+                }
+            }
+
         }
         else
         {
+            //get whole extents
             returnValue = currentVar->asFloat(block);
 
             //fix for phi
@@ -400,8 +439,12 @@ QVector<float> enlil3DFile::asFloat(const char *name, int block)
                 }
 
             }
+
+
         }
     }
+
+
     return returnValue;
 }
 
@@ -490,20 +533,59 @@ QVector<double> enlil3DFile::asDouble(const char *name, int block)
     {
         if(this->_useSubExtents)
         {
+            bool loadPhi0 = false;
             QVector<enlilExtent> subExtents;
             subExtents.push_back(this->_currentExtents["n1"]);
             subExtents.push_back(this->_currentExtents["n2"]);
             subExtents.push_back(this->_currentExtents["n3"]);
 
-            returnValue = currentVar->asDouble(subExtents, block);
 
             if(subExtents[2].second >= this->_trueDims["n3"])
             {
-                //fix for phi
-                //FIXME: We need to get the pieces from the file
-                // and insert them here.
+                loadPhi0 = true;
+                subExtents[2].second -=1;
 
             }
+            returnValue = currentVar->asDouble(subExtents, block);
+
+            if(currentVar->numDims() >= 3)
+            {
+                if(loadPhi0)
+                {
+                    std::cout << "3 dimensional matrix" << std::endl;
+                    //fix for phi
+                    //FIXME: We need to get the pieces from the file
+                    // and insert them here.
+
+                    subExtents[2].first = 0;
+                    subExtents[2].second = 0;
+
+                    QVector<double> phi0 = currentVar->asDouble(subExtents, block);
+
+                    int phiCount = phi0.count();
+                    for(int list=0; list < phiCount; list++)
+                    {
+                        returnValue.push_back(phi0[list]);
+                    }
+                }
+            }
+            else
+            {
+                if(currentVar->getExtent("n3").second > 0)
+                {
+                    std::cout << "adding phi0" << std::endl;
+
+                    subExtents[2].first = 0;
+                    subExtents[2].second = 0;
+                    QVector<double> phi0 = currentVar->asDouble(subExtents, block);
+
+                    returnValue.push_back(phi0[0]);
+
+                    std::cout << qPrintable(currentVar->longName()) << ": " << returnValue.count() << std::endl;
+
+                }
+            }
+
         }
         else
         {
@@ -960,7 +1042,6 @@ void enlil3DFile::__processExtents()
  * @return
  */
 
-//FIXME: Must adjust the grid for the current extents, else we will have the wrong transforms
 QVector<QVector<double> > enlil3DFile::__getGrid(bool cart)
 {
     std::cout << "Starting " << __FUNCTION__ << std::endl;
@@ -988,17 +1069,28 @@ QVector<QVector<double> > enlil3DFile::__getGrid(bool cart)
             curExt.push_back(this->_wholeExtents["n3"]);
         }
 
+        std::cout << "n1: " << curExt[0].first << ":" << curExt[0].second << std::endl;
+        std::cout << "n2: " << curExt[1].first << ":" << curExt[1].second << std::endl;
+        std::cout << "n3: " << curExt[2].first << ":" << curExt[2].second << std::endl;
+
         int xlen = curExt[0].second - curExt[0].first + 1;
         int ylen = curExt[1].second - curExt[1].first + 1;
         int zlen = curExt[2].second - curExt[2].first + 1;
 
+        std::cout << "x-len: " << xlen << std::endl;
+        std::cout << "y-len: " << ylen << std::endl;
+        std::cout << "z-len: " << zlen << std::endl;
+
+        std::cout << "Getting X1" << std::endl;
         QVector<double> x1 = this->asDouble("X1");
+
+        std::cout << "Getting X2" << std::endl;
         QVector<double> x2 = this->asDouble("X2");
+
+        std::cout << "Getting X3" << std::endl;
         QVector<double> x3 = this->asDouble("X3");
 
-        //fix phi grid
-        x3.push_back(x3.front());
-
+        std::cout << "Done Getting parts" << std::endl;
         QVector<double> xyz;
 
 
@@ -1042,7 +1134,7 @@ QVector<QVector<double> > enlil3DFile::__getGrid(bool cart)
         exit(EXIT_FAILURE);
     }
 
-    std::cout << "Grid Size: " << GridOutput.count() << std::endl;
+    std::cout << "Grid Size: " << GridOutput.count() << std::endl << std::flush;
 
     return GridOutput;
 }
@@ -1214,7 +1306,7 @@ void enlil3DFile::__addConversion(QString baseUnits, QString newUnits, double di
  */
 QVector<double> enlil3DFile::__sphere2Cart(const QVector<double> &rtp)
 {
-//    std::cerr << "STARTING " << __FUNCTION__ << std::endl;
+    //    std::cerr << "STARTING " << __FUNCTION__ << std::endl;
 
     //calculate
     QVector<double> xyz;
@@ -1232,7 +1324,7 @@ QVector<double> enlil3DFile::__sphere2Cart(const QVector<double> &rtp)
  */
 QVector<float> enlil3DFile::__sphere2Cart(const QVector<float> &rtp)
 {
-//    std::cerr << "STARTING " << __FUNCTION__ << std::endl;
+    //    std::cerr << "STARTING " << __FUNCTION__ << std::endl;
 
     //calculate
     QVector<float> xyz;
@@ -1250,7 +1342,7 @@ QVector<float> enlil3DFile::__sphere2Cart(const QVector<float> &rtp)
  */
 QVector<qint64> enlil3DFile::__sphere2Cart(const QVector<qint64> &rtp)
 {
-//    std::cerr << "STARTING " << __FUNCTION__ << std::endl;
+    //    std::cerr << "STARTING " << __FUNCTION__ << std::endl;
 
     //calculate
     QVector<qint64> xyz;
@@ -1367,6 +1459,7 @@ void enlil3DFile::setScale_factor(QString units, double scale_factor)
     }
 
     this->_scaleFactor[0]["m"] = qMakePair(units, scale_factor);
+
 
 }
 

@@ -663,7 +663,7 @@ void vtkEnlilReader::AddFileName(const char *fname)
     /* Updated for Enlil Reader 3.0 */
 
 
-    enlil3DFile* newFile = new enlil3DFile(QString(fname), "m", 1);
+    enlil3DFile* newFile = new enlil3DFile(QString(fname),  GRID_SCALE::ScaleUnits[GRID_SCALE::AU], GRID_SCALE::ScaleFactor[GRID_SCALE::AU]);
     double mjd = newFile->getMJD();
 
     this->_3Dfiles[mjd] = newFile;
@@ -704,14 +704,6 @@ void vtkEnlilReader::RemoveAllFileNames()
     std::cout << __FUNCTION__ << " Start" << std::endl << std::flush;
 
     this->fileNames.clear();
-    //    this->numberOfArrays = 0;
-    //    this->timesCalulated = false;
-    //    this->NumberOfTimeSteps = 0;
-    //    this->TimeSteps.clear();
-    //    this->gridClean = false;
-    //    this->EvoFilesLoaded = false;
-    //    this->EvoFilesProcessed = false;
-    //    this->clearEvoData();
 
     this->FileName = NULL;
     this->Modified();

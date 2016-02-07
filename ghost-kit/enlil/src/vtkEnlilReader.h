@@ -9,6 +9,7 @@
 #include<string>
 #include<vector>
 #include<QString>
+#include<QStringList>
 
 #include "enlilControlFile.h"
 #include "enlilEvoFile.h"
@@ -36,12 +37,21 @@ enum ScaleType{
     NONE   = 0,
     REARTH = 1,
     RSOLAR = 2,
-    AU     = 3
+    AU     = 3    
 };
+
 static const float ScaleFactor[4] = { 1.0,
                                       6.5e6,
                                       6.955e8,
                                       1.5e11 };
+
+static const char* ScaleUnits[4] = {"m",
+                                    "Re",
+                                    "Rs",
+                                    "AU"};
+
+
+
 }
 
 namespace UNITS
@@ -81,7 +91,16 @@ public:
     void SetGridScaleType(int value)
     {
         this->GridScaleType = value;
-        this->gridClean = false;
+
+        int fileCount = this->_3Dfiles.count();
+        QList<double> fileKeys = this->_3Dfiles.keys();
+
+        for (int file=0; file < fileCount; file++)
+        {
+            this->_3Dfiles[fileKeys[file]]->setScale_factor(QString(GRID_SCALE::ScaleUnits[this->GridScaleType]), GRID_SCALE::ScaleFactor[this->GridScaleType]);
+        }
+
+        this->__gridClean = false;
         this->Modified();
     }
 
@@ -91,11 +110,11 @@ public:
     void SetDataUnits(int _arg)
     {
 
-//        std::cout << "Updating Units: " << std::endl;
-//        this->DataUnits = _arg;
+        std::cout << "Updating Units: " << std::endl;
+        this->DataUnits = _arg;
 
-//        this->gridClean=false;
-//        this->Modified();
+        this->__gridClean=false;
+        this->Modified();
     }
 
     vtkGetMacro(DataUnits, int)
@@ -145,7 +164,6 @@ protected:
     char* FileName;            // Base file name
     int GridScaleType;
     int DataUnits;
-    bool gridClean;
     int numberOfArrays;
     bool useControlFile;
 

@@ -468,7 +468,7 @@ int main(int argc, char* argv[])
 
 
 
-    int extent2[]={5,10,3,6,85,91};
+    int extent2[]={5,10,3,6,85,90};
     file.setSubExtents(extent2);
 
     //get the grid
@@ -477,7 +477,7 @@ int main(int argc, char* argv[])
 
     QVector<QVector<float> > testFloatExtent2 = file.asFloat("V1", "V2", "V3",1,true);
 
-    int answerSize = 6*4*7;
+    int answerSize = 6*4*6;
 
     int answer = 0;
     if(!testFloatExtent2.isEmpty())
