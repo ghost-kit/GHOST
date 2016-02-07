@@ -575,8 +575,11 @@ vtkPoints *vtkEnlilReader::buildGrid()
  */
 vtkPoints *vtkEnlilReader::getGrid()
 {
+    //FIXME: Find out why grid is changing scale with switched.  Check 3Dfile class.
     if(!this->__gridClean || !this->__grid)
     {
+        if(this->__grid) this->__grid->Delete();
+
         this->__grid = this->buildGrid();
     }
 
