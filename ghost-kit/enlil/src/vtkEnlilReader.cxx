@@ -461,6 +461,8 @@ int vtkEnlilReader::RequestData(
     //Prep the output
     int newExtent[6];
 
+    std::cout << "Getting Data" << std::flush << std::endl;
+
     vtkStructuredGrid* Data = vtkStructuredGrid::GetData(outputVector, 0);
     vtkInformation* fieldInfo = outputVector->GetInformationObject(0);
 
@@ -468,6 +470,7 @@ int vtkEnlilReader::RequestData(
 
     if(status)
     {
+        std::cout << "Getting Requested Extents" << std::flush << std::endl;
         //get the requested extent from ParaView
         fieldInfo->Get(vtkStreamingDemandDrivenPipeline::UPDATE_EXTENT(), newExtent);
 
@@ -497,6 +500,8 @@ int vtkEnlilReader::RequestData(
         for(int arrayNum=0; arrayNum < totalNumberArrays; arrayNum++)
         {
             QString Name(this->PointDataArraySelection->GetArrayName(arrayNum));
+            std::cout << "Populating Data " << qPrintable(Name) << std::flush << std::endl;
+
             QStringList Var = this->__ArrayNameMap[Name];
             int numBlocks = this->_3Dfiles[current_MJD]->getNumberOfBlocks(qPrintable(Var[0]));
 
@@ -540,6 +545,8 @@ double vtkEnlilReader::getRequestedTime(vtkInformationVector* outputVector)
         //single time step
         requestedTimeValue = this->_3Dfiles.keys()[0];
     }
+
+    std::cout << "Returning from " << __FUNCTION__ << std::endl;
 
     return requestedTimeValue;
 }
