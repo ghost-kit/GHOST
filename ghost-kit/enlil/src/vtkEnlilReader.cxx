@@ -474,29 +474,44 @@ int vtkEnlilReader::RequestData(
         //get the requested extent from ParaView
         fieldInfo->Get(vtkStreamingDemandDrivenPipeline::UPDATE_EXTENT(), newExtent);
 
+        std::cout << "NewExtents: " << newExtent[0] << "," << newExtent[1] << "," << newExtent[2] << "," << newExtent[3] << "," << newExtent[4] << "," << newExtent[5] << std::flush << std::endl;
         //check to see if the extents have changed
 
         if(!__eq(newExtent, this->__getCurrentExtents()))
         {
             this->__gridClean = false;
+
         }
 
+        std::cout << "Setting Extents" << std::flush << std::endl;
 
         //set current file extent
+        if(!this->_3Dfiles.contains(current_MJD))
+        {
+            std::cerr << "No current_MJD" << std::endl;
+            std::cerr << "Number of time steps present: " << this->_3Dfiles.size() << std::endl;
+            return 0;
+        }
         this->_3Dfiles[current_MJD]->setSubExtents(newExtent);
+
 
         //acknowledge paraview on extents
         Data->SetExtent(newExtent);
 
+        std::cout << "Setting Points for Grid" << std::flush << std::endl;
         //set grid
         Data->SetPoints(this->getGrid());
 
         progress += 0.4;
         this->SetProgress(progress);
 
+        std::cout << "Getting Number of Arrays" << std::flush << std::endl;
+
         //set the data requested
         int totalNumberArrays = this->PointDataArraySelection->GetNumberOfArrays();
 
+
+        std::cout << "Populating Data" << std::flush << std::endl;
         for(int arrayNum=0; arrayNum < totalNumberArrays; arrayNum++)
         {
             QString Name(this->PointDataArraySelection->GetArrayName(arrayNum));
@@ -602,6 +617,15 @@ vtkPoints *vtkEnlilReader::getGrid()
  */
 int *vtkEnlilReader::__getCurrentExtents()
 {
+    std::cout << "Calculating Extents" << std::flush << std::endl;
+
+    if(!this->_3Dfiles.contains(this->current_MJD))
+    {
+            int* zeroVector = new int[6];
+            zeroVector[0] = zeroVector[1] = zeroVector[2] = zeroVector[3] = zeroVector[4] = zeroVector[5] = 0;
+            return zeroVector;
+    }
+
     QMap<QString, enlilExtent> extents = this->_3Dfiles[this->current_MJD]->getCurrentExtents();
 
     this->__currentExtents[0] = extents["n1"].first;
